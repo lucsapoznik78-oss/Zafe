@@ -1,0 +1,34 @@
+name: Zafe Cron Jobs
+
+on:
+  schedule:
+    - cron: "0 * * * *"   # a cada hora
+  workflow_dispatch:        # permite rodar manualmente
+
+jobs:
+  cron:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fechar mercados expirados + snapshots
+        run: |
+          curl -s -X POST https://zafe-rho.vercel.app/api/cron/fechar-mercados \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json"
+
+      - name: Resolver oracle
+        run: |
+          curl -s -X POST https://zafe-rho.vercel.app/api/cron/resolver-oracle \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json"
+
+      - name: Timeout apostas privadas
+        run: |
+          curl -s -X POST https://zafe-rho.vercel.app/api/cron/apostas-privadas-timeout \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json"
+
+      - name: Repor mercados públicos
+        run: |
+          curl -s -X POST https://zafe-rho.vercel.app/api/cron/repor-mercados \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json"
