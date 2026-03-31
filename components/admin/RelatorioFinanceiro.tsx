@@ -118,7 +118,7 @@ export default function RelatorioFinanceiro() {
 
           <div className="text-xs text-muted-foreground bg-muted/10 border border-border rounded-lg px-4 py-3 space-y-1">
             <p className="font-semibold text-white">Período: {data.periodo.from} → {data.periodo.to}</p>
-            <p>Este relatório separa sua receita real (comissões) do volume custodiado (dinheiro dos usuários). Apresente apenas a linha "Receita Própria" ao contador para apuração de ISS, PIS e COFINS.</p>
+            <p>Este relatório separa sua receita real (comissões) do volume custodiado (dinheiro dos usuários). Apresente apenas a linha &quot;Receita Própria&quot; ao contador para apuração de ISS, PIS e COFINS.</p>
           </div>
         </div>
       )}

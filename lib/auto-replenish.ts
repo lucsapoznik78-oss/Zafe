@@ -52,7 +52,7 @@ export async function replenishMarkets(supabase: any) {
   let created = 0;
 
   // 3. Buscar templates disponíveis (usado_at = NULL) por tipo
-  async function useTemplates(isLarge: boolean, count: number) {
+  async function fetchAndUseTemplates(isLarge: boolean, count: number) {
     if (count === 0) return;
 
     const { data: templates } = await supabase
@@ -100,8 +100,8 @@ export async function replenishMarkets(supabase: any) {
     }
   }
 
-  await useTemplates(true, needLarge);
-  await useTemplates(false, needSmall);
+  await fetchAndUseTemplates(true, needLarge);
+  await fetchAndUseTemplates(false, needSmall);
 
   console.log(`[auto-replenish] Criados ${created} tópicos. Grandes: ${activeLarge}→${activeLarge + Math.min(needLarge, created)}, Pequenos: ${activeSmall}→${activeSmall + Math.max(0, created - needLarge)}`);
 
