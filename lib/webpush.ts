@@ -1,10 +1,13 @@
 import webpush from "web-push";
 
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT!,
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-);
+function getWebpush() {
+  webpush.setVapidDetails(
+    process.env.VAPID_SUBJECT!,
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
+    process.env.VAPID_PRIVATE_KEY!
+  );
+  return webpush;
+}
 
 interface PushNotification {
   title: string;
@@ -37,7 +40,7 @@ export async function sendPushToUser(
   await Promise.allSettled(
     subs.map(async (sub: any) => {
       try {
-        await webpush.sendNotification(
+        await getWebpush().sendNotification(
           { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
           payload
         );
