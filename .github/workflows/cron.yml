@@ -29,6 +29,5 @@ jobs:
 
       - name: Repor mercados públicos
         run: |
-          curl -s -X POST https://zafe-rho.vercel.app/api/cron/repor-mercados \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            -H "Content-Type: application/json"
+          curl -s https://zafe-rho.vercel.app/api/cron/repor-mercados \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
