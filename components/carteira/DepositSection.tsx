@@ -70,9 +70,14 @@ export default function DepositSection({ currentBalance }: { currentBalance: num
             {tab === "depositar" ? "Zafes a adicionar (máx. Z$ 1.000)" : "Valor a sacar"}
           </label>
           {tab === "depositar" && (
-            <span className="inline-block mb-1.5 px-2 py-0.5 rounded bg-yellow-400/15 text-yellow-400 text-[10px] font-semibold">
-              Modo beta — Zafes não têm valor real
-            </span>
+            <div className="flex flex-wrap gap-1.5 mb-1.5">
+              <span className="px-2 py-0.5 rounded bg-yellow-400/15 text-yellow-400 text-[10px] font-semibold">
+                Modo beta — Zafes não têm valor real
+              </span>
+              <span className="px-2 py-0.5 rounded bg-primary/15 text-primary text-[10px] font-semibold">
+                1 depósito por semana · máx. Z$ 1.000
+              </span>
+            </div>
           )}
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">Z$</span>

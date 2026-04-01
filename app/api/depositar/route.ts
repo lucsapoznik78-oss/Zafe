@@ -9,15 +9,24 @@ export async function POST(request: Request) {
 
   const { amount } = await request.json();
   if (!amount || amount <= 0 || amount > 1000) {
-    return NextResponse.json({ error: "Valor inválido (máx. Z$ 1.000 por vez)" }, { status: 400 });
+    return NextResponse.json({ error: "Valor inválido (máx. Z$ 1.000 por depósito)" }, { status: 400 });
   }
 
-  // Verificar saldo atual — limite total de Z$ 1.000 por carteira
+  // Apenas 1 depósito por semana (período beta com Zafes)
+  const umaSemanaAtras = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const { count: depositosRecentes } = await supabase
+    .from("transactions")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .eq("type", "deposit")
+    .gte("created_at", umaSemanaAtras);
+
+  if ((depositosRecentes ?? 0) > 0) {
+    return NextResponse.json({ error: "Você já fez um depósito esta semana. Próximo disponível na segunda-feira." }, { status: 400 });
+  }
+
   const { data: currentWallet } = await supabase.from("wallets").select("balance").eq("user_id", user.id).single();
   const currentBalance = currentWallet?.balance ?? 0;
-  if (currentBalance >= 1000) {
-    return NextResponse.json({ error: "Saldo máximo de Z$ 1.000 atingido" }, { status: 400 });
-  }
 
   // 4% comissão Zafe — 96% entra na carteira do usuário
   const comissao = parseFloat((amount * 0.04).toFixed(2));
