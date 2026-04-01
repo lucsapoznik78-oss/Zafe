@@ -119,9 +119,39 @@ export async function POST(request: Request) {
     reference_id: topic_id,
   });
 
+  // ── Matching automático parimutuel ──────────────────────────────
+  // Se já existem apostas em ambos os lados → marcar TODAS como matched
+  const oppSide = side === "sim" ? "nao" : "sim";
+  const { count: oppCount } = await supabase
+    .from("bets")
+    .select("id", { count: "exact", head: true })
+    .eq("topic_id", topic_id)
+    .eq("side", oppSide)
+    .not("status", "in", '("refunded","exited","lost","won")');
+
+  if ((oppCount ?? 0) > 0) {
+    // Ambos os lados têm apostas → matchear tudo
+    await supabase
+      .from("bets")
+      .update({ status: "matched" })
+      .eq("topic_id", topic_id)
+      .eq("status", "pending");
+
+    // Notificar o apostador atual que foi matched
+    await supabase.from("notifications").insert({
+      user_id: user.id,
+      type: "bet_matched",
+      title: "Aposta confirmada! 🎯",
+      body: `Sua aposta ${side.toUpperCase()} foi aceita — há apostadores do lado oposto.`,
+      data: { topic_id },
+    });
+  }
+  // ────────────────────────────────────────────────────────────────
+
   return NextResponse.json({
     success: true,
     bet_id: bet.id,
     estimated_odds: estimatedOdds,
+    matched: (oppCount ?? 0) > 0,
   });
 }
