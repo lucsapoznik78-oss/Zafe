@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { AlertTriangle, Loader2, ExternalLink } from "lucide-react";
 import CategoryBadge from "@/components/topicos/CategoryBadge";
 import Link from "next/link";
@@ -24,7 +23,6 @@ interface Topic {
 }
 
 export default function AdminResolve({ topics }: { topics: Topic[] }) {
-  const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
 
   async function resolve(topicId: string, resolution: "sim" | "nao" | "cancelled") {
@@ -35,7 +33,7 @@ export default function AdminResolve({ topics }: { topics: Topic[] }) {
       body: JSON.stringify({ topic_id: topicId, resolution }),
     });
     setLoading(null);
-    router.refresh();
+    window.location.reload();
   }
 
   return (

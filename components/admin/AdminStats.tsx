@@ -3,7 +3,6 @@
 import { formatCurrency } from "@/lib/utils";
 import { DollarSign, Clock, CheckSquare, RefreshCw } from "lucide-react";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 interface Props {
   totalCommission: number;
@@ -12,7 +11,6 @@ interface Props {
 }
 
 export default function AdminStats({ totalCommission, pendingCount, toResolveCount }: Props) {
-  const router = useRouter();
   const [cronLoading, setCronLoading] = useState(false);
   const [cronResult, setCronResult] = useState("");
 
@@ -23,11 +21,11 @@ export default function AdminStats({ totalCommission, pendingCount, toResolveCou
     const data = await res.json();
     setCronResult(
       res.ok
-        ? `✅ ${data.expired_topics} expirados fechados, ${data.refunded_bets} reembolsados, ${data.snapshots_taken} snapshots`
+        ? `✅ ${data.expired_topics ?? 0} expirados fechados, ${data.snapshots_taken ?? 0} snapshots tirados`
         : `❌ ${data.error}`
     );
     setCronLoading(false);
-    router.refresh();
+    window.location.reload();
   }
 
   return (
