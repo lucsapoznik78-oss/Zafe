@@ -26,9 +26,12 @@ export default function Navbar() {
   const [wallet, setWallet] = useState<WalletType | null>(null);
 
   useEffect(() => {
+    let userId: string | null = null;
+
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+      userId = user.id;
 
       const [{ data: prof }, { data: wal }] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", user.id).single(),
@@ -38,7 +41,16 @@ export default function Navbar() {
       setProfile(prof);
       setWallet(wal);
     }
+
+    async function refreshBalance() {
+      if (!userId) return;
+      const { data: wal } = await supabase.from("wallets").select("*").eq("user_id", userId).single();
+      if (wal) setWallet(wal);
+    }
+
     load();
+    const interval = setInterval(refreshBalance, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   async function handleLogout() {

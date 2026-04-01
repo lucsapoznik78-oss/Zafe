@@ -186,24 +186,35 @@ function PhaseProgress({ currentStep }: { currentStep: number }) {
 }
 
 function SidePanel({ side, label, color, leader, participants, isMySide, topicId, phase, onRefresh }: any) {
-  const [inviteUsername, setInviteUsername] = useState("");
+  const [allUsers, setAllUsers] = useState<{ id: string; username: string; full_name: string }[]>([]);
+  const [filter, setFilter] = useState("");
   const [inviting, setInviting] = useState(false);
+  const [showList, setShowList] = useState(false);
 
-  async function convidar() {
-    if (!inviteUsername.trim()) return;
+  useEffect(() => {
+    if (!isMySide || phase !== "recruiting") return;
+    import("@/lib/supabase/client").then(({ createClient }) => {
+      createClient().from("profiles").select("id, username, full_name").limit(100)
+        .then(({ data }) => setAllUsers(data ?? []));
+    });
+  }, [isMySide, phase]);
+
+  const participantIds = new Set(participants.map((p: any) => p.user_id));
+  const filtered = allUsers.filter(u =>
+    !participantIds.has(u.id) &&
+    (u.username?.toLowerCase().includes(filter.toLowerCase()) ||
+     u.full_name?.toLowerCase().includes(filter.toLowerCase()))
+  );
+
+  async function convidar(userId: string) {
     setInviting(true);
-    // Buscar usuário
-    const { createClient } = await import("@/lib/supabase/client");
-    const supabase = createClient();
-    const { data: profile } = await supabase.from("profiles").select("id").eq("username", inviteUsername.trim()).single();
-    if (!profile) { alert("Usuário não encontrado"); setInviting(false); return; }
-
     await fetch(`/api/apostas-privadas/${topicId}/convidar`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ user_id: profile.id }),
+      body: JSON.stringify({ user_id: userId }),
     });
-    setInviteUsername("");
+    setFilter("");
+    setShowList(false);
     setInviting(false);
     onRefresh();
   }
@@ -232,18 +243,30 @@ function SidePanel({ side, label, color, leader, participants, isMySide, topicId
         )}
       </div>
       {isMySide && phase === "recruiting" && (
-        <div className="flex gap-1 pt-1">
+        <div className="pt-1 relative">
           <input
-            className="flex-1 bg-background border border-border rounded px-2 py-1 text-xs text-white"
-            placeholder="Convidar username"
-            value={inviteUsername}
-            onChange={e => setInviteUsername(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && convidar()}
+            className="w-full bg-background border border-border rounded px-2 py-1.5 text-xs text-white"
+            placeholder="Buscar usuário para convidar..."
+            value={filter}
+            onChange={e => { setFilter(e.target.value); setShowList(true); }}
+            onFocus={() => setShowList(true)}
           />
-          <button onClick={convidar} disabled={inviting}
-            className="px-2 py-1 bg-primary text-black text-xs font-bold rounded">
-            +
-          </button>
+          {showList && filter && filtered.length > 0 && (
+            <div className="absolute z-10 w-full mt-1 bg-card border border-border rounded-lg shadow-lg max-h-40 overflow-y-auto">
+              {filtered.slice(0, 8).map(u => (
+                <button
+                  key={u.id}
+                  type="button"
+                  disabled={inviting}
+                  onClick={() => convidar(u.id)}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-muted text-left"
+                >
+                  <span className="text-white font-medium">@{u.username}</span>
+                  {u.full_name && <span className="text-muted-foreground">{u.full_name}</span>}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -323,8 +346,18 @@ function LeaderElectionPanel({ topicId, side, participants, currentUserId, myVot
 }
 
 function JudgeNegotiationPanel({ topicId, nominations, currentUserId, isLeader, myLeaderSide, onRefresh }: any) {
-  const [newJudgeUsername, setNewJudgeUsername] = useState("");
+  const [judgeFilter, setJudgeFilter] = useState("");
+  const [judgeUsers, setJudgeUsers] = useState<{ id: string; username: string; full_name: string }[]>([]);
+  const [showJudgeList, setShowJudgeList] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isLeader) return;
+    import("@/lib/supabase/client").then(({ createClient }) => {
+      createClient().from("profiles").select("id, username, full_name").limit(100)
+        .then(({ data }) => setJudgeUsers(data ?? []));
+    });
+  }, [isLeader]);
 
   async function responder(nominationId: string, aceitar: boolean, substitutoId?: string) {
     setLoading(true);
@@ -436,35 +469,47 @@ function JudgeNegotiationPanel({ topicId, nominations, currentUserId, isLeader, 
 
       {/* Propor novo juiz (líder) */}
       {isLeader && activeNoms.length < 7 && (
-        <div className="flex gap-2 pt-1 border-t border-border/40">
+        <div className="pt-1 border-t border-border/40 relative">
           <input
-            className="flex-1 bg-background border border-border rounded px-2 py-1.5 text-sm text-white"
-            placeholder="Username do novo juiz"
-            value={newJudgeUsername}
-            onChange={e => setNewJudgeUsername(e.target.value)}
+            className="w-full bg-background border border-border rounded px-2 py-1.5 text-sm text-white"
+            placeholder="Buscar usuário para propor como juiz..."
+            value={judgeFilter}
+            onChange={e => { setJudgeFilter(e.target.value); setShowJudgeList(true); }}
+            onFocus={() => setShowJudgeList(true)}
           />
-          <button
-            onClick={async () => {
-              if (!newJudgeUsername.trim()) return;
-              const { createClient } = await import("@/lib/supabase/client");
-              const supabase = createClient();
-              const { data: p } = await supabase.from("profiles").select("id").eq("username", newJudgeUsername.trim()).single();
-              if (!p) return;
-              setLoading(true);
-              await fetch(`/api/apostas-privadas/${topicId}/juizes/propor`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ judge_user_id: p.id }),
-              });
-              setNewJudgeUsername("");
-              setLoading(false);
-              onRefresh();
-            }}
-            disabled={loading}
-            className="px-3 py-1.5 bg-primary text-black text-sm font-bold rounded"
-          >
-            Propor
-          </button>
+          {showJudgeList && judgeFilter && (
+            <div className="absolute z-10 w-full mt-1 bg-card border border-border rounded-lg shadow-lg max-h-40 overflow-y-auto">
+              {judgeUsers
+                .filter(u =>
+                  u.username?.toLowerCase().includes(judgeFilter.toLowerCase()) ||
+                  u.full_name?.toLowerCase().includes(judgeFilter.toLowerCase())
+                )
+                .slice(0, 8)
+                .map(u => (
+                  <button
+                    key={u.id}
+                    type="button"
+                    disabled={loading}
+                    onClick={async () => {
+                      setLoading(true);
+                      await fetch(`/api/apostas-privadas/${topicId}/juizes/propor`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ judge_user_id: u.id }),
+                      });
+                      setJudgeFilter("");
+                      setShowJudgeList(false);
+                      setLoading(false);
+                      onRefresh();
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted text-left"
+                  >
+                    <span className="text-white font-medium">@{u.username}</span>
+                    {u.full_name && <span className="text-muted-foreground text-xs">{u.full_name}</span>}
+                  </button>
+                ))}
+            </div>
+          )}
         </div>
       )}
     </div>
