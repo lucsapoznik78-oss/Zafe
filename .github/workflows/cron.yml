@@ -31,3 +31,25 @@ jobs:
         run: |
           curl -s https://zafe-rho.vercel.app/api/cron/repor-mercados \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+
+  bonus-semanal:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && contains(fromJSON('["0","1","2","3","4","5","6"]'), format('{0}', github.run_number)))
+    steps:
+      - name: Check if Monday 9h UTC
+        id: check
+        run: |
+          DAY=$(date -u +%u)   # 1=Mon ... 7=Sun
+          HOUR=$(date -u +%H)
+          if [ "$DAY" = "1" ] && [ "$HOUR" = "09" ]; then
+            echo "run=true" >> $GITHUB_OUTPUT
+          else
+            echo "run=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Bônus semanal (+Z$200 para todos)
+        if: steps.check.outputs.run == 'true'
+        run: |
+          curl -s -X POST https://zafe-rho.vercel.app/api/cron/bonus-semanal \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json"

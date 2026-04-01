@@ -8,16 +8,20 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
   const { amount } = await request.json();
-  if (!amount || amount <= 0 || amount > 10000) {
-    return NextResponse.json({ error: "Valor inválido (máx. Z$ 10.000 por vez)" }, { status: 400 });
+  if (!amount || amount <= 0 || amount > 1000) {
+    return NextResponse.json({ error: "Valor inválido (máx. Z$ 1.000 por vez)" }, { status: 400 });
+  }
+
+  // Verificar saldo atual — limite total de Z$ 1.000 por carteira
+  const { data: currentWallet } = await supabase.from("wallets").select("balance").eq("user_id", user.id).single();
+  const currentBalance = currentWallet?.balance ?? 0;
+  if (currentBalance >= 1000) {
+    return NextResponse.json({ error: "Saldo máximo de Z$ 1.000 atingido" }, { status: 400 });
   }
 
   // 4% comissão Zafe — 96% entra na carteira do usuário
   const comissao = parseFloat((amount * 0.04).toFixed(2));
   const netAmount = parseFloat((amount - comissao).toFixed(2));
-
-  const { data: wallet } = await supabase.from("wallets").select("balance").eq("user_id", user.id).single();
-  const currentBalance = wallet?.balance ?? 0;
 
   await supabase.from("wallets").update({ balance: currentBalance + netAmount }).eq("user_id", user.id);
 

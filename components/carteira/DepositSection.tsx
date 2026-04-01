@@ -67,7 +67,7 @@ export default function DepositSection({ currentBalance }: { currentBalance: num
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="text-xs text-muted-foreground mb-1.5 block">
-            {tab === "depositar" ? "Zafes a adicionar" : "Valor a sacar"}
+            {tab === "depositar" ? "Zafes a adicionar (máx. Z$ 1.000)" : "Valor a sacar"}
           </label>
           {tab === "depositar" && (
             <span className="inline-block mb-1.5 px-2 py-0.5 rounded bg-yellow-400/15 text-yellow-400 text-[10px] font-semibold">
@@ -87,7 +87,7 @@ export default function DepositSection({ currentBalance }: { currentBalance: num
             />
           </div>
           <div className="flex gap-2 mt-2">
-            {[20, 50, 100, 200].map((v) => (
+            {[50, 100, 200, 500].map((v) => (
               <button
                 key={v}
                 type="button"
