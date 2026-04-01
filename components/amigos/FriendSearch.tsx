@@ -1,32 +1,62 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Search, UserPlus, Loader2 } from "lucide-react";
+import { Search, UserPlus, Clock, Check, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
-import type { Profile } from "@/types/database";
+
+interface ProfileRow {
+  id: string;
+  username: string;
+  full_name: string;
+}
+
+interface FriendshipRow {
+  requester_id: string;
+  addressee_id: string;
+  status: string;
+}
 
 export default function FriendSearch({ currentUserId }: { currentUserId: string }) {
   const router = useRouter();
   const supabase = createClient();
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<Profile[]>([]);
-  const [searching, setSearching] = useState(false);
+  const [allUsers, setAllUsers] = useState<ProfileRow[]>([]);
+  const [friendships, setFriendships] = useState<FriendshipRow[]>([]);
   const [adding, setAdding] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  async function handleSearch(e: React.FormEvent) {
-    e.preventDefault();
-    if (!query.trim()) return;
-    setSearching(true);
-    const { data } = await supabase
-      .from("profiles")
-      .select("*")
-      .or(`username.ilike.%${query}%,full_name.ilike.%${query}%`)
-      .neq("id", currentUserId)
-      .limit(5);
-    setResults(data ?? []);
-    setSearching(false);
+  useEffect(() => {
+    async function load() {
+      const [{ data: users }, { data: fs }] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("id, username, full_name")
+          .neq("id", currentUserId)
+          .eq("is_admin", false)
+          .order("full_name", { ascending: true })
+          .limit(100),
+        supabase
+          .from("friendships")
+          .select("requester_id, addressee_id, status")
+          .or(`requester_id.eq.${currentUserId},addressee_id.eq.${currentUserId}`),
+      ]);
+      setAllUsers(users ?? []);
+      setFriendships(fs ?? []);
+      setLoading(false);
+    }
+    load();
+  }, [currentUserId]);
+
+  function getFriendshipStatus(userId: string) {
+    const fs = friendships.find(
+      (f) =>
+        (f.requester_id === currentUserId && f.addressee_id === userId) ||
+        (f.addressee_id === currentUserId && f.requester_id === userId)
+    );
+    if (!fs) return null;
+    return { status: fs.status, isSender: fs.requester_id === currentUserId };
   }
 
   async function addFriend(addresseeId: string) {
@@ -40,33 +70,52 @@ export default function FriendSearch({ currentUserId }: { currentUserId: string 
     router.refresh();
   }
 
-  return (
-    <div className="bg-card border border-border rounded-xl p-4 space-y-4">
-      <h3 className="text-sm font-semibold text-white">Buscar Amigos</h3>
-      <form onSubmit={handleSearch} className="flex gap-2">
-        <div className="relative flex-1">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar por nome ou usuário..."
-            className="w-full bg-input border border-border rounded-lg pl-9 pr-3 py-2.5 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
-          />
-        </div>
-        <button
-          type="submit"
-          className="px-4 py-2 bg-primary text-black rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
-        >
-          {searching ? <Loader2 size={14} className="animate-spin" /> : "Buscar"}
-        </button>
-      </form>
+  async function acceptFriend(requesterId: string) {
+    setAdding(requesterId);
+    await fetch("/api/amigos/aceitar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ requester_id: requesterId }),
+    });
+    setAdding(null);
+    router.refresh();
+  }
 
-      {results.length > 0 && (
-        <div className="space-y-2">
-          {results.map((profile) => {
-            const initials = profile.full_name?.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase() ?? "?";
+  const filtered = allUsers.filter((u) => {
+    if (!query.trim()) return true;
+    const q = query.toLowerCase();
+    return u.full_name?.toLowerCase().includes(q) || u.username?.toLowerCase().includes(q);
+  });
+
+  return (
+    <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+      <h3 className="text-sm font-semibold text-white">Usuários</h3>
+
+      <div className="relative">
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Filtrar por nome ou usuário..."
+          className="w-full bg-input border border-border rounded-lg pl-9 pr-3 py-2.5 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+        />
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-6">
+          <Loader2 size={18} className="animate-spin text-muted-foreground" />
+        </div>
+      ) : filtered.length === 0 ? (
+        <p className="text-sm text-muted-foreground text-center py-4">Nenhum usuário encontrado</p>
+      ) : (
+        <div className="space-y-1 max-h-80 overflow-y-auto pr-1">
+          {filtered.map((profile) => {
+            const initials = profile.full_name?.split(" ").map((n: string) => n[0]).slice(0, 2).join("").toUpperCase() ?? "?";
+            const fs = getFriendshipStatus(profile.id);
+            const isLoading = adding === profile.id;
+
             return (
-              <div key={profile.id} className="flex items-center justify-between py-2">
+              <div key={profile.id} className="flex items-center justify-between py-2 px-1 rounded-lg hover:bg-white/5 transition-colors">
                 <div className="flex items-center gap-2.5">
                   <Avatar className="h-8 w-8">
                     <AvatarFallback className="bg-primary/20 text-primary text-xs">{initials}</AvatarFallback>
@@ -76,14 +125,36 @@ export default function FriendSearch({ currentUserId }: { currentUserId: string 
                     <p className="text-xs text-muted-foreground">@{profile.username}</p>
                   </div>
                 </div>
-                <button
-                  onClick={() => addFriend(profile.id)}
-                  disabled={adding === profile.id}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors disabled:opacity-50"
-                >
-                  {adding === profile.id ? <Loader2 size={12} className="animate-spin" /> : <UserPlus size={12} />}
-                  Adicionar
-                </button>
+
+                <div className="shrink-0">
+                  {fs?.status === "accepted" ? (
+                    <span className="flex items-center gap-1 text-xs text-sim font-medium">
+                      <Check size={12} /> Amigos
+                    </span>
+                  ) : fs?.status === "pending" && fs.isSender ? (
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Clock size={12} /> Pendente
+                    </span>
+                  ) : fs?.status === "pending" && !fs.isSender ? (
+                    <button
+                      onClick={() => acceptFriend(profile.id)}
+                      disabled={isLoading}
+                      className="flex items-center gap-1 px-3 py-1.5 text-xs bg-sim/15 text-sim rounded-lg hover:bg-sim/25 transition-colors disabled:opacity-50"
+                    >
+                      {isLoading ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+                      Aceitar
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => addFriend(profile.id)}
+                      disabled={isLoading}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors disabled:opacity-50"
+                    >
+                      {isLoading ? <Loader2 size={12} className="animate-spin" /> : <UserPlus size={12} />}
+                      Adicionar
+                    </button>
+                  )}
+                </div>
               </div>
             );
           })}
