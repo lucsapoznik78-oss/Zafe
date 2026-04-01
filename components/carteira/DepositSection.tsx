@@ -67,10 +67,15 @@ export default function DepositSection({ currentBalance }: { currentBalance: num
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="text-xs text-muted-foreground mb-1.5 block">
-            {tab === "depositar" ? "Valor a depositar" : "Valor a sacar"}
+            {tab === "depositar" ? "Zafes a adicionar" : "Valor a sacar"}
           </label>
+          {tab === "depositar" && (
+            <span className="inline-block mb-1.5 px-2 py-0.5 rounded bg-yellow-400/15 text-yellow-400 text-[10px] font-semibold">
+              Modo beta — Zafes não têm valor real
+            </span>
+          )}
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">R$</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">Z$</span>
             <input
               type="number"
               value={amount}
@@ -89,28 +94,11 @@ export default function DepositSection({ currentBalance }: { currentBalance: num
                 onClick={() => setAmount(String(v))}
                 className="flex-1 py-1.5 text-xs bg-muted hover:bg-muted/80 text-muted-foreground rounded transition-colors"
               >
-                R${v}
+                Z${v}
               </button>
             ))}
           </div>
         </div>
-
-        {amountNum > 0 && tab === "depositar" && (
-          <div className="bg-muted rounded-lg p-3 space-y-2 text-xs">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Você deposita</span>
-              <span className="text-white">{formatCurrency(amountNum)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Comissão Zafe (4%)</span>
-              <span className="text-nao">- {formatCurrency(commission)}</span>
-            </div>
-            <div className="border-t border-border pt-2 flex justify-between font-semibold">
-              <span className="text-white">Entra na carteira</span>
-              <span className="text-primary">{formatCurrency(netAmount)}</span>
-            </div>
-          </div>
-        )}
 
         {amountNum > 0 && tab === "sacar" && amountNum > currentBalance && (
           <p className="text-destructive text-xs">Saldo insuficiente</p>

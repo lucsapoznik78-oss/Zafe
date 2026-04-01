@@ -19,11 +19,15 @@ export async function POST(request: Request) {
 
   if (error) return NextResponse.json({ error: "Já existe uma solicitação" }, { status: 400 });
 
+  const { data: requesterProfile } = await supabase
+    .from("profiles").select("full_name, username").eq("id", user.id).single();
+
   await supabase.from("notifications").insert({
     user_id: addressee_id,
     type: "friend_request",
-    payload: { requester_id: user.id },
-    read: false,
+    title: "Nova solicitação de amizade",
+    body: `${requesterProfile?.full_name ?? requesterProfile?.username ?? "Alguém"} quer ser seu amigo.`,
+    data: { requester_id: user.id },
   });
 
   return NextResponse.json({ success: true });

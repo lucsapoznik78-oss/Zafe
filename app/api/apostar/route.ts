@@ -31,7 +31,7 @@ export async function POST(request: Request) {
 
   const effectiveMin = Math.max(MIN_BET, topic.min_bet ?? MIN_BET);
   if (amount < effectiveMin) {
-    return NextResponse.json({ error: `Valor mínimo: R$ ${effectiveMin},00` }, { status: 400 });
+    return NextResponse.json({ error: `Valor mínimo: Z$ ${effectiveMin},00` }, { status: 400 });
   }
 
   // Verificar saldo

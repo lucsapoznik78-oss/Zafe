@@ -115,7 +115,7 @@ export default function CreatePrivateBetForm({ userId }: { userId: string }) {
             </select>
           </div>
           <div>
-            <label className="text-xs text-muted-foreground">Investimento mínimo (R$)</label>
+            <label className="text-xs text-muted-foreground">Investimento mínimo (Z$)</label>
             <input
               type="number" min="1" step="1"
               className="w-full mt-1 bg-background border border-border rounded-lg px-3 py-2 text-white text-sm"

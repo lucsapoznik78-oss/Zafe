@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import DepositSection from "@/components/carteira/DepositSection";
 import TransactionHistory from "@/components/carteira/TransactionHistory";
+import { formatCurrency } from "@/lib/utils";
 
 export default async function DepositarPage() {
   const supabase = await createClient();
@@ -29,7 +30,7 @@ export default async function DepositarPage() {
       <div className="bg-card border border-border rounded-xl p-5">
         <p className="text-sm text-muted-foreground mb-1">Saldo disponível</p>
         <p className="text-4xl font-bold text-primary">
-          {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(wallet?.balance ?? 0)}
+          {formatCurrency(wallet?.balance ?? 0)}
         </p>
       </div>
 

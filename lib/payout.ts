@@ -6,7 +6,7 @@ import { replenishMarkets } from "@/lib/auto-replenish";
 import { sendPushToUser } from "@/lib/webpush";
 
 function fmt(v: number) {
-  return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  return "Z$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 export async function refundBet(supabase: any, bet: any, topicId: string, reason: string) {

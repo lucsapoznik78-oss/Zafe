@@ -264,7 +264,7 @@ function AcceitarConvite({ topicId, minBet, onRefresh }: any) {
     <div className="bg-primary/10 border border-primary/30 rounded-xl p-4 text-center space-y-3">
       <p className="text-white font-semibold">Você foi convidado para esta aposta!</p>
       <p className="text-muted-foreground text-sm">
-        Ao aceitar, R$ {minBet?.toFixed(2)} serão debitados da sua carteira como aposta mínima.
+        Ao aceitar, Z$ {minBet?.toFixed(2)} serão debitados da sua carteira como aposta mínima.
       </p>
       <button onClick={aceitar} disabled={loading}
         className="px-6 py-2 bg-primary text-black font-bold rounded-lg disabled:opacity-50">

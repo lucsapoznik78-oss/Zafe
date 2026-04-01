@@ -12,7 +12,7 @@ export async function POST(request: Request) {
   if (!amount || amount <= 0) return NextResponse.json({ error: "Valor inválido" }, { status: 400 });
   if (amount < SAQUE_MINIMO) {
     return NextResponse.json(
-      { error: `Valor mínimo de saque é ${new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(SAQUE_MINIMO)}` },
+      { error: `Valor mínimo de saque é ${"Z$ " + new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2 }).format(SAQUE_MINIMO)}` },
       { status: 400 }
     );
   }
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     type: "withdraw",
     amount,
     net_amount: amount,
-    description: `Saque de ${new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(amount)}`,
+    description: `Saque de ${"Z$ " + new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2 }).format(amount)}`,
     // account: CONTA_CUSTODIA — o saque SEMPRE sai da conta custódia, nunca da operacional
     // Ver: lib/financeiro.ts → CONTA_CUSTODIA
   });

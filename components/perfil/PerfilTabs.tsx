@@ -277,7 +277,7 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl }:
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Saque</span>
-                <span className="text-white">Gratuito (mín. R$ 20,00)</span>
+                <span className="text-white">Gratuito (mín. Z$ 20,00)</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Ganhos</span>

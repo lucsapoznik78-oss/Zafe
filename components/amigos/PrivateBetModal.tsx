@@ -93,9 +93,9 @@ export default function PrivateBetModal({ friendId, friendName, onClose }: Props
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs text-muted-foreground">Valor por pessoa (R$)</label>
+            <label className="text-xs text-muted-foreground">Valor por pessoa (Z$)</label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">R$</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">Z$</span>
               <input
                 type="number"
                 value={form.amount}

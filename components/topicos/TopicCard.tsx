@@ -66,14 +66,14 @@ export default function TopicCard({ topic }: TopicCardProps) {
               <p className="text-[10px] text-sim/70 font-medium">SIM</p>
               <p className="text-sm font-bold text-sim">{formatOdds(simOdds)}</p>
               <p className="text-[10px] text-sim/50 mt-0.5">
-                {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(volumeSim)}
+                {"Z$ " + new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 }).format(volumeSim)}
               </p>
             </div>
             <div className="bg-nao/10 rounded-lg px-3 py-2 text-center">
               <p className="text-[10px] text-nao/70 font-medium">NÃO</p>
               <p className="text-sm font-bold text-nao">{formatOdds(naoOdds)}</p>
               <p className="text-[10px] text-nao/50 mt-0.5">
-                {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(volumeNao)}
+                {"Z$ " + new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 }).format(volumeNao)}
               </p>
             </div>
           </div>

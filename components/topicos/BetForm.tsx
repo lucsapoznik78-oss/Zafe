@@ -138,7 +138,7 @@ export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed,
           Valor (mín. {formatCurrency(effectiveMin)})
         </label>
         <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">R$</span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">Z$</span>
           <input
             type="number"
             value={amount}
@@ -159,7 +159,7 @@ export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed,
               disabled={val > userBalance}
               className="flex-1 py-1 text-xs bg-muted hover:bg-muted/80 text-muted-foreground rounded transition-colors disabled:opacity-30"
             >
-              R${val}
+              Z${val}
             </button>
           ))}
         </div>

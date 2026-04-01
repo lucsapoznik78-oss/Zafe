@@ -88,7 +88,7 @@ export default function Navbar() {
             className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors"
           >
             <Wallet size={14} />
-            {wallet ? formatCurrency(wallet.balance) : "R$ 0,00"}
+            {wallet ? formatCurrency(wallet.balance) : "Z$ 0,00"}
           </Link>
 
           <PushSetup />
