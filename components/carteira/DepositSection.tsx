@@ -100,6 +100,23 @@ export default function DepositSection({ currentBalance }: { currentBalance: num
           </div>
         </div>
 
+        {amountNum > 0 && tab === "depositar" && (
+          <div className="bg-muted rounded-lg p-3 space-y-2 text-xs">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Você deposita</span>
+              <span className="text-white">{formatCurrency(amountNum)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Comissão Zafe (4%)</span>
+              <span className="text-nao">- {formatCurrency(commissionAmount(amountNum))}</span>
+            </div>
+            <div className="border-t border-border pt-2 flex justify-between font-semibold">
+              <span className="text-white">Entra na carteira</span>
+              <span className="text-primary">{formatCurrency(applyCommission(amountNum))}</span>
+            </div>
+          </div>
+        )}
+
         {amountNum > 0 && tab === "sacar" && amountNum > currentBalance && (
           <p className="text-destructive text-xs">Saldo insuficiente</p>
         )}
