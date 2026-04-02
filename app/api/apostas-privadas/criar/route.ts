@@ -12,8 +12,9 @@ export async function POST(req: Request) {
     judge_ids,       // string[3] — IDs dos 3 juízes propostos
   } = await req.json();
 
-  if (!title || !closes_at || !adversario_ids?.length || judge_ids?.length !== 3) {
-    return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
+  const numJudges = judge_ids?.length ?? 0;
+  if (!title || !closes_at || !adversario_ids?.length || numJudges < 1 || numJudges > 7 || numJudges % 2 === 0) {
+    return NextResponse.json({ error: "Número de juízes deve ser ímpar entre 1 e 7 (1, 3, 5 ou 7)" }, { status: 400 });
   }
 
   // Juiz não pode ser participante

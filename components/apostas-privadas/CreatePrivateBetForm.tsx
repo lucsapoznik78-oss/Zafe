@@ -177,7 +177,10 @@ export default function CreatePrivateBetForm({ userId }: { userId: string }) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (adversarios.length < 1) { setError("Adicione pelo menos 1 adversário"); return; }
-    if (judges.length < 3) { setError("Adicione pelo menos 3 juízes"); return; }
+    if (judges.length < 1 || judges.length > 7 || judges.length % 2 === 0) {
+      setError("Número de juízes deve ser ímpar: 1, 3, 5 ou 7");
+      return;
+    }
     if (!title || !closesAt) { setError("Preencha todos os campos"); return; }
 
     setLoading(true);
@@ -267,7 +270,7 @@ export default function CreatePrivateBetForm({ userId }: { userId: string }) {
 
       <UserPicker
         label="Juízes propostos"
-        sublabel={`(${judges.length}/7 — mín. 3)`}
+        sublabel={`(${judges.length}/7 — ímpar: 1, 3, 5 ou 7)`}
         selected={judges}
         allUsers={allUsers}
         loading={loadingUsers}
@@ -277,7 +280,7 @@ export default function CreatePrivateBetForm({ userId }: { userId: string }) {
         onRemove={(id) => setJudges((p) => p.filter((x) => x.id !== id))}
       />
       <p className="text-xs text-muted-foreground -mt-3 px-1">
-        Os adversários podem aceitar ou rejeitar cada juiz e propor substitutos.
+        Número ímpar garante desempate na votação. Os adversários podem aceitar ou rejeitar cada juiz.
       </p>
 
       <button
