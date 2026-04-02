@@ -1,7 +1,7 @@
 /**
  * Líder propõe juízes substitutos durante negociação
  */
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { sendPushToUser } from "@/lib/webpush";
 
@@ -13,6 +13,7 @@ export async function POST(
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  const admin = createAdminClient();
 
   const { judge_user_id, replaces_id } = await req.json();
 
@@ -64,7 +65,7 @@ export async function POST(
   const mySide = side.side;
   const responseDeadline = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
-  await supabase.from("judge_nominations").insert({
+  await admin.from("judge_nominations").insert({
     topic_id: topicId,
     judge_user_id,
     proposed_by_side: mySide,
@@ -85,7 +86,7 @@ export async function POST(
       .from("profiles").select("username").eq("id", judge_user_id).single();
 
     const notifBody = `Um novo juiz foi proposto: ${judgeProfile?.username ?? "usuário"}. Você tem 24h para responder.`;
-    await supabase.from("notifications").insert({
+    await admin.from("notifications").insert({
       user_id: otherLeaderSide.leader_id,
       type: "bet_invite",
       title: "Novo juiz proposto",

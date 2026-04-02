@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { checkRecrutamento } from "@/lib/private-bets";
 
@@ -10,6 +10,7 @@ export async function POST(
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  const admin = createAdminClient();
 
   // Verificar convite pendente
   const { data: participant } = await supabase
@@ -44,14 +45,14 @@ export async function POST(
   }
 
   // Aceitar convite
-  await supabase.from("topic_participants").update({
+  await admin.from("topic_participants").update({
     status: "accepted",
     joined_at: new Date().toISOString(),
   }).eq("topic_id", topicId).eq("user_id", user.id);
 
   // Criar aposta mínima
   const betSide = participant.side === "A" ? "sim" : "nao";
-  await supabase.from("bets").insert({
+  await admin.from("bets").insert({
     topic_id: topicId, user_id: user.id,
     side: betSide, amount: betAmount,
     status: "pending", matched_amount: betAmount, unmatched_amount: 0,
@@ -59,8 +60,8 @@ export async function POST(
   });
 
   // Debitar saldo
-  await supabase.from("wallets").update({ balance: wallet.balance - betAmount }).eq("user_id", user.id);
-  await supabase.from("transactions").insert({
+  await admin.from("wallets").update({ balance: wallet.balance - betAmount }).eq("user_id", user.id);
+  await admin.from("transactions").insert({
     user_id: user.id, type: "bet_placed",
     amount: betAmount, net_amount: betAmount,
     description: `Aposta privada — ${topic.title?.slice(0, 40)}`,
@@ -68,7 +69,7 @@ export async function POST(
   });
 
   // Verificar se já há 5+ participantes para avançar de fase
-  await checkRecrutamento(supabase, topicId);
+  await checkRecrutamento(admin, topicId);
 
   return NextResponse.json({ success: true });
 }

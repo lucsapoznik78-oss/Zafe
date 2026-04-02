@@ -1,7 +1,7 @@
 /**
  * Qualquer participante pode convidar alguém para o seu próprio lado
  */
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { sendPushToUser } from "@/lib/webpush";
 
@@ -13,6 +13,7 @@ export async function POST(
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  const admin = createAdminClient();
 
   const { user_id: inviteeId } = await req.json();
 
@@ -48,7 +49,7 @@ export async function POST(
   if (existing) return NextResponse.json({ error: "Usuário já convidado ou participando" }, { status: 400 });
 
   // Criar convite para o mesmo lado do convidador
-  await supabase.from("topic_participants").insert({
+  await admin.from("topic_participants").insert({
     topic_id: topicId, user_id: inviteeId,
     side: me.side, status: "invited",
     invited_by: user.id,
@@ -58,7 +59,7 @@ export async function POST(
     .from("profiles").select("username").eq("id", user.id).single();
 
   const inviteBody = `${profile?.username ?? "Alguém"} te convidou para a aposta: "${topic?.title?.slice(0, 50)}"`;
-  await supabase.from("notifications").insert({
+  await admin.from("notifications").insert({
     user_id: inviteeId,
     type: "bet_invite",
     title: "Convite para aposta privada",
