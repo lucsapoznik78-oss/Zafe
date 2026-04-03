@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import FriendsList from "@/components/amigos/FriendsList";
@@ -20,22 +20,25 @@ export default async function AmigosPage({ searchParams }: PageProps) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const admin = createAdminClient();
+
   const [
     { data: sentFriendships },
     { data: receivedFriendships },
     { data: betInvites },
     { data: ligasRaw },
     { data: ligaInvites },
+    { data: judgeProposed },
     { data: judgeNominations },
     { data: judgeActive },
   ] = await Promise.all([
     supabase
       .from("friendships")
-      .select("*, addressee:profiles!addressee_id(id, username, full_name, avatar_url)")
+      .select("id, requester_id, addressee_id, status, addressee:profiles!addressee_id(id, username, full_name, avatar_url)")
       .eq("requester_id", user.id),
     supabase
       .from("friendships")
-      .select("*, requester:profiles!requester_id(id, username, full_name, avatar_url)")
+      .select("id, requester_id, addressee_id, status, requester:profiles!requester_id(id, username, full_name, avatar_url)")
       .eq("addressee_id", user.id),
     supabase
       .from("private_bet_invites")
@@ -52,14 +55,20 @@ export default async function AmigosPage({ searchParams }: PageProps) {
       .select("id, liga_id, ligas(name, color, description), invited_by_profile:profiles!invited_by(full_name, username)")
       .eq("user_id", user.id)
       .eq("status", "pending"),
-    // Juiz: convites pendentes (both_approved — precisa confirmar disponibilidade)
-    supabase
+    // Juiz: propostos aguardando aprovação dos líderes
+    admin
+      .from("judge_nominations")
+      .select("id, topic_id, status, availability_deadline, created_at, topic:topics(title, private_phase)")
+      .eq("judge_user_id", user.id)
+      .eq("status", "proposed"),
+    // Juiz: aprovados por ambos os líderes — precisa confirmar disponibilidade
+    admin
       .from("judge_nominations")
       .select("id, topic_id, status, availability_deadline, created_at, topic:topics(title, private_phase)")
       .eq("judge_user_id", user.id)
       .eq("status", "both_approved"),
     // Juiz: atualmente ativo como juiz
-    supabase
+    admin
       .from("judge_nominations")
       .select("id, topic_id, status, availability_deadline, created_at, topic:topics(title, private_phase)")
       .eq("judge_user_id", user.id)
@@ -67,8 +76,8 @@ export default async function AmigosPage({ searchParams }: PageProps) {
   ]);
 
   const accepted = [
-    ...(sentFriendships ?? []).filter((f) => f.status === "accepted").map((f) => f.addressee),
-    ...(receivedFriendships ?? []).filter((f) => f.status === "accepted").map((f) => f.requester),
+    ...(sentFriendships ?? []).filter((f: any) => f.status === "accepted").map((f: any) => f.addressee),
+    ...(receivedFriendships ?? []).filter((f: any) => f.status === "accepted").map((f: any) => f.requester),
   ].filter(Boolean) as { id: string; username: string; full_name: string }[];
 
   const ligaMap = new Map<string, any>();
@@ -82,7 +91,7 @@ export default async function AmigosPage({ searchParams }: PageProps) {
   }
   const ligas = Array.from(ligaMap.values());
 
-  const pendingJudgeCount = (judgeNominations ?? []).length;
+  const pendingJudgeCount = (judgeProposed ?? []).length + (judgeNominations ?? []).length;
 
   return (
     <div className="py-6 max-w-2xl mx-auto space-y-0">
@@ -99,6 +108,7 @@ export default async function AmigosPage({ searchParams }: PageProps) {
       <div className="pt-6 space-y-6">
         {tab === "juiz" ? (
           <JudgeSection
+            propostos={(judgeProposed as any) ?? []}
             pendentes={(judgeNominations as any) ?? []}
             ativos={(judgeActive as any) ?? []}
           />
@@ -112,7 +122,23 @@ export default async function AmigosPage({ searchParams }: PageProps) {
               <BetInvites invites={betInvites ?? []} />
             )}
 
-            <FriendSearch currentUserId={user.id} />
+            <FriendSearch
+              currentUserId={user.id}
+              initialFriendships={[
+                ...(sentFriendships ?? []).map((f: any) => ({
+                  id: f.id,
+                  requester_id: f.requester_id ?? user.id,
+                  addressee_id: f.addressee_id ?? f.addressee?.id,
+                  status: f.status,
+                })),
+                ...(receivedFriendships ?? []).map((f: any) => ({
+                  id: f.id,
+                  requester_id: f.requester_id ?? f.requester?.id,
+                  addressee_id: f.addressee_id ?? user.id,
+                  status: f.status,
+                })),
+              ]}
+            />
 
             <LigasSection
               ligas={ligas}
@@ -121,8 +147,8 @@ export default async function AmigosPage({ searchParams }: PageProps) {
             />
 
             <FriendsList
-              sent={sentFriendships ?? []}
-              received={receivedFriendships ?? []}
+              sent={(sentFriendships ?? []) as any}
+              received={(receivedFriendships ?? []) as any}
               currentUserId={user.id}
             />
           </>

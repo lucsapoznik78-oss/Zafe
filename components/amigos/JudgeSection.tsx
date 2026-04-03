@@ -17,6 +17,7 @@ interface Nomination {
 }
 
 interface Props {
+  propostos: Nomination[];   // proposed — aguardando aprovação dos dois líderes
   pendentes: Nomination[];   // both_approved — precisa confirmar disponibilidade
   ativos: Nomination[];      // active — está servindo como juiz agora
 }
@@ -29,7 +30,7 @@ const PHASE_LABELS: Record<string, string> = {
   resolved:           "Resolvida",
 };
 
-export default function JudgeSection({ pendentes, ativos }: Props) {
+export default function JudgeSection({ propostos, pendentes, ativos }: Props) {
   const router = useRouter();
   const [responding, setResponding] = useState<string | null>(null);
 
@@ -44,7 +45,7 @@ export default function JudgeSection({ pendentes, ativos }: Props) {
     router.refresh();
   }
 
-  if (pendentes.length === 0 && ativos.length === 0) {
+  if (propostos.length === 0 && pendentes.length === 0 && ativos.length === 0) {
     return (
       <div className="bg-card border border-border rounded-xl p-12 text-center space-y-3">
         <Gavel size={36} className="text-muted-foreground mx-auto" />
@@ -60,6 +61,38 @@ export default function JudgeSection({ pendentes, ativos }: Props) {
 
   return (
     <div className="space-y-5">
+
+      {/* Propostos — aguardando aprovação dos dois líderes */}
+      {propostos.length > 0 && (
+        <div className="space-y-3">
+          <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+            <Clock size={14} className="text-muted-foreground" />
+            Aguardando aprovação dos líderes
+            <span className="px-1.5 py-0.5 bg-muted/40 text-muted-foreground rounded text-xs font-bold">
+              {propostos.length}
+            </span>
+          </h2>
+          <p className="text-xs text-muted-foreground -mt-1">
+            Você foi indicado como juiz. Os líderes de ambos os lados precisam aprovar.
+          </p>
+          {propostos.map((nom) => (
+            <Link
+              key={nom.id}
+              href={`/apostas-privadas/${nom.topic_id}`}
+              className="flex items-center gap-3 bg-card border border-border rounded-xl p-4 hover:border-primary/40 transition-colors"
+            >
+              <div className="w-9 h-9 rounded-xl bg-muted/20 flex items-center justify-center shrink-0">
+                <Gavel size={16} className="text-muted-foreground" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-white line-clamp-1">{nom.topic.title}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Indicado — aguardando aprovação</p>
+              </div>
+              <ExternalLink size={14} className="text-muted-foreground shrink-0" />
+            </Link>
+          ))}
+        </div>
+      )}
 
       {/* Pendentes — precisa confirmar disponibilidade */}
       {pendentes.length > 0 && (

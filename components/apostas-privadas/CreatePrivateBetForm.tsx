@@ -186,13 +186,17 @@ export default function CreatePrivateBetForm({ userId }: { userId: string }) {
     setLoading(true);
     setError("");
     try {
+      const closesDate = new Date(closesAt);
+      if (closesDate.getHours() === 0 && closesDate.getMinutes() === 0) {
+        closesDate.setHours(23, 59, 59, 0);
+      }
       const res = await fetch("/api/apostas-privadas/criar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title, description, category,
           min_bet: parseFloat(minBet),
-          closes_at: closesAt,
+          closes_at: closesDate.toISOString(),
           adversario_ids: adversarios.map((a) => a.id),
           judge_ids: judges.map((j) => j.id),
         }),

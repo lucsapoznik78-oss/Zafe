@@ -28,28 +28,16 @@ export async function POST(request: Request) {
   const { data: currentWallet } = await supabase.from("wallets").select("balance").eq("user_id", user.id).single();
   const currentBalance = currentWallet?.balance ?? 0;
 
-  // 4% comissão Zafe — 96% entra na carteira do usuário
-  const comissao = parseFloat((amount * 0.04).toFixed(2));
-  const netAmount = parseFloat((amount - comissao).toFixed(2));
+  // Depósito entra integralmente — comissão só é cobrada no ganho de apostas
+  await supabase.from("wallets").update({ balance: currentBalance + amount }).eq("user_id", user.id);
 
-  await supabase.from("wallets").update({ balance: currentBalance + netAmount }).eq("user_id", user.id);
-
-  await supabase.from("transactions").insert([
-    {
-      user_id: user.id,
-      type: "deposit",
-      amount,
-      net_amount: netAmount,
-      description: `Depósito de Z$ ${amount.toFixed(2).replace(".", ",")}`,
-    },
-    {
-      user_id: user.id,
-      type: "commission",
-      amount: comissao,
-      net_amount: comissao,
-      description: "Comissão Zafe (4%)",
-    },
-  ]);
+  await supabase.from("transactions").insert({
+    user_id: user.id,
+    type: "deposit",
+    amount,
+    net_amount: amount,
+    description: `Depósito de Z$ ${amount.toFixed(2).replace(".", ",")}`,
+  });
 
   // ── Bônus de referral — pagar Z$5 para ambos no primeiro depósito ──
   const { count: depositCount } = await supabase
@@ -107,5 +95,5 @@ export async function POST(request: Request) {
     }
   }
 
-  return NextResponse.json({ success: true, balance: currentBalance + amount });
+  return NextResponse.json({ success: true, balance: currentBalance + amount, net_amount: amount });
 }

@@ -8,7 +8,7 @@ import CommentSection from "@/components/topicos/CommentSection";
 import CountdownTimer from "@/components/topicos/CountdownTimer";
 import { calcOdds, formatOdds } from "@/lib/odds";
 import { formatCurrency } from "@/lib/utils";
-import ExitBetCard from "@/components/topicos/ExitBetCard";
+import MercadoSecundario from "@/components/topicos/MercadoSecundario";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -28,7 +28,7 @@ export default async function TopicoDetailPage({ params }: PageProps) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [{ data: topic }, { data: snapshots }, { data: statsData }, { data: wallet }, { data: userBet }] =
+  const [{ data: topic }, { data: snapshots }, { data: statsData }, { data: wallet }, { data: userBets }] =
     await Promise.all([
       supabase.from("topics").select("*, creator:profiles!creator_id(*)").eq("id", id).single(),
       supabase.from("topic_snapshots").select("prob_sim, volume_sim, volume_nao, recorded_at")
@@ -40,8 +40,7 @@ export default async function TopicoDetailPage({ params }: PageProps) {
       user
         ? supabase.from("bets").select("id, side, amount, status")
             .eq("topic_id", id).eq("user_id", user.id)
-            .in("status", ["pending", "matched"])
-            .limit(1).single()
+            .in("status", ["pending", "matched", "partial"])
         : Promise.resolve({ data: null }),
     ]);
 
@@ -213,13 +212,11 @@ export default async function TopicoDetailPage({ params }: PageProps) {
             userBalance={userBalance}
           />
 
-          {userBet && !isClosed && (
-            <ExitBetCard
-              betId={userBet.id}
-              side={userBet.side as "sim" | "nao"}
-              amount={userBet.amount}
-            />
-          )}
+          <MercadoSecundario
+            topicId={id}
+            isActive={!isClosed}
+            userBets={(userBets ?? []) as { id: string; side: "sim" | "nao"; amount: number; status: string }[]}
+          />
 
           <div className="bg-card border border-border rounded-xl p-4 text-xs text-muted-foreground space-y-2">
             <p className="font-semibold text-white text-sm">Como funciona</p>

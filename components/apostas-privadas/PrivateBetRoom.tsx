@@ -88,9 +88,15 @@ export default function PrivateBetRoom({
         />
       </div>
 
-      {/* Fase: recrutamento */}
+      {/* Fase: recrutamento — convidado pode aceitar ou recusar */}
       {phase === "recruiting" && myParticipant?.status === "invited" && (
         <AcceitarConvite topicId={topic.id} minBet={topic.min_bet} onRefresh={() => router.refresh()} />
+      )}
+
+      {/* Criador pode cancelar durante recrutamento, eleição ou negociação */}
+      {["recruiting", "leader_election", "judge_negotiation"].includes(phase) &&
+        topic.creator_id === currentUserId && (
+        <CancelarAposta topicId={topic.id} onRefresh={() => router.refresh()} />
       )}
 
       {/* Fase: eleição de líder */}
@@ -274,7 +280,9 @@ function SidePanel({ side, label, color, leader, participants, isMySide, topicId
 }
 
 function AcceitarConvite({ topicId, minBet, onRefresh }: any) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [recusando, setRecusando] = useState(false);
 
   async function aceitar() {
     setLoading(true);
@@ -283,16 +291,80 @@ function AcceitarConvite({ topicId, minBet, onRefresh }: any) {
     onRefresh();
   }
 
+  async function recusar() {
+    setRecusando(true);
+    await fetch(`/api/apostas-privadas/${topicId}/recusar`, { method: "POST" });
+    setRecusando(false);
+    router.push("/apostas-privadas");
+  }
+
   return (
     <div className="bg-primary/10 border border-primary/30 rounded-xl p-4 text-center space-y-3">
       <p className="text-white font-semibold">Você foi convidado para esta aposta!</p>
       <p className="text-muted-foreground text-sm">
         Ao aceitar, Z$ {minBet?.toFixed(2)} serão debitados da sua carteira como aposta mínima.
       </p>
-      <button onClick={aceitar} disabled={loading}
-        className="px-6 py-2 bg-primary text-black font-bold rounded-lg disabled:opacity-50">
-        {loading ? "Aceitando..." : "Aceitar e Apostar"}
-      </button>
+      <div className="flex gap-3 justify-center">
+        <button onClick={aceitar} disabled={loading || recusando}
+          className="px-6 py-2 bg-primary text-black font-bold rounded-lg disabled:opacity-50">
+          {loading ? "Aceitando..." : "Aceitar e Apostar"}
+        </button>
+        <button onClick={recusar} disabled={loading || recusando}
+          className="px-6 py-2 bg-nao/20 text-nao font-semibold rounded-lg hover:bg-nao/30 transition-colors disabled:opacity-50">
+          {recusando ? "Recusando..." : "Recusar"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function CancelarAposta({ topicId, onRefresh }: any) {
+  const router = useRouter();
+  const [confirm, setConfirm] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  async function cancelar() {
+    setLoading(true);
+    const res = await fetch(`/api/apostas-privadas/${topicId}/cancelar`, { method: "POST" });
+    setLoading(false);
+    if (res.ok) {
+      router.push("/apostas-privadas");
+    } else {
+      const d = await res.json();
+      alert(d.error ?? "Erro ao cancelar");
+      setConfirm(false);
+    }
+  }
+
+  if (!confirm) {
+    return (
+      <div className="flex justify-center pt-2">
+        <button
+          onClick={() => setConfirm(true)}
+          className="text-xs text-muted-foreground hover:text-nao transition-colors underline underline-offset-2"
+        >
+          Cancelar esta aposta
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-nao/10 border border-nao/30 rounded-xl p-4 text-center space-y-3">
+      <p className="text-white font-semibold">Cancelar aposta?</p>
+      <p className="text-muted-foreground text-sm">
+        Todos os participantes aceitos serão reembolsados. Esta ação não pode ser desfeita.
+      </p>
+      <div className="flex gap-3 justify-center">
+        <button onClick={cancelar} disabled={loading}
+          className="px-5 py-2 bg-nao text-white font-bold rounded-lg disabled:opacity-50">
+          {loading ? "Cancelando..." : "Sim, cancelar"}
+        </button>
+        <button onClick={() => setConfirm(false)} disabled={loading}
+          className="px-5 py-2 bg-muted/30 text-muted-foreground font-semibold rounded-lg hover:bg-muted/50 transition-colors">
+          Voltar
+        </button>
+      </div>
     </div>
   );
 }

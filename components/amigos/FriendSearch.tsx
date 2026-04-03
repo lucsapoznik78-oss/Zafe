@@ -13,40 +13,52 @@ interface ProfileRow {
 }
 
 interface FriendshipRow {
+  id: string;
   requester_id: string;
   addressee_id: string;
   status: string;
 }
 
-export default function FriendSearch({ currentUserId }: { currentUserId: string }) {
+export default function FriendSearch({
+  currentUserId,
+  initialFriendships = [],
+}: {
+  currentUserId: string;
+  initialFriendships?: FriendshipRow[];
+}) {
   const router = useRouter();
   const supabase = createClient();
   const [query, setQuery] = useState("");
   const [allUsers, setAllUsers] = useState<ProfileRow[]>([]);
-  const [friendships, setFriendships] = useState<FriendshipRow[]>([]);
+  const [friendships, setFriendships] = useState<FriendshipRow[]>(initialFriendships);
   const [adding, setAdding] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Sync friendships when server re-renders (e.g. after remove)
   useEffect(() => {
-    async function load() {
-      const [{ data: users }, { data: fs }] = await Promise.all([
-        supabase
-          .from("profiles")
-          .select("id, username, full_name")
-          .neq("id", currentUserId)
-          .eq("is_admin", false)
-          .order("full_name", { ascending: true })
-          .limit(100),
-        supabase
-          .from("friendships")
-          .select("requester_id, addressee_id, status")
-          .or(`requester_id.eq.${currentUserId},addressee_id.eq.${currentUserId}`),
-      ]);
-      setAllUsers(users ?? []);
-      setFriendships(fs ?? []);
-      setLoading(false);
-    }
-    load();
+    setFriendships(initialFriendships);
+  }, [initialFriendships]);
+
+  async function reloadFriendships() {
+    const { data: fs } = await supabase
+      .from("friendships")
+      .select("id, requester_id, addressee_id, status")
+      .or(`requester_id.eq.${currentUserId},addressee_id.eq.${currentUserId}`);
+    setFriendships(fs ?? []);
+  }
+
+  useEffect(() => {
+    supabase
+      .from("profiles")
+      .select("id, username, full_name")
+      .neq("id", currentUserId)
+      .eq("is_admin", false)
+      .order("full_name", { ascending: true })
+      .limit(100)
+      .then(({ data }) => {
+        setAllUsers(data ?? []);
+        setLoading(false);
+      });
   }, [currentUserId]);
 
   function getFriendshipStatus(userId: string) {
@@ -56,7 +68,19 @@ export default function FriendSearch({ currentUserId }: { currentUserId: string 
         (f.addressee_id === currentUserId && f.requester_id === userId)
     );
     if (!fs) return null;
-    return { status: fs.status, isSender: fs.requester_id === currentUserId };
+    return { id: fs.id, status: fs.status, isSender: fs.requester_id === currentUserId };
+  }
+
+  async function cancelRequest(friendshipId: string) {
+    setAdding(friendshipId);
+    await fetch("/api/amigos/cancelar-solicitar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ friendship_id: friendshipId }),
+    });
+    await reloadFriendships();
+    setAdding(null);
+    router.refresh();
   }
 
   async function addFriend(addresseeId: string) {
@@ -66,6 +90,7 @@ export default function FriendSearch({ currentUserId }: { currentUserId: string 
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ addressee_id: addresseeId }),
     });
+    await reloadFriendships();
     setAdding(null);
     router.refresh();
   }
@@ -77,6 +102,7 @@ export default function FriendSearch({ currentUserId }: { currentUserId: string 
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ requester_id: requesterId }),
     });
+    await reloadFriendships();
     setAdding(null);
     router.refresh();
   }
@@ -132,9 +158,14 @@ export default function FriendSearch({ currentUserId }: { currentUserId: string 
                       <Check size={12} /> Amigos
                     </span>
                   ) : fs?.status === "pending" && fs.isSender ? (
-                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Clock size={12} /> Pendente
-                    </span>
+                    <button
+                      onClick={() => cancelRequest(fs.id)}
+                      disabled={isLoading}
+                      className="flex items-center gap-1 px-3 py-1.5 text-xs bg-muted/30 text-muted-foreground rounded-lg hover:bg-nao/20 hover:text-nao transition-colors disabled:opacity-50"
+                    >
+                      {isLoading ? <Loader2 size={12} className="animate-spin" /> : <Clock size={12} />}
+                      Cancelar pedido
+                    </button>
                   ) : fs?.status === "pending" && !fs.isSender ? (
                     <button
                       onClick={() => acceptFriend(profile.id)}

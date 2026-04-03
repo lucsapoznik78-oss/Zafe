@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import AdminQueue from "@/components/admin/AdminQueue";
 import AdminResolve from "@/components/admin/AdminResolve";
 import AdminStats from "@/components/admin/AdminStats";
+import AdminActiveTopics from "@/components/admin/AdminActiveTopics";
 import OracleLog from "@/components/admin/OracleLog";
 import RelatorioFinanceiro from "@/components/admin/RelatorioFinanceiro";
 
@@ -17,7 +18,7 @@ export default async function AdminPage() {
 
   const adminSupabase = createAdminClient();
 
-  const [{ data: pending }, { data: toResolve }, { data: statsData }] = await Promise.all([
+  const [{ data: pending }, { data: toResolve }, { data: statsData }, { data: activeTopics }] = await Promise.all([
     supabase.from("topics").select("*, creator:profiles!creator_id(username, full_name)").eq("status", "pending").order("created_at"),
     // Apenas mercados sinalizados para revisão manual (contradição entre API e IA)
     supabase
@@ -28,6 +29,8 @@ export default async function AdminPage() {
       .order("created_at", { ascending: true }),
     // Use service role to bypass RLS and get all wallets
     adminSupabase.from("wallets").select("balance"),
+    // Mercados ativos para edição de prazo
+    adminSupabase.from("topics").select("id, title, category, closes_at").eq("status", "active").eq("is_private", false).order("closes_at"),
   ]);
 
   const totalBalance = (statsData ?? []).reduce((sum: number, w: { balance: number }) => sum + (w.balance ?? 0), 0);
@@ -45,6 +48,7 @@ export default async function AdminPage() {
       <AdminStats totalCommission={totalBalance} pendingCount={pending?.length ?? 0} toResolveCount={toResolve?.length ?? 0} />
       <AdminQueue topics={pending ?? []} />
       <AdminResolve topics={toResolve ?? []} />
+      <AdminActiveTopics topics={activeTopics ?? []} />
 
       <div>
         <h2 className="text-lg font-bold text-white mb-3">Resoluções Oracle</h2>

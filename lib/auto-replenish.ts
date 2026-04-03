@@ -69,9 +69,9 @@ export async function replenishMarkets(supabase: any) {
     }
 
     for (const tpl of templates) {
-      const closesAt = new Date(
-        Date.now() + tpl.duration_days * 24 * 60 * 60 * 1000
-      ).toISOString();
+      const closeDate = new Date(Date.now() + tpl.duration_days * 24 * 60 * 60 * 1000);
+      closeDate.setHours(23, 59, 59, 0);
+      const closesAt = closeDate.toISOString();
 
       // Criar o tópico diretamente como 'active' (criado pela plataforma)
       const { error } = await supabase.from("topics").insert({

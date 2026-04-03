@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { formatCurrency, applyCommission, commissionAmount } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import { Loader2, ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
 
 export default function DepositSection({ currentBalance }: { currentBalance: number }) {
@@ -13,8 +13,6 @@ export default function DepositSection({ currentBalance }: { currentBalance: num
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const amountNum = parseFloat(amount) || 0;
-  const netAmount = applyCommission(amountNum);
-  const commission = commissionAmount(amountNum);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -106,19 +104,9 @@ export default function DepositSection({ currentBalance }: { currentBalance: num
         </div>
 
         {amountNum > 0 && tab === "depositar" && (
-          <div className="bg-muted rounded-lg p-3 space-y-2 text-xs">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Você deposita</span>
-              <span className="text-white">{formatCurrency(amountNum)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Comissão Zafe (4%)</span>
-              <span className="text-nao">- {formatCurrency(commissionAmount(amountNum))}</span>
-            </div>
-            <div className="border-t border-border pt-2 flex justify-between font-semibold">
-              <span className="text-white">Entra na carteira</span>
-              <span className="text-primary">{formatCurrency(applyCommission(amountNum))}</span>
-            </div>
+          <div className="bg-muted rounded-lg p-3 text-xs flex justify-between">
+            <span className="text-muted-foreground">Entra na carteira</span>
+            <span className="text-primary font-semibold">{formatCurrency(amountNum)}</span>
           </div>
         )}
 

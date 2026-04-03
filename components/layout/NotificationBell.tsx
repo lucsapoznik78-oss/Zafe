@@ -13,7 +13,7 @@ interface Notification {
   body: string;
   read: boolean;
   created_at: string;
-  data?: { topic_id?: string };
+  data?: { topic_id?: string; side?: string; is_private?: boolean };
 }
 
 export default function NotificationBell() {
@@ -96,22 +96,30 @@ export default function NotificationBell() {
             {notifications.length === 0 ? (
               <p className="text-muted-foreground text-sm text-center py-8">Nenhuma notificação</p>
             ) : (
-              notifications.map((n) => (
-                <div
-                  key={n.id}
-                  className={`group px-4 py-3 border-b border-border last:border-0 hover:bg-white/5 transition-colors ${
-                    !n.read ? "bg-primary/5" : ""
-                  }`}
-                >
-                  {n.data?.topic_id ? (
-                    <Link href={`/topicos/${n.data.topic_id}`} onClick={() => setOpen(false)}>
+              notifications.map((n) => {
+                const isPrivate = n.type === "judge_invite" || n.data?.side != null || n.data?.is_private;
+                const href = n.data?.topic_id
+                  ? isPrivate
+                    ? `/apostas-privadas/${n.data.topic_id}`
+                    : `/topicos/${n.data.topic_id}`
+                  : null;
+                return (
+                  <div
+                    key={n.id}
+                    className={`group px-4 py-3 border-b border-border last:border-0 hover:bg-white/5 transition-colors ${
+                      !n.read ? "bg-primary/5" : ""
+                    }`}
+                  >
+                    {href ? (
+                      <Link href={href} onClick={() => setOpen(false)}>
+                        <NotifContent n={n} icons={ICONS} onMarkRead={markOneRead} />
+                      </Link>
+                    ) : (
                       <NotifContent n={n} icons={ICONS} onMarkRead={markOneRead} />
-                    </Link>
-                  ) : (
-                    <NotifContent n={n} icons={ICONS} onMarkRead={markOneRead} />
-                  )}
-                </div>
-              ))
+                    )}
+                  </div>
+                );
+              })
             )}
           </div>
         </div>

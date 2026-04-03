@@ -35,11 +35,17 @@ export default function CreateTopicForm() {
       return;
     }
 
+    // Se o usuário não especificou horário (00:00), expirar ao final do dia (23:59:59)
+    const closesDate = new Date(form.closes_at);
+    if (closesDate.getHours() === 0 && closesDate.getMinutes() === 0) {
+      closesDate.setHours(23, 59, 59, 0);
+    }
+
     setLoading(true);
     const res = await fetch("/api/criar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify({ ...form, closes_at: closesDate.toISOString() }),
     });
 
     const data = await res.json();

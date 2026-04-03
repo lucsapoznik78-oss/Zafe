@@ -1,5 +1,16 @@
 import Link from "next/link";
 import { timeUntil } from "@/lib/utils";
+
+function formatCloseDate(closesAt: string): string {
+  const d = new Date(closesAt);
+  const now = new Date();
+  if (d < now) return "Encerrado";
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const h = String(d.getHours()).padStart(2, "0");
+  const m = String(d.getMinutes()).padStart(2, "0");
+  return `${day}/${month} às ${h}:${m}`;
+}
 import { calcOdds, formatOdds } from "@/lib/odds";
 import { Clock } from "lucide-react";
 import type { TopicWithStats } from "@/types/database";
@@ -43,7 +54,7 @@ export default function TopicCard({ topic }: TopicCardProps) {
           </div>
           <div className="flex items-center gap-1 text-muted-foreground text-xs shrink-0">
             <Clock size={11} />
-            <span>{timeUntil(topic.closes_at)}</span>
+            <span>{formatCloseDate(topic.closes_at)}</span>
           </div>
         </div>
 

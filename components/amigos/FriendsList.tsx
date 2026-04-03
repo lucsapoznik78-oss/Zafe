@@ -23,7 +23,10 @@ export default function FriendsList({ sent, received, currentUserId }: Props) {
   const router = useRouter();
   const [betTarget, setBetTarget] = useState<{ id: string; name: string } | null>(null);
   const [removingId, setRemovingId] = useState<string | null>(null);
+  const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
   const [blockingId, setBlockingId] = useState<string | null>(null);
+  const [confirmBlockId, setConfirmBlockId] = useState<string | null>(null);
+  const [loadingId, setLoadingId] = useState<string | null>(null);
 
   const accepted = [
     ...sent.filter((f) => f.status === "accepted").map((f) => ({ ...f.addressee!, friendshipId: f.id })),
@@ -33,16 +36,30 @@ export default function FriendsList({ sent, received, currentUserId }: Props) {
   const pendingReceived = received.filter((f) => f.status === "pending");
 
   async function acceptFriend(friendshipId: string) {
+    setLoadingId(friendshipId);
     await fetch("/api/amigos/aceitar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ friendship_id: friendshipId }),
     });
+    setLoadingId(null);
+    router.refresh();
+  }
+
+  async function rejectFriendRequest(friendshipId: string) {
+    setLoadingId(friendshipId);
+    await fetch("/api/amigos/recusar-solicitar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ friendship_id: friendshipId }),
+    });
+    setLoadingId(null);
     router.refresh();
   }
 
   async function removeFriend(friendshipId: string) {
     setRemovingId(friendshipId);
+    setConfirmRemoveId(null);
     await fetch("/api/amigos/remover", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -54,6 +71,7 @@ export default function FriendsList({ sent, received, currentUserId }: Props) {
 
   async function blockUser(blockedId: string) {
     setBlockingId(blockedId);
+    setConfirmBlockId(null);
     await fetch("/api/amigos/bloquear", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -99,11 +117,16 @@ export default function FriendsList({ sent, received, currentUserId }: Props) {
                 <div className="flex gap-2">
                   <button
                     onClick={() => acceptFriend(f.id)}
-                    className="p-1.5 bg-sim/20 text-sim rounded-lg hover:bg-sim/30 transition-colors"
+                    disabled={loadingId === f.id}
+                    className="p-1.5 bg-sim/20 text-sim rounded-lg hover:bg-sim/30 transition-colors disabled:opacity-50"
                   >
                     <Check size={14} />
                   </button>
-                  <button className="p-1.5 bg-nao/20 text-nao rounded-lg hover:bg-nao/30 transition-colors">
+                  <button
+                    onClick={() => rejectFriendRequest(f.id)}
+                    disabled={loadingId === f.id}
+                    className="p-1.5 bg-nao/20 text-nao rounded-lg hover:bg-nao/30 transition-colors disabled:opacity-50"
+                  >
                     <X size={14} />
                   </button>
                 </div>
@@ -136,29 +159,65 @@ export default function FriendsList({ sent, received, currentUserId }: Props) {
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => setBetTarget({ id: friend.id, name: friend.full_name })}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
-                  >
-                    <Swords size={12} />
-                    Investir
-                  </button>
-                  <button
-                    onClick={() => removeFriend(friend.friendshipId)}
-                    disabled={removingId === friend.friendshipId}
-                    title="Desfazer amizade"
-                    className="p-1.5 text-muted-foreground rounded-lg hover:text-nao hover:bg-nao/10 transition-colors disabled:opacity-50"
-                  >
-                    <UserMinus size={14} />
-                  </button>
-                  <button
-                    onClick={() => blockUser(friend.id)}
-                    disabled={blockingId === friend.id}
-                    title="Bloquear usuário"
-                    className="p-1.5 text-muted-foreground rounded-lg hover:text-red-500 hover:bg-red-500/10 transition-colors disabled:opacity-50"
-                  >
-                    <ShieldOff size={14} />
-                  </button>
+                  {confirmRemoveId === friend.friendshipId ? (
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs text-muted-foreground">Remover?</span>
+                      <button
+                        onClick={() => removeFriend(friend.friendshipId)}
+                        disabled={removingId === friend.friendshipId}
+                        className="px-2 py-1 text-xs bg-nao/20 text-nao rounded-lg hover:bg-nao/30 transition-colors disabled:opacity-50"
+                      >
+                        Sim
+                      </button>
+                      <button
+                        onClick={() => setConfirmRemoveId(null)}
+                        className="px-2 py-1 text-xs bg-muted/30 text-muted-foreground rounded-lg hover:bg-muted/50 transition-colors"
+                      >
+                        Não
+                      </button>
+                    </div>
+                  ) : confirmBlockId === friend.id ? (
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs text-muted-foreground">Bloquear?</span>
+                      <button
+                        onClick={() => blockUser(friend.id)}
+                        disabled={blockingId === friend.id}
+                        className="px-2 py-1 text-xs bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                      >
+                        Sim
+                      </button>
+                      <button
+                        onClick={() => setConfirmBlockId(null)}
+                        className="px-2 py-1 text-xs bg-muted/30 text-muted-foreground rounded-lg hover:bg-muted/50 transition-colors"
+                      >
+                        Não
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => setBetTarget({ id: friend.id, name: friend.full_name })}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
+                      >
+                        <Swords size={12} />
+                        Investir
+                      </button>
+                      <button
+                        onClick={() => { setConfirmRemoveId(friend.friendshipId); setConfirmBlockId(null); }}
+                        title="Desfazer amizade"
+                        className="p-1.5 text-muted-foreground rounded-lg hover:text-nao hover:bg-nao/10 transition-colors"
+                      >
+                        <UserMinus size={14} />
+                      </button>
+                      <button
+                        onClick={() => { setConfirmBlockId(friend.id); setConfirmRemoveId(null); }}
+                        title="Bloquear usuário"
+                        className="p-1.5 text-muted-foreground rounded-lg hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                      >
+                        <ShieldOff size={14} />
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ))}
