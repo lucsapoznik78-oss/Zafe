@@ -206,27 +206,21 @@ async function executeTrade(admin: any, p: {
   }
 
   // ── 5. Criar aposta para o comprador ────────────────────────────
-  const { data: stats } = await admin
-    .from("v_topic_stats")
-    .select("volume_sim, volume_nao")
-    .eq("topic_id", p.topicId)
-    .single();
-
-  const volSim = stats?.volume_sim ?? 0;
-  const volNao = stats?.volume_nao ?? 0;
-  const currentOdds = impliedOdds(volSim, volNao, p.side);
+  // amount = face value (pool share adquirido), NÃO o valor pago (tradeValue)
+  // locked_odds = 1/price (odds implícitas do preço negociado)
+  const entryOdds = parseFloat((1 / p.price).toFixed(4));
 
   await admin.from("bets").insert({
     topic_id:         p.topicId,
     user_id:          p.buyerId,
     side:             p.side,
-    amount:           tradeValue,
-    gross_amount:     tradeValue,
-    locked_odds:      parseFloat(currentOdds.toFixed(2)),
+    amount:           p.quantity,
+    gross_amount:     p.quantity,
+    locked_odds:      entryOdds,
     status:           "matched",
-    matched_amount:   tradeValue,
+    matched_amount:   p.quantity,
     unmatched_amount: 0,
-    potential_payout: parseFloat((tradeValue * currentOdds).toFixed(2)),
+    potential_payout: parseFloat((p.quantity * entryOdds).toFixed(2)),
     is_private:       false,
   });
 }
