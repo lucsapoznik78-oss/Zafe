@@ -9,9 +9,11 @@ import CountdownTimer from "@/components/topicos/CountdownTimer";
 import { calcOdds, formatOdds } from "@/lib/odds";
 import { formatCurrency } from "@/lib/utils";
 import MercadoSecundario from "@/components/topicos/MercadoSecundario";
+import SocialActivity from "@/components/topicos/SocialActivity";
 
 interface PageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ side?: string }>;
 }
 
 const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
@@ -22,8 +24,10 @@ const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
   pending:   { label: "Pendente",  cls: "bg-yellow-500/20 text-yellow-400" },
 };
 
-export default async function TopicoDetailPage({ params }: PageProps) {
+export default async function TopicoDetailPage({ params, searchParams }: PageProps) {
   const { id } = await params;
+  const { side: sideParam } = await searchParams;
+  const initialSide = sideParam === "sim" || sideParam === "nao" ? sideParam : undefined;
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -197,6 +201,9 @@ export default async function TopicoDetailPage({ params }: PageProps) {
             )}
           </div>
 
+          {/* Atividade social: amigos + comentários em destaque */}
+          <SocialActivity topicId={id} currentUserId={user?.id} />
+
           {/* Comentários */}
           <CommentSection topicId={id} />
         </div>
@@ -210,6 +217,7 @@ export default async function TopicoDetailPage({ params }: PageProps) {
             totalNao={totalNao}
             isClosed={isClosed}
             userBalance={userBalance}
+            initialSide={initialSide}
           />
 
           <MercadoSecundario

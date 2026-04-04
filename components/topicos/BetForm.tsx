@@ -14,11 +14,12 @@ interface BetFormProps {
   totalNao: number;
   isClosed: boolean;
   userBalance?: number;
+  initialSide?: "sim" | "nao";
 }
 
-export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed, userBalance = 0 }: BetFormProps) {
+export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed, userBalance = 0, initialSide }: BetFormProps) {
   const router = useRouter();
-  const [side, setSide] = useState<BetSide>("sim");
+  const [side, setSide] = useState<BetSide>(initialSide ?? "sim");
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");

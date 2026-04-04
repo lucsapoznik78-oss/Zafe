@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { formatCurrency } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Trophy, TrendingDown, Percent, DollarSign, User, BookOpen, LayoutList, ShieldCheck, ShieldAlert } from "lucide-react";
+import { Trophy, TrendingDown, Percent, TrendingUp, Flame, Star, User, BookOpen, LayoutList, ShieldCheck, ShieldAlert } from "lucide-react";
 import EditProfileForm from "@/components/perfil/EditProfileForm";
 import CpfForm from "@/components/kyc/CpfForm";
 import ReferralSection from "@/components/perfil/ReferralSection";
@@ -34,12 +34,41 @@ interface Props {
 export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl }: Props) {
   const [tab, setTab] = useState<"conta" | "eventos" | "como-funciona">("conta");
 
-  const totalBets  = bets.length;
   const betsWon    = bets.filter((b) => b.status === "won").length;
   const betsLost   = bets.filter((b) => b.status === "lost").length;
-  const totalVolume = bets.reduce((s, b) => s + b.amount, 0);
-  const winRate    = totalBets > 0 ? (betsWon / Math.max(betsWon + betsLost, 1)) * 100 : 0;
+  const resolved   = bets.filter((b) => b.status === "won" || b.status === "lost");
+  const winRate    = resolved.length > 0 ? (betsWon / resolved.length) * 100 : 0;
   const initials   = profile?.full_name?.split(" ").map((n: string) => n[0]).slice(0, 2).join("").toUpperCase() ?? "?";
+
+  const totalPnl = resolved.reduce((sum: number, b: any) => {
+    if (b.status === "won") return sum + ((b.potential_payout ?? 0) - b.amount);
+    return sum - b.amount;
+  }, 0);
+
+  const sortedResolved = [...resolved].sort(
+    (a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+  let streak = 0;
+  for (const b of sortedResolved) {
+    if (b.status === "won") streak++;
+    else break;
+  }
+
+  const CATEGORY_LABELS: Record<string, string> = {
+    politica: "Política", economia: "Economia", esportes: "Esportes",
+    tecnologia: "Tecnologia", entretenimento: "Entretenimento", internacional: "Internacional", outro: "Outro",
+  };
+  const catStats: Record<string, { won: number; total: number }> = {};
+  for (const b of resolved as any[]) {
+    const cat = b.topic?.category ?? "outro";
+    if (!catStats[cat]) catStats[cat] = { won: 0, total: 0 };
+    catStats[cat].total++;
+    if (b.status === "won") catStats[cat].won++;
+  }
+  let bestCat: string | null = null, bestRate = 0;
+  for (const [cat, s] of Object.entries(catStats)) {
+    if (s.total >= 2 && s.won / s.total > bestRate) { bestRate = s.won / s.total; bestCat = cat; }
+  }
   const totalReferrals    = referrals.length;
   const completedReferrals = referrals.filter((r) => r.status === "completed").length;
 
@@ -64,17 +93,34 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl }:
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {[
-          { icon: <Trophy size={16} />,      label: "Ganhas",       value: betsWon,                          color: "text-sim" },
-          { icon: <TrendingDown size={16} />, label: "Perdidas",     value: betsLost,                         color: "text-nao" },
-          { icon: <Percent size={16} />,      label: "Taxa de acerto", value: `${winRate.toFixed(1)}%`,       color: "text-primary" },
-          { icon: <DollarSign size={16} />,   label: "Volume total", value: formatCurrency(totalVolume),      color: "text-white" },
+          { icon: <Trophy size={16} />,      label: "Ganhas",         value: betsWon,                     color: "text-sim" },
+          { icon: <TrendingDown size={16} />, label: "Perdidas",       value: betsLost,                    color: "text-nao" },
+          { icon: <Percent size={16} />,      label: "Taxa de acerto", value: `${winRate.toFixed(1)}%`,    color: "text-primary" },
+          {
+            icon: totalPnl >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />,
+            label: "Lucro/Prejuízo",
+            value: `${totalPnl >= 0 ? "+" : ""}${formatCurrency(totalPnl)}`,
+            color: totalPnl >= 0 ? "text-sim" : "text-nao",
+          },
+          {
+            icon: <Flame size={16} />,
+            label: "Sequência atual",
+            value: streak > 0 ? `${streak}🔥` : "—",
+            color: streak >= 3 ? "text-orange-400" : "text-white",
+          },
+          {
+            icon: <Star size={16} />,
+            label: "Melhor categoria",
+            value: bestCat ? `${CATEGORY_LABELS[bestCat] ?? bestCat} (${(bestRate * 100).toFixed(0)}%)` : "—",
+            color: "text-yellow-400",
+          },
         ].map((s) => (
           <div key={s.label} className="bg-card border border-border rounded-xl p-3 text-center">
             <div className={`flex justify-center mb-1 ${s.color}`}>{s.icon}</div>
-            <p className={`text-lg font-bold ${s.color}`}>{s.value}</p>
-            <p className="text-xs text-muted-foreground">{s.label}</p>
+            <p className={`text-base font-bold ${s.color} leading-tight`}>{s.value}</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">{s.label}</p>
           </div>
         ))}
       </div>
