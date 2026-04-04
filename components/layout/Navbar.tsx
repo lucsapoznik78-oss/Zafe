@@ -78,7 +78,6 @@ export default function Navbar() {
             { href: "/ranking", label: "Ranking" },
             { href: "/amigos", label: "Amigos" },
             { href: "/apostas-privadas", label: "Privadas" },
-            { href: "/criar", label: "Criar" },
           ].map((item) => (
             <Link
               key={item.href}

@@ -4,7 +4,6 @@ import TopicCard from "@/components/topicos/TopicCard";
 import TopicFilters from "@/components/topicos/TopicFilters";
 import SearchBar from "@/components/topicos/SearchBar";
 import Link from "next/link";
-import { Plus } from "lucide-react";
 import LegalFooter from "@/components/layout/LegalFooter";
 import type { TopicWithStats } from "@/types/database";
 import { Suspense } from "react";
@@ -107,18 +106,9 @@ export default async function TopicosPage({ searchParams }: PageProps) {
 
   return (
     <div className="py-6 space-y-5">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Mercados</h1>
-          <p className="text-muted-foreground text-sm mt-0.5">Invista em eventos reais com outros usuários</p>
-        </div>
-        <Link
-          href="/criar"
-          className="hidden md:flex items-center gap-1.5 px-4 py-2 bg-primary text-black font-semibold rounded-lg text-sm hover:bg-primary/90 transition-colors"
-        >
-          <Plus size={16} />
-          Criar Investimento
-        </Link>
+      <div>
+        <h1 className="text-2xl font-bold text-white">Mercados</h1>
+        <p className="text-muted-foreground text-sm mt-0.5">Invista em eventos reais com outros usuários</p>
       </div>
 
       {/* Tabs Abertos / Encerrados */}
@@ -154,13 +144,6 @@ export default async function TopicosPage({ searchParams }: PageProps) {
       </Suspense>
 
       <LegalFooter />
-
-      <Link
-        href="/criar"
-        className="fixed bottom-20 right-4 md:hidden w-12 h-12 bg-primary text-black rounded-full flex items-center justify-center shadow-lg shadow-primary/20 z-40"
-      >
-        <Plus size={22} />
-      </Link>
     </div>
   );
 }
