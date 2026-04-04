@@ -69,10 +69,9 @@ export async function POST(request: Request) {
     .eq("topic_id", topic_id)
     .single();
 
-  const { simOdds, naoOdds } = calcOdds(
-    (stats as any)?.volume_sim ?? 0,
-    (stats as any)?.volume_nao ?? 0
-  );
+  const volSim = ((stats as any)?.volume_sim ?? 0) + (side === "sim" ? amount : 0);
+  const volNao = ((stats as any)?.volume_nao ?? 0) + (side === "nao" ? amount : 0);
+  const { simOdds, naoOdds } = calcOdds(volSim, volNao);
   const estimatedOdds = side === "sim" ? simOdds : naoOdds;
 
   // Debitar saldo (optimistic lock)
