@@ -35,11 +35,11 @@ async function buildSideBook(admin: any, topicId: string, side: "sim" | "nao") {
         .order("price", { ascending: true })
         .limit(20),
 
-      // Último trade
+      // Histórico de trades (último + sparkline)
       admin.from("trades").select("price, quantity, created_at")
         .eq("topic_id", topicId).eq("side", side)
         .order("created_at", { ascending: false })
-        .limit(1),
+        .limit(50),
 
       // Volume 24h
       admin.from("trades").select("quantity")
@@ -70,6 +70,10 @@ async function buildSideBook(admin: any, topicId: string, side: "sim" | "nao") {
     : null;
   const volume24h  = (vol24h ?? []).reduce((s: number, r: any) => s + parseFloat(r.quantity), 0);
   const lastTrade  = lastTrades?.[0] ?? null;
+  const tradeHistory = (lastTrades ?? [])
+    .slice()
+    .reverse()
+    .map((t: any) => ({ price: parseFloat(t.price), time: t.created_at }));
 
   return {
     bids:       bidLevels.sort((a, b) => b.price - a.price),
@@ -81,6 +85,7 @@ async function buildSideBook(admin: any, topicId: string, side: "sim" | "nao") {
     last_trade_at: lastTrade?.created_at ?? null,
     volume_24h:    parseFloat(volume24h.toFixed(2)),
     liquidity:     getLiquidity(spread, volume24h),
+    trade_history: tradeHistory,
   };
 }
 

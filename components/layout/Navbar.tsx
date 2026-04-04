@@ -118,7 +118,7 @@ export default function Navbar() {
                 <span className="text-sm">Meu Perfil</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => window.location.href = "/meus-topicos"}>
-                <span className="text-sm">Meus Tópicos</span>
+                <span className="text-sm">Minhas Posições</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => window.location.href = "/depositar"}>
                 <span className="text-sm">Carteira</span>

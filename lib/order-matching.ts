@@ -144,7 +144,24 @@ async function executeTrade(admin: any, p: {
   const commission  = parseFloat((tradeValue * COMMISSION_RATE).toFixed(2));
   const netSeller   = parseFloat((tradeValue - commission).toFixed(2));
 
-  // ── 1. Gravar trade ──────────────────────────────────────────────
+  // ── 1. Gravar trade + notificar partes ───────────────────────────
+  await Promise.all([
+  admin.from("notifications").insert({
+    user_id: p.buyerId,
+    type:    "trade_executed",
+    title:   "Ordem executada!",
+    body:    `Sua compra ${p.side.toUpperCase()} foi executada: ${p.quantity.toFixed(0)} Z$ a ${(p.price * 100).toFixed(1)}¢`,
+    data:    { topic_id: p.topicId },
+  }),
+  admin.from("notifications").insert({
+    user_id: p.sellerId,
+    type:    "trade_executed",
+    title:   "Ordem executada!",
+    body:    `Sua venda ${p.side.toUpperCase()} foi executada: ${p.quantity.toFixed(0)} Z$ a ${(p.price * 100).toFixed(1)}¢`,
+    data:    { topic_id: p.topicId },
+  }),
+  ]);
+
   await admin.from("trades").insert({
     topic_id:      p.topicId,
     buy_order_id:  p.buyOrderId,

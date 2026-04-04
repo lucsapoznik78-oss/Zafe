@@ -16,6 +16,8 @@ interface OrderLevel {
   count: number;
 }
 
+interface TradePoint { price: number; time: string }
+
 interface SideBook {
   bids: OrderLevel[];
   asks: OrderLevel[];
@@ -26,6 +28,7 @@ interface SideBook {
   last_trade_at: string | null;
   volume_24h: number;
   liquidity: "alta" | "media" | "baixa";
+  trade_history: TradePoint[];
 }
 
 interface BetRef { id: string; amount: number }
@@ -74,8 +77,27 @@ const LIQUIDITY_LABEL = {
   baixa: { text: "Baixa",  cls: "text-muted-foreground", dot: "bg-muted-foreground" },
 };
 
-function pct(p: number) { return `${(p * 100).toFixed(1)}¢`; }
+function pct(p: number)  { return `${(p * 100).toFixed(1)}%`; }
 function qty(q: number)  { return `Z$ ${q.toFixed(2)}`; }
+function odds(p: number) { return p > 0 ? `${(1 / p).toFixed(2)}x` : "—"; }
+
+function Sparkline({ data, color }: { data: TradePoint[]; color: string }) {
+  if (data.length < 2) return null;
+  const W = 200, H = 40, PAD = 2;
+  const prices = data.map(d => d.price);
+  const min = Math.min(...prices), max = Math.max(...prices);
+  const range = max - min || 0.01;
+  const pts = data.map((d, i) => {
+    const x = PAD + (i / (data.length - 1)) * (W - PAD * 2);
+    const y = PAD + ((1 - (d.price - min) / range)) * (H - PAD * 2);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(" ");
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-10" preserveAspectRatio="none">
+      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -125,10 +147,16 @@ function PositionCard({
       <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px]">
         <div className="text-muted-foreground">Investido</div>
         <div className="text-right text-white">{qty(pos.total_amount)}</div>
-        <div className="text-muted-foreground">Preço médio</div>
-        <div className="text-right text-white">{pct(pos.avg_entry_price)}</div>
-        <div className="text-muted-foreground">Preço atual</div>
-        <div className="text-right text-white">{pct(pos.current_price)}</div>
+        <div className="text-muted-foreground">Entrada</div>
+        <div className="text-right text-white">
+          {pct(pos.avg_entry_price)}
+          <span className="text-muted-foreground ml-1">({odds(pos.avg_entry_price)})</span>
+        </div>
+        <div className="text-muted-foreground">Atual</div>
+        <div className="text-right text-white">
+          {pct(pos.current_price)}
+          <span className="text-muted-foreground ml-1">({odds(pos.current_price)})</span>
+        </div>
         <div className="text-muted-foreground">Valor atual</div>
         <div className={`text-right font-semibold ${positive ? "text-sim" : "text-nao"}`}>{qty(pos.current_value)}</div>
       </div>
@@ -331,6 +359,21 @@ export default function MercadoSecundario({ topicId, isActive, userBets = [] }: 
         <p className="text-[10px] text-muted-foreground -mt-2">
           Vol 24h: {qty(book!.volume_24h)}
         </p>
+      )}
+
+      {/* Sparkline histórico de trades */}
+      {book!.trade_history.length >= 2 && (
+        <div className="space-y-0.5">
+          <p className="text-[10px] text-muted-foreground">Histórico de preços</p>
+          <Sparkline
+            data={book!.trade_history}
+            color={side === "sim" ? "#4ade80" : "#f87171"}
+          />
+          <div className="flex justify-between text-[9px] text-muted-foreground font-mono">
+            <span>{pct(Math.min(...book!.trade_history.map(d => d.price)))}</span>
+            <span>{pct(Math.max(...book!.trade_history.map(d => d.price)))}</span>
+          </div>
+        </div>
       )}
 
       {/* Order depth */}
