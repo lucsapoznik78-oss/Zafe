@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Loader2, Send } from "lucide-react";
+import Link from "next/link";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { Comment } from "@/types/database";
 
@@ -83,7 +84,7 @@ export default function CommentSection({ topicId }: { topicId: string }) {
               </Avatar>
               <div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-xs font-semibold text-white">{name}</span>
+                  <Link href={`/u/${comment.profiles?.username ?? ""}`} className="text-xs font-semibold text-white hover:text-primary transition-colors">{name}</Link>
                   <span className="text-[10px] text-muted-foreground">
                     {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true, locale: ptBR })}
                   </span>

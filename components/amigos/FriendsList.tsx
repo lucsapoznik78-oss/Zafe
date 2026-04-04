@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Check, X, Swords, Users, UserMinus, ShieldOff } from "lucide-react";
+import Link from "next/link";
 import PrivateBetModal from "./PrivateBetModal";
 
 interface FriendData {
@@ -110,7 +111,7 @@ export default function FriendsList({ sent, received, currentUserId }: Props) {
                     <AvatarFallback className="bg-primary/20 text-primary text-xs">{getInitials(person.full_name)}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="text-sm font-medium text-white">{person.full_name}</p>
+                    <Link href={`/u/${person.username}`} className="text-sm font-medium text-white hover:text-primary transition-colors">{person.full_name}</Link>
                     <p className="text-xs text-muted-foreground">@{person.username}</p>
                   </div>
                 </div>
@@ -154,7 +155,7 @@ export default function FriendsList({ sent, received, currentUserId }: Props) {
                     </Avatar>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-white">{friend.full_name}</p>
+                    <Link href={`/u/${friend.username}`} className="text-sm font-medium text-white hover:text-primary transition-colors">{friend.full_name}</Link>
                     <p className="text-xs text-muted-foreground">@{friend.username}</p>
                   </div>
                 </div>
