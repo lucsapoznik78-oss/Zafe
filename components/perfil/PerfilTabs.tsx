@@ -202,7 +202,7 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl }:
       {tab === "eventos" && (
         <div className="bg-card border border-border rounded-xl p-4">
           <h3 className="text-sm font-semibold text-white mb-4">
-            Eventos participados <span className="text-muted-foreground font-normal">({totalBets})</span>
+            Eventos participados <span className="text-muted-foreground font-normal">({bets.length})</span>
           </h3>
           {!bets.length ? (
             <p className="text-muted-foreground text-sm text-center py-8">Nenhum evento ainda</p>
