@@ -18,22 +18,56 @@ export default async function AdminPage() {
 
   const adminSupabase = createAdminClient();
 
-  const [{ data: pending }, { data: toResolve }, { data: statsData }, { data: activeTopics }] = await Promise.all([
+  const [
+    { data: pending },
+    { data: toResolve },
+    { data: allResolving },
+    { data: wallets },
+    { data: activeBets },
+    { data: openOrders },
+    { data: commissionTxs },
+    { data: activeTopics },
+  ] = await Promise.all([
     supabase.from("topics").select("*, creator:profiles!creator_id(username, full_name)").eq("status", "pending").order("created_at"),
-    // Apenas mercados sinalizados para revisão manual (contradição entre API e IA)
     supabase
       .from("topics")
       .select(`id, title, category, resolucoes!inner(id, resultado_final, oracle_usado, resolvido_por, created_at)`)
       .eq("status", "resolving")
       .eq("resolucoes.resultado_final", "SINALIZADO_REVISAO")
       .order("created_at", { ascending: true }),
-    // Use service role to bypass RLS and get all wallets
+    // TODOS os resolving (para admin resolver manualmente se oracle falhar)
+    adminSupabase
+      .from("topics")
+      .select("id, title, category, closes_at, oracle_retry_count")
+      .eq("status", "resolving")
+      .eq("is_private", false)
+      .order("closes_at"),
+    // Saldo disponível em carteiras
     adminSupabase.from("wallets").select("balance"),
+    // Dinheiro bloqueado em apostas ativas
+    adminSupabase.from("bets").select("amount").in("status", ["pending", "matched", "partial"]),
+    // Dinheiro bloqueado em ordens de compra abertas (escrow)
+    adminSupabase.from("orders").select("escrow_amount").eq("status", "open").eq("side", "buy"),
+    // Comissões acumuladas (receita da plataforma)
+    adminSupabase.from("transactions").select("net_amount").eq("type", "commission"),
     // Mercados ativos para edição de prazo
     adminSupabase.from("topics").select("id, title, category, closes_at").eq("status", "active").eq("is_private", false).order("closes_at"),
   ]);
 
-  const totalBalance = (statsData ?? []).reduce((sum: number, w: { balance: number }) => sum + (w.balance ?? 0), 0);
+  const walletBalance  = (wallets ?? []).reduce((s, w: { balance: number }) => s + (w.balance ?? 0), 0);
+  const betsLocked     = (activeBets ?? []).reduce((s, b: { amount: number }) => s + (b.amount ?? 0), 0);
+  const ordersEscrow   = (openOrders ?? []).reduce((s, o: { escrow_amount: number }) => s + (o.escrow_amount ?? 0), 0);
+  const commission     = (commissionTxs ?? []).reduce((s, t: { net_amount: number }) => s + (t.net_amount ?? 0), 0);
+  // Passivo total = tudo que a plataforma deve aos usuários (carteiras + apostas em andamento + ordens)
+  const passiveTotal   = walletBalance + betsLocked + ordersEscrow;
+
+  // Deduplicate active topics by title (keep first/earliest closes_at)
+  const seenTitles = new Set<string>();
+  const uniqueActiveTopics = (activeTopics ?? []).filter((t) => {
+    if (seenTitles.has(t.title)) return false;
+    seenTitles.add(t.title);
+    return true;
+  });
 
   return (
     <div className="py-6 space-y-6 max-w-4xl mx-auto">
@@ -45,10 +79,17 @@ export default async function AdminPage() {
         <span className="ml-auto px-2 py-1 bg-primary/20 text-primary text-xs font-bold rounded">ADMIN</span>
       </div>
 
-      <AdminStats totalCommission={totalBalance} pendingCount={pending?.length ?? 0} toResolveCount={toResolve?.length ?? 0} />
+      <AdminStats
+        passiveTotal={passiveTotal}
+        walletBalance={walletBalance}
+        betsLocked={betsLocked}
+        commission={commission}
+        pendingCount={pending?.length ?? 0}
+        toResolveCount={toResolve?.length ?? 0}
+      />
       <AdminQueue topics={pending ?? []} />
-      <AdminResolve topics={toResolve ?? []} />
-      <AdminActiveTopics topics={activeTopics ?? []} />
+      <AdminResolve topics={toResolve ?? []} allResolving={allResolving ?? []} />
+      <AdminActiveTopics topics={uniqueActiveTopics} />
 
       <div>
         <h2 className="text-lg font-bold text-white mb-3">Resoluções Oracle</h2>

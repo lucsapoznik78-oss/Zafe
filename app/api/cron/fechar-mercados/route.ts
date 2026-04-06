@@ -39,6 +39,15 @@ export async function POST(request: Request) {
     }).eq("id", t.id);
   }
 
+  // Também reseta o retry de topics que estão presos em resolving (retry no futuro)
+  // Garante que ao clicar o botão, todos os mercados pendentes sejam reprocessados agora
+  await supabase
+    .from("topics")
+    .update({ oracle_next_retry_at: null })
+    .eq("status", "resolving")
+    .eq("is_private", false)
+    .not("oracle_next_retry_at", "is", null);
+
   // Notificar apostadores de mercados que fecham em ~2 horas
   const in2h = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
   const in1h50 = new Date(Date.now() + 110 * 60 * 1000).toISOString();

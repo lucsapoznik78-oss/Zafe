@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -18,9 +18,10 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 export default async function PublicProfilePage({ params }: PageProps) {
   const { username } = await params;
-  const supabase = await createClient();
+  // Use admin client to bypass RLS — bets/profiles are private by default
+  const adminSupabase = createAdminClient();
 
-  const { data: profile } = await supabase
+  const { data: profile } = await adminSupabase
     .from("profiles")
     .select("id, full_name, username, created_at")
     .eq("username", username)
@@ -28,7 +29,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
 
   if (!profile) notFound();
 
-  const { data: bets } = await supabase
+  const { data: bets } = await adminSupabase
     .from("bets")
     .select("amount, potential_payout, status, side, created_at, topic:topics(id, title, category, status)")
     .eq("user_id", profile.id)

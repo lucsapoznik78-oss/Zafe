@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Search, UserPlus, Clock, Check, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface ProfileRow {
   id: string;
@@ -143,11 +144,13 @@ export default function FriendSearch({
             return (
               <div key={profile.id} className="flex items-center justify-between py-2 px-1 rounded-lg hover:bg-white/5 transition-colors">
                 <div className="flex items-center gap-2.5">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-primary/20 text-primary text-xs">{initials}</AvatarFallback>
-                  </Avatar>
+                  <Link href={`/u/${profile.username}`} className="shrink-0">
+                    <Avatar className="h-8 w-8 hover:ring-2 hover:ring-primary/50 transition-all">
+                      <AvatarFallback className="bg-primary/20 text-primary text-xs">{initials}</AvatarFallback>
+                    </Avatar>
+                  </Link>
                   <div>
-                    <p className="text-sm font-medium text-white">{profile.full_name}</p>
+                    <Link href={`/u/${profile.username}`} className="text-sm font-medium text-white hover:text-primary transition-colors">{profile.full_name}</Link>
                     <p className="text-xs text-muted-foreground">@{profile.username}</p>
                   </div>
                 </div>

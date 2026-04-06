@@ -1,6 +1,31 @@
 export const dynamic = "force-dynamic";
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const supabase = await createClient();
+  const { data: topic } = await supabase.from("topics").select("title, description, category").eq("id", id).single();
+  if (!topic) return { title: "Mercado não encontrado" };
+  const desc = topic.description
+    ? topic.description.slice(0, 160)
+    : `Aposte no resultado deste evento de ${topic.category} no Zafe.`;
+  return {
+    title: topic.title,
+    description: desc,
+    openGraph: {
+      title: `${topic.title} — Zafe`,
+      description: desc,
+      type: "website",
+    },
+    twitter: {
+      card: "summary",
+      title: `${topic.title} — Zafe`,
+      description: desc,
+    },
+  };
+}
 import CategoryBadge from "@/components/topicos/CategoryBadge";
 import ProbabilityChart from "@/components/topicos/ProbabilityChart";
 import BetForm from "@/components/topicos/BetForm";

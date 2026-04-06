@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil, Check, X, Loader2 } from "lucide-react";
+import { Pencil, Check, X, Loader2, Trash2 } from "lucide-react";
 import CategoryBadge from "@/components/topicos/CategoryBadge";
+import { useRouter } from "next/navigation";
 
 interface Topic {
   id: string;
@@ -23,10 +24,23 @@ function toLocalInput(iso: string) {
 }
 
 export default function AdminActiveTopics({ topics }: { topics: Topic[] }) {
+  const router = useRouter();
   const [editing, setEditing] = useState<string | null>(null);
   const [value, setValue] = useState("");
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState<Record<string, string>>({});
+  const [cleaning, setCleaning] = useState(false);
+  const [cleanResult, setCleanResult] = useState("");
+
+  async function limparDuplicados() {
+    setCleaning(true);
+    setCleanResult("");
+    const res = await fetch("/api/admin/limpar-duplicados", { method: "POST" });
+    const data = await res.json();
+    setCleanResult(res.ok ? `✅ ${data.removed} duplicado(s) removido(s)` : `❌ ${data.error}`);
+    setCleaning(false);
+    router.refresh();
+  }
 
   async function save(topicId: string) {
     if (!value) return;
@@ -49,10 +63,23 @@ export default function AdminActiveTopics({ topics }: { topics: Topic[] }) {
 
   return (
     <div className="bg-card border border-border rounded-xl p-4">
-      <h3 className="text-sm font-semibold text-white mb-4">
-        Mercados Ativos — Editar Prazo
-        <span className="ml-2 px-1.5 py-0.5 bg-primary/20 text-primary rounded text-xs">{topics.length}</span>
-      </h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-sm font-semibold text-white">
+          Mercados Ativos — Editar Prazo
+          <span className="ml-2 px-1.5 py-0.5 bg-primary/20 text-primary rounded text-xs">{topics.length}</span>
+        </h3>
+        <div className="flex items-center gap-2">
+          {cleanResult && <span className="text-xs text-primary">{cleanResult}</span>}
+          <button
+            onClick={limparDuplicados}
+            disabled={cleaning}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-nao/10 text-nao rounded-lg hover:bg-nao/20 transition-colors disabled:opacity-50"
+          >
+            {cleaning ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+            Limpar duplicados
+          </button>
+        </div>
+      </div>
       <div className="space-y-2">
         {topics.map((topic) => {
           const closesAt = saved[topic.id] ?? topic.closes_at;

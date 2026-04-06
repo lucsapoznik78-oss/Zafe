@@ -107,9 +107,11 @@ export default function FriendsList({ sent, received, currentUserId }: Props) {
             return (
               <div key={f.id} className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-primary/20 text-primary text-xs">{getInitials(person.full_name)}</AvatarFallback>
-                  </Avatar>
+                  <Link href={`/u/${person.username}`} className="shrink-0">
+                    <Avatar className="h-8 w-8 hover:ring-2 hover:ring-primary/50 transition-all">
+                      <AvatarFallback className="bg-primary/20 text-primary text-xs">{getInitials(person.full_name)}</AvatarFallback>
+                    </Avatar>
+                  </Link>
                   <div>
                     <Link href={`/u/${person.username}`} className="text-sm font-medium text-white hover:text-primary transition-colors">{person.full_name}</Link>
                     <p className="text-xs text-muted-foreground">@{person.username}</p>
@@ -149,11 +151,11 @@ export default function FriendsList({ sent, received, currentUserId }: Props) {
             {accepted.map((friend) => (
               <div key={friend.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                 <div className="flex items-center gap-2.5">
-                  <div className="relative">
-                    <Avatar className="h-9 w-9">
+                  <Link href={`/u/${friend.username}`} className="shrink-0">
+                    <Avatar className="h-9 w-9 hover:ring-2 hover:ring-primary/50 transition-all">
                       <AvatarFallback className="bg-primary/20 text-primary text-xs">{getInitials(friend.full_name)}</AvatarFallback>
                     </Avatar>
-                  </div>
+                  </Link>
                   <div>
                     <Link href={`/u/${friend.username}`} className="text-sm font-medium text-white hover:text-primary transition-colors">{friend.full_name}</Link>
                     <p className="text-xs text-muted-foreground">@{friend.username}</p>

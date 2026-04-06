@@ -29,7 +29,9 @@ async function TopicList({
     .eq("is_private", false);
 
   if (isEncerrados) {
-    query = query.in("status", ["resolved", "cancelled"]);
+    // Apenas resolvidos dos últimos 7 dias (sem cancelados)
+    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    query = query.eq("status", "resolved").gte("resolved_at", oneWeekAgo);
   } else {
     query = query.eq("status", "active").gte("closes_at", new Date().toISOString());
   }

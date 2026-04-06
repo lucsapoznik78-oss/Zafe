@@ -77,11 +77,13 @@ export default function CommentSection({ topicId }: { topicId: string }) {
           const initials = name.split(" ").map((n: string) => n[0]).slice(0, 2).join("").toUpperCase();
           return (
             <div key={comment.id} className="flex gap-2.5">
-              <Avatar className="h-7 w-7 shrink-0">
-                <AvatarFallback className="bg-primary/20 text-primary text-[10px] font-semibold">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
+              <Link href={`/u/${comment.profiles?.username ?? ""}`} className="shrink-0">
+                <Avatar className="h-7 w-7 hover:ring-2 hover:ring-primary/50 transition-all">
+                  <AvatarFallback className="bg-primary/20 text-primary text-[10px] font-semibold">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+              </Link>
               <div>
                 <div className="flex items-baseline gap-2">
                   <Link href={`/u/${comment.profiles?.username ?? ""}`} className="text-xs font-semibold text-white hover:text-primary transition-colors">{name}</Link>
