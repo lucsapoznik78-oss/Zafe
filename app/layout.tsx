@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   description: "Aposte em eventos políticos, esportivos e econômicos com outros usuários. O primeiro prediction market brasileiro.",
   keywords: ["prediction market", "mercado de previsão", "apostas", "brasil", "política", "esportes", "economia"],
   authors: [{ name: "Zafe" }],
+  verification: { google: "ea75690350d835b5" },
   robots: { index: true, follow: true },
   openGraph: {
     type: "website",
