@@ -20,6 +20,8 @@ export default function AdminStats({ passiveTotal, walletBalance, betsLocked, co
   const [cronResult, setCronResult] = useState("");
   const [directLoading, setDirectLoading] = useState(false);
   const [directResult, setDirectResult] = useState("");
+  const [bonusLoading, setBonusLoading] = useState(false);
+  const [bonusResult, setBonusResult] = useState("");
 
   // Auto-refresh a cada 30s
   useEffect(() => {
@@ -120,6 +122,31 @@ export default function AdminStats({ passiveTotal, walletBalance, betsLocked, co
         >
           <Zap size={14} className={directLoading ? "animate-pulse" : ""} />
           {directLoading ? "Resolvendo..." : "Resolver agora"}
+        </button>
+      </div>
+
+      {/* Bônus semanal */}
+      <div className="bg-card border border-border rounded-xl p-4 flex items-center gap-4">
+        <div className="flex-1">
+          <p className="text-sm font-semibold text-white">Bônus semanal (Z$ 200)</p>
+          <p className="text-xs text-muted-foreground">Credita Z$ 200 para todos os usuários com menos de Z$ 1.000 na carteira.</p>
+          {bonusResult && <p className="text-xs mt-1 text-primary">{bonusResult}</p>}
+        </div>
+        <button
+          onClick={async () => {
+            setBonusLoading(true);
+            setBonusResult("Creditando...");
+            const res = await fetch("/api/cron/bonus-semanal", { method: "POST" });
+            const d = await res.json();
+            setBonusResult(res.ok ? `✅ ${d.credited} usuário(s) creditados, ${d.skipped} ignorados (já no teto)` : `❌ ${d.error}`);
+            setBonusLoading(false);
+            router.refresh();
+          }}
+          disabled={bonusLoading}
+          className="flex items-center gap-2 px-4 py-2 bg-muted text-white text-sm rounded-lg hover:bg-muted/80 disabled:opacity-50 transition-colors shrink-0"
+        >
+          <Zap size={14} className={bonusLoading ? "animate-pulse" : ""} />
+          {bonusLoading ? "Creditando..." : "Dar bônus"}
         </button>
       </div>
 

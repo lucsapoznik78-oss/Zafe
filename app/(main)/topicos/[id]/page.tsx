@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -57,7 +57,8 @@ export default async function TopicoDetailPage({ params, searchParams }: PagePro
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [{ data: topic }, { data: snapshots }, { data: statsData }, { data: wallet }, { data: userBets }] =
+  const admin = createAdminClient();
+  const [{ data: topic }, { data: snapshots }, { data: statsData }, { data: wallet }, { data: userBets }, { data: allBets }] =
     await Promise.all([
       supabase.from("topics").select("*, creator:profiles!creator_id(*)").eq("id", id).single(),
       supabase.from("topic_snapshots").select("prob_sim, volume_sim, volume_nao, recorded_at")
@@ -71,6 +72,12 @@ export default async function TopicoDetailPage({ params, searchParams }: PagePro
             .eq("topic_id", id).eq("user_id", user.id)
             .in("status", ["pending", "matched", "partial"])
         : Promise.resolve({ data: null }),
+      admin.from("bets")
+        .select("id, side, amount, status, profiles(username, full_name)")
+        .eq("topic_id", id)
+        .in("status", ["pending", "matched", "partial", "won", "lost"])
+        .order("amount", { ascending: false })
+        .limit(50),
     ]);
 
   if (!topic) notFound();
@@ -225,6 +232,29 @@ export default async function TopicoDetailPage({ params, searchParams }: PagePro
               </p>
             )}
           </div>
+
+          {/* Quem apostou */}
+          {(allBets ?? []).length > 0 && (
+            <div className="bg-card border border-border rounded-xl p-4">
+              <p className="text-xs font-semibold text-white mb-3">Apostadores</p>
+              <div className="space-y-2">
+                {(allBets ?? []).map((bet: any) => {
+                  const name = (bet.profiles as any)?.full_name ?? (bet.profiles as any)?.username ?? "Usuário";
+                  const isSim = bet.side === "sim";
+                  return (
+                    <div key={bet.id} className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-1.5 h-1.5 rounded-full ${isSim ? "bg-sim" : "bg-nao"}`} />
+                        <span className="text-white">{name}</span>
+                        <span className={`font-bold ${isSim ? "text-sim" : "text-nao"}`}>{bet.side.toUpperCase()}</span>
+                      </div>
+                      <span className="text-muted-foreground">{formatCurrency(parseFloat(bet.amount))}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Atividade social: amigos + comentários em destaque */}
           <SocialActivity topicId={id} currentUserId={user?.id} />

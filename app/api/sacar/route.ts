@@ -17,12 +17,6 @@ export async function POST(request: Request) {
     );
   }
 
-  // KYC obrigatório antes do primeiro saque
-  const { data: profile } = await supabase.from("profiles").select("kyc_verified").eq("id", user.id).single();
-  if (!profile?.kyc_verified) {
-    return NextResponse.json({ error: "Verifique seu CPF no perfil antes de sacar." }, { status: 403 });
-  }
-
   const { data: wallet } = await supabase.from("wallets").select("balance").eq("user_id", user.id).single();
   if (!wallet || wallet.balance < amount) return NextResponse.json({ error: "Saldo insuficiente" }, { status: 400 });
 
