@@ -1,5 +1,5 @@
 /**
- * Resolve um mercado diretamente via Claude (sem web search, sem retry).
+ * Resolve um mercado diretamente via Claude com web search.
  * Usado quando o oracle automático falha por timeout.
  */
 import { createClient, createAdminClient } from "@/lib/supabase/server";
@@ -47,18 +47,13 @@ export async function POST(req: Request) {
     try {
       const prazo = new Date(topic.closes_at).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
 
-      const response = await claude.messages.create({
-        model: "claude-haiku-4-5-20251001",
-        max_tokens: 200,
-        messages: [{
-          role: "user",
-          content: `Você é o oracle de um site de prediction markets brasileiro chamado Zafe.
+      const prompt = `Você é o oracle de um site de prediction markets brasileiro chamado Zafe.
 
 Pergunta do mercado: "${topic.title}"
 Prazo: ${prazo} (horário de Brasília)
 Data atual: ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}
 
-Com base no seu conhecimento de treinamento, o evento aconteceu antes do prazo indicado?
+Use busca na web para verificar se o evento aconteceu antes do prazo indicado.
 
 Responda SOMENTE com JSON (sem markdown, sem texto extra):
 {"resultado":"SIM","confianca":95}
@@ -67,9 +62,28 @@ ou
 ou
 {"resultado":"INCERTO","confianca":0}
 
-IMPORTANTE: Analise cuidadosamente. Prefira SIM ou NAO a INCERTO sempre que tiver qualquer evidência.`
-        }],
-      });
+IMPORTANTE: Prefira SIM ou NAO a INCERTO sempre que encontrar qualquer evidência.`;
+
+      // Tenta com web search primeiro
+      let response;
+      try {
+        response = await claude.messages.create(
+          {
+            model: "claude-haiku-4-5-20251001",
+            max_tokens: 300,
+            tools: [{ type: "web_search_20250305" as any, name: "web_search" }],
+            messages: [{ role: "user", content: prompt }],
+          },
+          { headers: { "anthropic-beta": "web-search-2025-03-05" } }
+        );
+      } catch {
+        // Fallback sem web search
+        response = await claude.messages.create({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 200,
+          messages: [{ role: "user", content: prompt }],
+        });
+      }
 
       const textBlock = response.content.find((b: any) => b.type === "text") as { type: "text"; text: string } | undefined;
       const text = textBlock?.text ?? "";

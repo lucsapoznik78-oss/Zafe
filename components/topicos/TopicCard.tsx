@@ -66,11 +66,17 @@ export default function TopicCard({ topic }: TopicCardProps) {
 
         {/* Resultado ou volumes */}
         {topic.status === "resolved" ? (
-          <div className={`text-center py-1.5 rounded-lg text-xs font-bold ${
-            topic.resolution === "sim" ? "bg-sim/20 text-sim" : "bg-nao/20 text-nao"
-          }`}>
-            RESULTADO: {topic.resolution?.toUpperCase()}
-          </div>
+          topic.resolution ? (
+            <div className={`text-center py-1.5 rounded-lg text-xs font-bold ${
+              topic.resolution === "sim" ? "bg-sim/20 text-sim" : "bg-nao/20 text-nao"
+            }`}>
+              RESULTADO: {topic.resolution.toUpperCase()}
+            </div>
+          ) : (
+            <div className="text-center py-1.5 rounded-lg text-xs font-bold bg-muted/20 text-muted-foreground">
+              REEMBOLSADO
+            </div>
+          )
         ) : hasBothSides ? (
           <div className="grid grid-cols-2 gap-2">
             <div className="bg-sim/10 rounded-lg px-3 py-2 text-center">
