@@ -1,7 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
-const BONUS = 200;
+const BONUS = 100;
 const TETO = 1000;
 
 export async function POST(request: Request) {

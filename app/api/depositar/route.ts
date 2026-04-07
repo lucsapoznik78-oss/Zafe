@@ -12,6 +12,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Valor inválido (máx. Z$ 1.000 por depósito)" }, { status: 400 });
   }
 
+  // 1 depósito por semana
+  const { data: ultimoDeposito } = await supabase
+    .from("transactions")
+    .select("created_at")
+    .eq("user_id", user.id)
+    .eq("type", "deposit")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .single();
+
+  if (ultimoDeposito?.created_at) {
+    const ultimaData = new Date(ultimoDeposito.created_at);
+    const proximoDeposito = new Date(ultimaData.getTime() + 7 * 24 * 60 * 60 * 1000);
+    if (new Date() < proximoDeposito) {
+      const dia = proximoDeposito.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit" });
+      const hora = proximoDeposito.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" });
+      return NextResponse.json({ error: `Próximo depósito disponível em ${dia} às ${hora}.` }, { status: 400 });
+    }
+  }
+
   const { data: currentWallet } = await supabase.from("wallets").select("balance").eq("user_id", user.id).single();
   const currentBalance = currentWallet?.balance ?? 0;
 

@@ -117,7 +117,26 @@ export default async function TopicoDetailPage({ params, searchParams }: PagePro
       </div>
 
       {/* Título */}
-      <h1 className="text-2xl font-bold text-white leading-snug mb-6">{topic.title}</h1>
+      <h1 className="text-2xl font-bold text-white leading-snug mb-4">{topic.title}</h1>
+
+      {/* Banner de resultado */}
+      {topic.status === "resolved" && topic.resolution && (
+        <div className={`flex items-center gap-3 rounded-xl px-5 py-4 mb-6 border ${
+          topic.resolution === "sim"
+            ? "bg-sim/10 border-sim/30"
+            : "bg-nao/10 border-nao/30"
+        }`}>
+          <span className={`text-3xl font-black ${topic.resolution === "sim" ? "text-sim" : "text-nao"}`}>
+            {topic.resolution === "sim" ? "SIM" : "NÃO"}
+          </span>
+          <div>
+            <p className={`text-sm font-bold ${topic.resolution === "sim" ? "text-sim" : "text-nao"}`}>
+              Resultado: {topic.resolution === "sim" ? "SIM venceu" : "NÃO venceu"}
+            </p>
+            <p className="text-xs text-muted-foreground">Mercado encerrado e resolvido</p>
+          </div>
+        </div>
+      )}
 
       {/* Layout principal: conteúdo + sidebar */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
