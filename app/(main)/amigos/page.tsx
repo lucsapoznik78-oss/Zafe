@@ -36,7 +36,7 @@ export default async function AmigosPage({ searchParams }: PageProps) {
       .from("friendships")
       .select("id, requester_id, addressee_id, status, addressee:profiles!addressee_id(id, username, full_name, avatar_url)")
       .eq("requester_id", user.id),
-    supabase
+    admin
       .from("friendships")
       .select("id, requester_id, addressee_id, status, requester:profiles!requester_id(id, username, full_name, avatar_url)")
       .eq("addressee_id", user.id),

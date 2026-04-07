@@ -12,19 +12,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Valor inválido (máx. Z$ 1.000 por depósito)" }, { status: 400 });
   }
 
-  // Apenas 1 depósito por semana (período beta com Zafes)
-  const umaSemanaAtras = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-  const { count: depositosRecentes } = await supabase
-    .from("transactions")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", user.id)
-    .eq("type", "deposit")
-    .gte("created_at", umaSemanaAtras);
-
-  if ((depositosRecentes ?? 0) > 0) {
-    return NextResponse.json({ error: "Você já fez um depósito esta semana. Próximo disponível na segunda-feira." }, { status: 400 });
-  }
-
   const { data: currentWallet } = await supabase.from("wallets").select("balance").eq("user_id", user.id).single();
   const currentBalance = currentWallet?.balance ?? 0;
 
