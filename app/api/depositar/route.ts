@@ -26,9 +26,7 @@ export async function POST(request: Request) {
     const ultimaData = new Date(ultimoDeposito.created_at);
     const proximoDeposito = new Date(ultimaData.getTime() + 7 * 24 * 60 * 60 * 1000);
     if (new Date() < proximoDeposito) {
-      const dia = proximoDeposito.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit" });
-      const hora = proximoDeposito.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" });
-      return NextResponse.json({ error: `Próximo depósito disponível em ${dia} às ${hora}.` }, { status: 400 });
+      return NextResponse.json({ error: "limite_semanal", nextDepositAt: proximoDeposito.toISOString() }, { status: 400 });
     }
   }
 

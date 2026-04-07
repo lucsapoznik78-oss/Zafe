@@ -1,9 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
 import { Loader2, ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
+
+function useCountdown(targetIso: string | null) {
+  const [remaining, setRemaining] = useState("");
+  useEffect(() => {
+    if (!targetIso) { setRemaining(""); return; }
+    const tick = () => {
+      const diff = new Date(targetIso).getTime() - Date.now();
+      if (diff <= 0) { setRemaining(""); return; }
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      setRemaining(`${h}h ${String(m).padStart(2,"0")}m ${String(s).padStart(2,"0")}s`);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [targetIso]);
+  return remaining;
+}
 
 export default function DepositSection({ currentBalance }: { currentBalance: number }) {
   const router = useRouter();
@@ -11,6 +30,18 @@ export default function DepositSection({ currentBalance }: { currentBalance: num
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [nextDepositAt, setNextDepositAt] = useState<string | null>(null);
+  const refreshTimer = useRef<NodeJS.Timeout | null>(null);
+  const countdown = useCountdown(nextDepositAt);
+
+  // Auto-refresh quando o tempo de bloqueio acabar
+  useEffect(() => {
+    if (!nextDepositAt) return;
+    const diff = new Date(nextDepositAt).getTime() - Date.now();
+    if (diff <= 0) { router.refresh(); return; }
+    refreshTimer.current = setTimeout(() => { router.refresh(); }, diff);
+    return () => { if (refreshTimer.current) clearTimeout(refreshTimer.current); };
+  }, [nextDepositAt, router]);
 
   const amountNum = parseFloat(amount) || 0;
 
@@ -31,7 +62,15 @@ export default function DepositSection({ currentBalance }: { currentBalance: num
     setLoading(false);
 
     if (!res.ok) {
-      setMessage({ type: "error", text: data.error ?? "Erro na operação" });
+      if (data.error === "limite_semanal" && data.nextDepositAt) {
+        setNextDepositAt(data.nextDepositAt);
+        const d = new Date(data.nextDepositAt);
+        const dia = d.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit" });
+        const hora = d.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" });
+        setMessage({ type: "error", text: `Próximo depósito disponível em ${dia} às ${hora}.` });
+      } else {
+        setMessage({ type: "error", text: data.error ?? "Erro na operação" });
+      }
     } else {
       setMessage({ type: "success", text: tab === "depositar" ? "Depósito realizado!" : "Saque solicitado!" });
       setAmount("");
@@ -115,9 +154,10 @@ export default function DepositSection({ currentBalance }: { currentBalance: num
         )}
 
         {message && (
-          <p className={`text-xs ${message.type === "success" ? "text-primary" : "text-destructive"}`}>
-            {message.text}
-          </p>
+          <div className={`text-xs ${message.type === "success" ? "text-primary" : "text-destructive"}`}>
+            <p>{message.text}</p>
+            {countdown && <p className="mt-0.5 font-mono text-muted-foreground">{countdown}</p>}
+          </div>
         )}
 
         <button
