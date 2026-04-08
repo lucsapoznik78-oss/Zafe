@@ -24,13 +24,13 @@ export async function DELETE(_req: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "Ordem não pode ser cancelada" }, { status: 400 });
 
   // Cancelar primeiro para evitar race condition (somente 1 request consegue cancelar)
-  const { count: cancelled } = await admin.from("orders")
+  const { data: cancelledRows } = await admin.from("orders")
     .update({ status: "cancelled" })
     .eq("id", orderId)
     .in("status", ["open", "partial"])
-    .select("id", { count: "exact", head: true });
+    .select("id");
 
-  if (!cancelled || cancelled === 0) {
+  if (!cancelledRows || cancelledRows.length === 0) {
     return NextResponse.json({ error: "Ordem já foi cancelada ou executada" }, { status: 409 });
   }
 
