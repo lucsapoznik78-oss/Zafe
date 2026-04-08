@@ -272,9 +272,24 @@ export default function MercadoSecundario({ topicId, isActive, userBets = [] }: 
     }
 
     const filled = json.total_filled ?? 0;
-    const msg = filled > 0
-      ? `Ordem executada: ${qty(filled)} preenchidos`
-      : "Ordem registrada no livro";
+    const orderStatus = json.order?.status;
+
+    if (orderStatus === "cancelled" || orderStatus === "expired") {
+      setFormMsg({
+        type: "err",
+        text: isMarket
+          ? "Nenhuma contraparte disponível agora. Tente uma ordem limitada para ficar no livro aguardando."
+          : "Ordem cancelada inesperadamente. Tente novamente.",
+      });
+      fetchBook();
+      return;
+    }
+
+    const msg = filled > 0 && orderStatus === "filled"
+      ? `Executada por completo: ${qty(filled)}`
+      : filled > 0
+        ? `Parcialmente executada: ${qty(filled)} — restante no livro`
+        : "Ordem registrada no livro de ofertas";
     setFormMsg({ type: "ok", text: msg });
     setQuantity("");
     setPrice("");
