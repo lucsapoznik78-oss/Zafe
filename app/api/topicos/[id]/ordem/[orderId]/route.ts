@@ -23,6 +23,17 @@ export async function DELETE(_req: Request, { params }: RouteParams) {
   if (!["open", "partial"].includes(order.status))
     return NextResponse.json({ error: "Ordem não pode ser cancelada" }, { status: 400 });
 
+  // Cancelar primeiro para evitar race condition (somente 1 request consegue cancelar)
+  const { count: cancelled } = await admin.from("orders")
+    .update({ status: "cancelled" })
+    .eq("id", orderId)
+    .in("status", ["open", "partial"])
+    .select("id", { count: "exact", head: true });
+
+  if (!cancelled || cancelled === 0) {
+    return NextResponse.json({ error: "Ordem já foi cancelada ou executada" }, { status: 409 });
+  }
+
   // Devolver escrow de ordens BUY não executadas
   if (order.order_type === "buy") {
     const unfilledQty = parseFloat((order.quantity - order.filled_qty).toFixed(2));
@@ -45,8 +56,6 @@ export async function DELETE(_req: Request, { params }: RouteParams) {
       });
     }
   }
-
-  await admin.from("orders").update({ status: "cancelled" }).eq("id", orderId);
 
   return NextResponse.json({ success: true });
 }

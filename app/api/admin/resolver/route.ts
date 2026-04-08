@@ -16,6 +16,12 @@ export async function POST(request: Request) {
 
   const { topic_id, resolution } = await request.json();
 
+  const { data: topic } = await supabase.from("topics").select("status").eq("id", topic_id).single();
+  if (!topic) return NextResponse.json({ error: "Mercado não encontrado" }, { status: 404 });
+  if (topic.status === "resolved" || topic.status === "cancelled") {
+    return NextResponse.json({ error: "Mercado já foi resolvido" }, { status: 400 });
+  }
+
   if (resolution === "cancelled") {
     await reembolsarTodos(supabase, topic_id, "Mercado cancelado", user.id);
     await supabase.from("topics").update({ status: "cancelled", resolved_by: user.id }).eq("id", topic_id);

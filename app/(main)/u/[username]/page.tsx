@@ -1,4 +1,5 @@
 export const dynamic = "force-dynamic";
+import type { Metadata } from "next";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
@@ -10,6 +11,27 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 interface PageProps { params: Promise<{ username: string }> }
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { username } = await params;
+  const supabase = createAdminClient();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("full_name, username")
+    .eq("username", username)
+    .single();
+  if (!profile) return { title: "Perfil não encontrado" };
+  const name = profile.full_name ?? profile.username;
+  return {
+    title: name,
+    description: `Veja o histórico e desempenho de ${name} nos mercados de previsão do Zafe.`,
+    openGraph: {
+      title: `${name} — Zafe`,
+      description: `Veja o histórico e desempenho de ${name} nos mercados de previsão do Zafe.`,
+      type: "profile",
+    },
+  };
+}
 
 const CATEGORY_LABELS: Record<string, string> = {
   politica: "Política", economia: "Economia", esportes: "Esportes",

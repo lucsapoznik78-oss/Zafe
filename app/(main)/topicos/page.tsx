@@ -1,5 +1,21 @@
 export const dynamic = "force-dynamic";
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+
+export const metadata: Metadata = {
+  title: "Mercados",
+  description: "Aposte em eventos políticos, esportivos e econômicos com outros usuários brasileiros. Prediction markets em tempo real no Zafe.",
+  openGraph: {
+    title: "Mercados — Zafe",
+    description: "Aposte em eventos políticos, esportivos e econômicos com outros usuários brasileiros. Prediction markets em tempo real.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Mercados — Zafe",
+    description: "Aposte em eventos políticos, esportivos e econômicos com outros usuários brasileiros.",
+  },
+};
 import TopicCard from "@/components/topicos/TopicCard";
 import TopicFilters from "@/components/topicos/TopicFilters";
 import SearchBar from "@/components/topicos/SearchBar";
@@ -81,9 +97,12 @@ async function TopicList({
     latestSnapshotProb: latestSnapshotMap.get(t.id) ?? 0.5,
   }));
 
-  if (sort === "popular") {
-    enriched.sort((a, b) => (b.stats?.total_volume ?? 0) - (a.stats?.total_volume ?? 0));
-  }
+  // Sempre: mais ativos primeiro, depois os que fecham mais cedo
+  enriched.sort((a, b) => {
+    const volDiff = (b.stats?.total_volume ?? 0) - (a.stats?.total_volume ?? 0);
+    if (volDiff !== 0) return volDiff;
+    return new Date(a.closes_at).getTime() - new Date(b.closes_at).getTime();
+  });
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

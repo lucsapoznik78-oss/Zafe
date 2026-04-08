@@ -30,7 +30,7 @@ export async function reembolsarTodos(
   const title = topic?.title?.slice(0, 55) ?? "Mercado";
 
   const { data: bets } = await supabase
-    .from("bets").select("*").eq("topic_id", topicId).not("status", "in", '("refunded","exited")');
+    .from("bets").select("*").eq("topic_id", topicId).not("status", "in", '("refunded","exited","won","lost")');
 
   for (const bet of bets ?? []) {
     await refundBet(supabase, bet, topicId, motivo);
@@ -74,7 +74,7 @@ export async function pagarVencedores(
   const title = topic?.title?.slice(0, 55) ?? "Mercado";
 
   const { data: allBets } = await supabase
-    .from("bets").select("*").eq("topic_id", topicId).not("status", "in", '("refunded","exited")');
+    .from("bets").select("*").eq("topic_id", topicId).not("status", "in", '("refunded","exited","won","lost")');
 
   const bets = allBets ?? [];
   const winnerBets = bets.filter((b: any) => b.side === resolution);

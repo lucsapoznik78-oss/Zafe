@@ -89,7 +89,7 @@ IMPORTANTE: Prefira SIM ou NAO a INCERTO sempre que encontrar qualquer evidênci
       const text = textBlock?.text ?? "";
       const clean = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
       let parsed: any;
-      try { parsed = JSON.parse(clean); } catch { const m = clean.match(/\{[\s\S]*?\}/); parsed = m ? JSON.parse(m[0]) : null; }
+      try { parsed = JSON.parse(clean); } catch { const m = clean.match(/\{[\s\S]*\}/); try { parsed = m ? JSON.parse(m[0]) : null; } catch { parsed = null; } }
 
       if (!parsed || !["SIM","NAO","INCERTO"].includes(parsed.resultado)) {
         results.push({ title: topic.title, outcome: "parse_error" });

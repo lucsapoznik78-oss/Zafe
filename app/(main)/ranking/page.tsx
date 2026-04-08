@@ -1,5 +1,21 @@
 export const dynamic = "force-dynamic";
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+
+export const metadata: Metadata = {
+  title: "Ranking",
+  description: "Veja os melhores apostadores do Zafe. Ranking de acertos, lucros e performance nos mercados de previsão brasileiros.",
+  openGraph: {
+    title: "Ranking — Zafe",
+    description: "Veja os melhores apostadores do Zafe. Ranking de acertos, lucros e performance.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Ranking — Zafe",
+    description: "Veja os melhores apostadores do Zafe.",
+  },
+};
 import { formatCurrency } from "@/lib/utils";
 import { Trophy, TrendingUp, Medal } from "lucide-react";
 import Link from "next/link";
