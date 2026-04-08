@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/admin/", "/perfil", "/depositar", "/apostas-privadas/", "/criar/"],
       },
     ],
-    sitemap: "https://zafe.com.br/sitemap.xml",
+    sitemap: "https://zafe-rho.vercel.app/sitemap.xml",
   };
 }
