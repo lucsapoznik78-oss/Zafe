@@ -5,6 +5,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://zafe-rho.vercel.app"),
   title: {
     default: "Zafe — Mercados de Previsão do Brasil",
     template: "%s — Zafe",
