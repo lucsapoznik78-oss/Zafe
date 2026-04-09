@@ -136,6 +136,22 @@ export async function POST(request: Request, { params }: RouteParams) {
   // ── Tentar casar imediatamente ────────────────────────────────────
   const matchResult = await tryMatchOrders(admin, order.id);
 
+  // Também varrer ordens antigas do mesmo tópico que ainda não se casaram.
+  // Isso garante que ordens de usuários diferentes que já estavam no livro
+  // se casem mesmo sem nova ordem ter sido colocada entre elas.
+  if (matchResult.tradesExecuted === 0) {
+    const { data: existingOrders } = await admin
+      .from("orders")
+      .select("id")
+      .eq("topic_id", topicId)
+      .in("status", ["open", "partial"])
+      .neq("id", order.id)
+      .limit(50);
+    for (const existing of existingOrders ?? []) {
+      await tryMatchOrders(admin, existing.id);
+    }
+  }
+
   // Ordem a mercado: cancelar o que não foi executado e devolver escrow
   if (is_market && matchResult.totalFilled < quantity - 0.01) {
     const { data: updatedOrder } = await admin.from("orders").select("filled_qty, price").eq("id", order.id).single();
