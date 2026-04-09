@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
 import { createClient } from "@supabase/supabase-js";
 
+export const dynamic = "force-dynamic";
+
 const BASE_URL = "https://zafe-rho.vercel.app";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
