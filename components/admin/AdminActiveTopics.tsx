@@ -31,6 +31,7 @@ export default function AdminActiveTopics({ topics }: { topics: Topic[] }) {
   const [saved, setSaved] = useState<Record<string, string>>({});
   const [cleaning, setCleaning] = useState(false);
   const [cleanResult, setCleanResult] = useState("");
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   async function limparDuplicados() {
     setCleaning(true);
@@ -39,6 +40,20 @@ export default function AdminActiveTopics({ topics }: { topics: Topic[] }) {
     const data = await res.json();
     setCleanResult(res.ok ? `✅ ${data.removed} duplicado(s) removido(s)` : `❌ ${data.error}`);
     setCleaning(false);
+    router.refresh();
+  }
+
+  async function deleteTopic(topicId: string) {
+    if (!confirm("Deletar este mercado? Só funciona se não houver apostas.")) return;
+    setDeleting(topicId);
+    const res = await fetch("/api/admin/deletar-topico", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ topic_id: topicId }),
+    });
+    const data = await res.json();
+    if (!res.ok) alert(data.error);
+    setDeleting(null);
     router.refresh();
   }
 
@@ -92,12 +107,21 @@ export default function AdminActiveTopics({ topics }: { topics: Topic[] }) {
                   <p className="text-xs font-medium text-white leading-snug line-clamp-2">{topic.title}</p>
                 </div>
                 {!isEditing && (
-                  <button
-                    onClick={() => { setEditing(topic.id); setValue(toLocalInput(closesAt)); }}
-                    className="shrink-0 p-1.5 text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    <Pencil size={13} />
-                  </button>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      onClick={() => { setEditing(topic.id); setValue(toLocalInput(closesAt)); }}
+                      className="p-1.5 text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      <Pencil size={13} />
+                    </button>
+                    <button
+                      onClick={() => deleteTopic(topic.id)}
+                      disabled={deleting === topic.id}
+                      className="p-1.5 text-muted-foreground hover:text-nao transition-colors disabled:opacity-50"
+                    >
+                      {deleting === topic.id ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
+                    </button>
+                  </div>
                 )}
               </div>
               {isEditing ? (

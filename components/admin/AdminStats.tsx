@@ -128,8 +128,8 @@ export default function AdminStats({ passiveTotal, walletBalance, betsLocked, co
       {/* Bônus semanal */}
       <div className="bg-card border border-border rounded-xl p-4 flex items-center gap-4">
         <div className="flex-1">
-          <p className="text-sm font-semibold text-white">Bônus semanal (Z$ 200)</p>
-          <p className="text-xs text-muted-foreground">Credita Z$ 200 para todos os usuários com menos de Z$ 1.000 na carteira.</p>
+          <p className="text-sm font-semibold text-white">Bônus semanal (Z$ 100)</p>
+          <p className="text-xs text-muted-foreground">Credita Z$ 100 para todos os usuários com menos de Z$ 1.000 na carteira.</p>
           {bonusResult && <p className="text-xs mt-1 text-primary">{bonusResult}</p>}
         </div>
         <button
