@@ -14,6 +14,7 @@ interface OrderLevel {
   price: number;
   quantity: number;
   count: number;
+  username: string | null;
 }
 
 interface TradePoint { price: number; time: string }
@@ -106,14 +107,24 @@ function DepthRow({
 }: { level: OrderLevel; type: "bid" | "ask"; maxQty: number }) {
   const fillPct = maxQty > 0 ? (level.quantity / maxQty) * 100 : 0;
   const isBid   = type === "bid";
+  const userLabel = level.count > 1
+    ? `${level.count} usuários`
+    : level.username ? `@${level.username}` : null;
   return (
-    <div className="relative flex items-center justify-between text-[11px] py-[3px] px-1.5 rounded overflow-hidden">
+    <div className="relative text-[11px] py-[3px] px-1.5 rounded overflow-hidden">
       <div
         className={`absolute inset-y-0 ${isBid ? "right-0" : "left-0"} ${isBid ? "bg-sim/10" : "bg-nao/10"}`}
         style={{ width: `${fillPct}%` }}
       />
-      <span className={`relative font-mono ${isBid ? "text-sim" : "text-nao"}`}>{pct(level.price)}</span>
-      <span className="relative text-muted-foreground font-mono">{level.quantity.toFixed(0)}</span>
+      <div className="relative flex items-center justify-between">
+        <span className={`font-mono ${isBid ? "text-sim" : "text-nao"}`}>{pct(level.price)}</span>
+        <span className="text-muted-foreground font-mono">{level.quantity.toFixed(0)}</span>
+      </div>
+      {userLabel && (
+        <div className="relative text-[9px] text-muted-foreground/70 mt-0.5">
+          {isBid ? "oferta de" : "venda de"} {userLabel}
+        </div>
+      )}
     </div>
   );
 }

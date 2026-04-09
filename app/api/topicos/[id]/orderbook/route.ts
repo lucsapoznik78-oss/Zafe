@@ -22,14 +22,14 @@ async function buildSideBook(admin: any, topicId: string, side: "sim" | "nao") {
   const [{ data: bids }, { data: asks }, { data: lastTrades }, { data: vol24h }] =
     await Promise.all([
       // Top 5 ordens de compra (melhores preços primeiro)
-      admin.from("orders").select("price, quantity, filled_qty")
+      admin.from("orders").select("price, quantity, filled_qty, profiles(username, full_name)")
         .eq("topic_id", topicId).eq("side", side).eq("order_type", "buy")
         .in("status", ["open", "partial"])
         .order("price", { ascending: false })
         .limit(20),
 
       // Top 5 ordens de venda
-      admin.from("orders").select("price, quantity, filled_qty")
+      admin.from("orders").select("price, quantity, filled_qty, profiles(username, full_name)")
         .eq("topic_id", topicId).eq("side", side).eq("order_type", "sell")
         .in("status", ["open", "partial"])
         .order("price", { ascending: true })
@@ -47,14 +47,15 @@ async function buildSideBook(admin: any, topicId: string, side: "sim" | "nao") {
         .gte("created_at", cutoff24h),
     ]);
 
-  // Agrupa ordens pelo mesmo preço
+  // Agrupa ordens pelo mesmo preço, mantendo username do primeiro ofertante
   const aggregateLevels = (orders: any[] | null) => {
-    const map: Record<number, { price: number; quantity: number; count: number }> = {};
+    const map: Record<number, { price: number; quantity: number; count: number; username: string | null }> = {};
     for (const o of orders ?? []) {
       const p = parseFloat(o.price);
       const avail = parseFloat(o.quantity) - parseFloat(o.filled_qty);
       if (avail < 0.01) continue;
-      if (!map[p]) map[p] = { price: p, quantity: 0, count: 0 };
+      const username = (o.profiles as any)?.username ?? (o.profiles as any)?.full_name ?? null;
+      if (!map[p]) map[p] = { price: p, quantity: 0, count: 0, username };
       map[p].quantity = parseFloat((map[p].quantity + avail).toFixed(2));
       map[p].count++;
     }
