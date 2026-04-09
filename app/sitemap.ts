@@ -1,23 +1,19 @@
 import type { MetadataRoute } from "next";
-import { createClient } from "@supabase/supabase-js";
+import { createAdminClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
 const BASE_URL = "https://zafe-rho.vercel.app";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { auth: { persistSession: false } }
-  );
+  const supabase = createAdminClient();
 
   const [{ data: topics }, { data: profiles }] = await Promise.all([
     supabase
       .from("topics")
       .select("id, updated_at")
       .eq("is_private", false)
-      .eq("status", "active")
+      .in("status", ["active", "resolved"])
       .order("updated_at", { ascending: false })
       .limit(1000),
     supabase
