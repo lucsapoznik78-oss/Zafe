@@ -1,19 +1,23 @@
 import type { MetadataRoute } from "next";
-import { createAdminClient } from "@/lib/supabase/server";
-
-export const dynamic = "force-dynamic";
+import { createClient } from "@supabase/supabase-js";
 
 const BASE_URL = "https://zafe-rho.vercel.app";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const supabase = createAdminClient();
+  // Use anon key (NEXT_PUBLIC_*) which is available at build time.
+  // RLS policy allows anonymous reads for status='active' topics.
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { persistSession: false } }
+  );
 
   const [{ data: topics }, { data: profiles }] = await Promise.all([
     supabase
       .from("topics")
       .select("id, updated_at")
       .eq("is_private", false)
-      .in("status", ["active", "resolved"])
+      .eq("status", "active")
       .order("updated_at", { ascending: false })
       .limit(1000),
     supabase
