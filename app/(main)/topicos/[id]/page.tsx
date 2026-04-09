@@ -73,7 +73,7 @@ export default async function TopicoDetailPage({ params, searchParams }: PagePro
             .in("status", ["pending", "matched", "partial"])
         : Promise.resolve({ data: null }),
       admin.from("bets")
-        .select("id, side, amount, status, profiles(username, full_name)")
+        .select("id, side, amount, status, locked_odds, profiles(username, full_name)")
         .eq("topic_id", id)
         .in("status", ["pending", "matched", "partial", "won", "lost"])
         .order("amount", { ascending: false })
@@ -258,14 +258,22 @@ export default async function TopicoDetailPage({ params, searchParams }: PagePro
               <p className="text-xs font-semibold text-white mb-3">Apostadores</p>
               <div className="space-y-2">
                 {(allBets ?? []).map((bet: any) => {
-                  const name = (bet.profiles as any)?.full_name ?? (bet.profiles as any)?.username ?? "Usuário";
+                  const name = (bet.profiles as any)?.username ?? (bet.profiles as any)?.full_name ?? "Usuário";
                   const isSim = bet.side === "sim";
+                  // locked_odds = 1/price, so price = 1/locked_odds. For secondary market bets,
+                  // locked_odds differs from 1.0 and encodes the trade price.
+                  const lockedOdds = parseFloat(bet.locked_odds ?? "0");
+                  const entryPct = lockedOdds > 0 ? Math.round((1 / lockedOdds) * 100) : null;
+                  const isSecondaryMarket = entryPct !== null && entryPct !== 50;
                   return (
                     <div key={bet.id} className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2">
                         <div className={`w-1.5 h-1.5 rounded-full ${isSim ? "bg-sim" : "bg-nao"}`} />
                         <span className="text-white">{name}</span>
                         <span className={`font-bold ${isSim ? "text-sim" : "text-nao"}`}>{bet.side.toUpperCase()}</span>
+                        {isSecondaryMarket && (
+                          <span className="text-muted-foreground">@ {entryPct}%</span>
+                        )}
                       </div>
                       <span className="text-muted-foreground">{formatCurrency(parseFloat(bet.amount))}</span>
                     </div>
