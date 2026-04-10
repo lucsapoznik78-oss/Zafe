@@ -186,13 +186,10 @@ async function executeTrade(admin: any, p: {
     reference_id: p.topicId,
   });
 
-  // ── 3. Devolver excesso de escrow ao comprador ───────────────────
-  const escrowed = parseFloat((p.buyLimitPrice * p.quantity).toFixed(2));
-  const refund   = parseFloat((escrowed - tradeValue).toFixed(2));
-  if (refund > 0.01) {
-    const { data: bw } = await admin.from("wallets").select("balance").eq("user_id", p.buyerId).single();
-    await admin.from("wallets").update({ balance: (bw?.balance ?? 0) + refund }).eq("user_id", p.buyerId);
-  }
+  // ── 3. Debitar comprador na execução ────────────────────────────
+  const { data: bw } = await admin.from("wallets").select("balance").eq("user_id", p.buyerId).single();
+  const newBuyerBalance = parseFloat(((bw?.balance ?? 0) - tradeValue).toFixed(2));
+  await admin.from("wallets").update({ balance: Math.max(0, newBuyerBalance) }).eq("user_id", p.buyerId);
 
   await admin.from("transactions").insert({
     user_id:      p.buyerId,
@@ -254,27 +251,7 @@ export async function cancelTopicOrders(admin: any, topicId: string) {
     .in("status", ["open", "partial"]);
 
   for (const order of openOrders ?? []) {
-    // Devolver escrow de ordens de compra não executadas
-    if (order.order_type === "buy") {
-      const unfilledQty = parseFloat((order.quantity - order.filled_qty).toFixed(2));
-      const refund = parseFloat((unfilledQty * order.price).toFixed(2));
-      if (refund > 0.01) {
-        const { data: w } = await admin.from("wallets").select("balance").eq("user_id", order.user_id).single();
-        await admin.from("wallets").update({
-          balance: (w?.balance ?? 0) + refund,
-        }).eq("user_id", order.user_id);
-
-        await admin.from("transactions").insert({
-          user_id:      order.user_id,
-          type:         "bet_refund",
-          amount:       refund,
-          net_amount:   refund,
-          description:  "Ordem de compra cancelada — mercado encerrado",
-          reference_id: topicId,
-        });
-      }
-    }
-
+    // Ordens de compra não executadas: sem escrow a devolver (dinheiro nunca foi debitado)
     await admin.from("orders").update({ status: "expired" }).eq("id", order.id);
   }
 }

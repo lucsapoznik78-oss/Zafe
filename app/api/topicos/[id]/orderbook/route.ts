@@ -22,14 +22,14 @@ async function buildSideBook(admin: any, topicId: string, side: "sim" | "nao") {
   const [{ data: bids }, { data: asks }, { data: lastTrades }, { data: vol24h }] =
     await Promise.all([
       // Top 5 ordens de compra (melhores preços primeiro)
-      admin.from("orders").select("price, quantity, filled_qty, profiles(username, full_name)")
+      admin.from("orders").select("price, quantity, filled_qty, profiles!user_id(username, full_name)")
         .eq("topic_id", topicId).eq("side", side).eq("order_type", "buy")
         .in("status", ["open", "partial"])
         .order("price", { ascending: false })
         .limit(20),
 
       // Top 5 ordens de venda
-      admin.from("orders").select("price, quantity, filled_qty, profiles(username, full_name)")
+      admin.from("orders").select("price, quantity, filled_qty, profiles!user_id(username, full_name)")
         .eq("topic_id", topicId).eq("side", side).eq("order_type", "sell")
         .in("status", ["open", "partial"])
         .order("price", { ascending: true })
@@ -47,6 +47,12 @@ async function buildSideBook(admin: any, topicId: string, side: "sim" | "nao") {
         .gte("created_at", cutoff24h),
     ]);
 
+  // Extrai username de profiles (PostgREST pode retornar objeto ou array)
+  const extractUsername = (profiles: any): string | null => {
+    const p = Array.isArray(profiles) ? profiles[0] : profiles;
+    return p?.username ?? p?.full_name ?? null;
+  };
+
   // Agrupa ordens pelo mesmo preço, mantendo username do primeiro ofertante
   const aggregateLevels = (orders: any[] | null) => {
     const map: Record<number, { price: number; quantity: number; count: number; username: string | null }> = {};
@@ -54,7 +60,7 @@ async function buildSideBook(admin: any, topicId: string, side: "sim" | "nao") {
       const p = parseFloat(o.price);
       const avail = parseFloat(o.quantity) - parseFloat(o.filled_qty);
       if (avail < 0.01) continue;
-      const username = (o.profiles as any)?.username ?? (o.profiles as any)?.full_name ?? null;
+      const username = extractUsername(o.profiles);
       if (!map[p]) map[p] = { price: p, quantity: 0, count: 0, username };
       map[p].quantity = parseFloat((map[p].quantity + avail).toFixed(2));
       map[p].count++;
@@ -104,26 +110,27 @@ export async function GET(_req: Request, { params }: RouteParams) {
     buildSideBook(admin, topicId, "nao"),
   ]);
 
+  // Todas as ordens abertas do tópico (com username) — visíveis a todos
+  const { data: allOpenOrders } = await admin
+    .from("orders")
+    .select("id, user_id, side, order_type, price, quantity, filled_qty, status, created_at, profiles!user_id(username, full_name)")
+    .eq("topic_id", topicId)
+    .in("status", ["open", "partial"])
+    .order("created_at", { ascending: false })
+    .limit(100);
+
   // Posição do usuário (apostas ativas)
   let userPosition: Record<string, any> | null = null;
-  let userOrders: any[] = [];
 
   if (user) {
-    const [{ data: bets }, { data: orders }, { data: stats }] = await Promise.all([
+    const [{ data: bets }, { data: stats }] = await Promise.all([
       admin.from("bets").select("id, side, amount, locked_odds, status")
         .eq("topic_id", topicId).eq("user_id", user.id)
         .in("status", ["pending", "matched", "partial"]),
 
-      admin.from("orders").select("*")
-        .eq("topic_id", topicId).eq("user_id", user.id)
-        .in("status", ["open", "partial"])
-        .order("created_at", { ascending: false }),
-
       admin.from("v_topic_stats").select("prob_sim, volume_sim, volume_nao")
         .eq("topic_id", topicId).single(),
     ]);
-
-    userOrders = orders ?? [];
 
     const probSim = stats?.prob_sim ?? 0.5;
     const probNao = 1 - probSim;
@@ -167,11 +174,21 @@ export async function GET(_req: Request, { params }: RouteParams) {
     }
   }
 
+  // Enriquecer ordens com flag is_mine e username resolvido
+  const enrichedOrders = (allOpenOrders ?? []).map((o: any) => {
+    const p = Array.isArray(o.profiles) ? o.profiles[0] : o.profiles;
+    return {
+      ...o,
+      username: p?.username ?? p?.full_name ?? null,
+      is_mine: user ? o.user_id === user.id : false,
+    };
+  });
+
   return NextResponse.json({
     topic_id: topicId,
     sim:      simBook,
     nao:      naoBook,
     user_position: userPosition,
-    user_orders:   userOrders,
+    user_orders:   enrichedOrders,
   });
 }

@@ -47,6 +47,7 @@ interface UserPosition {
 
 interface OpenOrder {
   id: string;
+  user_id: string;
   side: "sim" | "nao";
   order_type: "buy" | "sell";
   price: number;
@@ -54,6 +55,8 @@ interface OpenOrder {
   filled_qty: number;
   status: string;
   created_at: string;
+  is_mine: boolean;
+  username: string | null;
 }
 
 interface OrderBookData {
@@ -338,6 +341,9 @@ export default function MercadoSecundario({ topicId, isActive, userBets = [] }: 
   const maxBid = book ? Math.max(...book.bids.map(b => b.quantity), 1) : 1;
   const maxAsk = book ? Math.max(...book.asks.map(a => a.quantity), 1) : 1;
 
+  // Total investido: soma direta das apostas passadas pelo servidor (mais confiável)
+  const totalInvested = (userBets ?? []).reduce((s, b) => s + parseFloat(b.amount as any), 0);
+
   return (
     <div className="bg-card border border-border rounded-xl p-4 space-y-4">
 
@@ -352,6 +358,14 @@ export default function MercadoSecundario({ topicId, isActive, userBets = [] }: 
           <RefreshCw size={13} />
         </button>
       </div>
+
+      {/* Posição total no evento */}
+      {totalInvested > 0 && (
+        <div className="flex items-center justify-between bg-muted/30 rounded-lg px-3 py-2 text-xs">
+          <span className="text-muted-foreground">Você tem aqui</span>
+          <span className="font-bold text-white">{formatCurrency(totalInvested)}</span>
+        </div>
+      )}
 
       {/* Side tabs */}
       <div className="flex rounded-lg overflow-hidden border border-border text-xs font-semibold">
@@ -442,20 +456,27 @@ export default function MercadoSecundario({ topicId, isActive, userBets = [] }: 
 
           {/* Buy / Sell tabs */}
           <div className="flex rounded-lg overflow-hidden border border-border text-[11px] font-semibold">
-            {(["buy", "sell"] as const).map(t => (
-              <button
-                type="button"
-                key={t}
-                onClick={() => { setOrderType(t); setFormMsg(null); }}
-                className={`flex-1 py-1.5 transition-colors ${
-                  orderType === t
-                    ? t === "buy" ? "bg-sim text-black" : "bg-nao text-white"
-                    : "text-muted-foreground hover:text-white"
-                }`}
-              >
-                {t === "buy" ? "Comprar" : "Vender"}
-              </button>
-            ))}
+            {(["buy", "sell"] as const).map(t => {
+              const canSell = t === "sell" && sellableBets.length === 0;
+              return (
+                <button
+                  type="button"
+                  key={t}
+                  onClick={() => { if (!canSell) { setOrderType(t); setFormMsg(null); } }}
+                  disabled={canSell}
+                  title={canSell ? `Sem apostas ${side.toUpperCase()} para vender` : undefined}
+                  className={`flex-1 py-1.5 transition-colors ${
+                    orderType === t
+                      ? t === "buy" ? "bg-sim text-black" : "bg-nao text-white"
+                      : canSell
+                        ? "text-muted-foreground/40 cursor-not-allowed"
+                        : "text-muted-foreground hover:text-white"
+                  }`}
+                >
+                  {t === "buy" ? "Comprar" : "Vender"}
+                </button>
+              );
+            })}
           </div>
 
           {/* Market / Limit toggle */}
@@ -594,34 +615,41 @@ export default function MercadoSecundario({ topicId, isActive, userBets = [] }: 
           <p className="text-xs font-semibold text-white">Ordens abertas</p>
           {data.user_orders.map(o => {
             const unfilled = o.quantity - o.filled_qty;
-            const isOurSide = o.side === side;
             return (
               <div
                 key={o.id}
-                className={`flex items-center justify-between text-[11px] py-1.5 px-2 rounded-lg border ${
-                  isOurSide ? "border-border/60 bg-muted/20" : "border-border/30 opacity-60"
-                }`}
+                className="flex items-center justify-between text-[11px] py-1.5 px-2 rounded-lg border border-border/60 bg-muted/20"
               >
                 <div className="space-y-0.5">
-                  <span className={`font-semibold ${o.side === "sim" ? "text-sim" : "text-nao"}`}>
-                    {o.side.toUpperCase()} {o.order_type === "buy" ? "COMPRA" : "VENDA"}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`font-semibold ${o.side === "sim" ? "text-sim" : "text-nao"}`}>
+                      {o.side.toUpperCase()} {o.order_type === "buy" ? "COMPRA" : "VENDA"}
+                    </span>
+                    {o.is_mine && (
+                      <span className="text-[9px] text-muted-foreground/50 border border-border/40 rounded px-1">você</span>
+                    )}
+                  </div>
                   <div className="text-muted-foreground">
                     {pct(o.price)} · {qty(unfilled)} restante
                     {o.filled_qty > 0 && <span className="text-sim"> · {qty(o.filled_qty)} exec.</span>}
                   </div>
+                  {o.username && (
+                    <div className="text-[10px] text-muted-foreground/60">@{o.username}</div>
+                  )}
                 </div>
-                <button
-                  onClick={() => handleCancel(o.id)}
-                  disabled={cancelling === o.id}
-                  className="ml-2 text-muted-foreground hover:text-nao transition-colors disabled:opacity-40"
-                  title="Cancelar ordem"
-                >
-                  {cancelling === o.id
-                    ? <Loader2 size={12} className="animate-spin" />
-                    : <X size={13} />
-                  }
-                </button>
+                {o.is_mine && (
+                  <button
+                    onClick={() => handleCancel(o.id)}
+                    disabled={cancelling === o.id}
+                    className="ml-2 text-muted-foreground hover:text-nao transition-colors disabled:opacity-40"
+                    title="Cancelar ordem"
+                  >
+                    {cancelling === o.id
+                      ? <Loader2 size={12} className="animate-spin" />
+                      : <X size={13} />
+                    }
+                  </button>
+                )}
               </div>
             );
           })}

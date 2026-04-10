@@ -56,6 +56,22 @@ export async function POST(request: Request, { params }: RouteParams) {
   if (new Date(topic.closes_at) < new Date())
     return NextResponse.json({ error: "O prazo deste mercado já encerrou" }, { status: 400 });
 
+  // ── Impedir posição nos dois lados (BUY only) ────────────────────
+  if (order_type === "buy") {
+    const oppSide = side === "sim" ? "nao" : "sim";
+    const { data: oppBets } = await supabase.from("bets")
+      .select("id")
+      .eq("topic_id", topicId)
+      .eq("user_id", user.id)
+      .eq("side", oppSide)
+      .not("status", "in", '("refunded","lost","exited")')
+      .limit(1);
+    if (oppBets && oppBets.length > 0)
+      return NextResponse.json({
+        error: `Você já tem posição ${oppSide.toUpperCase()} neste mercado. Não é permitido apostar nos dois lados.`,
+      }, { status: 400 });
+  }
+
   // ── Validação específica por tipo ─────────────────────────────────
   if (order_type === "sell") {
     if (!source_bet_id)
@@ -90,24 +106,14 @@ export async function POST(request: Request, { params }: RouteParams) {
       }, { status: 400 });
 
   } else {
-    // BUY: verificar saldo para escrow
-    const escrow = parseFloat((price * quantity).toFixed(2));
+    // BUY: só valida saldo — dinheiro sai apenas quando a ordem for executada
+    const needed = parseFloat((price * quantity).toFixed(2));
     const { data: wallet } = await supabase.from("wallets")
       .select("balance").eq("user_id", user.id).single();
-
-    if (!wallet || wallet.balance < escrow)
+    if (!wallet || wallet.balance < needed)
       return NextResponse.json({
-        error: `Saldo insuficiente. Necessário: Z$ ${escrow.toFixed(2)} (escrow)`,
+        error: `Saldo insuficiente. Necessário: Z$ ${needed.toFixed(2)}`,
       }, { status: 400 });
-
-    // Debitar escrow
-    const { error: walletErr } = await supabase.from("wallets")
-      .update({ balance: wallet.balance - escrow })
-      .eq("user_id", user.id)
-      .eq("balance", wallet.balance);
-
-    if (walletErr)
-      return NextResponse.json({ error: "Erro ao reservar saldo. Tente novamente." }, { status: 409 });
   }
 
   // ── Inserir ordem ─────────────────────────────────────────────────
@@ -124,12 +130,6 @@ export async function POST(request: Request, { params }: RouteParams) {
   }).select().single();
 
   if (orderErr || !order) {
-    // Estornar escrow se foi debitado
-    if (order_type === "buy") {
-      const escrow = parseFloat((price * quantity).toFixed(2));
-      const { data: w } = await supabase.from("wallets").select("balance").eq("user_id", user.id).single();
-      await supabase.from("wallets").update({ balance: (w?.balance ?? 0) + escrow }).eq("user_id", user.id);
-    }
     return NextResponse.json({ error: "Erro ao criar ordem" }, { status: 500 });
   }
 
@@ -152,18 +152,9 @@ export async function POST(request: Request, { params }: RouteParams) {
     }
   }
 
-  // Ordem a mercado: cancelar o que não foi executado e devolver escrow
+  // Ordem a mercado: cancelar o que não foi executado (sem escrow a devolver)
   if (is_market && matchResult.totalFilled < quantity - 0.01) {
-    const { data: updatedOrder } = await admin.from("orders").select("filled_qty, price").eq("id", order.id).single();
-    const unfilledQty = parseFloat((quantity - (updatedOrder?.filled_qty ?? 0)).toFixed(2));
-
     await admin.from("orders").update({ status: "cancelled" }).eq("id", order.id);
-
-    if (order_type === "buy" && unfilledQty > 0.01) {
-      const refund = parseFloat((unfilledQty * price).toFixed(2));
-      const { data: w } = await admin.from("wallets").select("balance").eq("user_id", user.id).single();
-      await admin.from("wallets").update({ balance: (w?.balance ?? 0) + refund }).eq("user_id", user.id);
-    }
   }
 
   // Estado final da ordem

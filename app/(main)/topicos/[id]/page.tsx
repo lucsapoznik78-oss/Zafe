@@ -42,11 +42,12 @@ interface PageProps {
 }
 
 const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
-  active:    { label: "Aberto",    cls: "bg-sim/20 text-sim" },
-  closed:    { label: "Fechado",   cls: "bg-yellow-500/20 text-yellow-400" },
-  resolved:  { label: "Resolvido", cls: "bg-muted text-muted-foreground" },
-  cancelled: { label: "Cancelado", cls: "bg-nao/20 text-nao" },
-  pending:   { label: "Pendente",  cls: "bg-yellow-500/20 text-yellow-400" },
+  active:    { label: "Aberto",              cls: "bg-sim/20 text-sim" },
+  closed:    { label: "Fechado",             cls: "bg-yellow-500/20 text-yellow-400" },
+  resolved:  { label: "Resolvido",           cls: "bg-muted text-muted-foreground" },
+  cancelled: { label: "Cancelado",           cls: "bg-nao/20 text-nao" },
+  pending:   { label: "Pendente",            cls: "bg-yellow-500/20 text-yellow-400" },
+  resolving: { label: "Aguardando resolução",cls: "bg-yellow-500/20 text-yellow-400" },
 };
 
 export default async function TopicoDetailPage({ params, searchParams }: PageProps) {
@@ -94,6 +95,15 @@ export default async function TopicoDetailPage({ params, searchParams }: PagePro
 
   const isClosed = topic.status !== "active" || new Date(topic.closes_at) < new Date();
   const isExpiredActive = topic.status === "active" && new Date(topic.closes_at) < new Date();
+
+  // Auto-fechar: se alguém abre um tópico expirado e ele ainda está active, move para resolving
+  if (isExpiredActive) {
+    admin.from("topics").update({
+      status: "resolving",
+      oracle_retry_count: 0,
+      oracle_next_retry_at: null,
+    }).eq("id", id).then(() => {});
+  }
   const userBalance = wallet?.balance ?? 0;
 
   const effectiveStatus = isExpiredActive ? "closed" : topic.status;
