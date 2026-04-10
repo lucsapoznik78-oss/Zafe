@@ -43,7 +43,7 @@ Two clients, never mix them:
 All database types are in `types/database.ts`. Key types: `Topic`, `Bet`, `BetMatch`, `Profile`, `Wallet`, `Transaction`, `Friendship`, `PrivateBetInvite`, `Notification`.
 
 Enums to know:
-- `TopicStatus`: `pending` → `active` → `resolved` | `cancelled`
+- `TopicStatus`: `pending` → `active` → `resolving` → `resolved` | `cancelled`. There is NO `closed` status.
 - `BetSide`: `sim` | `nao` (Portuguese yes/no)
 - `TopicCategory`: `politica` | `esportes` | `cultura` | `economia` | `tecnologia` | `entretenimento` | `outros`
 
@@ -59,13 +59,37 @@ Enums to know:
 - `v_topic_stats` — Aggregated market stats: `volume_sim`, `volume_nao`, `total_volume`, `prob_sim`, `prob_nao`, `bet_count`. Use this instead of querying `bets` directly for market display.
 
 ### Wallet Flow
-All wallet mutations must use optimistic locking to prevent double-spend. Debit happens before inserting bet records. Transaction types: `bet_placed`, `bet_won`, `bet_refund`, `commission`, `secondary_buy`, `secondary_sell`.
+- **Primary market (apostas):** debit on bet placement (optimistic lock).
+- **Secondary market (orders):** balance is validated on order placement but **debit only happens at trade execution** (`executeTrade` in `order-matching.ts`). No escrow held.
+- Transaction types: `bet_placed`, `bet_won`, `bet_refund`, `commission`, `bet_exited`.
+- All wallet mutations use optimistic locking to prevent double-spend.
 
 ### Notifications
 Two delivery channels from the same event: insert into `notifications` table (in-app) + call `sendPushToUser()` (Web Push via VAPID). Non-blocking — use `Promise.allSettled`.
 
 ### Styling
 Dark theme (black bg). Primary green `#86efac`. Bet sides have CSS variables: `--sim` (green) and `--nao` (red). All components use `cn()` from `lib/utils.ts`.
+
+### Secondary Market (Mercado Secundário)
+- Order book per topic side (SIM/NÃO): bids (compra) and asks (venda).
+- `GET /api/topicos/[id]/orderbook` — returns full book, all open orders with username, user position, `is_mine` flag per order.
+- `POST /api/topicos/[id]/ordem` — place order. Validates: active topic, no opposite-side position, sell requires owning a bet (`source_bet_id`).
+- `DELETE /api/topicos/[id]/ordem/[orderId]` — cancel order.
+- `lib/order-matching.ts` — `tryMatchOrders(admin, orderId)`: FIFO price-time, 2% commission on seller, self-trade prevention. `cancelTopicOrders(admin, topicId)`: called on market close.
+- Embedded Supabase joins: use `profiles!user_id(username, full_name)` (explicit FK hint) or handle both array and object response.
+
+### Topic Auto-Expiry
+Topics with `closes_at < NOW()` and `status = 'active'` are auto-moved to `resolving` when anyone opens the topic detail page. The cron at `POST /api/cron/fechar-mercados` does the same in batch but is not scheduled on Vercel Hobby plan.
+
+### SEO / Sitemap
+- `app/sitemap.xml/route.ts` — dynamic route handler (not a static Next.js sitemap file). Uses `createAdminClient()` at runtime.
+- `app/robots.ts` — allows `/topicos/`, `/ranking`, `/u/`. Root `/` is public in middleware so Googlebot can reach the site.
+- Deployed at `zafe-rho.vercel.app` (no custom domain yet).
+
+### Versioning Policy
+- **Major features** (new systems, new pages) → new git tag: `v1.1`, `v1.2`, etc. Commit current state first.
+- **Small fixes** (bug fixes, text changes, data corrections) → in-place edits on current version.
+- Current version: **v1.0**.
 
 ### Language
 All UI text, route names, variable names, and user-facing content are in **Brazilian Portuguese (pt-BR)**.
