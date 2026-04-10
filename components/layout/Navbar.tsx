@@ -75,6 +75,7 @@ export default function Navbar() {
         <nav className="hidden md:flex items-center gap-1">
           {[
             { href: "/topicos", label: "Tópicos" },
+            { href: "/desafios", label: "Desafios" },
             { href: "/ranking", label: "Ranking" },
             { href: "/amigos", label: "Amigos" },
             { href: "/apostas-privadas", label: "Privadas" },

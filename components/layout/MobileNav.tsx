@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Users, User, Trophy, BookOpen } from "lucide-react";
+import { Home, Users, User, Trophy, Swords } from "lucide-react";
 
 const navItems = [
-  { href: "/topicos",          label: "Início",   icon: Home },
-  { href: "/ranking",          label: "Ranking",  icon: Trophy },
-  { href: "/amigos",           label: "Amigos",   icon: Users },
-  { href: "/apostas-privadas", label: "Privadas", icon: BookOpen },
-  { href: "/perfil",           label: "Perfil",   icon: User },
+  { href: "/topicos",   label: "Início",    icon: Home },
+  { href: "/desafios",  label: "Desafios",  icon: Swords },
+  { href: "/ranking",   label: "Ranking",   icon: Trophy },
+  { href: "/amigos",    label: "Amigos",    icon: Users },
+  { href: "/perfil",    label: "Perfil",    icon: User },
 ];
 
 export default function MobileNav() {

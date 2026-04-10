@@ -7,6 +7,7 @@ import AdminStats from "@/components/admin/AdminStats";
 import AdminActiveTopics from "@/components/admin/AdminActiveTopics";
 import OracleLog from "@/components/admin/OracleLog";
 import RelatorioFinanceiro from "@/components/admin/RelatorioFinanceiro";
+import AdminDesafiosReview from "@/components/desafios/AdminDesafiosReview";
 
 export default async function AdminPage() {
   const supabase = await createClient();
@@ -27,6 +28,7 @@ export default async function AdminPage() {
     { data: openOrders },
     { data: commissionTxs },
     { data: activeTopics },
+    { data: desafiosAdminReview },
   ] = await Promise.all([
     supabase.from("topics").select("*, creator:profiles!creator_id(username, full_name)").eq("status", "pending").order("created_at"),
     supabase
@@ -52,6 +54,10 @@ export default async function AdminPage() {
     adminSupabase.from("transactions").select("net_amount").eq("type", "commission"),
     // Mercados ativos para edição de prazo
     adminSupabase.from("topics").select("id, title, category, closes_at").eq("status", "active").eq("is_private", false).order("closes_at"),
+    // Desafios em revisão admin
+    adminSupabase.from("desafios")
+      .select("id, title, resolution, proof_url, proof_type, proof_notes, creator:profiles!creator_id(username, full_name), contestations:desafio_contestations(reason, contestant:profiles!contestant_id(username))")
+      .eq("status", "admin_review"),
   ]);
 
   const walletBalance  = (wallets ?? []).reduce((s, w: { balance: number }) => s + (w.balance ?? 0), 0);
@@ -87,6 +93,7 @@ export default async function AdminPage() {
         pendingCount={pending?.length ?? 0}
         toResolveCount={toResolve?.length ?? 0}
       />
+      <AdminDesafiosReview desafios={(desafiosAdminReview ?? []) as any} />
       <AdminQueue topics={pending ?? []} />
       <AdminResolve topics={toResolve ?? []} allResolving={allResolving ?? []} />
       <AdminActiveTopics topics={uniqueActiveTopics} />
