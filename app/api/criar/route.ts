@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { slugify } from "@/lib/slugify";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -16,6 +17,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Data de encerramento inválida" }, { status: 400 });
   }
 
+  // Gera slug único
+  const baseSlug = slugify(title.trim());
+  const suffix = Math.random().toString(36).slice(2, 6);
+  const slug = baseSlug ? `${baseSlug}-${suffix}` : suffix;
+
   const { data, error } = await supabase.from("topics").insert({
     creator_id: user.id,
     title: title.trim(),
@@ -25,6 +31,7 @@ export async function POST(request: Request) {
     min_bet: parseFloat(min_bet) || 1,
     closes_at: new Date(closes_at).toISOString(),
     is_private: false,
+    slug,
   }).select().single();
 
   if (error) return NextResponse.json({ error: "Erro ao criar tópico" }, { status: 500 });
