@@ -14,11 +14,11 @@ export function formatPercent(value: number): string {
 }
 
 export function applyCommission(amount: number): number {
-  return amount * 0.96;
+  return amount * 0.94;
 }
 
 export function commissionAmount(amount: number): number {
-  return amount * 0.04;
+  return amount * 0.06;
 }
 
 export function timeUntil(date: string): string {

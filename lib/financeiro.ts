@@ -6,7 +6,7 @@
  * ║  A Zafe opera com DUAS contas bancárias separadas:           ║
  * ║                                                              ║
  * ║  CONTA OPERACIONAL (sua receita)                             ║
- * ║    → Recebe: comissão de 4% de cada depósito                 ║
+ * ║    → Recebe: comissão de 6% de cada depósito                 ║
  * ║    → É declarada como receita para a Receita Federal         ║
  * ║    → Base de cálculo: ISS, PIS, COFINS, IRPJ                 ║
  * ║                                                              ║
@@ -29,8 +29,8 @@
 
 // ── Taxas ────────────────────────────────────────────────────────
 
-/** 4% retidos no depósito como receita da plataforma */
-export const TAXA_DEPOSITO = 0.04;
+/** 6% retidos no depósito como receita da plataforma */
+export const TAXA_DEPOSITO = 0.06;
 
 /** Percentual que entra na carteira do usuário (100% - taxa) */
 export const FATOR_LIQUIDO = 1 - TAXA_DEPOSITO;
@@ -39,12 +39,12 @@ export const FATOR_LIQUIDO = 1 - TAXA_DEPOSITO;
 export const SAQUE_MINIMO = 20;
 
 /**
- * Taxa de saída antecipada de uma aposta (96% devolvido, 4% fica como comissão)
- * O usuário sai antes da resolução e abre mão de 4% do valor apostado.
- * Esses 4% vão para CONTA_OPERACIONAL como receita da plataforma.
+ * Taxa de saída antecipada de uma aposta (96% devolvido, 6% fica como comissão)
+ * O usuário sai antes da resolução e abre mão de 6% do valor apostado.
+ * Esses 6% vão para CONTA_OPERACIONAL como receita da plataforma.
  */
-export const TAXA_SAIDA_ANTECIPADA = 0.04;
-export const FATOR_DEVOLUCAO_SAIDA = 1 - TAXA_SAIDA_ANTECIPADA; // 0.96
+export const TAXA_SAIDA_ANTECIPADA = 0.06;
+export const FATOR_DEVOLUCAO_SAIDA = 1 - TAXA_SAIDA_ANTECIPADA; // 0.94
 
 // ── Identificadores de conta (preencher quando integrar pagamento) ──
 
@@ -64,7 +64,7 @@ export const CONTA_CUSTODIA = {
 
 /**
  * CONTA OPERACIONAL — use esta chave/ID ao direcionar comissões.
- * Apenas os 4% de comissão devem entrar aqui.
+ * Apenas os 6% de comissão devem entrar aqui.
  * É desta conta que saem os custos operacionais da empresa.
  *
  * Stripe: conta principal da plataforma

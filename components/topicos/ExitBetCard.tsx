@@ -17,8 +17,8 @@ export default function ExitBetCard({ betId, side, amount }: Props) {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
 
-  const devolucao = parseFloat((amount * 0.96).toFixed(2));
-  const taxa      = parseFloat((amount * 0.04).toFixed(2));
+  const devolucao = parseFloat((amount * 0.94).toFixed(2));
+  const taxa      = parseFloat((amount * 0.06).toFixed(2));
 
   async function handleExit() {
     setLoading(true);
@@ -72,7 +72,7 @@ export default function ExitBetCard({ betId, side, amount }: Props) {
               <span className="text-sim font-semibold">{formatCurrency(devolucao)}</span>
             </div>
             <div className="flex justify-between text-muted-foreground">
-              <span>Taxa de saída (4%)</span>
+              <span>Taxa de saída (6%)</span>
               <span className="text-nao">{formatCurrency(taxa)}</span>
             </div>
             <p className="text-muted-foreground/60 pt-0.5 border-t border-border">

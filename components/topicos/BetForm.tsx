@@ -201,8 +201,8 @@ export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed,
             <span className="text-sim font-semibold">+{formatCurrency(expectedProfit)}</span>
           </div>
           <div className="border-t border-border pt-1.5 flex justify-between">
-            <span className="text-muted-foreground/60">Comissão (4%)</span>
-            <span className="text-muted-foreground/60">descontada no depósito</span>
+            <span className="text-muted-foreground/60">Comissão (6%)</span>
+            <span className="text-muted-foreground/60">descontada no prêmio</span>
           </div>
           <p className="text-muted-foreground/50 text-[10px]">
             Odds estimadas com base no pool atual. Mudam conforme mais pessoas apostam. Retorno final é proporcional.

@@ -26,7 +26,7 @@ export default function TermosPage() {
         <h2 className="text-base font-semibold text-white">3. Como funciona</h2>
         <p>
           Usuários depositam saldo na plataforma e usam esse saldo para investir em resultados de eventos (SIM ou NÃO).
-          Uma comissão de 4% é descontada no momento do depósito. Quando o mercado é resolvido, vencedores recebem
+          Uma comissão de 6% é descontada no momento do depósito. Quando o mercado é resolvido, vencedores recebem
           seus ganhos proporcionalmente ao valor investido e às odds vigentes no momento.
         </p>
         <p>

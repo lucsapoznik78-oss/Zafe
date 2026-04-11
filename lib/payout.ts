@@ -89,7 +89,7 @@ export async function pagarVencedores(
   const totalWinPool  = winnerBets.reduce((s: number, b: any) => s + b.amount, 0);
   const totalLosePool = loserBets.reduce((s: number, b: any) => s + b.amount, 0);
 
-  const COMMISSION_RATE = 0.04;
+  const COMMISSION_RATE = 0.06;
 
   for (const bet of winnerBets) {
     const winnings   = parseFloat(((bet.amount / totalWinPool) * totalLosePool).toFixed(2));
@@ -107,13 +107,13 @@ export async function pagarVencedores(
       },
       {
         user_id: bet.user_id, type: "commission", amount: commission, net_amount: commission,
-        description: "Comissão Zafe (4%)", reference_id: topicId,
+        description: "Comissão Zafe (6%)", reference_id: topicId,
       },
     ]);
     await supabase.from("notifications").insert({
       user_id: bet.user_id, type: "bet_won",
       title: "Você ganhou! 🏆",
-      body: `Seu ${resolution.toUpperCase()} em "${title}" rendeu ${fmt(netPayout)} (após 4% de comissão).`,
+      body: `Seu ${resolution.toUpperCase()} em "${title}" rendeu ${fmt(netPayout)} (após 6% de comissão).`,
       data: { topic_id: topicId, payout: netPayout },
     });
     sendPushToUser(supabase, bet.user_id, {

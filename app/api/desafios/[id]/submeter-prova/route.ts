@@ -25,30 +25,43 @@ async function avaliarProva(
     const resp = await anthropic.messages.create(
       {
         model: "claude-haiku-4-5-20251001",
-        max_tokens: 400,
+        max_tokens: 500,
         tools: [{ type: "web_search_20250305" as any, name: "web_search" }],
         messages: [{
           role: "user",
-          content: `Você é um árbitro do site Zafe (prediction markets brasileiro).
-Avalie a prova enviada pelo criador de um desafio.
+          content: `Você é árbitro do Zafe, site brasileiro de prediction markets. Avalie se a prova do criador confirma o resultado do desafio.
 
-Desafio: "${title}"
-Critérios de resolução: "${description}"
-Resultado declarado: ${claimedSide.toUpperCase()}
-Tipo de prova: ${proofType}
-Link/URL da prova: ${proofUrl}
-Notas do criador: ${proofNotes || "(nenhuma)"}
+DESAFIO: "${title}"
+CRITÉRIOS DECLARADOS: "${description}"
+RESULTADO ALEGADO: ${claimedSide.toUpperCase()}
+TIPO DE PROVA: ${proofType}
+URL DA PROVA: ${proofUrl}
+NOTAS: ${proofNotes || "(nenhuma)"}
 
-Busque na web para confirmar a prova se possível.
+IMPORTANTE — LIMITAÇÕES TÉCNICAS:
+- Você NÃO consegue visualizar imagens, fotos ou prints diretamente
+- Para provas do tipo "foto" ou "print": só aprove se a URL levar a uma fonte pública verificável (ex: tweet público, Instagram público, post verificável) E você conseguir confirmar o conteúdo via busca na web
+- Para links de notícia/resultado oficial: faça busca na web para verificar se a URL existe e confirma o resultado
+- Para vídeos (YouTube, etc.): busque o título/conteúdo do vídeo na web
+
+CRITÉRIOS PARA APROVAR (todos devem ser satisfeitos):
+1. A URL é acessível e real (não é link privado, drive pessoal, ou URL inválida)
+2. A fonte é de domínio reconhecível e confiável para este tipo de evento
+3. Você consegue confirmar independentemente (via busca) que o resultado ocorreu
+4. O resultado confirmado bate com os critérios declarados no desafio
+5. Confiança final >= 85
+
+CRITÉRIOS PARA REJEITAR:
+- URL inacessível, privada ou suspeita
+- Foto/print sem confirmação independente via busca
+- Fonte não confiável ou facilmente manipulável
+- Resultado ambíguo ou que não atende exatamente os critérios
+- Qualquer dúvida → REJEITAR (protege os apostadores)
+
+Faça a busca web agora para verificar.
 
 Responda SOMENTE com JSON:
-{"aprovado":true,"confianca":85,"motivo":"Fonte confiável confirma o resultado"}
-
-Regras RIGOROSAS:
-- aprovado=true: prova é suficientemente confiável e inequívoca (confianca >= 80)
-- aprovado=false: prova é fraca, insuficiente, suspeita ou não verificável
-- Exija evidências de fontes confiáveis (notícias, registros oficiais, vídeos verificáveis)
-- Seja CONSERVADOR — em caso de dúvida, aprove=false`,
+{"aprovado":true,"confianca":90,"motivo":"Notícia do UOL Esportes confirma que Flamengo venceu o Brasileirão em 15/12/2026"}`,
         }],
       },
       { headers: { "anthropic-beta": "web-search-2025-03-05" } }

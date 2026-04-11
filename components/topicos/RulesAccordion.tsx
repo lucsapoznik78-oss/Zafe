@@ -22,7 +22,7 @@ const genericRules = [
   },
   {
     q: "Qual a comissão cobrada?",
-    a: "4% do valor total apostado — descontado proporcionalmente do prêmio de cada vencedor.",
+    a: "6% do valor total apostado — descontado proporcionalmente do prêmio de cada vencedor.",
   },
   {
     q: "Posso sair antes do encerramento?",
