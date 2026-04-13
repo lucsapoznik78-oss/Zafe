@@ -7,15 +7,16 @@ interface Props {
   title: string;
   probSim: number;
   slug?: string | null;
-  topicId: string;
+  topicId?: string;
+  pagePath?: string; // override the full path, e.g. /desafios/123
 }
 
-export default function ShareButton({ title, probSim, slug, topicId }: Props) {
+export default function ShareButton({ title, probSim, slug, topicId, pagePath }: Props) {
   const [copied, setCopied] = useState(false);
   const [open, setOpen] = useState(false);
 
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://zafe-rho.vercel.app";
-  const path = slug ? `/topicos/${slug}` : `/topicos/${topicId}`;
+  const path = pagePath ?? (slug ? `/topicos/${slug}` : `/topicos/${topicId}`);
   const url = `${baseUrl}${path}`;
   const text = `${title} — SIM ${(probSim * 100).toFixed(0)}% · NÃO ${(100 - probSim * 100).toFixed(0)}% | Zafe`;
 

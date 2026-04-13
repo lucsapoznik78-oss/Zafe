@@ -17,10 +17,17 @@ export default function LoginForm() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
+  const [phone, setPhone] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  // Estado do fluxo 2FA
+  const [step, setStep] = useState<"credentials" | "choose-2fa" | "verify-otp">("credentials");
+  const [twoFaMethod, setTwoFaMethod] = useState<"email" | "sms">("email");
+  const [otp, setOtp] = useState("");
+  const [pendingUserId, setPendingUserId] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -29,30 +36,94 @@ export default function LoginForm() {
     setSuccess("");
 
     if (mode === "login") {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      if (signInError || !data.user) {
         setError("Email ou senha inválidos.");
+        setLoading(false);
+        return;
+      }
+
+      // Verifica se o usuário tem 2FA ativo
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("two_fa_enabled, two_fa_method, phone")
+        .eq("id", data.user.id)
+        .single();
+
+      if (profile?.two_fa_enabled) {
+        // Tem 2FA — faz logout temporário e pede verificação
+        setPendingUserId(data.user.id);
+        setTwoFaMethod(profile.two_fa_method ?? "email");
+        await supabase.auth.signOut();
+        await sendOtp(profile.two_fa_method ?? "email", data.user.email ?? email, profile.phone ?? "");
+        setStep("verify-otp");
       } else {
         router.push("/topicos");
       }
     } else {
       if (!fullName || !username) {
-        setError("Preencha todos os campos.");
+        setError("Preencha nome completo e nome de usuário.");
         setLoading(false);
         return;
       }
-      const { error } = await supabase.auth.signUp({
+      const phoneClean = phone.replace(/\D/g, "");
+      const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: { full_name: fullName, username },
         },
       });
-      if (error) {
-        setError(error.message);
-      } else {
-        setSuccess("Conta criada! Verifique seu email para confirmar.");
+      if (signUpError) {
+        setError(signUpError.message);
+        setLoading(false);
+        return;
       }
+      // Salva telefone no perfil se fornecido
+      if (phoneClean) {
+        // O trigger cria o perfil; atualizamos o phone logo após signup
+        const { data: { user: newUser } } = await supabase.auth.getUser();
+        if (newUser) {
+          await supabase.from("profiles").update({ phone: phoneClean }).eq("id", newUser.id);
+        }
+      }
+      setSuccess("Conta criada! Verifique seu email para confirmar.");
+    }
+    setLoading(false);
+  }
+
+  async function sendOtp(method: "email" | "sms", emailAddr: string, phoneNumber: string) {
+    if (method === "sms" && phoneNumber) {
+      const formatted = phoneNumber.startsWith("+") ? phoneNumber : `+55${phoneNumber}`;
+      await supabase.auth.signInWithOtp({ phone: formatted });
+    } else {
+      await supabase.auth.signInWithOtp({ email: emailAddr });
+    }
+  }
+
+  async function handleVerifyOtp(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    let verifyResult;
+    if (twoFaMethod === "sms") {
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("phone")
+        .eq("id", pendingUserId ?? "")
+        .single();
+      const phoneNumber = profileData?.phone ?? "";
+      const formatted = phoneNumber.startsWith("+") ? phoneNumber : `+55${phoneNumber}`;
+      verifyResult = await supabase.auth.verifyOtp({ phone: formatted, token: otp, type: "sms" });
+    } else {
+      verifyResult = await supabase.auth.verifyOtp({ email, token: otp, type: "magiclink" });
+    }
+
+    if (verifyResult.error) {
+      setError("Código inválido ou expirado. Tente novamente.");
+    } else {
+      router.push("/topicos");
     }
     setLoading(false);
   }
@@ -64,6 +135,54 @@ export default function LoginForm() {
     });
   }
 
+  // ── Tela de verificação OTP ─────────────────────────────────────
+  if (step === "verify-otp") {
+    return (
+      <div className="bg-card border border-border rounded-xl p-6 space-y-5">
+        <div className="text-center space-y-1">
+          <p className="text-lg font-bold text-white">Verificação em 2 etapas</p>
+          <p className="text-sm text-muted-foreground">
+            {twoFaMethod === "sms"
+              ? "Enviamos um código SMS para o seu celular."
+              : `Enviamos um código para ${email}.`}
+          </p>
+        </div>
+
+        <form onSubmit={handleVerifyOtp} className="space-y-4">
+          <div className="space-y-1.5">
+            <Label className="text-sm text-muted-foreground">Código de verificação</Label>
+            <Input
+              value={otp}
+              onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              placeholder="000000"
+              maxLength={6}
+              className="bg-input border-border focus:border-primary text-center text-2xl tracking-widest font-mono"
+              required
+            />
+          </div>
+
+          {error && <p className="text-destructive text-sm">{error}</p>}
+
+          <Button
+            type="submit"
+            disabled={loading || otp.length < 6}
+            className="w-full bg-primary text-black font-semibold hover:bg-primary/90"
+          >
+            {loading ? <Loader2 size={16} className="animate-spin" /> : "Verificar código"}
+          </Button>
+        </form>
+
+        <button
+          onClick={() => { setStep("credentials"); setOtp(""); setError(""); }}
+          className="w-full text-xs text-muted-foreground hover:text-white transition-colors"
+        >
+          Voltar ao login
+        </button>
+      </div>
+    );
+  }
+
+  // ── Tela principal ───────────────────────────────────────────────
   return (
     <div className="bg-card border border-border rounded-xl p-6 space-y-5">
       <div className="flex border border-border rounded-lg p-1 gap-1">
@@ -105,6 +224,19 @@ export default function LoginForm() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s/g, ""))}
                 placeholder="joaosilva"
+                className="bg-input border-border focus:border-primary"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="phone" className="text-sm text-muted-foreground">
+                Celular <span className="text-muted-foreground/50 font-normal">(opcional — para verificação em 2 etapas)</span>
+              </Label>
+              <Input
+                id="phone"
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="(11) 99999-9999"
                 className="bg-input border-border focus:border-primary"
               />
             </div>

@@ -7,7 +7,7 @@ export type TopicCategory =
   | "entretenimento"
   | "outros";
 
-export type TopicStatus = "pending" | "active" | "resolved" | "cancelled";
+export type TopicStatus = "pending" | "active" | "resolving" | "resolved" | "cancelled";
 export type TopicResolution = "sim" | "nao" | null;
 export type BetSide = "sim" | "nao";
 export type BetStatus =
@@ -16,14 +16,18 @@ export type BetStatus =
   | "partial"
   | "won"
   | "lost"
-  | "refunded";
+  | "refunded"
+  | "exited";
 export type TransactionType =
   | "deposit"
   | "withdraw"
   | "bet_placed"
   | "bet_won"
   | "bet_refund"
-  | "commission";
+  | "commission"
+  | "referral_bonus"
+  | "exit_fee"
+  | "bet_exited";
 export type FriendshipStatus = "pending" | "accepted" | "blocked";
 export type InviteStatus = "pending" | "accepted" | "declined" | "expired";
 export type NotificationType =
@@ -31,7 +35,9 @@ export type NotificationType =
   | "bet_matched"
   | "market_resolved"
   | "friend_request"
-  | "bet_won";
+  | "bet_won"
+  | "judge_invite"
+  | "trade_executed";
 
 export interface Profile {
   id: string;

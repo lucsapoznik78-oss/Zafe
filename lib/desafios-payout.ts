@@ -4,6 +4,55 @@
  */
 import { sendPushToUser } from "@/lib/webpush";
 
+/**
+ * Notifica todos os apostadores que o resultado foi definido e a janela de contestação abriu.
+ * Chamado quando desafio passa para under_contestation (por IA ou por prova aprovada).
+ */
+export async function notificarContestacao(
+  supabase: any,
+  desafioId: string,
+  desafioTitle: string,
+  resolution: "sim" | "nao",
+  contestDeadlineAt: string
+) {
+  const { data: bets } = await supabase
+    .from("desafio_bets")
+    .select("user_id")
+    .eq("desafio_id", desafioId)
+    .not("status", "in", '("refunded","won","lost")');
+
+  if (!bets?.length) return;
+
+  const title = desafioTitle.slice(0, 55);
+  const prazo = new Date(contestDeadlineAt).toLocaleString("pt-BR");
+
+  // Deduplica user_ids
+  const userIds = [...new Set((bets as any[]).map((b) => b.user_id))];
+
+  await Promise.allSettled(
+    userIds.map((userId) =>
+      supabase.from("notifications").insert({
+        user_id: userId,
+        type: "market_resolved",
+        title: `Resultado: ${resolution.toUpperCase()}`,
+        body: `"${title}" foi decidido como ${resolution.toUpperCase()}. Você tem até ${prazo} para contestar.`,
+        data: { desafio_id: desafioId, resolution },
+      })
+    )
+  );
+
+  // Push para todos
+  await Promise.allSettled(
+    userIds.map((userId) =>
+      sendPushToUser(supabase, userId, {
+        title: `Desafio: ${resolution.toUpperCase()}`,
+        body: `"${title}" → ${resolution.toUpperCase()}. Conteste até ${prazo}.`,
+        url: `/desafios/${desafioId}`,
+      })
+    )
+  );
+}
+
 function fmt(v: number) {
   return "Z$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }

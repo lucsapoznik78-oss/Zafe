@@ -28,6 +28,94 @@ interface PageProps {
   searchParams: Promise<{ sort?: string; category?: string; search?: string; tab?: string }>;
 }
 
+async function TrendingList() {
+  const supabase = await createClient();
+
+  // Volume apostado nas últimas 2 horas por tópico
+  const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+
+  const { data: recentBets } = await supabase
+    .from("bets")
+    .select("topic_id, matched_amount")
+    .gte("created_at", twoHoursAgo)
+    .not("status", "in", '("refunded")');
+
+  // Agrupa volume por topic_id
+  const vol2hMap = new Map<string, number>();
+  for (const b of recentBets ?? []) {
+    if (!b.topic_id) continue;
+    vol2hMap.set(b.topic_id, (vol2hMap.get(b.topic_id) ?? 0) + parseFloat(b.matched_amount ?? 0));
+  }
+
+  if (vol2hMap.size === 0) {
+    return (
+      <div className="text-center py-20 text-muted-foreground">
+        <p className="text-2xl mb-2">📊</p>
+        <p className="text-sm font-medium text-white">Nenhuma aposta nas últimas 2 horas</p>
+        <p className="text-xs mt-1">Volte mais tarde — o feed aquece com apostas em tempo real.</p>
+      </div>
+    );
+  }
+
+  const trendingIds = [...vol2hMap.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 12)
+    .map(([id]) => id);
+
+  const { data: topics } = await supabase
+    .from("topics")
+    .select("*, creator:profiles!creator_id(id, username, full_name)")
+    .in("id", trendingIds)
+    .eq("status", "active");
+
+  if (!topics || topics.length === 0) {
+    return (
+      <div className="text-center py-20 text-muted-foreground">
+        <p className="text-sm">Nenhum tópico ativo em alta agora.</p>
+      </div>
+    );
+  }
+
+  const { data: statsData } = await supabase
+    .from("v_topic_stats")
+    .select("*")
+    .in("topic_id", trendingIds);
+
+  const statsMap = new Map((statsData ?? []).map((s: any) => [s.topic_id, s]));
+
+  const enriched = topics
+    .map((t) => ({
+      ...t,
+      stats: statsMap.get(t.id) ?? null,
+      latestSnapshotProb: statsMap.get(t.id)?.prob_sim ?? 0.5,
+      vol2h: vol2hMap.get(t.id) ?? 0,
+    }))
+    .sort((a, b) => b.vol2h - a.vol2h);
+
+  return (
+    <div className="space-y-4">
+      <p className="text-xs text-muted-foreground">
+        Eventos com mais volume apostado nas últimas 2 horas — atualizado em tempo real.
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {enriched.map((topic, i) => (
+          <div key={topic.id} className="relative">
+            {i < 3 && (
+              <div className="absolute -top-2 -left-2 z-10 bg-primary text-black text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                #{i + 1}
+              </div>
+            )}
+            <div className="absolute -top-2 right-2 z-10 bg-card border border-border text-[10px] text-primary font-semibold px-2 py-0.5 rounded-full">
+              +Z$ {topic.vol2h.toFixed(0)} / 2h
+            </div>
+            <TopicCard topic={topic as TopicWithStats} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 async function TopicList({
   sort, category, search, tab,
 }: {
@@ -37,15 +125,12 @@ async function TopicList({
 
   const isEncerrados = tab === "encerrados";
 
-  // Ativos: status active E prazo não vencido
-  // Encerrados: resolved | cancelled | (active com closes_at vencido)
   let query = supabase
     .from("topics")
     .select("*, creator:profiles!creator_id(id, username, full_name)")
     .eq("is_private", false);
 
   if (isEncerrados) {
-    // Apenas resolvidos dos últimos 7 dias (sem cancelados)
     const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     query = query.eq("status", "resolved").gte("resolved_at", oneWeekAgo);
   } else {
@@ -97,7 +182,6 @@ async function TopicList({
     latestSnapshotProb: latestSnapshotMap.get(t.id) ?? 0.5,
   }));
 
-  // Sempre: mais ativos primeiro, depois os que fecham mais cedo
   enriched.sort((a, b) => {
     const volDiff = (b.stats?.total_volume ?? 0) - (a.stats?.total_volume ?? 0);
     if (volDiff !== 0) return volDiff;
@@ -122,8 +206,12 @@ export default async function TopicosPage({ searchParams }: PageProps) {
 
   const tabs = [
     { key: "abertos", label: "Abertos" },
+    { key: "em-alta", label: "Em Alta 🔥" },
     { key: "encerrados", label: "Encerrados" },
   ];
+
+  const buildHref = (key: string) =>
+    `/topicos?tab=${key}${sort !== "popular" ? `&sort=${sort}` : ""}${category ? `&category=${category}` : ""}${search ? `&search=${search}` : ""}`;
 
   return (
     <div className="py-6 space-y-5">
@@ -132,12 +220,12 @@ export default async function TopicosPage({ searchParams }: PageProps) {
         <p className="text-muted-foreground text-sm mt-0.5">Invista em eventos reais com outros usuários</p>
       </div>
 
-      {/* Tabs Abertos / Encerrados */}
+      {/* Tabs */}
       <div className="flex gap-1 bg-muted rounded-lg p-1 w-fit">
         {tabs.map((t) => (
           <Link
             key={t.key}
-            href={`/topicos?tab=${t.key}${sort !== "popular" ? `&sort=${sort}` : ""}${category ? `&category=${category}` : ""}${search ? `&search=${search}` : ""}`}
+            href={buildHref(t.key)}
             className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
               tab === t.key ? "bg-card text-white" : "text-muted-foreground hover:text-white"
             }`}
@@ -147,10 +235,14 @@ export default async function TopicosPage({ searchParams }: PageProps) {
         ))}
       </div>
 
-      <SearchBar />
-      <Suspense fallback={null}>
-        <TopicFilters />
-      </Suspense>
+      {tab !== "em-alta" && (
+        <>
+          <SearchBar />
+          <Suspense fallback={null}>
+            <TopicFilters />
+          </Suspense>
+        </>
+      )}
 
       <Suspense
         fallback={
@@ -161,7 +253,10 @@ export default async function TopicosPage({ searchParams }: PageProps) {
           </div>
         }
       >
-        <TopicList sort={sort} category={category} search={search} tab={tab} />
+        {tab === "em-alta"
+          ? <TrendingList />
+          : <TopicList sort={sort} category={category} search={search} tab={tab} />
+        }
       </Suspense>
 
       <LegalFooter />

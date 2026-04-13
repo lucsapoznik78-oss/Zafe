@@ -7,7 +7,7 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { oracleAITripleCheck } from "@/lib/oracles/ai-triple-check";
-import { pagarDesafio } from "@/lib/desafios-payout";
+import { pagarDesafio, notificarContestacao } from "@/lib/desafios-payout";
 import { sendPushToUser } from "@/lib/webpush";
 
 interface RouteParams { params: Promise<{ id: string }> }
@@ -54,6 +54,9 @@ export async function POST(_req: Request, { params }: RouteParams) {
       resolution,
       contestation_deadline_at: contestDeadline,
     }).eq("id", desafioId);
+
+    // Notifica todos os apostadores sobre o resultado e janela de contestação
+    notificarContestacao(admin, desafioId, desafio.title, resolution, contestDeadline).catch(console.error);
 
     return NextResponse.json({ outcome: "oracle_resolved", resolution });
   }

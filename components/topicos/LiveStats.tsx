@@ -4,14 +4,16 @@ import { useEffect, useRef, useState } from "react";
 import { formatCurrency } from "@/lib/utils";
 
 interface Props {
-  topicId: string;
+  topicId?: string;
+  chartUrl?: string;
   initialSim: number;
   initialNao: number;
   initialBetCount: number;
   isResolved?: boolean;
 }
 
-export default function LiveStats({ topicId, initialSim, initialNao, initialBetCount, isResolved }: Props) {
+export default function LiveStats({ topicId, chartUrl, initialSim, initialNao, initialBetCount, isResolved }: Props) {
+  const resolvedChartUrl = chartUrl ?? (topicId ? `/api/topicos/${topicId}/chart` : null);
   const [sim, setSim] = useState(initialSim);
   const [nao, setNao] = useState(initialNao);
   const [betCount, setBetCount] = useState(initialBetCount);
@@ -27,7 +29,8 @@ export default function LiveStats({ topicId, initialSim, initialNao, initialBetC
     if (isResolved) return;
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`/api/topicos/${topicId}/chart`);
+        if (!resolvedChartUrl) return;
+        const res = await fetch(resolvedChartUrl);
         if (!res.ok) return;
         const json = await res.json();
         const s = json.stats;
@@ -47,7 +50,7 @@ export default function LiveStats({ topicId, initialSim, initialNao, initialBetC
       } catch {}
     }, 15_000);
     return () => clearInterval(interval);
-  }, [topicId, isResolved]);
+  }, [resolvedChartUrl, isResolved]);
 
   return (
     <div className="space-y-3">

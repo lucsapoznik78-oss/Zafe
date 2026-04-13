@@ -66,7 +66,11 @@ export default function NotificationBell() {
   return (
     <div ref={ref} className="relative">
       <button
-        onClick={() => setOpen((prev) => !prev)}
+        onClick={() => {
+          const opening = !open;
+          setOpen(opening);
+          if (opening && unread > 0) markAllRead();
+        }}
         className="relative text-muted-foreground hover:text-white transition-colors p-1"
       >
         <Bell size={18} />

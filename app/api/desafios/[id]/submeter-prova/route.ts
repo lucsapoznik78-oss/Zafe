@@ -1,84 +1,96 @@
 /**
  * POST /api/desafios/[id]/submeter-prova
- * Criador envia prova do resultado.
- * Claude avalia a prova:
- *   - Fraca (baixa confiança) → +24h (mantém awaiting_proof com novo deadline)
- *   - Aprovada → under_contestation (48h para bettors contestarem)
+ *
+ * Fluxo:
+ *   1. Servidor prepara a prova (proof-processor): baixa imagem, extrai HTML,
+ *      chama Google Vision, etc. Claude só recebe conteúdo pronto.
+ *   2. Claude (claude-sonnet-4-6) analisa com visão se houver imagem, ou texto se for link.
+ *   3. Aprovado → under_contestation (48h); Rejeitado → +24h para nova prova.
  */
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { processProof } from "@/lib/proof-processor";
+import { notificarContestacao } from "@/lib/desafios-payout";
+import { sendPushToUser } from "@/lib/webpush";
 
 interface RouteParams { params: Promise<{ id: string }> }
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-async function avaliarProva(
-  title: string,
-  description: string,
-  proofUrl: string,
-  proofType: string,
-  proofNotes: string,
-  claimedSide: string
-): Promise<{ aprovado: boolean; confianca: number; motivo: string }> {
-  try {
-    const resp = await anthropic.messages.create(
-      {
-        model: "claude-haiku-4-5-20251001",
-        max_tokens: 500,
-        tools: [{ type: "web_search_20250305" as any, name: "web_search" }],
-        messages: [{
-          role: "user",
-          content: `Você é árbitro do Zafe, site brasileiro de prediction markets. Avalie se a prova do criador confirma o resultado do desafio.
+async function avaliarProva(opts: {
+  title: string;
+  description: string;
+  claimedSide: string;
+  proofType: string;
+  processed: Awaited<ReturnType<typeof processProof>>;
+}): Promise<{ aprovado: boolean; confianca: number; motivo: string }> {
+  const { title, description, claimedSide, proofType, processed } = opts;
+
+  const systemText = `Você é árbitro do Zafe, plataforma brasileira de prediction markets.
+Avalie se a prova confirma o resultado declarado pelo criador.
 
 DESAFIO: "${title}"
-CRITÉRIOS DECLARADOS: "${description}"
+CRITÉRIOS: "${description}"
 RESULTADO ALEGADO: ${claimedSide.toUpperCase()}
 TIPO DE PROVA: ${proofType}
-URL DA PROVA: ${proofUrl}
-NOTAS: ${proofNotes || "(nenhuma)"}
+MÉTODO DE VERIFICAÇÃO: ${processed.method}
+${processed.visionSummary ? `\nGOOGLE VISION:\n${processed.visionSummary}` : ""}
 
-IMPORTANTE — LIMITAÇÕES TÉCNICAS:
-- Você NÃO consegue visualizar imagens, fotos ou prints diretamente
-- Para provas do tipo "foto" ou "print": só aprove se a URL levar a uma fonte pública verificável (ex: tweet público, Instagram público, post verificável) E você conseguir confirmar o conteúdo via busca na web
-- Para links de notícia/resultado oficial: faça busca na web para verificar se a URL existe e confirma o resultado
-- Para vídeos (YouTube, etc.): busque o título/conteúdo do vídeo na web
+REGRAS DE AVALIAÇÃO:
+- Aprovado (aprovado=true): prova confirma inequivocamente o resultado com confiança >= 85
+- Rejeitado: prova ambígua, manipulável, não relacionada, ou confiança < 85
+- Para fotos: confie mais no Google Vision do que na imagem isolada
+- Para links: o texto da página deve mencionar explicitamente o resultado
+- Para vídeos: o título e thumbnail devem ser consistentes com o resultado
+- Em caso de dúvida → REJEITE (protege os apostadores)
 
-CRITÉRIOS PARA APROVAR (todos devem ser satisfeitos):
-1. A URL é acessível e real (não é link privado, drive pessoal, ou URL inválida)
-2. A fonte é de domínio reconhecível e confiável para este tipo de evento
-3. Você consegue confirmar independentemente (via busca) que o resultado ocorreu
-4. O resultado confirmado bate com os critérios declarados no desafio
-5. Confiança final >= 85
+Responda SOMENTE com JSON: {"aprovado":true,"confianca":92,"motivo":"Texto da ESPN confirma que..."}`;
 
-CRITÉRIOS PARA REJEITAR:
-- URL inacessível, privada ou suspeita
-- Foto/print sem confirmação independente via busca
-- Fonte não confiável ou facilmente manipulável
-- Resultado ambíguo ou que não atende exatamente os critérios
-- Qualquer dúvida → REJEITAR (protege os apostadores)
+  try {
+    let content: Anthropic.MessageParam["content"];
 
-Faça a busca web agora para verificar.
+    if (processed.images && processed.images.length > 0) {
+      // Claude com visão — manda texto + imagem(s)
+      content = [
+        { type: "text", text: systemText },
+        ...processed.images.map((img) => ({
+          type: "image" as const,
+          source: {
+            type: "base64" as const,
+            media_type: img.mimeType as "image/jpeg" | "image/png" | "image/gif" | "image/webp",
+            data: img.b64,
+          },
+        })),
+        {
+          type: "text",
+          text: `Analise a(s) imagem(ns) acima junto com os dados do Google Vision.\nConteúdo adicional: ${processed.summary}`,
+        },
+      ];
+    } else {
+      // Só texto
+      content = `${systemText}\n\nCONTEÚDO VERIFICADO:\n${processed.summary}`;
+    }
 
-Responda SOMENTE com JSON:
-{"aprovado":true,"confianca":90,"motivo":"Notícia do UOL Esportes confirma que Flamengo venceu o Brasileirão em 15/12/2026"}`,
-        }],
-      },
-      { headers: { "anthropic-beta": "web-search-2025-03-05" } }
-    );
-    const textBlock = resp.content.find((b: any) => b.type === "text") as { type: "text"; text: string } | undefined;
-    const text = textBlock?.text ?? "";
+    const resp = await anthropic.messages.create({
+      model: "claude-sonnet-4-6",
+      max_tokens: 400,
+      messages: [{ role: "user", content }],
+    });
+
+    const text = resp.content.find((b) => b.type === "text")?.text ?? "";
     const clean = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
     const m = clean.match(/\{[\s\S]*?\}/);
     const parsed = JSON.parse(m?.[0] ?? clean);
+
     return {
       aprovado: parsed.aprovado === true,
       confianca: typeof parsed.confianca === "number" ? parsed.confianca : 0,
       motivo: typeof parsed.motivo === "string" ? parsed.motivo : "",
     };
   } catch (e) {
-    console.error("[submeter-prova] AI error:", e);
-    return { aprovado: false, confianca: 0, motivo: "Erro ao avaliar prova automaticamente" };
+    console.error("[submeter-prova] Claude error:", e);
+    return { aprovado: false, confianca: 0, motivo: "Erro interno ao avaliar — tente novamente" };
   }
 }
 
@@ -88,10 +100,11 @@ export async function POST(req: Request, { params }: RouteParams) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
-  const { proof_url, proof_type, proof_notes, claimed_side } = await req.json();
+  const body = await req.json();
+  const { proof_url, proof_type, proof_notes, claimed_side, raw_image_base64 } = body;
 
-  if (!proof_url?.trim()) {
-    return NextResponse.json({ error: "URL/link da prova é obrigatório" }, { status: 400 });
+  if (!proof_url?.trim() && !raw_image_base64) {
+    return NextResponse.json({ error: "URL ou imagem da prova é obrigatório" }, { status: 400 });
   }
   if (!["link", "foto", "video", "resultado_oficial"].includes(proof_type)) {
     return NextResponse.json({ error: "Tipo de prova inválido" }, { status: 400 });
@@ -118,67 +131,96 @@ export async function POST(req: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "Prazo de envio de prova expirado" }, { status: 400 });
   }
 
-  // Salva a prova
+  // Marca como "processando" para evitar duplo envio
   await admin.from("desafios").update({
     status: "proof_submitted",
-    proof_url: proof_url.trim(),
+    proof_url: proof_url?.trim() ?? "(upload direto)",
     proof_type,
     proof_notes: proof_notes?.trim() ?? null,
     proof_submitted_at: new Date().toISOString(),
     resolution: claimed_side,
   }).eq("id", desafioId);
 
-  // Avalia a prova via AI
-  const avaliacao = await avaliarProva(
-    desafio.title,
-    desafio.description,
-    proof_url.trim(),
+  // ── Processa a prova server-side ───────────────────────────────
+  const processed = await processProof(
+    proof_url?.trim() ?? "",
     proof_type,
-    proof_notes ?? "",
-    claimed_side
+    raw_image_base64 ?? undefined
   );
 
+  // Se nem conseguiu baixar/acessar → rejeita direto
+  if (!processed.canVerify) {
+    const newDeadline = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    await admin.from("desafios").update({
+      status: "awaiting_proof",
+      proof_url: null, proof_type: null, proof_notes: null,
+      proof_submitted_at: null, resolution: null,
+      proof_deadline_at: newDeadline,
+      oracle_notes: `Prova inacessível: ${processed.error}`,
+    }).eq("id", desafioId);
+    return NextResponse.json({
+      outcome: "rejected",
+      message: `Não foi possível acessar a prova: ${processed.error}. Você tem +24h para enviar outra.`,
+      motivo: processed.error,
+    });
+  }
+
+  // ── Claude avalia ──────────────────────────────────────────────
+  const avaliacao = await avaliarProva({
+    title: desafio.title,
+    description: desafio.description,
+    claimedSide: claimed_side,
+    proofType: proof_type,
+    processed,
+  });
+
   if (avaliacao.aprovado) {
-    // Prova aprovada → janela de contestação 48h
     const contestDeadline = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
     await admin.from("desafios").update({
       status: "under_contestation",
       contestation_deadline_at: contestDeadline,
-      oracle_notes: `Prova aprovada pela AI (${avaliacao.confianca}%): ${avaliacao.motivo}`,
+      oracle_notes: `[${processed.method}] Aprovado (${avaliacao.confianca}%): ${avaliacao.motivo}`,
     }).eq("id", desafioId);
+
+    // Notifica todos os apostadores sobre o resultado e janela de contestação
+    notificarContestacao(admin, desafioId, desafio.title, claimed_side, contestDeadline).catch(console.error);
 
     return NextResponse.json({
       outcome: "approved",
       message: "Prova aprovada! Aguardando 48h para possíveis contestações.",
       motivo: avaliacao.motivo,
+      confianca: avaliacao.confianca,
     });
   } else {
-    // Prova fraca → +24h para enviar nova prova
     const newDeadline = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
     await admin.from("desafios").update({
       status: "awaiting_proof",
-      proof_url: null,
-      proof_type: null,
-      proof_notes: null,
-      proof_submitted_at: null,
-      resolution: null,
+      proof_url: null, proof_type: null, proof_notes: null,
+      proof_submitted_at: null, resolution: null,
       proof_deadline_at: newDeadline,
-      oracle_notes: `Prova rejeitada (${avaliacao.confianca}%): ${avaliacao.motivo}`,
+      oracle_notes: `[${processed.method}] Rejeitado (${avaliacao.confianca}%): ${avaliacao.motivo}`,
     }).eq("id", desafioId);
 
-    // Notifica criador
-    await admin.from("notifications").insert({
-      user_id: desafio.creator_id,
-      type: "market_resolved",
-      title: "Prova insuficiente",
-      body: `Sua prova para "${desafio.title?.slice(0, 50)}" foi rejeitada: ${avaliacao.motivo}. Você tem +24h para enviar outra.`,
-      data: { desafio_id: desafioId },
-    });
+    await Promise.allSettled([
+      admin.from("notifications").insert({
+        user_id: desafio.creator_id,
+        type: "market_resolved",
+        title: "Prova insuficiente",
+        body: `Prova rejeitada: ${avaliacao.motivo}. Você tem +24h para enviar outra mais sólida.`,
+        data: { desafio_id: desafioId },
+      }),
+      sendPushToUser(admin, desafio.creator_id, {
+        title: "Prova rejeitada",
+        body: `Envie uma prova mais sólida. Você tem mais 24h.`,
+        url: `/desafios/${desafioId}`,
+      }),
+    ]);
 
     return NextResponse.json({
       outcome: "rejected",
       message: "Prova insuficiente. Você tem mais 24h para enviar uma prova mais sólida.",
       motivo: avaliacao.motivo,
+      confianca: avaliacao.confianca,
     });
   }
 }

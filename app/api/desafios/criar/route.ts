@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -27,7 +27,8 @@ export async function POST(req: Request) {
   // Prazo de prova: 48h após fechamento
   const proofDeadline = new Date(closesDate.getTime() + 48 * 60 * 60 * 1000);
 
-  const { data, error } = await supabase.from("desafios").insert({
+  const admin = createAdminClient();
+  const { data, error } = await admin.from("desafios").insert({
     creator_id: user.id,
     title: title.trim(),
     description: description.trim(),

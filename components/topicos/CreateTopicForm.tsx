@@ -42,19 +42,23 @@ export default function CreateTopicForm() {
     }
 
     setLoading(true);
-    const res = await fetch("/api/criar", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, closes_at: closesDate.toISOString() }),
-    });
+    try {
+      const res = await fetch("/api/criar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, closes_at: closesDate.toISOString() }),
+      });
 
-    const data = await res.json();
-    setLoading(false);
-
-    if (!res.ok) {
-      setError(data.error ?? "Erro ao criar tópico");
-    } else {
-      router.push("/meus-topicos");
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "Erro ao criar tópico");
+      } else {
+        router.push("/meus-topicos");
+      }
+    } catch {
+      setError("Erro de conexão. Tente novamente.");
+    } finally {
+      setLoading(false);
     }
   }
 

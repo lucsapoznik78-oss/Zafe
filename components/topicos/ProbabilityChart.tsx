@@ -31,7 +31,8 @@ interface Stats {
 }
 
 interface Props {
-  topicId: string;
+  topicId?: string;
+  chartUrl?: string;
   initialSnapshots: Snapshot[];
   initialStats: Stats | null;
 }
@@ -96,7 +97,8 @@ function EndDot(color: string) {
   };
 }
 
-export default function ProbabilityChart({ topicId, initialSnapshots, initialStats }: Props) {
+export default function ProbabilityChart({ topicId, chartUrl, initialSnapshots, initialStats }: Props) {
+  const resolvedChartUrl = chartUrl ?? (topicId ? `/api/topicos/${topicId}/chart` : null);
   const [filter, setFilter] = useState<Filter>("ALL");
   const [snapshots, setSnapshots] = useState<Snapshot[]>(initialSnapshots);
   const [stats, setStats] = useState<Stats | null>(initialStats);
@@ -104,13 +106,14 @@ export default function ProbabilityChart({ topicId, initialSnapshots, initialSta
 
   const refresh = useCallback(async () => {
     try {
-      const res = await fetch(`/api/topicos/${topicId}/chart`);
+      if (!resolvedChartUrl) return;
+      const res = await fetch(resolvedChartUrl);
       if (!res.ok) return;
       const json = await res.json();
       if (json.snapshots) setSnapshots(json.snapshots);
       if (json.stats) setStats(json.stats);
     } catch {}
-  }, [topicId]);
+  }, [resolvedChartUrl]);
 
   useEffect(() => {
     intervalRef.current = setInterval(refresh, 30_000);

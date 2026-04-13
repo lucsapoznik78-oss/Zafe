@@ -40,19 +40,23 @@ export default function CreateDesafioForm() {
     }
 
     setLoading(true);
-    const res = await fetch("/api/desafios/criar", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, closes_at: closesDate.toISOString() }),
-    });
+    try {
+      const res = await fetch("/api/desafios/criar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, closes_at: closesDate.toISOString() }),
+      });
 
-    const data = await res.json();
-    setLoading(false);
-
-    if (!res.ok) {
-      setError(data.error ?? "Erro ao criar desafio");
-    } else {
-      router.push(`/desafios/${data.id}`);
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "Erro ao criar desafio");
+      } else {
+        router.push(`/desafios/${data.id}`);
+      }
+    } catch {
+      setError("Erro de conexão. Tente novamente.");
+    } finally {
+      setLoading(false);
     }
   }
 

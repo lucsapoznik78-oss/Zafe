@@ -1,6 +1,7 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { calcOdds } from "@/lib/odds";
+import { sendPushToUser } from "@/lib/webpush";
 
 interface RouteParams { params: Promise<{ id: string }> }
 
@@ -64,7 +65,7 @@ export async function POST(req: Request, { params }: RouteParams) {
 
   // Registra transação
   await admin.from("transactions").insert({
-    user_id: user.id, type: "bet_placed", amount: amt, net_amount: -amt,
+    user_id: user.id, type: "bet_placed", amount: amt, net_amount: amt,
     description: `Aposta ${side.toUpperCase()} — desafio`, reference_id: desafioId,
   });
 
@@ -82,6 +83,27 @@ export async function POST(req: Request, { params }: RouteParams) {
     await admin.from("wallets").update({ balance: parseFloat(wallet.balance) }).eq("user_id", user.id);
     return NextResponse.json({ error: "Erro ao registrar aposta" }, { status: 500 });
   }
+
+  // Busca nome do apostador para notificar o criador
+  const { data: bettor } = await admin
+    .from("profiles").select("username, full_name").eq("id", user.id).single();
+  const bettorName = bettor?.username ?? bettor?.full_name ?? "Alguém";
+
+  // Notifica o criador que alguém apostou
+  await Promise.allSettled([
+    admin.from("notifications").insert({
+      user_id: desafio.creator_id,
+      type: "bet_matched",
+      title: "Nova aposta no seu desafio",
+      body: `@${bettorName} apostou ${side.toUpperCase()} no seu desafio — Z$ ${amt.toFixed(2)}.`,
+      data: { desafio_id: desafioId },
+    }),
+    sendPushToUser(admin, desafio.creator_id, {
+      title: "Nova aposta no seu desafio",
+      body: `@${bettorName} apostou ${side.toUpperCase()} — Z$ ${amt.toFixed(2)}.`,
+      url: `/desafios/${desafioId}`,
+    }),
+  ]);
 
   return NextResponse.json({ id: bet.id, locked_odds: lockedOdds });
 }

@@ -68,9 +68,11 @@ interface OrderBookData {
 }
 
 interface Props {
-  topicId: string;
+  topicId?: string;
+  apiBase?: string;
   isActive: boolean;
   userBets?: { id: string; side: "sim" | "nao"; amount: number; status: string }[];
+  commissionPct?: number;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -189,8 +191,9 @@ function PositionCard({
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function MercadoSecundario({ topicId, isActive, userBets = [] }: Props) {
+export default function MercadoSecundario({ topicId, apiBase, isActive, userBets = [], commissionPct = 2 }: Props) {
   const router = useRouter();
+  const base = apiBase ?? (topicId ? `/api/topicos/${topicId}` : "");
 
   const [data, setData]       = useState<OrderBookData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -210,13 +213,13 @@ export default function MercadoSecundario({ topicId, isActive, userBets = [] }: 
   const [cancelling, setCancelling] = useState<string | null>(null);
 
   const fetchBook = useCallback(async () => {
-    const res = await fetch(`/api/topicos/${topicId}/orderbook`, { cache: "no-store" });
+    const res = await fetch(`${base}/orderbook`, { cache: "no-store" });
     if (!res.ok) { setError("Erro ao carregar livro de ordens"); setLoading(false); return; }
     const json = await res.json();
     setData(json);
     setLoading(false);
     setError(null);
-  }, [topicId]);
+  }, [base]);
 
   useEffect(() => { fetchBook(); }, [fetchBook]);
 
@@ -272,7 +275,7 @@ export default function MercadoSecundario({ topicId, isActive, userBets = [] }: 
     if (!isMarket) body.price = parseFloat(price) / 100;
     if (orderType === "sell") body.source_bet_id = sourceBetId;
 
-    const res = await fetch(`/api/topicos/${topicId}/ordem`, {
+    const res = await fetch(`${base}/ordem`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -315,7 +318,7 @@ export default function MercadoSecundario({ topicId, isActive, userBets = [] }: 
   // ── Cancel order ───────────────────────────────────────────────────────────
   async function handleCancel(orderId: string) {
     setCancelling(orderId);
-    const res = await fetch(`/api/topicos/${topicId}/ordem/${orderId}`, { method: "DELETE" });
+    const res = await fetch(`${base}/ordem/${orderId}`, { method: "DELETE" });
     setCancelling(null);
     if (res.ok) { fetchBook(); router.refresh(); }
   }
@@ -658,7 +661,7 @@ export default function MercadoSecundario({ topicId, isActive, userBets = [] }: 
 
       {/* Disclaimer */}
       <p className="text-[10px] text-muted-foreground/60 border-t border-border/30 pt-2">
-        Mercado secundário. Taxa de 2% sobre vendedor. Ordens limitadas ficam no livro até execução ou cancelamento.
+        Mercado secundário. Taxa de {commissionPct}% sobre vendedor. Ordens limitadas ficam no livro até execução ou cancelamento.
       </p>
     </div>
   );

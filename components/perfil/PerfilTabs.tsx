@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Trophy, TrendingDown, Percent, TrendingUp, Flame, Star, User, BookOpen, LayoutList, ShieldCheck, ShieldAlert } from "lucide-react";
 import EditProfileForm from "@/components/perfil/EditProfileForm";
 import CpfForm from "@/components/kyc/CpfForm";
+import TwoFaSettings from "@/components/perfil/TwoFaSettings";
 import ReferralSection from "@/components/perfil/ReferralSection";
 import CategoryBadge from "@/components/topicos/CategoryBadge";
 import Link from "next/link";
@@ -184,6 +185,16 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl }:
             ) : (
               <CpfForm />
             )}
+          </div>
+
+          {/* Segurança / 2FA */}
+          <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+            <h3 className="text-sm font-semibold text-white">Segurança</h3>
+            <TwoFaSettings
+              enabled={profile?.two_fa_enabled ?? false}
+              method={profile?.two_fa_method ?? "email"}
+              phone={profile?.phone ?? null}
+            />
           </div>
 
           {/* Referral */}

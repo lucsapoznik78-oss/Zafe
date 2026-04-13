@@ -49,7 +49,7 @@ export default async function AdminPage() {
     // Dinheiro bloqueado em apostas ativas
     adminSupabase.from("bets").select("amount").in("status", ["pending", "matched", "partial"]),
     // Dinheiro bloqueado em ordens de compra abertas (escrow)
-    adminSupabase.from("orders").select("escrow_amount").eq("status", "open").eq("side", "buy"),
+    adminSupabase.from("orders").select("price, quantity, filled_qty").eq("status", "open").eq("side", "buy"),
     // Comissões acumuladas (receita da plataforma)
     adminSupabase.from("transactions").select("net_amount").eq("type", "commission"),
     // Mercados ativos para edição de prazo
@@ -62,7 +62,7 @@ export default async function AdminPage() {
 
   const walletBalance  = (wallets ?? []).reduce((s, w: { balance: number }) => s + (w.balance ?? 0), 0);
   const betsLocked     = (activeBets ?? []).reduce((s, b: { amount: number }) => s + (b.amount ?? 0), 0);
-  const ordersEscrow   = (openOrders ?? []).reduce((s, o: { escrow_amount: number }) => s + (o.escrow_amount ?? 0), 0);
+  const ordersEscrow   = (openOrders ?? []).reduce((s, o: any) => s + parseFloat(o.price) * (parseFloat(o.quantity) - parseFloat(o.filled_qty ?? 0)), 0);
   const commission     = (commissionTxs ?? []).reduce((s, t: { net_amount: number }) => s + (t.net_amount ?? 0), 0);
   // Passivo total = tudo que a plataforma deve aos usuários (carteiras + apostas em andamento + ordens)
   const passiveTotal   = walletBalance + betsLocked + ordersEscrow;

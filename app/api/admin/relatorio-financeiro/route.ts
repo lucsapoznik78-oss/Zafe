@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
  * Relatório financeiro para fins contábeis/fiscais.
  *
  * SEPARAÇÃO:
- *   - Receita própria (sua): comissões (4% do depósito)
+ *   - Receita própria (sua): comissões (6% do depósito)
  *   - Passivo de usuários: saldo em carteiras (dinheiro que pertence aos usuários)
  *   - Volume intermediado: depósitos brutos, apostas, saques — não é sua receita
  *
@@ -41,15 +41,17 @@ export async function GET(req: Request) {
   const [{ data: wallets }, { data: activeBets }, { data: openOrders }] = await Promise.all([
     admin.from("wallets").select("balance"),
     admin.from("bets").select("amount").in("status", ["pending", "matched", "partial"]),
-    admin.from("orders").select("escrow_amount").eq("status", "open").eq("side", "buy"),
+    admin.from("orders").select("price, quantity, filled_qty").eq("status", "open").eq("side", "buy"),
   ]);
   const walletFunds = (wallets ?? []).reduce((s, w: any) => s + (w.balance ?? 0), 0);
   const betsLocked = (activeBets ?? []).reduce((s, b: any) => s + (b.amount ?? 0), 0);
-  const ordersEscrow = (openOrders ?? []).reduce((s, o: any) => s + (o.escrow_amount ?? 0), 0);
+  const ordersEscrow = (openOrders ?? []).reduce(
+    (s, o: any) => s + parseFloat(o.price) * (parseFloat(o.quantity) - parseFloat(o.filled_qty ?? 0)), 0
+  );
   const totalUserFunds = walletFunds + betsLocked + ordersEscrow;
 
   const grossDeposits = sum("deposit");       // volume intermediado — NÃO é sua receita
-  const commissions   = sum("commission");    // SUA receita — 4% de cada depósito
+  const commissions   = sum("commission");    // SUA receita — 6% de cada depósito
   const withdrawals   = sum("withdraw");      // saídas — reduz passivo
   const betsPlaced    = sum("bet_placed");    // movimentação interna
   const betsWon       = sum("bet_won");       // movimentação interna

@@ -69,11 +69,22 @@ export async function POST(request: Request) {
 
     const uniqueIds = [...new Set((bettors ?? []).map((b: any) => b.user_id))];
     if (uniqueIds.length > 0) {
+      // Push notification
       sendPushToMany(supabase, uniqueIds, {
         title: "Mercado fecha em 2h ⏳",
         body: `"${topic.title.slice(0, 60)}" — última chance de apostar.`,
         url: `/topicos/${topic.id}`,
       }).catch(() => {});
+
+      // In-app notification para quem não tem push ativo
+      const notifRows = uniqueIds.map((uid) => ({
+        user_id: uid,
+        type: "market_closing" as const,
+        title: "Mercado fecha em 2h ⏳",
+        body: `"${topic.title.slice(0, 60)}" — última chance de apostar ou vender sua posição.`,
+        data: { topic_id: topic.id },
+      }));
+      await supabase.from("notifications").insert(notifRows);
     }
   }
 
@@ -105,9 +116,75 @@ export async function POST(request: Request) {
     }
   }
 
+  // ── Desafios: snapshot + contestation auto-finalize + proof deadline auto-refund ──
+  const { data: activeDesafios } = await supabase
+    .from("desafios")
+    .select("id")
+    .eq("status", "active")
+    .gte("closes_at", now);
+
+  for (const d of activeDesafios ?? []) {
+    const { data: ds } = await supabase
+      .from("v_desafio_stats")
+      .select("prob_sim, volume_sim, volume_nao")
+      .eq("desafio_id", d.id)
+      .single();
+
+    if (ds) {
+      await supabase.from("desafio_snapshots").insert({
+        desafio_id:  d.id,
+        prob_sim:    ds.prob_sim ?? 0.5,
+        volume_sim:  ds.volume_sim ?? 0,
+        volume_nao:  ds.volume_nao ?? 0,
+        recorded_at: now,
+      });
+      snapshotCount++;
+    }
+  }
+
+  // Desafios em contestation com prazo expirado → pagar
+  const { data: expiredContestations } = await supabase
+    .from("desafios")
+    .select("id, resolution")
+    .eq("status", "under_contestation")
+    .lt("contestation_deadline_at", now);
+
+  for (const d of expiredContestations ?? []) {
+    if (d.resolution === "sim" || d.resolution === "nao") {
+      const { pagarDesafio } = await import("@/lib/desafios-payout");
+      pagarDesafio(supabase, d.id, d.resolution, "oracle").catch(console.error);
+    }
+  }
+
+  // Desafios awaiting_proof com prazo expirado → reembolsar
+  const { data: expiredProofs } = await supabase
+    .from("desafios")
+    .select("id")
+    .eq("status", "awaiting_proof")
+    .lt("proof_deadline_at", now);
+
+  for (const d of expiredProofs ?? []) {
+    const { reembolsarDesafio } = await import("@/lib/desafios-payout");
+    reembolsarDesafio(supabase, d.id, "Criador não enviou prova no prazo").catch(console.error);
+  }
+
+  // Desafios ativos com closes_at expirado → disparar oracle
+  const { data: expiredDesafios } = await supabase
+    .from("desafios")
+    .select("id")
+    .eq("status", "active")
+    .lt("closes_at", now);
+
+  for (const d of expiredDesafios ?? []) {
+    fetch(`${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/api/desafios/${d.id}/resolver`, {
+      method: "POST",
+    }).catch(() => {});
+  }
+
   return NextResponse.json({
     success: true,
     expired_topics: expiredTopics?.length ?? 0,
     snapshots_taken: snapshotCount,
+    expired_desafios: expiredDesafios?.length ?? 0,
   });
 }

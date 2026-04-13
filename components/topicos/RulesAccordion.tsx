@@ -5,9 +5,10 @@ import { ChevronDown } from "lucide-react";
 
 interface Props {
   description?: string | null;
+  type?: "topico" | "desafio";
 }
 
-const genericRules = [
+const topicoRules = [
   {
     q: "O que acontece se o evento não ocorrer?",
     a: "Se o evento não acontecer dentro do prazo definido, o resultado é NÃO e os apostadores desse lado recebem o prêmio.",
@@ -30,7 +31,31 @@ const genericRules = [
   },
 ];
 
-export default function RulesAccordion({ description }: Props) {
+const desafioRules = [
+  {
+    q: "O que acontece se o evento não ocorrer?",
+    a: "Se o evento não acontecer dentro do prazo definido, o resultado é NÃO e os apostadores desse lado recebem o prêmio.",
+  },
+  {
+    q: "O que acontece se ninguém apostar no lado oposto?",
+    a: "Se apenas um lado tiver apostas, todos recebem reembolso integral. Não há mercado sem cobertura.",
+  },
+  {
+    q: "Como o resultado é determinado?",
+    a: "Após o prazo, o criador do desafio envia uma prova do resultado (link, imagem ou vídeo). A prova é avaliada automaticamente por IA. Se aprovada, abre-se uma janela de 48h para contestação. Se rejeitada, o criador tem 24h para enviar uma nova prova.",
+  },
+  {
+    q: "Qual a comissão cobrada?",
+    a: "12% do valor total apostado — 6% para o criador do desafio e 6% para a plataforma — descontados proporcionalmente do prêmio de cada vencedor.",
+  },
+  {
+    q: "Posso sair antes do encerramento?",
+    a: "Sim, pelo mercado secundário (aba Vender) — você pode vender sua posição a outros usuários com 6% de taxa.",
+  },
+];
+
+export default function RulesAccordion({ description, type = "topico" }: Props) {
+  const genericRules = type === "desafio" ? desafioRules : topicoRules;
   const [open, setOpen] = useState(false);
   const [openItem, setOpenItem] = useState<number | null>(null);
 

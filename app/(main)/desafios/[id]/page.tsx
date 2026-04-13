@@ -8,9 +8,14 @@ import CountdownTimer from "@/components/topicos/CountdownTimer";
 import DesafioBetForm from "@/components/desafios/DesafioBetForm";
 import DesafioProofForm from "@/components/desafios/DesafioProofForm";
 import DesafioContestForm from "@/components/desafios/DesafioContestForm";
-import { pagarDesafio } from "@/lib/desafios-payout";
-import { oracleAITripleCheck } from "@/lib/oracles/ai-triple-check";
-import { sendPushToUser } from "@/lib/webpush";
+import LiveStats from "@/components/topicos/LiveStats";
+import ProbabilityChart from "@/components/topicos/ProbabilityChart";
+import MercadoSecundario from "@/components/topicos/MercadoSecundario";
+import ShareButton from "@/components/topicos/ShareButton";
+import UserResultBanner from "@/components/topicos/UserResultBanner";
+import RulesAccordion from "@/components/topicos/RulesAccordion";
+import ResolvingBanner from "@/components/topicos/ResolvingBanner";
+import { pagarDesafio, reembolsarDesafio } from "@/lib/desafios-payout";
 import type { Metadata } from "next";
 
 interface PageProps {
@@ -22,9 +27,24 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const supabase = await createClient();
   const { data } = await supabase.from("desafios").select("title, description").eq("id", id).single();
   if (!data) return { title: "Desafio não encontrado" };
+  const desc = data.description?.slice(0, 160) ?? "Desafio no Zafe";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://zafe-rho.vercel.app";
+  const ogImage = `${appUrl}/api/og?id=${id}&type=desafio`;
   return {
     title: data.title,
-    description: data.description?.slice(0, 160),
+    description: desc,
+    openGraph: {
+      title: `${data.title} — Zafe`,
+      description: desc,
+      type: "website",
+      images: [{ url: ogImage, width: 1200, height: 630, alt: data.title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${data.title} — Zafe`,
+      description: desc,
+      images: [ogImage],
+    },
   };
 }
 
@@ -45,31 +65,44 @@ export default async function DesafioDetailPage({ params }: PageProps) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [{ data: desafio }, { data: statsData }, { data: wallet }, { data: userBets }, { data: allBets }] =
-    await Promise.all([
-      admin.from("desafios")
-        .select("*, creator:profiles!creator_id(username, full_name)")
-        .eq("id", id)
-        .single(),
-      admin.from("v_desafio_stats").select("*").eq("desafio_id", id).single(),
-      user
-        ? supabase.from("wallets").select("balance").eq("user_id", user.id).single()
-        : Promise.resolve({ data: null }),
-      user
-        ? admin.from("desafio_bets").select("id, side, amount, status")
-            .eq("desafio_id", id).eq("user_id", user.id).neq("status", "refunded")
-        : Promise.resolve({ data: null }),
-      admin.from("desafio_bets")
-        .select("id, side, amount, status, profiles!user_id(username, full_name)")
-        .eq("desafio_id", id).neq("status", "refunded")
-        .order("amount", { ascending: false }).limit(50),
-    ]);
+  const [
+    { data: desafio },
+    { data: statsData },
+    { data: snapshots },
+    { data: wallet },
+    { data: userBets },
+    { data: allBets },
+  ] = await Promise.all([
+    admin.from("desafios")
+      .select("*, creator:profiles!creator_id(username, full_name)")
+      .eq("id", id)
+      .single(),
+    admin.from("v_desafio_stats").select("*").eq("desafio_id", id).single(),
+    admin.from("desafio_snapshots")
+      .select("prob_sim, volume_sim, volume_nao, recorded_at")
+      .eq("desafio_id", id)
+      .order("recorded_at", { ascending: true })
+      .limit(500),
+    user
+      ? supabase.from("wallets").select("balance").eq("user_id", user.id).single()
+      : Promise.resolve({ data: null }),
+    user
+      ? admin.from("desafio_bets")
+          .select("id, side, amount, locked_odds, status")
+          .eq("desafio_id", id).eq("user_id", user.id).neq("status", "refunded")
+      : Promise.resolve({ data: null }),
+    admin.from("desafio_bets")
+      .select("id, side, amount, status, profiles!user_id(username, full_name)")
+      .eq("desafio_id", id).neq("status", "refunded")
+      .order("amount", { ascending: false }).limit(50),
+  ]);
 
   if (!desafio) notFound();
 
   const totalSim = parseFloat(statsData?.volume_sim ?? "0");
   const totalNao = parseFloat(statsData?.volume_nao ?? "0");
   const totalVolume = parseFloat(statsData?.total_volume ?? "0");
+  const betCount = parseInt(statsData?.bet_count ?? "0");
   const hasBothSides = totalSim > 0 && totalNao > 0;
   const probSim = hasBothSides ? parseFloat(statsData?.prob_sim ?? "0.5") : 0.5;
   const { simOdds, naoOdds } = calcOdds(totalSim, totalNao);
@@ -78,42 +111,11 @@ export default async function DesafioDetailPage({ params }: PageProps) {
   const isClosed = desafio.status !== "active" || isExpiredActive;
   const isCreator = user?.id === desafio.creator_id;
 
-  // Auto-trigger oracle se expirou e ainda active
+  // Auto-trigger oracle when market expires
   if (isExpiredActive) {
-    admin.from("desafios").update({ status: "resolving", oracle_attempted: true }).eq("id", id).then(async () => {
-      try {
-        const aiResult = await oracleAITripleCheck(desafio.title, desafio.closes_at);
-        if (aiResult && aiResult.resultado !== "INCERTO") {
-          const resolution = aiResult.resultado.toLowerCase() as "sim" | "nao";
-          const contestDeadline = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
-          await admin.from("desafios").update({
-            status: "under_contestation", resolution,
-            contestation_deadline_at: contestDeadline,
-            oracle_result: aiResult.resultado,
-          }).eq("id", id);
-        } else {
-          await admin.from("desafios").update({
-            status: "awaiting_proof",
-            oracle_result: "INCERTO",
-          }).eq("id", id);
-          await admin.from("notifications").insert({
-            user_id: desafio.creator_id,
-            type: "market_resolved",
-            title: "Seu desafio precisa de prova",
-            body: `"${desafio.title?.slice(0, 60)}": envie uma prova do resultado em até 48h.`,
-            data: { desafio_id: id },
-          });
-          sendPushToUser(admin, desafio.creator_id, {
-            title: "Envie a prova do seu desafio",
-            body: `"${desafio.title?.slice(0, 60)}": você tem 48h para enviar.`,
-            url: `/desafios/${id}`,
-          }).catch(() => {});
-        }
-      } catch (e) {
-        console.error("[desafio detail] oracle error:", e);
-        admin.from("desafios").update({ status: "awaiting_proof" }).eq("id", id).then(() => {});
-      }
-    });
+    fetch(`${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/api/desafios/${id}/resolver`, {
+      method: "POST",
+    }).catch(() => {});
   }
 
   // Auto-finalizar contestação se prazo expirou
@@ -126,6 +128,13 @@ export default async function DesafioDetailPage({ params }: PageProps) {
     }
   }
 
+  // Auto-reembolso se prazo de prova expirou
+  if (desafio.status === "awaiting_proof" && desafio.proof_deadline_at) {
+    if (new Date(desafio.proof_deadline_at) < new Date()) {
+      reembolsarDesafio(admin, id, "Criador não enviou prova no prazo").catch(console.error);
+    }
+  }
+
   const effectiveStatus = isExpiredActive ? "awaiting_proof" : desafio.status;
   const badge = STATUS_BADGE[effectiveStatus] ?? STATUS_BADGE.active;
   const probSimPct = (probSim * 100).toFixed(1);
@@ -133,26 +142,69 @@ export default async function DesafioDetailPage({ params }: PageProps) {
   const creator = Array.isArray(desafio.creator) ? desafio.creator[0] : desafio.creator;
   const creatorName = creator?.username ?? creator?.full_name ?? "Anônimo";
   const userBalance = wallet?.balance ?? 0;
-
   const totalUserInvested = (userBets ?? []).reduce((s: number, b: any) => s + parseFloat(b.amount), 0);
 
+  // Apostas já finalizadas (para UserResultBanner)
+  const finalizedBets = (userBets ?? []).filter((b: any) =>
+    ["won", "lost", "refunded"].includes(b.status)
+  );
+
+  // Apostas ativas (para MercadoSecundario)
+  const activeBets = (userBets ?? []).filter((b: any) =>
+    b.status === "matched"
+  );
+
+  const chartUrl = `/api/desafios/${id}/chart`;
+  const apiBase  = `/api/desafios/${id}`;
+
+  // Snapshots for ProbabilityChart
+  const chartSnapshots = (snapshots ?? []).map((s: any) => ({
+    prob_sim:    parseFloat(s.prob_sim),
+    volume_sim:  parseFloat(s.volume_sim),
+    volume_nao:  parseFloat(s.volume_nao),
+    recorded_at: s.recorded_at,
+  }));
+
+  const chartStats = statsData ? {
+    prob_sim:     parseFloat(statsData.prob_sim ?? "0.5"),
+    volume_sim:   totalSim,
+    volume_nao:   totalNao,
+    total_volume: totalVolume,
+  } : null;
+
   return (
-    <div className="py-6 max-w-4xl mx-auto">
-      {/* Header */}
+    <div className="py-6 max-w-5xl mx-auto">
+
+      {/* Topo: badges + countdown + share */}
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <CategoryBadge category={desafio.category} />
           <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${badge.cls}`}>
             {badge.label}
           </span>
+          <span className="text-xs text-muted-foreground">por @{creatorName}</span>
         </div>
-        <CountdownTimer closesAt={desafio.closes_at} />
+        <div className="flex items-center gap-3">
+          <CountdownTimer closesAt={desafio.closes_at} />
+          <ShareButton
+            title={desafio.title}
+            probSim={probSim}
+            pagePath={`/desafios/${id}`}
+          />
+        </div>
       </div>
 
-      <h1 className="text-2xl font-bold text-white leading-snug mb-1">{desafio.title}</h1>
-      <p className="text-xs text-muted-foreground mb-4">por @{creatorName}</p>
+      {/* Título */}
+      <h1 className="text-2xl font-bold text-white leading-snug mb-4">{desafio.title}</h1>
 
-      {/* Banner resultado */}
+      {/* Banner resultado próprio */}
+      {finalizedBets.length > 0 && (
+        <div className="mb-4">
+          <UserResultBanner bets={finalizedBets} resolution={desafio.resolution} />
+        </div>
+      )}
+
+      {/* Banner resultado do desafio */}
       {desafio.status === "resolved" && desafio.resolution && (
         <div className={`flex items-center gap-3 rounded-xl px-5 py-4 mb-6 border ${
           desafio.resolution === "sim" ? "bg-sim/10 border-sim/30" : "bg-nao/10 border-nao/30"
@@ -171,9 +223,39 @@ export default async function DesafioDetailPage({ params }: PageProps) {
         </div>
       )}
 
+      {/* Formulário de prova — coluna cheia, visível ao criador assim que o desafio fecha */}
+      {isCreator && (desafio.status === "awaiting_proof" || isExpiredActive) && (
+        <div className="mb-2">
+          {isExpiredActive && desafio.status !== "awaiting_proof" ? (
+            <div className="rounded-xl border border-yellow-500/40 bg-yellow-500/5 p-4 space-y-3">
+              <p className="text-sm font-semibold text-yellow-300">Desafio encerrado — aguardando análise automática</p>
+              <p className="text-xs text-yellow-400/70 leading-relaxed">
+                O oracle de IA está tentando resolver o resultado. Se não conseguir, você será notificado para enviar uma prova.
+                Você pode enviar sua prova agora para agilizar o processo.
+              </p>
+              <DesafioProofForm desafioId={id} proofDeadlineAt={desafio.proof_deadline_at} />
+            </div>
+          ) : (
+            <DesafioProofForm desafioId={id} proofDeadlineAt={desafio.proof_deadline_at} />
+          )}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Coluna principal */}
         <div className="lg:col-span-2 space-y-5">
+
+          {/* LiveStats */}
+          <div className="bg-card border border-border rounded-xl p-4">
+            <LiveStats
+              chartUrl={chartUrl}
+              initialSim={totalSim}
+              initialNao={totalNao}
+              initialBetCount={betCount}
+              isResolved={desafio.status === "resolved"}
+            />
+          </div>
+
           {/* Odds + probabilidade */}
           <div className="bg-card border border-border rounded-xl p-5">
             <div className="grid grid-cols-3 text-[11px] text-muted-foreground pb-2 border-b border-border mb-3">
@@ -241,12 +323,21 @@ export default async function DesafioDetailPage({ params }: PageProps) {
               </p>
             </div>
 
-            {/* Descrição / critérios */}
             {desafio.description && (
               <p className="text-sm text-muted-foreground leading-relaxed mt-4 pt-4 border-t border-border/40">
                 {desafio.description}
               </p>
             )}
+          </div>
+
+          {/* Gráfico de probabilidade */}
+          <div className="bg-card border border-border rounded-xl p-4">
+            <p className="text-xs font-semibold text-white mb-3">Evolução das probabilidades</p>
+            <ProbabilityChart
+              chartUrl={chartUrl}
+              initialSnapshots={chartSnapshots}
+              initialStats={chartStats}
+            />
           </div>
 
           {/* Distribuição */}
@@ -292,10 +383,27 @@ export default async function DesafioDetailPage({ params }: PageProps) {
               </div>
             </div>
           )}
+
+          {/* Mercado Secundário */}
+          {/* Banner de resolução em andamento */}
+          {(desafio.status === "resolving" || desafio.status === "proof_submitted" || desafio.status === "admin_review") && (
+            <ResolvingBanner topicId={id} type="desafio" />
+          )}
+
+          <MercadoSecundario
+            apiBase={apiBase}
+            isActive={!isClosed}
+            userBets={activeBets as { id: string; side: "sim" | "nao"; amount: number; status: string }[]}
+            commissionPct={6}
+          />
+
+          {/* Regras */}
+          <RulesAccordion description={desafio.description} type="desafio" />
         </div>
 
         {/* Sidebar */}
         <div className="space-y-4">
+
           {/* Saldo investido */}
           {totalUserInvested > 0 && (
             <div className="bg-primary/10 border border-primary/30 rounded-xl px-4 py-3 text-center">
@@ -315,7 +423,7 @@ export default async function DesafioDetailPage({ params }: PageProps) {
             isCreator={isCreator}
           />
 
-          {/* Formulário de prova (criador) */}
+          {/* Formulário de prova (criador, aguardando prova) */}
           {isCreator && desafio.status === "awaiting_proof" && (
             <DesafioProofForm
               desafioId={id}
@@ -323,7 +431,7 @@ export default async function DesafioDetailPage({ params }: PageProps) {
             />
           )}
 
-          {/* Formulário de contestação (apostadores) */}
+          {/* Formulário de contestação (apostadores, em contestação) */}
           {!isCreator && desafio.status === "under_contestation" && desafio.contestation_deadline_at && (
             <DesafioContestForm
               desafioId={id}
@@ -347,6 +455,14 @@ export default async function DesafioDetailPage({ params }: PageProps) {
               {desafio.proof_notes && (
                 <p className="text-xs text-muted-foreground italic">{desafio.proof_notes}</p>
               )}
+            </div>
+          )}
+
+          {/* Oracle notes (visível para todos quando há contestação/resolução) */}
+          {desafio.oracle_notes && ["under_contestation", "admin_review", "resolved"].includes(desafio.status) && (
+            <div className="bg-card border border-border rounded-xl p-4 space-y-1">
+              <p className="text-xs font-semibold text-white">Avaliação do oráculo</p>
+              <p className="text-xs text-muted-foreground">{desafio.oracle_notes}</p>
             </div>
           )}
         </div>

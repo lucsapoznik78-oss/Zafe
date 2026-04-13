@@ -33,7 +33,7 @@ export async function POST(request: Request) {
   const { data: currentWallet } = await supabase.from("wallets").select("balance").eq("user_id", user.id).single();
   const currentBalance = currentWallet?.balance ?? 0;
 
-  // Depósito entra integralmente — comissão só é cobrada no ganho de apostas
+  // Saldo entra integralmente na carteira (split físico entre conta custódia/operacional ocorre no gateway de pagamento)
   await supabase.from("wallets").update({ balance: currentBalance + amount }).eq("user_id", user.id);
 
   await supabase.from("transactions").insert({

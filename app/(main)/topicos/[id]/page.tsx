@@ -16,6 +16,7 @@ import ShareButton from "@/components/topicos/ShareButton";
 import UserResultBanner from "@/components/topicos/UserResultBanner";
 import ResolutionBreakdown from "@/components/topicos/ResolutionBreakdown";
 import RulesAccordion from "@/components/topicos/RulesAccordion";
+import ResolvingBanner from "@/components/topicos/ResolvingBanner";
 import { formatCurrency } from "@/lib/utils";
 import { calcOdds, formatOdds } from "@/lib/odds";
 
@@ -38,11 +39,24 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const desc = topic.description
     ? topic.description.slice(0, 160)
     : `Aposte no resultado deste evento de ${topic.category} no Zafe.`;
+  const resolvedId = isUUID ? id : (await supabase.from("topics").select("id").eq("slug", id).single())?.data?.id ?? id;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://zafe-rho.vercel.app";
+  const ogImage = `${appUrl}/api/og?id=${resolvedId}&type=topico`;
   return {
     title: topic.title,
     description: desc,
-    openGraph: { title: `${topic.title} — Zafe`, description: desc, type: "website" },
-    twitter: { card: "summary", title: `${topic.title} — Zafe`, description: desc },
+    openGraph: {
+      title: `${topic.title} — Zafe`,
+      description: desc,
+      type: "website",
+      images: [{ url: ogImage, width: 1200, height: 630, alt: topic.title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${topic.title} — Zafe`,
+      description: desc,
+      images: [ogImage],
+    },
   };
 }
 
@@ -179,6 +193,13 @@ export default async function TopicoDetailPage({ params, searchParams }: PagePro
       {finalizedBets.length > 0 && (
         <div className="mb-4">
           <UserResultBanner bets={finalizedBets} resolution={topic.resolution} />
+        </div>
+      )}
+
+      {/* Banner de resolução em andamento */}
+      {topic.status === "resolving" && (
+        <div className="mb-4">
+          <ResolvingBanner topicId={topicId} type="topico" />
         </div>
       )}
 
