@@ -13,6 +13,7 @@ export default function DesafioContestForm({ desafioId, contestationDeadlineAt }
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
+  const [rejected, setRejected] = useState<{ motivo: string } | null>(null);
   const [error, setError] = useState("");
 
   const deadline = new Date(contestationDeadlineAt);
@@ -29,7 +30,9 @@ export default function DesafioContestForm({ desafioId, contestationDeadlineAt }
     });
     const data = await res.json();
     setLoading(false);
-    if (!res.ok) {
+    if (res.status === 422 && data.outcome === "rejected") {
+      setRejected({ motivo: data.motivo ?? "Contestação considerada inválida." });
+    } else if (!res.ok) {
       setError(data.error ?? "Erro ao contestar");
     } else {
       setDone(true);
@@ -40,7 +43,22 @@ export default function DesafioContestForm({ desafioId, contestationDeadlineAt }
     return (
       <div className="bg-nao/10 border border-nao/30 rounded-xl p-4 text-center">
         <p className="text-sm font-semibold text-nao">Contestação enviada</p>
-        <p className="text-xs text-muted-foreground mt-1">A Zafe vai revisar e resolver.</p>
+        <p className="text-xs text-muted-foreground mt-1">A IA validou e a Zafe vai revisar.</p>
+      </div>
+    );
+  }
+
+  if (rejected) {
+    return (
+      <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 space-y-2">
+        <p className="text-sm font-semibold text-yellow-400">Contestação rejeitada pela IA</p>
+        <p className="text-xs text-muted-foreground">{rejected.motivo}</p>
+        <button
+          onClick={() => { setRejected(null); setReason(""); }}
+          className="text-xs text-yellow-400 hover:underline"
+        >
+          Tentar novamente com outro motivo
+        </button>
       </div>
     );
   }
