@@ -11,13 +11,14 @@ interface Props {
   proofUrl?: string | null;
   proofLabel?: string | null;
   resolvedBy?: string | null;
+  /** Taxa total de comissão em % — padrão 6 para tópicos, 12 para desafios */
+  commissionPct?: number;
 }
 
 export default function ResolutionBreakdown({
-  totalVolume, totalSim, totalNao, resolution, proofUrl, proofLabel, resolvedBy,
+  totalVolume, totalSim, totalNao, resolution, proofUrl, proofLabel, resolvedBy, commissionPct = 6,
 }: Props) {
-  const COMMISSION = 0.06;
-  const commission = totalVolume * COMMISSION;
+  const commission = totalVolume * (commissionPct / 100);
   const toWinners = totalVolume - commission;
   const winPool = resolution === "sim" ? totalSim : totalNao;
   const losePool = resolution === "sim" ? totalNao : totalSim;
@@ -40,7 +41,7 @@ export default function ResolutionBreakdown({
           <span className="text-nao">{formatCurrency(losePool)}</span>
         </div>
         <div className="border-t border-border/40 pt-2 flex justify-between">
-          <span className="text-muted-foreground">Comissão Zafe (6%)</span>
+          <span className="text-muted-foreground">Comissão ({commissionPct}%)</span>
           <span className="text-muted-foreground">{formatCurrency(commission)}</span>
         </div>
         <div className="flex justify-between">

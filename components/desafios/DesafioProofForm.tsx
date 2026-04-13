@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { Loader2, Upload, ImagePlus, X } from "lucide-react";
 
 interface Props {
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export default function DesafioProofForm({ desafioId, proofDeadlineAt }: Props) {
+  const router = useRouter();
   const [form, setForm] = useState({
     claimed_side: "sim",
     proof_type: "link",
@@ -95,7 +97,7 @@ export default function DesafioProofForm({ desafioId, proofDeadlineAt }: Props) 
       setError(data.error ?? "Erro ao enviar prova");
     } else {
       setResult(data);
-      setTimeout(() => window.location.reload(), 3000);
+      setTimeout(() => router.refresh(), 3000);
     }
   }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { AlertTriangle, Loader2, ExternalLink, Clock } from "lucide-react";
 import CategoryBadge from "@/components/topicos/CategoryBadge";
 import Link from "next/link";
@@ -36,6 +37,7 @@ interface Props {
 }
 
 export default function AdminResolve({ topics, allResolving }: Props) {
+  const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
   const [done, setDone] = useState<Set<string>>(new Set());
 
@@ -49,7 +51,7 @@ export default function AdminResolve({ topics, allResolving }: Props) {
     setLoading(null);
     if (res.ok) {
       setDone(d => new Set([...d, topicId]));
-      setTimeout(() => window.location.reload(), 800);
+      router.refresh();
     }
   }
 

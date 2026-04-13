@@ -103,7 +103,7 @@ export default async function TopicoDetailPage({ params, searchParams }: PagePro
             .eq("topic_id", topicId).eq("user_id", user.id)
         : Promise.resolve({ data: null }),
       admin.from("bets")
-        .select("id, side, amount, status, locked_odds, profiles(username, full_name)")
+        .select("id, side, amount, status, locked_odds, order_id, profiles(username, full_name)")
         .eq("topic_id", topicId)
         .in("status", ["pending", "matched", "partial", "won", "lost"])
         .order("amount", { ascending: false })
@@ -338,9 +338,9 @@ export default async function TopicoDetailPage({ params, searchParams }: PagePro
                 {(allBets ?? []).map((bet: any) => {
                   const name = (bet.profiles as any)?.username ?? (bet.profiles as any)?.full_name ?? "Usuário";
                   const isSim = bet.side === "sim";
+                  const isSecondaryMarket = !!bet.order_id;
                   const lockedOdds = parseFloat(bet.locked_odds ?? "0");
-                  const entryPct = lockedOdds > 0 ? Math.round((1 / lockedOdds) * 100) : null;
-                  const isSecondaryMarket = entryPct !== null && entryPct !== 50;
+                  const entryPct = isSecondaryMarket && lockedOdds > 0 ? Math.round((1 / lockedOdds) * 100) : null;
                   return (
                     <div key={bet.id} className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
 import { formatOdds } from "@/lib/odds";
 import { Loader2 } from "lucide-react";
@@ -19,6 +20,7 @@ interface Props {
 export default function DesafioBetForm({
   desafioId, minBet, totalSim, totalNao, isClosed, userBalance, isCreator, initialSide,
 }: Props) {
+  const router = useRouter();
   const [side, setSide] = useState<"sim" | "nao">(initialSide ?? "sim");
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
@@ -72,7 +74,7 @@ export default function DesafioBetForm({
     } else {
       setSuccess(`Aposta ${side.toUpperCase()} registrada!`);
       setAmount("");
-      setTimeout(() => window.location.reload(), 1200);
+      setTimeout(() => router.refresh(), 1200);
     }
   }
 

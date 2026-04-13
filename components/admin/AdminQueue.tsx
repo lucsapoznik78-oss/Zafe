@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import CategoryBadge from "@/components/topicos/CategoryBadge";
 import { Check, X, Loader2 } from "lucide-react";
 import { format } from "date-fns";
@@ -16,6 +17,7 @@ interface Topic {
 }
 
 export default function AdminQueue({ topics }: { topics: Topic[] }) {
+  const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
 
   async function action(topicId: string, approve: boolean) {
@@ -26,7 +28,7 @@ export default function AdminQueue({ topics }: { topics: Topic[] }) {
       body: JSON.stringify({ topic_id: topicId }),
     });
     setLoading(null);
-    window.location.reload();
+    router.refresh();
   }
 
   return (

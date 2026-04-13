@@ -7,10 +7,10 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { tryMatchOrders } from "@/lib/order-matching";
+import { verifyCronAuth } from "@/lib/cron-auth";
 
 export async function GET(req: Request) {
-  const secret = req.headers.get("x-cron-secret") ?? new URL(req.url).searchParams.get("secret");
-  if (secret !== process.env.CRON_SECRET) {
+  if (!verifyCronAuth(req)) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
@@ -30,18 +30,13 @@ export async function GET(req: Request) {
 
   let totalTrades = 0;
 
-  // De-duplicate: only run matching once per topic to avoid redundant work.
+  // Uma chamada por tópico — tryMatchOrders já encontra todos os matches internamente
   const seenTopics = new Set<string>();
   for (const order of openOrders) {
     if (seenTopics.has(order.topic_id)) continue;
     seenTopics.add(order.topic_id);
-
-    // Run matching for each open order in this topic
-    const topicOrders = openOrders.filter((o) => o.topic_id === order.topic_id);
-    for (const o of topicOrders) {
-      const result = await tryMatchOrders(admin, o.id);
-      totalTrades += result.tradesExecuted;
-    }
+    const result = await tryMatchOrders(admin, order.id);
+    totalTrades += result.tradesExecuted;
   }
 
   return NextResponse.json({ matched: totalTrades, topics_checked: seenTopics.size });

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Loader2, ExternalLink, Clock } from "lucide-react";
 import CategoryBadge from "@/components/topicos/CategoryBadge";
 import Link from "next/link";
@@ -15,6 +16,7 @@ interface Topic {
 }
 
 export default function AdminPendingResolve({ topics }: { topics: Topic[] }) {
+  const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
   const [results, setResults] = useState<Record<string, string>>({});
 
@@ -37,7 +39,7 @@ export default function AdminPendingResolve({ topics }: { topics: Topic[] }) {
     setResults(r => ({ ...r, [topicId]: res.ok ? `✅ ${resolution.toUpperCase()} pago` : `❌ ${data.error}` }));
     setLoading(null);
 
-    if (res.ok) setTimeout(() => window.location.reload(), 1000);
+    if (res.ok) router.refresh();
   }
 
   if (topics.length === 0) return null;
