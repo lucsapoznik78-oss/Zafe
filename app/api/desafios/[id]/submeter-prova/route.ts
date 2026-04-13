@@ -124,13 +124,8 @@ export async function POST(req: Request, { params }: RouteParams) {
   if (desafio.creator_id !== user.id) {
     return NextResponse.json({ error: "Apenas o criador pode enviar prova" }, { status: 403 });
   }
-  const allowedStatuses = ["awaiting_proof", "active", "resolving"];
-  if (!allowedStatuses.includes(desafio.status)) {
-    return NextResponse.json({ error: "Este desafio não pode receber prova no estado atual" }, { status: 400 });
-  }
-  // Só valida prazo se o desafio já está formalmente em awaiting_proof
-  if (desafio.status === "awaiting_proof" && desafio.proof_deadline_at && new Date(desafio.proof_deadline_at) < new Date()) {
-    return NextResponse.json({ error: "Prazo de envio de prova expirado" }, { status: 400 });
+  if (["resolved", "cancelled"].includes(desafio.status)) {
+    return NextResponse.json({ error: "Este desafio já foi finalizado" }, { status: 400 });
   }
 
   // Marca como "processando" para evitar duplo envio

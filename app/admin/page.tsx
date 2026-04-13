@@ -54,10 +54,10 @@ export default async function AdminPage() {
     adminSupabase.from("transactions").select("net_amount").eq("type", "commission"),
     // Mercados ativos para edição de prazo
     adminSupabase.from("topics").select("id, title, category, closes_at").eq("status", "active").eq("is_private", false).order("closes_at"),
-    // Desafios pendentes de resolução (todos os estados intermediários)
+    // Desafios pendentes de resolução (todos os estados não finalizados, incluindo active expirados)
     adminSupabase.from("desafios")
       .select("id, title, status, resolution, proof_url, proof_type, proof_notes, closes_at, proof_deadline_at, creator:profiles!creator_id(username, full_name), contestations:desafio_contestations(reason, contestant:profiles!contestant_id(username))")
-      .in("status", ["resolving", "awaiting_proof", "proof_submitted", "under_contestation", "admin_review"])
+      .not("status", "in", '("resolved","cancelled")')
       .order("closes_at"),
   ]);
 
