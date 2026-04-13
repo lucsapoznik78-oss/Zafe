@@ -27,8 +27,9 @@ export async function POST(req: Request, { params }: RouteParams) {
     .from("desafios").select("status").eq("id", desafioId).single();
 
   if (!desafio) return NextResponse.json({ error: "Desafio não encontrado" }, { status: 404 });
-  if (desafio.status !== "admin_review") {
-    return NextResponse.json({ error: "Desafio não está em revisão admin" }, { status: 400 });
+  const resolvableStatuses = ["admin_review", "resolving", "under_contestation", "awaiting_proof", "proof_submitted"];
+  if (!resolvableStatuses.includes(desafio.status)) {
+    return NextResponse.json({ error: "Desafio já foi resolvido ou cancelado" }, { status: 400 });
   }
 
   if (resolution === "refund") {
