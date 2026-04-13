@@ -54,10 +54,11 @@ export default async function AdminPage() {
     adminSupabase.from("transactions").select("net_amount").eq("type", "commission"),
     // Mercados ativos para edição de prazo
     adminSupabase.from("topics").select("id, title, category, closes_at").eq("status", "active").eq("is_private", false).order("closes_at"),
-    // Desafios em revisão admin
+    // Desafios pendentes de resolução (todos os estados intermediários)
     adminSupabase.from("desafios")
-      .select("id, title, resolution, proof_url, proof_type, proof_notes, creator:profiles!creator_id(username, full_name), contestations:desafio_contestations(reason, contestant:profiles!contestant_id(username))")
-      .eq("status", "admin_review"),
+      .select("id, title, status, resolution, proof_url, proof_type, proof_notes, closes_at, proof_deadline_at, creator:profiles!creator_id(username, full_name), contestations:desafio_contestations(reason, contestant:profiles!contestant_id(username))")
+      .in("status", ["resolving", "awaiting_proof", "proof_submitted", "under_contestation", "admin_review"])
+      .order("closes_at"),
   ]);
 
   const walletBalance  = (wallets ?? []).reduce((s, w: { balance: number }) => s + (w.balance ?? 0), 0);

@@ -224,19 +224,18 @@ export default async function DesafioDetailPage({ params }: PageProps) {
       )}
 
       {/* Formulário de prova — coluna cheia, visível ao criador assim que o desafio fecha */}
-      {isCreator && (desafio.status === "awaiting_proof" || isExpiredActive) && (
+      {isCreator && (desafio.status === "awaiting_proof" || desafio.status === "resolving" || isExpiredActive) && (
         <div className="mb-2">
-          {isExpiredActive && desafio.status !== "awaiting_proof" ? (
+          {desafio.status === "awaiting_proof" ? (
+            <DesafioProofForm desafioId={id} proofDeadlineAt={desafio.proof_deadline_at ?? new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()} />
+          ) : (
             <div className="rounded-xl border border-yellow-500/40 bg-yellow-500/5 p-4 space-y-3">
               <p className="text-sm font-semibold text-yellow-300">Desafio encerrado — aguardando análise automática</p>
               <p className="text-xs text-yellow-400/70 leading-relaxed">
-                O oracle de IA está tentando resolver o resultado. Se não conseguir, você será notificado para enviar uma prova.
-                Você pode enviar sua prova agora para agilizar o processo.
+                O oracle de IA está analisando o resultado. Você pode enviar a prova agora para agilizar o processo.
               </p>
-              <DesafioProofForm desafioId={id} proofDeadlineAt={desafio.proof_deadline_at} />
+              <DesafioProofForm desafioId={id} proofDeadlineAt={desafio.proof_deadline_at ?? new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()} />
             </div>
-          ) : (
-            <DesafioProofForm desafioId={id} proofDeadlineAt={desafio.proof_deadline_at} />
           )}
         </div>
       )}
@@ -423,11 +422,11 @@ export default async function DesafioDetailPage({ params }: PageProps) {
             isCreator={isCreator}
           />
 
-          {/* Formulário de prova (criador, aguardando prova) */}
-          {isCreator && desafio.status === "awaiting_proof" && (
+          {/* Formulário de prova (criador, aguardando prova ou resolving) */}
+          {isCreator && (desafio.status === "awaiting_proof" || desafio.status === "resolving" || isExpiredActive) && (
             <DesafioProofForm
               desafioId={id}
-              proofDeadlineAt={desafio.proof_deadline_at}
+              proofDeadlineAt={desafio.proof_deadline_at ?? new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()}
             />
           )}
 

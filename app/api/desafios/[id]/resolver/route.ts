@@ -61,9 +61,11 @@ export async function POST(_req: Request, { params }: RouteParams) {
     return NextResponse.json({ outcome: "oracle_resolved", resolution });
   }
 
-  // AI incerta → aguarda prova do criador
+  // AI incerta → aguarda prova do criador (48h de prazo)
+  const proofDeadline = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
   await admin.from("desafios").update({
     status: "awaiting_proof",
+    proof_deadline_at: proofDeadline,
     oracle_result: "INCERTO",
     oracle_notes: aiResult ? `check1: ${aiResult.check1.fonte}` : "AI falhou",
   }).eq("id", desafioId);
@@ -78,7 +80,7 @@ export async function POST(_req: Request, { params }: RouteParams) {
   });
   sendPushToUser(admin, desafio.creator_id, {
     title: "Envie a prova do seu desafio",
-    body: `"${desafio.title?.slice(0, 60)}": você tem até ${new Date(desafio.proof_deadline_at).toLocaleString("pt-BR")} para enviar.`,
+    body: `"${desafio.title?.slice(0, 60)}": você tem 48h para enviar a prova.`,
     url: `/desafios/${desafioId}`,
   }).catch(() => {});
 
