@@ -26,20 +26,15 @@ const CATEGORY_COLOR: Record<string, string> = {
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
-  const type = searchParams.get("type") ?? "topico"; // "topico" | "desafio"
-
   if (!id) {
     return new Response("Missing id", { status: 400 });
   }
 
   const admin = createAdminClient();
-  const table = type === "desafio" ? "desafios" : "topics";
-  const statsTable = type === "desafio" ? "v_desafio_stats" : "v_topic_stats";
-  const statsKey = type === "desafio" ? "desafio_id" : "topic_id";
 
   const [{ data: topic }, { data: stats }] = await Promise.all([
-    admin.from(table).select("title, category, closes_at").eq("id", id).single(),
-    admin.from(statsTable).select("prob_sim, prob_nao, total_volume").eq(statsKey, id).single(),
+    admin.from("topics").select("title, category, closes_at").eq("id", id).single(),
+    admin.from("v_topic_stats").select("prob_sim, prob_nao, total_volume").eq("topic_id", id).single(),
   ]);
 
   const title = topic?.title ?? "Evento Zafe";
@@ -49,7 +44,6 @@ export async function GET(req: Request) {
   const volume = parseFloat(stats?.total_volume ?? "0");
   const catLabel = CATEGORY_LABELS[category] ?? "Outros";
   const catColor = CATEGORY_COLOR[category] ?? "#94a3b8";
-  const isDesafio = type === "desafio";
 
   return new ImageResponse(
     (
@@ -80,20 +74,6 @@ export async function GET(req: Request) {
             >
               {catLabel}
             </div>
-            {isDesafio && (
-              <div
-                style={{
-                  background: "#86efac22",
-                  color: "#86efac",
-                  padding: "6px 14px",
-                  borderRadius: "99px",
-                  fontSize: "18px",
-                  fontWeight: 600,
-                }}
-              >
-                Desafio
-              </div>
-            )}
           </div>
           <div style={{ fontSize: "32px", fontWeight: 800, color: "#86efac", letterSpacing: "-1px" }}>
             Zafe

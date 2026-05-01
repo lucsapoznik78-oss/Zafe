@@ -26,8 +26,8 @@ const topicoRules = [
     a: "6% do valor total apostado — descontado proporcionalmente do prêmio de cada vencedor.",
   },
   {
-    q: "Posso sair antes do encerramento?",
-    a: "Sim, pelo mercado secundário (aba Vender) — você pode vender sua posição a outros usuários com 2% de taxa.",
+    q: "Posso vender minha posição antes do encerramento?",
+    a: "Sim, pelo mercado secundário (aba Vender) — coloque uma ordem de venda e outro usuário compra sua posição. Taxa de 6% sobre o valor da venda.",
   },
 ];
 
@@ -49,8 +49,8 @@ const desafioRules = [
     a: "12% do valor total apostado — 6% para o criador do desafio e 6% para a plataforma — descontados proporcionalmente do prêmio de cada vencedor.",
   },
   {
-    q: "Posso sair antes do encerramento?",
-    a: "Sim, pelo mercado secundário (aba Vender) — você pode vender sua posição a outros usuários com 6% de taxa.",
+    q: "Posso vender minha posição antes do encerramento?",
+    a: "Sim, pelo mercado secundário (aba Vender) — coloque uma ordem de venda e outro usuário compra sua posição. Taxa de 6% sobre o valor da venda.",
   },
 ];
 

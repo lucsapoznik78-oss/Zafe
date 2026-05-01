@@ -2,7 +2,8 @@ name: Zafe Cron Jobs
 
 on:
   schedule:
-    - cron: "0 * * * *"   # a cada hora
+    - cron: "0 * * * *"    # a cada hora
+    - cron: "0 11 * * *"   # 8h Brasília (11:00 UTC) — news agent
   workflow_dispatch:        # permite rodar manualmente
 
 jobs:
@@ -31,6 +32,16 @@ jobs:
         run: |
           curl -s https://zafe-rho.vercel.app/api/cron/repor-mercados \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+
+  news-agent:
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 11 * * *' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Agente de notícias → tópicos pendentes
+        run: |
+          curl -s -X POST https://zafe-rho.vercel.app/api/cron/news-agent \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json"
 
   bonus-semanal:
     runs-on: ubuntu-latest

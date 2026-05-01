@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { sendPushToMany } from "@/lib/webpush";
 
@@ -20,7 +20,8 @@ export async function POST(request: Request) {
 
   if (!authorized) return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
 
-  const supabase = await createClient();
+  // Use admin client for all operations — cron has no user session and RLS would silently block writes
+  const supabase = createAdminClient();
   const now = new Date().toISOString();
 
   // Mover mercados públicos expirados para 'resolving' (apostas privadas são tratadas pelo outro cron)
@@ -48,7 +49,7 @@ export async function POST(request: Request) {
     .eq("is_private", false)
     .not("oracle_next_retry_at", "is", null);
 
-  // Notificar apostadores de mercados que fecham em ~2 horas
+  // Notificar apostadores + watchlist de mercados que fecham em ~2 horas
   const in2h = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
   const in1h50 = new Date(Date.now() + 110 * 60 * 1000).toISOString();
 
@@ -61,30 +62,28 @@ export async function POST(request: Request) {
     .lte("closes_at", in2h);
 
   for (const topic of closingSoon ?? []) {
-    const { data: bettors } = await supabase
-      .from("bets")
-      .select("user_id")
-      .eq("topic_id", topic.id)
-      .in("status", ["pending", "matched"]);
+    const [{ data: bettors }, { data: watchers }] = await Promise.all([
+      supabase.from("bets").select("user_id").eq("topic_id", topic.id).in("status", ["pending", "matched"]),
+      supabase.from("watchlist").select("user_id").eq("topic_id", topic.id).eq("notify_close", true),
+    ]);
 
-    const uniqueIds = [...new Set((bettors ?? []).map((b: any) => b.user_id))];
-    if (uniqueIds.length > 0) {
-      // Push notification
-      sendPushToMany(supabase, uniqueIds, {
+    const betIds  = new Set((bettors ?? []).map((b: any) => b.user_id));
+    const allIds  = [...new Set([...betIds, ...(watchers ?? []).map((w: any) => w.user_id)])];
+
+    if (allIds.length > 0) {
+      sendPushToMany(supabase, allIds, {
         title: "Mercado fecha em 2h ⏳",
         body: `"${topic.title.slice(0, 60)}" — última chance de apostar.`,
         url: `/topicos/${topic.id}`,
       }).catch(() => {});
 
-      // In-app notification para quem não tem push ativo
-      const notifRows = uniqueIds.map((uid) => ({
+      await supabase.from("notifications").insert(allIds.map((uid) => ({
         user_id: uid,
         type: "market_closing" as const,
         title: "Mercado fecha em 2h ⏳",
-        body: `"${topic.title.slice(0, 60)}" — última chance de apostar ou vender sua posição.`,
+        body: `"${topic.title.slice(0, 60)}" — ${betIds.has(uid) ? "última chance de apostar ou vender sua posição" : "mercado que você segue"}.`,
         data: { topic_id: topic.id },
-      }));
-      await supabase.from("notifications").insert(notifRows);
+      })));
     }
   }
 
@@ -97,13 +96,17 @@ export async function POST(request: Request) {
 
   let snapshotCount = 0;
 
-  for (const topic of activeTopics ?? []) {
-    const { data: stats } = await supabase
-      .from("v_topic_stats")
-      .select("prob_sim, volume_sim, volume_nao")
-      .eq("topic_id", topic.id)
-      .single();
+  // Batch-fetch stats for all active topics at once
+  const activeTopicIds = (activeTopics ?? []).map((t: any) => t.id);
+  const { data: allTopicStats } = activeTopicIds.length > 0
+    ? await supabase.from("v_topic_stats").select("topic_id, prob_sim, volume_sim, volume_nao").in("topic_id", activeTopicIds)
+    : { data: [] };
 
+  const probMap = new Map((allTopicStats ?? []).map((s: any) => [s.topic_id, parseFloat(s.prob_sim ?? "0.5")]));
+  const statsByTopic = new Map((allTopicStats ?? []).map((s: any) => [s.topic_id, s]));
+
+  for (const topic of activeTopics ?? []) {
+    const stats = statsByTopic.get(topic.id);
     if (stats) {
       await supabase.from("topic_snapshots").insert({
         topic_id: topic.id,
@@ -116,75 +119,43 @@ export async function POST(request: Request) {
     }
   }
 
-  // ── Desafios: snapshot + contestation auto-finalize + proof deadline auto-refund ──
-  const { data: activeDesafios } = await supabase
-    .from("desafios")
-    .select("id")
-    .eq("status", "active")
-    .gte("closes_at", now);
+  // ── Watchlist: alertas de variação de probabilidade ──────────────────────────────
+  const { data: watchlistEntries } = await supabase
+    .from("watchlist")
+    .select("id, user_id, topic_id, threshold_pct, last_notified_prob")
+    .not("topic_id", "is", null);
 
-  for (const d of activeDesafios ?? []) {
-    const { data: ds } = await supabase
-      .from("v_desafio_stats")
-      .select("prob_sim, volume_sim, volume_nao")
-      .eq("desafio_id", d.id)
-      .single();
+  // Batch-fetch topic titles for watchlist alerts
+  const watchlistTopicIds = [...new Set((watchlistEntries ?? []).map((e: any) => e.topic_id))];
+  const { data: watchlistTopics } = watchlistTopicIds.length > 0
+    ? await supabase.from("topics").select("id, title").in("id", watchlistTopicIds)
+    : { data: [] };
+  const titleMap = new Map((watchlistTopics ?? []).map((t: any) => [t.id, t.title]));
 
-    if (ds) {
-      await supabase.from("desafio_snapshots").insert({
-        desafio_id:  d.id,
-        prob_sim:    ds.prob_sim ?? 0.5,
-        volume_sim:  ds.volume_sim ?? 0,
-        volume_nao:  ds.volume_nao ?? 0,
-        recorded_at: now,
-      });
-      snapshotCount++;
+  for (const entry of watchlistEntries ?? []) {
+    const currentProb = probMap.get(entry.topic_id) ?? null;
+    if (currentProb === null) continue;
+    const lastProb = entry.last_notified_prob ?? currentProb;
+    const diff = Math.abs(currentProb - lastProb) * 100;
+    if (diff >= entry.threshold_pct) {
+      const title = titleMap.get(entry.topic_id) ?? "Mercado";
+      const dir = currentProb > lastProb ? "subiu" : "caiu";
+      await Promise.all([
+        supabase.from("notifications").insert({
+          user_id: entry.user_id,
+          type: "watchlist_alert",
+          title: `Probabilidade ${dir} ${diff.toFixed(0)}%`,
+          body: `"${title.slice(0, 55)}" SIM agora em ${(currentProb * 100).toFixed(1)}%`,
+          data: { topic_id: entry.topic_id },
+        }),
+        supabase.from("watchlist").update({ last_notified_prob: currentProb }).eq("id", entry.id),
+      ]);
     }
-  }
-
-  // Desafios em contestation com prazo expirado → pagar
-  const { data: expiredContestations } = await supabase
-    .from("desafios")
-    .select("id, resolution")
-    .eq("status", "under_contestation")
-    .lt("contestation_deadline_at", now);
-
-  for (const d of expiredContestations ?? []) {
-    if (d.resolution === "sim" || d.resolution === "nao") {
-      const { pagarDesafio } = await import("@/lib/desafios-payout");
-      pagarDesafio(supabase, d.id, d.resolution, "oracle").catch(console.error);
-    }
-  }
-
-  // Desafios awaiting_proof com prazo expirado → reembolsar
-  const { data: expiredProofs } = await supabase
-    .from("desafios")
-    .select("id")
-    .eq("status", "awaiting_proof")
-    .lt("proof_deadline_at", now);
-
-  for (const d of expiredProofs ?? []) {
-    const { reembolsarDesafio } = await import("@/lib/desafios-payout");
-    reembolsarDesafio(supabase, d.id, "Criador não enviou prova no prazo").catch(console.error);
-  }
-
-  // Desafios ativos com closes_at expirado → disparar oracle
-  const { data: expiredDesafios } = await supabase
-    .from("desafios")
-    .select("id")
-    .eq("status", "active")
-    .lt("closes_at", now);
-
-  for (const d of expiredDesafios ?? []) {
-    fetch(`${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/api/desafios/${d.id}/resolver`, {
-      method: "POST",
-    }).catch(() => {});
   }
 
   return NextResponse.json({
     success: true,
     expired_topics: expiredTopics?.length ?? 0,
     snapshots_taken: snapshotCount,
-    expired_desafios: expiredDesafios?.length ?? 0,
   });
 }

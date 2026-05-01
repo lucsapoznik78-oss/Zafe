@@ -4,8 +4,10 @@ import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://zafe-rho.vercel.app";
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://zafe-rho.vercel.app"),
+  metadataBase: new URL(APP_URL),
   title: {
     default: "Zafe — Mercados de Previsão do Brasil",
     template: "%s — Zafe",

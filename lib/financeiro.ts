@@ -38,13 +38,7 @@ export const FATOR_LIQUIDO = 1 - TAXA_DEPOSITO;
 /** Saque mínimo — abaixo disso o custo de processamento não compensa */
 export const SAQUE_MINIMO = 20;
 
-/**
- * Taxa de saída antecipada de uma aposta (96% devolvido, 6% fica como comissão)
- * O usuário sai antes da resolução e abre mão de 6% do valor apostado.
- * Esses 6% vão para CONTA_OPERACIONAL como receita da plataforma.
- */
-export const TAXA_SAIDA_ANTECIPADA = 0.06;
-export const FATOR_DEVOLUCAO_SAIDA = 1 - TAXA_SAIDA_ANTECIPADA; // 0.94
+// Saída antecipada removida — use o mercado secundário (ordem de venda com 6% de taxa).
 
 // ── Identificadores de conta (preencher quando integrar pagamento) ──
 

@@ -13,6 +13,7 @@ import SocialActivity from "@/components/topicos/SocialActivity";
 import ProbabilityChart from "@/components/topicos/ProbabilityChart";
 import LiveStats from "@/components/topicos/LiveStats";
 import ShareButton from "@/components/topicos/ShareButton";
+import WatchlistButton from "@/components/topicos/WatchlistButton";
 import UserResultBanner from "@/components/topicos/UserResultBanner";
 import ResolutionBreakdown from "@/components/topicos/ResolutionBreakdown";
 import RulesAccordion from "@/components/topicos/RulesAccordion";
@@ -42,13 +43,16 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const resolvedId = isUUID ? id : (await supabase.from("topics").select("id").eq("slug", id).single())?.data?.id ?? id;
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://zafe-rho.vercel.app";
   const ogImage = `${appUrl}/api/og?id=${resolvedId}&type=topico`;
+  const canonicalUrl = `${appUrl}/topicos/${resolvedId}`;
   return {
     title: topic.title,
     description: desc,
+    alternates: { canonical: canonicalUrl },
     openGraph: {
       title: `${topic.title} — Zafe`,
       description: desc,
       type: "website",
+      url: canonicalUrl,
       images: [{ url: ogImage, width: 1200, height: 630, alt: topic.title }],
     },
     twitter: {
@@ -175,8 +179,9 @@ export default async function TopicoDetailPage({ params, searchParams }: PagePro
             </Link>
           )}
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <CountdownTimer closesAt={topic.closes_at} />
+          {topic.status === "active" && user && <WatchlistButton topicId={topicId} />}
           <ShareButton
             title={topic.title}
             probSim={probSim}
@@ -199,7 +204,7 @@ export default async function TopicoDetailPage({ params, searchParams }: PagePro
       {/* Banner de resolução em andamento */}
       {topic.status === "resolving" && (
         <div className="mb-4">
-          <ResolvingBanner topicId={topicId} type="topico" />
+          <ResolvingBanner topicId={topicId} />
         </div>
       )}
 

@@ -1,16 +1,17 @@
 "use client";
 
 import { CATEGORIES } from "@/lib/utils";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
 const SORT_OPTIONS = [
   { value: "popular", label: "Mais populares" },
   { value: "recent", label: "Mais recentes" },
 ];
 
-export default function TopicFilters() {
+export default function TopicFilters({ excludeCategory }: { excludeCategory?: string } = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
 
   const currentSort = searchParams.get("sort") ?? "popular";
   const currentCategory = searchParams.get("category") ?? "";
@@ -22,8 +23,12 @@ export default function TopicFilters() {
     } else {
       params.delete(key);
     }
-    router.push(`/topicos?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`);
   }
+
+  const visibleCategories = excludeCategory
+    ? CATEGORIES.filter((c) => c.value !== excludeCategory)
+    : CATEGORIES;
 
   return (
     <div className="space-y-3">
@@ -54,7 +59,7 @@ export default function TopicFilters() {
         >
           Todos
         </button>
-        {CATEGORIES.map((cat) => (
+        {visibleCategories.map((cat) => (
           <button
             key={cat.value}
             onClick={() => setParam("category", cat.value)}

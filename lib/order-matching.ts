@@ -10,7 +10,7 @@
  * Excesso de escrow do comprador é devolvido se executou abaixo do limite.
  */
 
-export const COMMISSION_RATE = 0.02; // 2% ao vendedor
+export const COMMISSION_RATE = 0.06; // 6% ao vendedor
 
 /** Calcula as odds parimutuel inline (sem import circular) */
 function impliedOdds(volSim: number, volNao: number, side: "sim" | "nao") {
@@ -196,7 +196,7 @@ async function executeTrade(admin: any, p: {
     type:         "bet_exited",
     amount:       tradeValue,
     net_amount:   netSeller,
-    description:  `Venda mercado secundário ${p.side.toUpperCase()} · ${(p.price * 100).toFixed(1)}¢ · taxa 2%`,
+    description:  `Venda mercado secundário ${p.side.toUpperCase()} · ${(p.price * 100).toFixed(1)}¢ · taxa 6%`,
     reference_id: refId,
   });
 

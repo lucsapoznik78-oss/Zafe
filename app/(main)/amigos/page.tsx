@@ -47,7 +47,7 @@ export default async function AmigosPage({ searchParams }: PageProps) {
       .eq("status", "pending"),
     supabase
       .from("liga_members")
-      .select("liga_id, ligas(id, name, description, color, creator_id, liga_members(id, user_id, status, profiles(username, full_name)))")
+      .select("liga_id, ligas(id, name, description, color, creator_id, is_public, parent_liga_id, liga_members(id, user_id, status, profiles(username, full_name)))")
       .eq("user_id", user.id)
       .eq("status", "active"),
     supabase
@@ -84,7 +84,9 @@ export default async function AmigosPage({ searchParams }: PageProps) {
   for (const m of ligasRaw ?? []) {
     if (m.ligas && !ligaMap.has((m.ligas as any).id)) {
       ligaMap.set((m.ligas as any).id, {
-        ...m.ligas,
+        ...(m.ligas as any),
+        is_public: (m.ligas as any).is_public ?? false,
+        parent_liga_id: (m.ligas as any).parent_liga_id ?? null,
         members: (m.ligas as any).liga_members ?? [],
       });
     }

@@ -1,6 +1,7 @@
 import Navbar from "@/components/layout/Navbar";
 import MobileNav from "@/components/layout/MobileNav";
 import ReferralActivator from "@/components/layout/ReferralActivator";
+import WelcomeModal from "@/components/onboarding/WelcomeModal";
 
 export default function MainLayout({
   children,
@@ -15,6 +16,7 @@ export default function MainLayout({
       </main>
       <MobileNav />
       <ReferralActivator />
+      <WelcomeModal />
     </div>
   );
 }

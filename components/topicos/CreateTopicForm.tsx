@@ -3,7 +3,20 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CATEGORIES } from "@/lib/utils";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertTriangle } from "lucide-react";
+
+// Keywords that indicate a subjective/unverifiable event
+const SUBJECTIVE_PATTERNS = [
+  /\bescala[rá]?\b/i, /\bsignificativ/i, /\bmuito\b/i, /\bgrande[s]?\b/i,
+  /\bmelhor[a]?\b/i, /\bpior[a]?\b/i, /\balta[s]?\b/i, /\bbaixa[s]?\b/i,
+  /\bcresc[e]?\b/i, /\bserá bom\b/i, /\bserá ruim\b/i, /\bsuficiente\b/i,
+  /\bconsiderável\b/i, /\bsubstancial\b/i, /\bexpressiv/i, /\brápido\b/i,
+  /\blento\b/i, /\bpopular\b/i, /\bimpopular\b/i,
+];
+
+function detectSubjectiveTitle(title: string): boolean {
+  return SUBJECTIVE_PATTERNS.some((p) => p.test(title));
+}
 
 export default function CreateTopicForm() {
   const router = useRouter();
@@ -68,6 +81,12 @@ export default function CreateTopicForm() {
 
   return (
     <form onSubmit={handleSubmit} className="bg-card border border-border rounded-xl p-5 space-y-5">
+      <div className="bg-muted/30 border border-border rounded-lg p-3 space-y-1.5 text-xs text-muted-foreground">
+        <p className="text-white font-semibold text-sm">Como criar um bom mercado</p>
+        <p>✓ Use perguntas com resultado <strong className="text-white">binário e verificável</strong> (sim ou não, acima/abaixo de X)</p>
+        <p>✓ Inclua <strong className="text-white">números, datas e fontes</strong> na descrição (ex: segundo o IBGE, acima de R$ 6,00)</p>
+        <p>✗ Evite termos vagos: vai escalar, será grande, melhorar muito — o oráculo não consegue verificar</p>
+      </div>
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-white">
           Pergunta <span className="text-nao">*</span>
@@ -80,6 +99,17 @@ export default function CreateTopicForm() {
           className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
         />
         <p className="text-[10px] text-muted-foreground text-right">{form.title.length}/120</p>
+        {detectSubjectiveTitle(form.title) && (
+          <div className="flex items-start gap-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-3 py-2.5 mt-1">
+            <AlertTriangle size={13} className="text-yellow-400 shrink-0 mt-0.5" />
+            <div className="text-xs text-yellow-300 space-y-1">
+              <p className="font-semibold">Evento pode ser subjetivo</p>
+              <p className="text-yellow-400/80">O oráculo de IA só consegue verificar fatos objetivos e mensuráveis. Prefira perguntas com threshold numérico ou resultado binário claro.</p>
+              <p className="text-yellow-400/70">✗ A inflação vai subir muito? — subjetivo</p>
+              <p className="text-yellow-400/70">✓ O IPCA de abril 2026 vai superar 0,5%? — verificável</p>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="space-y-1.5">

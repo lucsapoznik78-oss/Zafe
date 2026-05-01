@@ -1,6 +1,6 @@
 /**
- * Resolve um mercado diretamente via Claude com web search.
- * Usado quando o oracle automático falha por timeout.
+ * Resolve mercados expirados diretamente via Claude com web search.
+ * Usado quando o oracle automático falha por timeout ou INCERTO.
  */
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
@@ -10,6 +10,45 @@ import { pagarVencedores, reembolsarTodos } from "@/lib/payout";
 const claude = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 export const maxDuration = 60;
+
+const ORACLE_SYSTEM = `Você é o oracle do site brasileiro de prediction markets Zafe.
+Sua única função é determinar o resultado de eventos e responder SOMENTE com JSON puro.
+Formato obrigatório (sem markdown, sem texto extra, sem explicação):
+{"resultado":"SIM","confianca":95}
+ou
+{"resultado":"NAO","confianca":95}
+ou
+{"resultado":"INCERTO","confianca":0}
+Valores permitidos para resultado: "SIM", "NAO", "INCERTO"`;
+
+/**
+ * Extrai o JSON com campo "resultado" de uma string possivelmente com prose ao redor.
+ * Resolve o problema do regex greedy que captura múltiplos objetos JSON.
+ */
+function extractResultado(text: string): { resultado: string; confianca: number } | null {
+  const clean = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+
+  // Parse direto
+  try { return JSON.parse(clean); } catch {}
+
+  // Tenta cada objeto simples (sem nesting) até achar um com "resultado"
+  const matches = clean.match(/\{[^{}]+\}/g) ?? [];
+  for (const m of matches) {
+    try {
+      const obj = JSON.parse(m);
+      if (["SIM", "NAO", "INCERTO"].includes(obj.resultado)) return obj;
+    } catch { continue; }
+  }
+
+  // Fallback: regex literal para capturar o valor de "resultado"
+  const rm = clean.match(/"resultado"\s*:\s*"(SIM|NAO|INCERTO)"/);
+  if (rm) {
+    const cm = clean.match(/"confianca"\s*:\s*(\d+)/);
+    return { resultado: rm[1], confianca: cm ? parseInt(cm[1]) : 90 };
+  }
+
+  return null;
+}
 
 export async function POST(req: Request) {
   const supabase = await createClient();
@@ -21,7 +60,6 @@ export async function POST(req: Request) {
 
   const admin = createAdminClient();
 
-  // Busca todos os tópicos expirados (active ou resolving)
   const now = new Date().toISOString();
   const { data: expired } = await admin
     .from("topics")
@@ -46,52 +84,40 @@ export async function POST(req: Request) {
   for (const topic of expired) {
     try {
       const prazo = new Date(topic.closes_at).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
+      const prompt = `Data atual: ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })} (horário de Brasília)
+Prazo do mercado: ${prazo} (horário de Brasília)
 
-      const prompt = `Você é o oracle de um site de prediction markets brasileiro chamado Zafe.
-
-Pergunta do mercado: "${topic.title}"
-Prazo: ${prazo} (horário de Brasília)
-Data atual: ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}
-
-Use busca na web para verificar se o evento aconteceu antes do prazo indicado.
-
-Responda SOMENTE com JSON (sem markdown, sem texto extra):
-{"resultado":"SIM","confianca":95}
-ou
-{"resultado":"NAO","confianca":95}
-ou
-{"resultado":"INCERTO","confianca":0}
+Use busca na web para verificar se este evento aconteceu antes do prazo:
+"${topic.title}"
 
 IMPORTANTE: Prefira SIM ou NAO a INCERTO sempre que encontrar qualquer evidência.`;
 
-      // Tenta com web search primeiro
-      let response;
+      // Tenta com web search via beta API
+      let response: any;
       try {
-        response = await claude.messages.create(
-          {
-            model: "claude-haiku-4-5-20251001",
-            max_tokens: 300,
-            tools: [{ type: "web_search_20250305" as any, name: "web_search" }],
-            messages: [{ role: "user", content: prompt }],
-          },
-          { headers: { "anthropic-beta": "web-search-2025-03-05" } }
-        );
+        response = await (claude.beta.messages.create as any)({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 1024,
+          betas: ["web-search-2025-03-05"],
+          system: ORACLE_SYSTEM,
+          tools: [{ type: "web_search_20250305", name: "web_search" }],
+          messages: [{ role: "user", content: prompt }],
+        });
       } catch {
         // Fallback sem web search
         response = await claude.messages.create({
           model: "claude-haiku-4-5-20251001",
-          max_tokens: 200,
+          max_tokens: 512,
+          system: ORACLE_SYSTEM,
           messages: [{ role: "user", content: prompt }],
         });
       }
 
       const textBlock = response.content.find((b: any) => b.type === "text") as { type: "text"; text: string } | undefined;
-      const text = textBlock?.text ?? "";
-      const clean = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-      let parsed: any;
-      try { parsed = JSON.parse(clean); } catch { const m = clean.match(/\{[\s\S]*\}/); try { parsed = m ? JSON.parse(m[0]) : null; } catch { parsed = null; } }
+      const parsed = extractResultado(textBlock?.text ?? "");
 
-      if (!parsed || !["SIM","NAO","INCERTO"].includes(parsed.resultado)) {
+      if (!parsed || !["SIM", "NAO", "INCERTO"].includes(parsed.resultado)) {
+        console.error("[resolver-direto] parse falhou para:", topic.title, "| resposta:", textBlock?.text?.slice(0, 200));
         results.push({ title: topic.title, outcome: "parse_error" });
         continue;
       }
@@ -118,5 +144,9 @@ IMPORTANTE: Prefira SIM ou NAO a INCERTO sempre que encontrar qualquer evidênci
     }
   }
 
-  return NextResponse.json({ resolved: results.filter(r => r.outcome === "SIM" || r.outcome === "NAO").length, total: expired.length, results });
+  return NextResponse.json({
+    resolved: results.filter(r => r.outcome === "SIM" || r.outcome === "NAO").length,
+    total: expired.length,
+    results,
+  });
 }

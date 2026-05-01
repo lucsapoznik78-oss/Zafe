@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Users, User, Trophy, Swords } from "lucide-react";
+import { Home, Users, User, Trophy, TrendingUp } from "lucide-react";
 
 const navItems = [
-  { href: "/topicos",   label: "Início",    icon: Home },
-  { href: "/desafios",  label: "Desafios",  icon: Swords },
+  { href: "/liga",      label: "Liga",      icon: Home },
+  { href: "/economico", label: "Econômico", icon: TrendingUp },
   { href: "/ranking",   label: "Ranking",   icon: Trophy },
   { href: "/amigos",    label: "Amigos",    icon: Users },
   { href: "/perfil",    label: "Perfil",    icon: User },

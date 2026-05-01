@@ -74,8 +74,8 @@ export default function Navbar() {
 
         <nav className="hidden md:flex items-center gap-1">
           {[
-            { href: "/topicos", label: "Tópicos" },
-            { href: "/desafios", label: "Desafios" },
+            { href: "/liga", label: "Liga" },
+            { href: "/economico", label: "Econômico" },
             { href: "/ranking", label: "Ranking" },
             { href: "/amigos", label: "Amigos" },
             { href: "/apostas-privadas", label: "Privadas" },
@@ -95,13 +95,10 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Link
-            href="/depositar"
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors"
-          >
+          <span className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary/10 text-primary text-sm font-medium" title="Z$ virtual — não tem valor monetário real">
             <Wallet size={14} />
             {wallet ? formatCurrency(wallet.balance) : "Z$ 0,00"}
-          </Link>
+          </span>
 
           <PushSetup />
           <NotificationBell />
@@ -120,9 +117,6 @@ export default function Navbar() {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => window.location.href = "/meus-topicos"}>
                 <span className="text-sm">Minhas Posições</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => window.location.href = "/depositar"}>
-                <span className="text-sm">Carteira</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-border" />
               <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive">

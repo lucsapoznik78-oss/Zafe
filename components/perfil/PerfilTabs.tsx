@@ -278,7 +278,7 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl }:
               <li className="flex gap-2"><span className="text-primary shrink-0">→</span> Resolvidos automaticamente por nosso oráculo de IA, que consulta fontes oficiais</li>
               <li className="flex gap-2"><span className="text-primary shrink-0">→</span> Em caso de contradição entre fontes, um administrador revisa manualmente</li>
               <li className="flex gap-2"><span className="text-primary shrink-0">→</span> Pool parimutuel: o lucro vem proporcional ao quanto você apostou vs. o total do lado vencedor</li>
-              <li className="flex gap-2"><span className="text-primary shrink-0">→</span> Saída antecipada disponível: receba 96% do valor de volta a qualquer momento antes do fechamento</li>
+              <li className="flex gap-2"><span className="text-primary shrink-0">→</span> Venda antecipada disponível: use o mercado secundário (aba Vender) para liquidar sua posição antes do fechamento</li>
             </ul>
           </div>
 
@@ -329,8 +329,8 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl }:
                 <span className="text-white">6% (comissão Zafe)</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Saída antecipada</span>
-                <span className="text-white">6% (recebe 94% de volta)</span>
+                <span className="text-muted-foreground">Mercado secundário</span>
+                <span className="text-white">6% (sobre o valor da venda)</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Saque</span>

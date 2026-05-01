@@ -6,10 +6,9 @@ import { Loader2 } from "lucide-react";
 
 interface Props {
   topicId: string;
-  type?: "topico" | "desafio";
 }
 
-export default function ResolvingBanner({ topicId, type = "topico" }: Props) {
+export default function ResolvingBanner({ topicId }: Props) {
   const router = useRouter();
   const [dots, setDots] = useState(".");
   const [elapsed, setElapsed] = useState(0);
@@ -22,9 +21,7 @@ export default function ResolvingBanner({ topicId, type = "topico" }: Props) {
 
   // Polling a cada 5s para verificar se o mercado foi resolvido
   useEffect(() => {
-    const apiPath = type === "desafio"
-      ? `/api/desafios/${topicId}/status`
-      : `/api/topicos/${topicId}/status`;
+    const apiPath = `/api/topicos/${topicId}/status`;
 
     const interval = setInterval(async () => {
       try {
@@ -41,7 +38,7 @@ export default function ResolvingBanner({ topicId, type = "topico" }: Props) {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [topicId, type, router]);
+  }, [topicId, router]);
 
   return (
     <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/5 px-5 py-4 flex items-start gap-4">

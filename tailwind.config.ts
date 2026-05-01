@@ -53,6 +53,15 @@ const config: Config = {
         md: "0.5rem",
         sm: "0.375rem",
       },
+      keyframes: {
+        "confetti-fall": {
+          "0%":   { transform: "translateY(-10px) rotate(0deg)", opacity: "1" },
+          "100%": { transform: "translateY(350px) rotate(720deg)", opacity: "0" },
+        },
+      },
+      animation: {
+        "confetti-fall": "confetti-fall 1.8s ease-in forwards",
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],

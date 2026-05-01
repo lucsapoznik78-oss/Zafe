@@ -6,7 +6,7 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
-const BASE_URL = "https://zafe-rho.vercel.app";
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://zafe-rho.vercel.app";
 
 function urlEntry(loc: string, lastmod: string, freq: string, priority: number) {
   return `  <url>
@@ -50,7 +50,8 @@ export async function GET() {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urlEntry(BASE_URL, now, "daily", 1)}
-${urlEntry(`${BASE_URL}/topicos`, now, "hourly", 0.9)}
+${urlEntry(`${BASE_URL}/liga`, now, "hourly", 0.9)}
+${urlEntry(`${BASE_URL}/economico`, now, "daily", 0.8)}
 ${urlEntry(`${BASE_URL}/ranking`, now, "daily", 0.6)}
 ${topicEntries.join("\n")}
 ${profileEntries.join("\n")}
