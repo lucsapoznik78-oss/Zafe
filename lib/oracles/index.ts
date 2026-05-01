@@ -14,6 +14,7 @@ import { oracleEntretenimento } from "./entretenimento";
 import { oracleTecnologia } from "./tecnologia";
 import { oracleAITripleCheck } from "./ai-triple-check";
 import { pagarVencedores, reembolsarTodos } from "@/lib/payout";
+import { pagarConcursoBets } from "@/lib/concurso-payout";
 import type { OracleResult } from "./sports";
 
 const RETRY_INTERVAL_MS = 2 * 60 * 60 * 1000;
@@ -81,6 +82,7 @@ export async function resolverTopic(supabase: any, topic: Topic): Promise<{ outc
   if (tentativa > MAX_RETRIES) {
     await salvarResolucao(supabase, topic, { resolvido_por: "reembolso", oracle_usado: "nenhum", numero_tentativa: tentativa, resultado_final: "REEMBOLSO" });
     await reembolsarTodos(supabase, topic.id, "Oracle não conseguiu determinar resultado após 3 tentativas");
+    await pagarConcursoBets(supabase, topic.id, "cancelled");
     return { outcome: "refunded" };
   }
 
@@ -108,6 +110,7 @@ export async function resolverTopic(supabase: any, topic: Topic): Promise<{ outc
       apiResult,
     });
     await pagarVencedores(supabase, topic.id, resultado);
+    await pagarConcursoBets(supabase, topic.id, resultado);
     return { outcome: "paid" };
   }
 
@@ -129,6 +132,7 @@ export async function resolverTopic(supabase: any, topic: Topic): Promise<{ outc
       aiResult,
     });
     await pagarVencedores(supabase, topic.id, resultado);
+    await pagarConcursoBets(supabase, topic.id, resultado);
     return { outcome: "paid" };
   }
 
