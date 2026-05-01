@@ -19153,28 +19153,59 @@ npx vercel --prod # Deploy to production (no GitHub auto-deploy)
 
 Auth guard and admin check live entirely in `middleware.ts`.
 
-### Supabase Clients
-Two clients, never mix them:
-- `lib/supabase/client.ts` → `createBrowserClient()` for Client Components
-- `lib/supabase/server.ts` → `createServerClient()` for Server Components/API routes, plus `createAdminClient()` (service role) for privileged ops
+### Supabase Clients — REGRA CRÍTICA
 
-**Rule:** API routes that need to write to tables should use `createAdminClient()` after manually verifying `auth.getUser()`. The user client is subject to RLS and will silently fail if policies are missing.
+Dois clients, **nunca misturar**:
+- `lib/supabase/client.ts` → `createBrowserClient()` para Client Components
+- `lib/supabase/server.ts` → `createServerClient()` para Server Components/API routes; `createAdminClient()` (service role) para operações privilegiadas
+
+**REGRA OBRIGATÓRIA — lida com atenção:**
+- **Crons** (chamados via GitHub Actions com `Bearer CRON_SECRET`) **não têm sessão de usuário**. Se usarem `createClient()`, o Supabase usa a anon key com RLS ativo e **todos os writes falham silenciosamente**.
+- **Admin routes** também precisam de `createAdminClient()` para writes, pois o RLS bloqueia updates em wallets/transactions de outros usuários mesmo para admins autenticados.
+- **Padrão correto para crons:** verificar auth pelo header → criar `createAdminClient()` → todas as operações de DB com o admin client.
+- **Padrão correto para admin routes:** verificar auth com `createClient()` + `getUser()` → criar `createAdminClient()` → todas as escritas com o admin client.
+
+```typescript
+// ✅ CORRETO — cron sem sessão
+export async function POST(req: Request) {
+  if (req.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`)
+    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  const supabase = createAdminClient(); // nunca createClient() em cron
+  // ... todas as operações com supabase
+}
+
+// ✅ CORRETO — admin route com sessão
+export async function POST(req: Request) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser(); // auth check
+  const { data: profile } = await supabase.from("profiles").select("is_admin")...
+  if (!profile?.is_admin) return 403;
+  const admin = createAdminClient(); // writes com admin client
+  await admin.from("wallets").update(...); // ✅ bypassa RLS
+}
+
+// ❌ ERRADO — cron usando createClient() para writes
+const supabase = await createClient(); // anon key, RLS bloqueia writes
+await supabase.from("topics").update(...); // falha silenciosamente
+```
+
+**Histórico do bug:** todos os crons usavam `createClient()` para writes. O `oracle_retry_count` nunca era incrementado (write bloqueado pelo RLS), então o oracle ficava preso em `tentativa=1` para sempre e nunca atingia `MAX_RETRIES` para reembolsar. Corrigido em v2.0.1.
 
 ### Data Types
-All database types are in `types/database.ts`. Key types: `Topic`, `Bet`, `BetMatch`, `Profile`, `Wallet`, `Transaction`, `Friendship`, `PrivateBetInvite`, `Notification`.
+Todos os tipos do banco estão em `types/database.ts`. Tipos-chave: `Topic`, `Bet`, `BetMatch`, `Profile`, `Wallet`, `Transaction`, `Friendship`, `PrivateBetInvite`, `Notification`.
 
-Enums to know:
-- `TopicStatus`: `pending` → `active` → `resolving` → `resolved` | `cancelled`. There is NO `closed` status.
-- `BetSide`: `sim` | `nao` (Portuguese yes/no)
+Enums:
+- `TopicStatus`: `pending` → `active` → `resolving` → `resolved` | `cancelled`. Não existe `closed`.
+- `BetSide`: `sim` | `nao` (Português)
 - `TopicCategory`: `politica` | `esportes` | `cultura` | `economia` | `tecnologia` | `entretenimento` | `outros`
 
 ### Platform Model (v2.0 — pós CMN 5.298/2026)
 
-**Z$ é moeda virtual** — nunca conversível a dinheiro real. Usuários recebem Z$ ao se cadastrar e participar. Dinheiro real só aparece em:
-1. **Premium** — assinatura mensal (em desenvolvimento)
-2. **Concurso Mensal** — 30+ palpites/mês → premiação em BRL via PIX para os melhores Brier scores
+**Z$ é moeda virtual** — nunca conversível a dinheiro real diretamente. Usuários recebem Z$ ao se cadastrar e participar. Dinheiro real só aparece em:
+1. **Concurso Mensal** — ranking por saldo ZC$ no mês → premiação em BRL via PIX (conta bancária no perfil)
+2. **Premium** — assinatura mensal (em desenvolvimento)
 
-**Vocabulário obrigatório:**
+**Vocabulário obrigatório na UI:**
 - aposta/apostar → **palpite/palpitar**
 - mercado preditivo → **evento**
 - odds → **probabilidade**
@@ -19183,9 +19214,9 @@ Enums to know:
 ### Três Pilares de Conteúdo
 
 **1. Liga** (`/liga`, `app/(main)/liga/`) — eventos de qualquer categoria exceto economia
-- Foco: esportes, política, entretenimento, cultura, tecnologia, outros
 - Feed principal da plataforma; mostra `ConcursoBanner` no topo
 - Cards direcionam para `/topicos/[id]` (mesma engine de eventos)
+- `TopicFilters` com `excludeCategory="economia"` para não mostrar indicadores
 
 **2. Econômico** (`/economico`, `app/(main)/economico/`) — apenas `category = "economia"`
 - Indicadores: IPCA, Selic, PIB, câmbio, desemprego
@@ -19193,101 +19224,113 @@ Enums to know:
 
 **3. Privadas** (`/apostas-privadas`) — bolões entre amigos (inalterado)
 
-### Tópicos (engine de eventos)
+### Concurso Mensal
+
+- Cada participante inscrito recebe **1.000 ZC$ (Zafes do Concurso)** — carteira separada, exclusiva do concurso
+- Palpitam em qualquer evento da Liga com esses ZC$
+- Eventos resolvem normalmente — quem acertou recebe da pool dos errados
+- Fim do mês: ranking por saldo ZC$ atual (quem começou com 1.000 e chegou mais longe)
+- Ranking visível na página da Liga; clica no usuário → vê histórico de palpites (ganhos/perdidos)
+- Vencedores recebem BRL via PIX (conta bancária cadastrada no perfil do usuário)
+- DB: `concursos`, `inscricoes_concurso`, `concurso_wallets`, `concurso_bets` (a criar)
+- `ConcursoBanner` no topo de `/liga` com botão de inscrição
+
+### Tópicos (engine de eventos — shared entre Liga e Econômico)
 - `app/(main)/topicos/` ainda existe (acesso direto + redirects de /liga e /economico)
 - Criação: `POST /api/criar`, status `pending` até admin aprovar
-- Resolution: AI oracle (`lib/oracles/`) → fallback admin
-- Payout: 6% platform commission, 94% to winners (parimutuel)
-- Slug URLs: `/topicos/[slug-or-uuid]` — lookup handles both
+- Resolução: AI oracle (`lib/oracles/`) → reembolso automático após 3 tentativas INCERTO
+- Payout: 6% comissão da plataforma, 94% para vencedores (parimutuel)
+- Slug URLs: `/topicos/[slug-or-uuid]` — lookup aceita ambos
 
 ### Business Logic (`/lib`)
-- `odds.ts` — Parimutuel odds: `calcOdds(volumeSim, volumeNao)`. Winners split the losing pool minus **6% commission** (94% payout).
-- `order-matching.ts` — Secondary market engine: FIFO price-time matching, **6% commission** on seller.
-- `private-bets.ts` — Peer-to-peer bet resolution: leader election requires 67% supermajority per side.
-- `webpush.ts` — `sendPushToUser(userId, payload)` uses VAPID; auto-cleans stale subscriptions.
-- `oracles/` — Anthropic AI agents per category for automated market resolution (`ai-triple-check.ts` does triple verification).
-- `slugify.ts` — URL slug generation for topic titles.
-- `utils.ts` — `cn()`, `formatCurrency()` (Z$), `formatPercent()`, `applyCommission()`, `CATEGORIES` array.
+- `odds.ts` — Parimutuel: `calcOdds(volumeSim, volumeNao)`. **6% comissão**.
+- `order-matching.ts` — Mercado secundário: FIFO price-time matching, **6% comissão sobre vendedor**.
+- `private-bets.ts` — Resolução P2P: supermaioria 67% por lado.
+- `webpush.ts` — `sendPushToUser(userId, payload)` via VAPID; auto-limpa subscriptions stale.
+- `oracles/` — Agentes Anthropic por categoria. Pipeline: API fixa → auto-detect → Claude AI triple-check → retry → reembolso.
+- `payout.ts` — `pagarVencedores()`, `reembolsarTodos()`. Sempre recebe o client como parâmetro — **passar sempre `adminClient`**.
+- `auto-replenish.ts` — `replenishMarkets(supabase)` mantém 15 eventos grandes + 15 pequenos ativos.
+- `slugify.ts`, `utils.ts`, `financeiro.ts`
+
+### Oracle — Pipeline de Resolução
+
+`lib/oracles/index.ts` orquestra 4 camadas:
+1. **API fixa** por categoria via `oracle_api_id` (grátis, mais confiável)
+2. **Auto-detect** por categoria (ex: "dólar" → PTAX)
+3. **Claude Haiku** com web search — `oracleAITripleCheck()` faz 2 checks independentes
+4. **Retry em 2h, máx 3 tentativas** → após 3 INCERTO → `reembolsarTodos()`
+
+**`MAX_RETRIES = 3`** em `lib/oracles/index.ts`. Após 3 tentativas, reembolso automático.
+
+Oracle JSON parse: `extractResultadoJson()` em `ai-triple-check.ts` e `resolver-direto/route.ts` — tenta parse direto, depois itera matches `{[^{}]+}`, depois regex literal. Usa `client.beta.messages.create` com `betas: ["web-search-2025-03-05"]`, `max_tokens: 1024`.
 
 ### Key Database Views & Tables
-- `v_topic_stats` — Aggregated stats per topic: `volume_sim`, `volume_nao`, `total_volume`, `prob_sim`, `prob_nao`, `bet_count`.
-- `topic_snapshots` — Historical prob/volume snapshots for probability chart.
-- `orders` — Secondary market orders (`topic_id`).
-- `trades` — Executed trades (`topic_id`).
+- `v_topic_stats` — stats por evento: `volume_sim`, `volume_nao`, `total_volume`, `prob_sim`, `prob_nao`, `bet_count`
+- `topic_snapshots` — snapshots históricos de prob/volume para o gráfico
+- `orders` — ordens do mercado secundário (`topic_id`)
+- `trades` — trades executados (`topic_id`)
+- `resolucoes` — log de cada tentativa do oracle (campos `check1_*`, `check2_*`)
 
 ### Wallet Flow
-- Z$ virtual balance — earned via onboarding bonus, weekly bonus, concurso prizes.
-- **Primary market (apostas):** debit on bet placement (optimistic lock).
-- **Secondary market (orders):** balance validated on order placement but **debit only at trade execution**.
-- Transaction types: `bet_placed`, `bet_won`, `bet_refund`, `commission`, `bet_exited`.
-- All wallet mutations use optimistic locking to prevent double-spend.
-- **Sem depositar/sacar** — Z$ não tem valor monetário real.
+- Z$ virtual — earned via onboarding bonus, weekly bonus, concurso prizes
+- **Mercado primário:** débito na criação do palpite (optimistic lock)
+- **Mercado secundário:** balance validado na ordem, **débito só na execução do trade**
+- Tipos de transação: `bet_placed`, `bet_won`, `bet_refund`, `commission`
+- Todas as mutações usam optimistic locking para prevenir double-spend
+- **Sem depositar/sacar** — Z$ não tem valor monetário real direto
+
+### Crons (GitHub Actions — `.github/workflows/cron.yml`)
+
+Rodam a cada hora via `Bearer CRON_SECRET`. **Todos devem usar `createAdminClient()`** (ver regra acima).
+
+| Cron | Rota | Frequência |
+|---|---|---|
+| Fechar mercados + snapshots | `POST /api/cron/fechar-mercados` | Horária |
+| Resolver oracle | `POST /api/cron/resolver-oracle` | Horária |
+| Repor mercados | `GET /api/cron/repor-mercados` | Horária |
+| Timeout apostas privadas | `POST /api/cron/apostas-privadas-timeout` | Horária |
+| Bônus semanal | `POST /api/cron/bonus-semanal` | Segunda 9h UTC |
+| Agente de notícias | `POST /api/cron/news-agent` | 11h UTC (8h Brasília) |
 
 ### Notifications
-Two delivery channels: insert into `notifications` table (in-app) + call `sendPushToUser()` (Web Push). Non-blocking — use `Promise.allSettled`.
+Dois canais: insert em `notifications` (in-app) + `sendPushToUser()` (Web Push). Não-bloqueante via `Promise.allSettled`.
 
 ### Styling
-Dark theme (black bg). Primary green `#86efac`. Bet sides: `--sim` (green) and `--nao` (red). All components use `cn()` from `lib/utils.ts`.
+Dark theme (black bg). Verde primário `#86efac`. Lados do palpite: `--sim` (verde) e `--nao` (vermelho). Componentes usam `cn()` de `lib/utils.ts`.
 
-### Secondary Market (Mercado Secundário)
-Order book per market side. Works for Tópicos:
+### Mercado Secundário (Order Book)
 - `GET /api/topicos/[id]/orderbook`, `POST/DELETE /api/topicos/[id]/ordem/[orderId]`
 - Matching via `lib/order-matching.ts`
-- UI: `MercadoSecundario` component, `ProbabilityChart`, `LiveStats`
-
-### Market Auto-Expiry / Crons
-- `POST /api/cron/fechar-mercados`: moves expired topics → `resolving`, takes snapshots, sends 2h notifications.
-- `POST /api/cron/resolver-oracle`: processes topics in `resolving` state via AI oracle.
-
-### Concurso (Liga — Brier Score)
-- `ConcursoBanner` component shown at top of `/liga`
-- Concurso page: `/concurso` (in development)
-- DB tables: `concursos`, `inscricoes_concurso` (to be created)
-- Qualificação: 30+ palpites no mês
-- Premiação: Brier score ranking → BRL via PIX
-
-### Oracle — Subjective Event Prevention
-- `buildPrompt` in `lib/oracles/ai-triple-check.ts` explicitly instructs Claude to return INCERTO for subjective/unverifiable events.
-- Rule: events must have a numeric threshold or binary verifiable outcome.
-
-### Oracle — JSON Parse Fix (v1.5)
-- Both `ai-triple-check.ts` and `resolver-direto/route.ts` use `extractResultadoJson()` which: (1) tries direct parse, (2) tries each flat `{...}` match in order until one has `resultado`, (3) falls back to a literal regex on `"resultado":"SIM|NAO|INCERTO"`.
-- Uses `client.beta.messages.create` with `betas: ["web-search-2025-03-05"]` and `max_tokens: 1024`.
+- UI: `MercadoSecundario`, `ProbabilityChart`, `LiveStats`
 
 ### SEO / Sitemap
-- `app/sitemap.xml/route.ts` — dynamic route handler. Includes topics and user profiles.
-- `app/robots.ts` — allows `/liga/`, `/economico/`, `/topicos/`, `/u/`, `/ranking`; disallows private pages.
-- All dynamic pages have `alternates.canonical` in their `generateMetadata`.
-- Deployed at `zafe-rho.vercel.app`. **No GitHub auto-deploy — use `npx vercel --prod`.**
+- `app/sitemap.xml/route.ts` — inclui topics e perfis públicos
+- `app/robots.ts` — permite `/liga/`, `/economico/`, `/topicos/`, `/u/`, `/ranking`, `/historico`
+- Deploy: `zafe-rho.vercel.app`. **Sem GitHub auto-deploy — usar `npx vercel --prod`.**
 
 ### OG Image
-- `GET /api/og?id=[uuid]` — gera imagem 1200×630 via `next/og` (edge runtime).
-- Mostra título, barra de probabilidade SIM/NÃO, volume total, categoria.
-
-### Trending Feed
-- `/topicos?tab=em-alta` — volume apostado nas últimas 2 horas.
+- `GET /api/og?id=[uuid]` — 1200×630 via `next/og` (edge runtime)
 
 ### Ligas (Grupos de Amigos)
-- Two types: **Pública** (anyone can join) and **Privada** (invite-only).
-- **Sub-ligas**: private leagues can have child leagues.
-- DB: `ligas.is_public BOOLEAN`, `ligas.parent_liga_id UUID`.
-- API: `POST /api/ligas/criar`, `POST /api/ligas/entrar`, `GET /api/ligas/publicas`, `GET /api/ligas/buscar-usuarios`.
+- Pública (join via botão) e Privada (invite-only). Sub-ligas suportadas.
+- DB: `ligas.is_public`, `ligas.parent_liga_id`
+- API: `POST /api/ligas/criar`, `POST /api/ligas/entrar`, `GET /api/ligas/publicas`, `GET /api/ligas/buscar-usuarios`
 
-### News Agent (v1.5)
-- `POST /api/cron/news-agent` — Anthropic SDK with `web_search_20250305` beta tool; searches top BR news and generates 5-8 pending topics daily.
-- Requires `SYSTEM_USER_ID` env var.
+### News Agent
+- `POST /api/cron/news-agent` — Anthropic SDK com `web_search_20250305`; gera 5-8 tópicos pendentes diários
+- Requer `SYSTEM_USER_ID` env var
 
-### Onboarding Modal (v1.5)
-- `components/onboarding/WelcomeModal.tsx` — 3 steps: welcome intro → featured topic → confetti.
-- Uses `localStorage.onboarding_done`.
+### Onboarding Modal
+- `components/onboarding/WelcomeModal.tsx` — 3 etapas: boas-vindas → tópico em destaque → confetti
+- Usa `localStorage.onboarding_done`; integrado em `app/(main)/layout.tsx`
 
 ### Versioning Policy
-- **Major features** (new systems, new pages) → new git tag: `v2.0`, `v2.1`, etc.
-- **Small fixes** → in-place edits on current version.
-- Current version: **v2.0** (Pivot pós CMN 5.298/2026: desafios removidos, depositar/sacar removidos, Z$ puramente virtual, Liga + Econômico como pilares principais, ConcursoBanner adicionado).
+- **Major features** → nova git tag: `v2.0`, `v2.1`, etc.
+- **Small fixes** → edição in-place na versão atual.
+- Versão atual: **v2.0.1** — Pivot pós CMN 5.298/2026 (Liga + Econômico, desafios removidos, Z$ virtual) + correção sistêmica do bug de RLS em todos os crons e rotas admin (todos agora usam `createAdminClient()` para writes).
 
 ### Language
-All UI text, route names, variable names, and user-facing content are in **Brazilian Portuguese (pt-BR)**.
+Todo texto de UI, nomes de rota, variáveis e conteúdo voltado ao usuário em **Português Brasileiro (pt-BR)**.
 </file>
 
 <file path="vercel.json">
