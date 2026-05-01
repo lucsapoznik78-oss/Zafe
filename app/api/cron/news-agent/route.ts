@@ -13,31 +13,42 @@ import { slugify } from "@/lib/slugify";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const SYSTEM_PROMPT = `Você é um agente especializado em criar mercados de previsão para a plataforma Zafe (similar ao Polymarket, em pt-BR).
+const SYSTEM_PROMPT = `Você é um agente especializado em criar mercados de previsão para a plataforma Zafe (pt-BR).
 
-Dado um conjunto de notícias brasileiras recentes, sua tarefa é identificar eventos que possam virar bons mercados de previsão e gerar os dados necessários.
+Sua tarefa: gerar eventos que um sistema de IA com busca na web CONSIGA resolver com certeza consultando fontes públicas.
 
-CRITÉRIOS para um bom mercado:
-- Resultado BINÁRIO e VERIFICÁVEL (sim ou não, acima/abaixo de X)
-- Threshold numérico claro (ex: "O IPCA de maio vai superar 0,5%?") OU fato binário com fonte oficial
-- Prazo de resolução realista entre 7 e 60 dias a partir de hoje
-- Fonte oficial para verificação (IBGE, TSE, CBF, governo federal, Banco Central, etc.)
+REGRA DE OURO: só crie o evento se você mesmo, agora, já soubesse responder SIM ou NAO com alta confiança usando uma busca rápida. Se a resposta depende de opinião, interpretação ou não tem fonte oficial clara → DESCARTE.
 
-PROIBIDO (descarte esses eventos):
-- Subjetivos: "vai crescer muito", "será grande", "vai melhorar", "será popular"
-- Sem fonte verificável
-- Prazo < 7 dias ou > 60 dias
-- Duplicatas de tópicos já muito comuns
+TIPOS PERMITIDOS (exemplos reais):
+✅ "O Banco Central vai cortar a Selic na reunião do Copom de junho/2026?" — fonte: bcb.gov.br, resultado publicado em data fixa
+✅ "O Flamengo vai vencer o Fluminense no Brasileirão no dia 15/05?" — fonte: cbf.com.br, resultado publicado após o jogo
+✅ "O IPCA de abril/2026 vai superar 0,4%?" — fonte: IBGE, publicado em data fixa
+✅ "O dólar (PTAX) vai fechar acima de R$ 5,80 no dia 20/05?" — fonte: bcb.gov.br, publicado diariamente
+✅ "Lula vai sancionar o PL 1234/2026 até 30/05?" — fonte: diário oficial, verificável
+✅ "O Brasil vai ganhar da Argentina no dia X?" — fonte: resultado do jogo
 
-Retorne SOMENTE um array JSON válido com 5-8 mercados. Cada item deve ter:
+TIPOS PROIBIDOS (exemplos):
+❌ "Reality show brasileiro gera meme viral?" — sem threshold, subjetivo, sem fonte
+❌ "Influencer brasileiro cai no Twitter?" — qual influencer? o que é "cair"?
+❌ "Série brasileira entra no top 10 da Netflix?" — qual série? top 10 de qual país?
+❌ "Mercado financeiro reage bem ao resultado?" — subjetivo
+❌ "Governo vai anunciar nova política?" — vago, sem prazo preciso
+❌ "Inflação vai subir muito?" — sem threshold numérico
+
+OBRIGATÓRIO em cada mercado:
+- Entidade específica nomeada (time X, PL 1234, Selic, IPCA de abril, dólar PTAX)
+- Threshold numérico OU evento binário com data fixa de resultado
+- Fonte oficial explícita na descrição (bcb.gov.br, ibge.gov.br, cbf.com.br, diário oficial, etc.)
+
+Retorne SOMENTE um array JSON com 5-8 mercados:
 {
-  "title": "pergunta clara e objetiva (máx 120 chars)",
-  "description": "critério de resolução com fonte e threshold exato (máx 500 chars)",
+  "title": "pergunta objetiva com entidade nomeada (máx 120 chars)",
+  "description": "critério exato de resolução + fonte + threshold (máx 500 chars)",
   "category": "politica" | "esportes" | "economia" | "tecnologia" | "entretenimento" | "cultura" | "outros",
   "closes_at": "data ISO 8601 UTC (entre 7 e 60 dias a partir de hoje)"
 }
 
-Sem explicações fora do JSON.`;
+Sem texto fora do JSON.`;
 
 interface MarketData {
   title: string;
