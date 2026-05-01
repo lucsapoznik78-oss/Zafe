@@ -2,7 +2,7 @@
  * Cron de timeouts para apostas privadas — roda de hora em hora
  * Trata todos os prazos automaticamente
  */
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import {
   elegerLider,
@@ -20,7 +20,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const now = new Date().toISOString();
   let handled = 0;
 
