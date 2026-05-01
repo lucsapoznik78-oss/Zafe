@@ -18,6 +18,7 @@ import UserResultBanner from "@/components/topicos/UserResultBanner";
 import ResolutionBreakdown from "@/components/topicos/ResolutionBreakdown";
 import RulesAccordion from "@/components/topicos/RulesAccordion";
 import ResolvingBanner from "@/components/topicos/ResolvingBanner";
+import ParticipantsList from "@/components/topicos/ParticipantsList";
 import { formatCurrency } from "@/lib/utils";
 import { calcOdds, formatOdds } from "@/lib/odds";
 
@@ -107,11 +108,11 @@ export default async function TopicoDetailPage({ params, searchParams }: PagePro
             .eq("topic_id", topicId).eq("user_id", user.id)
         : Promise.resolve({ data: null }),
       admin.from("bets")
-        .select("id, side, amount, status, locked_odds, order_id, profiles(username, full_name)")
+        .select("id, side, amount, status, locked_odds, order_id, created_at, profiles(username, full_name)")
         .eq("topic_id", topicId)
         .in("status", ["pending", "matched", "partial", "won", "lost"])
         .order("amount", { ascending: false })
-        .limit(50),
+        .limit(100),
       // Fonte de resolução (oracle log)
       topic.status === "resolved"
         ? admin.from("resolucoes").select("resolvido_por, oracle_usado, resultado_final, check1_fonte, check2_fonte")
@@ -333,36 +334,8 @@ export default async function TopicoDetailPage({ params, searchParams }: PagePro
             />
           )}
 
-          {/* Apostadores */}
-          {(allBets ?? []).length > 0 && (
-            <div className="bg-card border border-border rounded-xl p-4">
-              <p className="text-xs font-semibold text-white mb-3">
-                Apostadores ({betCount})
-              </p>
-              <div className="space-y-2">
-                {(allBets ?? []).map((bet: any) => {
-                  const name = (bet.profiles as any)?.username ?? (bet.profiles as any)?.full_name ?? "Usuário";
-                  const isSim = bet.side === "sim";
-                  const isSecondaryMarket = !!bet.order_id;
-                  const lockedOdds = parseFloat(bet.locked_odds ?? "0");
-                  const entryPct = isSecondaryMarket && lockedOdds > 0 ? Math.round((1 / lockedOdds) * 100) : null;
-                  return (
-                    <div key={bet.id} className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-1.5 h-1.5 rounded-full ${isSim ? "bg-sim" : "bg-nao"}`} />
-                        <span className="text-white">{name}</span>
-                        <span className={`font-bold ${isSim ? "text-sim" : "text-nao"}`}>{bet.side.toUpperCase()}</span>
-                        {isSecondaryMarket && (
-                          <span className="text-muted-foreground">@ {entryPct}%</span>
-                        )}
-                      </div>
-                      <span className="text-muted-foreground">{formatCurrency(parseFloat(bet.amount))}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+          {/* Participantes */}
+          <ParticipantsList bets={allBets ?? []} totalSim={totalSim} totalNao={totalNao} />
 
           {/* Regras */}
           <RulesAccordion description={topic.description} />
