@@ -1,33 +1,32 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { pagarVencedores, reembolsarTodos } from "@/lib/payout";
 
-async function isAdmin(supabase: any, userId: string) {
-  const { data } = await supabase.from("profiles").select("is_admin").eq("id", userId).single();
-  return data?.is_admin === true;
-}
-
 export async function POST(request: Request) {
+  // Auth check com client de usuário
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user || !(await isAdmin(supabase, user.id))) {
-    return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
-  }
+  if (!user) return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
+
+  const { data: profile } = await supabase.from("profiles").select("is_admin").eq("id", user.id).single();
+  if (!profile?.is_admin) return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
+
+  // Todas as escritas com admin client — RLS bloquearia updates em wallets/transactions de outros usuários
+  const admin = createAdminClient();
 
   const { topic_id, resolution } = await request.json();
 
-  const { data: topic } = await supabase.from("topics").select("status").eq("id", topic_id).single();
+  const { data: topic } = await admin.from("topics").select("status").eq("id", topic_id).single();
   if (!topic) return NextResponse.json({ error: "Mercado não encontrado" }, { status: 404 });
   if (topic.status === "resolved" || topic.status === "cancelled") {
     return NextResponse.json({ error: "Mercado já foi resolvido" }, { status: 400 });
   }
 
   if (resolution === "cancelled") {
-    await reembolsarTodos(supabase, topic_id, "Mercado cancelado", user.id);
-    await supabase.from("topics").update({ status: "cancelled", resolved_by: user.id }).eq("id", topic_id);
+    await reembolsarTodos(admin, topic_id, "Mercado cancelado pelo admin", user.id);
     return NextResponse.json({ success: true });
   }
 
-  const result = await pagarVencedores(supabase, topic_id, resolution, user.id);
+  const result = await pagarVencedores(admin, topic_id, resolution, user.id);
   return NextResponse.json({ success: true, ...result });
 }

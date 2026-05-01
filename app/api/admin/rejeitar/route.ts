@@ -1,19 +1,16 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
-
-async function isAdmin(supabase: any, userId: string) {
-  const { data } = await supabase.from("profiles").select("is_admin").eq("id", userId).single();
-  return data?.is_admin === true;
-}
 
 export async function POST(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user || !(await isAdmin(supabase, user.id))) {
-    return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
-  }
+  if (!user) return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
 
+  const { data: profile } = await supabase.from("profiles").select("is_admin").eq("id", user.id).single();
+  if (!profile?.is_admin) return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
+
+  const admin = createAdminClient();
   const { topic_id } = await request.json();
-  await supabase.from("topics").update({ status: "cancelled" }).eq("id", topic_id);
+  await admin.from("topics").update({ status: "cancelled" }).eq("id", topic_id);
   return NextResponse.json({ success: true });
 }
