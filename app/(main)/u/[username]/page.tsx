@@ -185,7 +185,13 @@ export default async function PublicProfilePage({ params }: PageProps) {
                     </div>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-sm font-semibold text-white">{formatCurrency(bet.amount)}</p>
+                    {bet.status === "won" ? (
+                      <p className="text-sm font-semibold text-sim">+{formatCurrency((bet.potential_payout ?? 0) - bet.amount)}</p>
+                    ) : bet.status === "lost" ? (
+                      <p className="text-sm font-semibold text-nao">-{formatCurrency(bet.amount)}</p>
+                    ) : (
+                      <p className="text-sm font-semibold text-white">{formatCurrency(bet.amount)}</p>
+                    )}
                     <p className={`text-xs ${status.class}`}>{status.label}</p>
                   </div>
                 </div>
