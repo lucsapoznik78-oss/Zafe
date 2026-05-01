@@ -93,7 +93,7 @@ async function EventosConcurso({ category, search, tab }: { category: string; se
           {/* Wrapper amarelo sobre o TopicCard */}
           <div className="relative rounded-xl ring-1 ring-yellow-400/20 hover:ring-yellow-400/50 transition-all">
             <TopicCard topic={topic as TopicWithStats} />
-            <div className="absolute top-2 right-2">
+            <div className="absolute bottom-2 left-2">
               <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-yellow-400/20 text-yellow-400 border border-yellow-400/30">
                 ZC$
               </span>
@@ -221,18 +221,26 @@ export default async function ConcursoPage({ searchParams }: PageProps) {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-muted rounded-lg p-1 w-fit">
-        {tabs.map((t) => (
-          <Link
-            key={t.key}
-            href={buildHref(t.key)}
-            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-              tab === t.key ? "bg-yellow-400/20 text-yellow-400" : "text-muted-foreground hover:text-white"
-            }`}
-          >
-            {t.label}
-          </Link>
-        ))}
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex gap-1 bg-muted rounded-lg p-1">
+          {tabs.map((t) => (
+            <Link
+              key={t.key}
+              href={buildHref(t.key)}
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                tab === t.key ? "bg-yellow-400/20 text-yellow-400" : "text-muted-foreground hover:text-white"
+              }`}
+            >
+              {t.label}
+            </Link>
+          ))}
+        </div>
+        <Link
+          href="/liga"
+          className="px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-white border border-border hover:border-primary/40 transition-all"
+        >
+          ← Jogar na Liga (Z$)
+        </Link>
       </div>
 
       {tab === "ranking" ? (
