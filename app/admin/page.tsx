@@ -14,7 +14,7 @@ export default async function AdminPage() {
   if (!user) redirect("/login");
 
   const { data: profile } = await supabase.from("profiles").select("is_admin").eq("id", user.id).single();
-  if (!profile?.is_admin) redirect("/topicos");
+  if (!profile?.is_admin) redirect("/liga");
 
   // Todos os DB calls usam adminSupabase — RLS bloquearia a maioria das queries
   const admin = createAdminClient();

@@ -50,7 +50,7 @@ export async function middleware(request: NextRequest) {
       .single();
 
     if (!profile?.is_admin) {
-      return NextResponse.redirect(new URL("/topicos", request.url));
+      return NextResponse.redirect(new URL("/liga", request.url));
     }
   }
 

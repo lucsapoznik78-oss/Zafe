@@ -197,7 +197,7 @@ export default async function ConcursoPage({ searchParams }: PageProps) {
             )
           ) : (
             <Link
-              href="/login?next=/concurso"
+              href="/concurso/entrar"
               className="px-4 py-2 rounded-lg bg-yellow-400 text-black text-sm font-bold hover:bg-yellow-300 transition-colors"
             >
               Entrar para participar

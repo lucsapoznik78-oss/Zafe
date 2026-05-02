@@ -21,7 +21,7 @@ export default function LandingHeader() {
             Entrar
           </Link>
           <Link
-            href="/login?mode=cadastro"
+            href="/concurso/entrar"
             className="px-4 py-1.5 rounded-lg bg-primary text-black text-sm font-bold hover:bg-primary/90 transition-colors"
           >
             Criar conta

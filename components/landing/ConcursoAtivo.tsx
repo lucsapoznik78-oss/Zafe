@@ -112,7 +112,7 @@ export default async function ConcursoAtivo() {
           {/* CTA */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 pt-1">
             <Link
-              href="/login?mode=cadastro"
+              href="/concurso/entrar"
               className="px-5 py-2.5 rounded-xl bg-yellow-400 text-black font-bold text-sm hover:bg-yellow-300 transition-colors"
             >
               Inscrever-se grátis
