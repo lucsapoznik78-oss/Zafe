@@ -17,9 +17,9 @@ export default function DiferenteDeBet() {
           <p className="text-sm text-muted-foreground leading-relaxed">
             A Zafe é uma{" "}
             <span className="text-white font-semibold">competição de habilidade</span>{" "}
-            — quem prevê melhor, ganha. O modelo é o mesmo do Cartola FC, do xadrez
-            online, ou de competições de palpites de futebol entre amigos. Você não
-            compete contra a plataforma: compete contra outros previsores.
+            — quem prevê melhor, ganha. O modelo é o mesmo do xadrez online ou de
+            competições de palpites entre amigos. Você não compete contra a
+            plataforma: compete contra outros previsores.
           </p>
 
           <p className="text-sm text-muted-foreground leading-relaxed">
