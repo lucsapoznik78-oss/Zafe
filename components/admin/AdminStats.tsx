@@ -1,7 +1,7 @@
 "use client";
 
 import { formatCurrency } from "@/lib/utils";
-import { Clock, CheckSquare, RefreshCw, Wallet, TrendingUp, Zap } from "lucide-react";
+import { Clock, CheckSquare, RefreshCw, Wallet, TrendingUp, Zap, Users, BarChart2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
@@ -12,9 +12,14 @@ interface Props {
   commission: number;
   pendingCount: number;
   toResolveCount: number;
+  totalUsers: number;
+  newUsersWeek: number;
+  totalBets: number;
+  volumeTotal: number;
+  activeUsers30d: number;
 }
 
-export default function AdminStats({ passiveTotal, walletBalance, betsLocked, commission, pendingCount, toResolveCount }: Props) {
+export default function AdminStats({ passiveTotal, walletBalance, betsLocked, commission, pendingCount, toResolveCount, totalUsers, newUsersWeek, totalBets, volumeTotal, activeUsers30d }: Props) {
   const router = useRouter();
   const [cronLoading, setCronLoading] = useState(false);
   const [cronResult, setCronResult] = useState("");
@@ -31,9 +36,9 @@ export default function AdminStats({ passiveTotal, walletBalance, betsLocked, co
 
   async function runCron() {
     setCronLoading(true);
-    setCronResult("Fechando mercados expirados...");
+    setCronResult("Fechando setores expirados...");
 
-    // Passo 1: fechar mercados expirados (active → resolving)
+    // Passo 1: fechar setores expirados (active → resolving)
     const r1 = await fetch("/api/cron/fechar-mercados", { method: "POST" });
     const d1 = await r1.json();
     if (!r1.ok) {
@@ -43,7 +48,7 @@ export default function AdminStats({ passiveTotal, walletBalance, betsLocked, co
     }
 
     const expired = d1.expired_topics ?? 0;
-    setCronResult(`${expired} mercado(s) fechado(s). Rodando oracle...`);
+    setCronResult(`${expired} setor(es) fechado(s). Rodando oracle...`);
 
     // Passo 2: oracle resolve e paga (resolving → resolved)
     const r2 = await fetch("/api/cron/resolver-oracle", { method: "POST" });
@@ -66,14 +71,39 @@ export default function AdminStats({ passiveTotal, walletBalance, betsLocked, co
 
   return (
     <div className="space-y-4">
-      {/* Linha 1: financeiro */}
+      {/* Linha 1: usuários e atividade */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="bg-card border border-border rounded-xl p-4">
+          <div className="mb-2 text-primary"><Users size={18} /></div>
+          <p className="text-2xl font-bold text-white">{totalUsers.toLocaleString("pt-BR")}</p>
+          <p className="text-xs text-muted-foreground mt-1">Usuários cadastrados</p>
+          <p className="text-[10px] text-sim mt-0.5">+{newUsersWeek} essa semana</p>
+        </div>
+        <div className="bg-card border border-border rounded-xl p-4">
+          <div className="mb-2 text-primary"><Users size={18} /></div>
+          <p className="text-2xl font-bold text-white">{activeUsers30d.toLocaleString("pt-BR")}</p>
+          <p className="text-xs text-muted-foreground mt-1">Ativos (30 dias)</p>
+        </div>
+        <div className="bg-card border border-border rounded-xl p-4">
+          <div className="mb-2 text-primary"><BarChart2 size={18} /></div>
+          <p className="text-2xl font-bold text-white">{totalBets.toLocaleString("pt-BR")}</p>
+          <p className="text-xs text-muted-foreground mt-1">Palpites realizados</p>
+        </div>
+        <div className="bg-card border border-border rounded-xl p-4">
+          <div className="mb-2 text-primary"><TrendingUp size={18} /></div>
+          <p className="text-2xl font-bold text-white">{formatCurrency(volumeTotal)}</p>
+          <p className="text-xs text-muted-foreground mt-1">Volume total Z$</p>
+        </div>
+      </div>
+
+      {/* Linha 2: financeiro */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="bg-card border border-border rounded-xl p-4 col-span-2 sm:col-span-1">
           <div className="mb-2 text-yellow-400"><Wallet size={18} /></div>
           <p className="text-2xl font-bold text-yellow-400">{formatCurrency(passiveTotal)}</p>
           <p className="text-xs text-muted-foreground mt-1">Saldo passivo total</p>
           <p className="text-[10px] text-muted-foreground/60 mt-1">
-            Carteiras: {formatCurrency(walletBalance)} · Apostas: {formatCurrency(betsLocked)}
+            Saldos Z$: {formatCurrency(walletBalance)} · Palpites ativos: {formatCurrency(betsLocked)}
           </p>
         </div>
         <div className="bg-card border border-border rounded-xl p-4">
@@ -89,15 +119,15 @@ export default function AdminStats({ passiveTotal, walletBalance, betsLocked, co
         <div className="bg-card border border-border rounded-xl p-4">
           <div className="mb-2 text-yellow-400"><CheckSquare size={18} /></div>
           <p className="text-2xl font-bold text-yellow-400">{toResolveCount}</p>
-          <p className="text-xs text-muted-foreground mt-1">Revisão manual oracle</p>
+          <p className="text-xs text-muted-foreground mt-1">Setores p/ resolver</p>
         </div>
       </div>
 
       {/* Botão direto — resolve tudo agora */}
       <div className="bg-primary/5 border border-primary/30 rounded-xl p-4 flex items-center gap-4">
         <div className="flex-1">
-          <p className="text-sm font-semibold text-white">Resolver mercados agora</p>
-          <p className="text-xs text-muted-foreground">Claude decide o resultado e distribui o dinheiro imediatamente.</p>
+          <p className="text-sm font-semibold text-white">Resolver setores agora</p>
+          <p className="text-xs text-muted-foreground">Claude decide o resultado e distribui o saldo Z$ imediatamente.</p>
           {directResult && <p className="text-xs mt-1 text-primary">{directResult}</p>}
         </div>
         <button
@@ -108,7 +138,7 @@ export default function AdminStats({ passiveTotal, walletBalance, betsLocked, co
             const d = await res.json();
             if (res.ok) {
               setDirectResult(d.resolved > 0
-                ? `✅ ${d.resolved}/${d.total} mercado(s) resolvido(s): ${d.results?.map((r: any) => `${r.outcome}`).join(", ")}`
+                ? `✅ ${d.resolved}/${d.total} setor(es) resolvido(s): ${d.results?.map((r: any) => `${r.outcome}`).join(", ")}`
                 : `⚠️ Nenhum resolvido: ${d.results?.map((r: any) => r.outcome).join(", ") || d.message}`
               );
             } else {
@@ -129,7 +159,7 @@ export default function AdminStats({ passiveTotal, walletBalance, betsLocked, co
       <div className="bg-card border border-border rounded-xl p-4 flex items-center gap-4">
         <div className="flex-1">
           <p className="text-sm font-semibold text-white">Bônus semanal (Z$ 100)</p>
-          <p className="text-xs text-muted-foreground">Credita Z$ 100 para todos os usuários com menos de Z$ 1.000 na carteira.</p>
+          <p className="text-xs text-muted-foreground">Credita Z$ 100 para todos os usuários com menos de Z$ 1.000 no saldo Z$.</p>
           {bonusResult && <p className="text-xs mt-1 text-primary">{bonusResult}</p>}
         </div>
         <button
@@ -153,7 +183,7 @@ export default function AdminStats({ passiveTotal, walletBalance, betsLocked, co
       {/* Botão de manutenção */}
       <div className="bg-card border border-border rounded-xl p-4 flex items-center gap-4">
         <div className="flex-1">
-          <p className="text-sm font-semibold text-white">Fechar + Resolver mercados</p>
+          <p className="text-sm font-semibold text-white">Fechar + Resolver setores</p>
           <p className="text-xs text-muted-foreground">
             1) Fecha expirados · 2) Oracle (API + Claude AI) determina resultado · 3) Distribui fundos automaticamente
           </p>

@@ -72,9 +72,13 @@ export default function TopicCard({ topic }: TopicCardProps) {
             }`}>
               RESULTADO: {topic.resolution.toUpperCase()}
             </div>
+          ) : (topic.stats?.total_volume ?? 0) > 0 ? (
+            <div className="text-center py-1.5 rounded-lg text-xs font-bold bg-yellow-500/10 text-yellow-400">
+              REEMBOLSADO
+            </div>
           ) : (
             <div className="text-center py-1.5 rounded-lg text-xs font-bold bg-muted/20 text-muted-foreground">
-              REEMBOLSADO
+              SEM PALPITES
             </div>
           )
         ) : hasBothSides ? (
@@ -96,11 +100,11 @@ export default function TopicCard({ topic }: TopicCardProps) {
           </div>
         ) : hasRealBets ? (
           <div className="text-center py-2">
-            <p className="text-xs text-muted-foreground">Aguardando apostas no outro lado</p>
+            <p className="text-xs text-muted-foreground">Aguardando palpites no outro lado</p>
           </div>
         ) : (
           <div className="text-center py-2">
-            <p className="text-xs text-muted-foreground">Seja o primeiro a apostar</p>
+            <p className="text-xs text-muted-foreground">Seja o primeiro a palpitar</p>
           </div>
         )}
       </div>

@@ -103,7 +103,7 @@ export default function RelatorioFinanceiro() {
               {[
                 { label: "Depósitos brutos", value: data.volume_intermediado.depositos_brutos },
                 { label: "Saques realizados", value: data.volume_intermediado.saques },
-                { label: "Volume apostado", value: data.volume_intermediado.apostas_realizadas },
+                { label: "Volume palpitado", value: data.volume_intermediado.apostas_realizadas },
                 { label: "Prêmios pagos", value: data.volume_intermediado.premios_pagos },
                 { label: "Reembolsos", value: data.volume_intermediado.reembolsos },
               ].map((item) => (

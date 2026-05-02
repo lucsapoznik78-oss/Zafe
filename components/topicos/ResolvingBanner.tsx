@@ -48,7 +48,7 @@ export default function ResolvingBanner({ topicId }: Props) {
           Aguardando resolução{dots}
         </p>
         <p className="text-xs text-yellow-400/70 mt-1 leading-relaxed">
-          O oracle de IA está analisando o resultado deste mercado. Isso costuma levar entre 30 segundos e 2 minutos.
+          O oracle de IA está analisando o resultado deste setor. Isso costuma levar entre 30 segundos e 2 minutos.
           A página atualiza automaticamente assim que o resultado for publicado.
         </p>
         {elapsed >= 120 && (

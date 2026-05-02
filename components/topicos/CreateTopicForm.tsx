@@ -82,7 +82,7 @@ export default function CreateTopicForm() {
   return (
     <form onSubmit={handleSubmit} className="bg-card border border-border rounded-xl p-5 space-y-5">
       <div className="bg-muted/30 border border-border rounded-lg p-3 space-y-1.5 text-xs text-muted-foreground">
-        <p className="text-white font-semibold text-sm">Como criar um bom mercado</p>
+        <p className="text-white font-semibold text-sm">Como criar um bom setor</p>
         <p>✓ Use perguntas com resultado <strong className="text-white">binário e verificável</strong> (sim ou não, acima/abaixo de X)</p>
         <p>✓ Inclua <strong className="text-white">números, datas e fontes</strong> na descrição (ex: segundo o IBGE, acima de R$ 6,00)</p>
         <p>✗ Evite termos vagos: vai escalar, será grande, melhorar muito — o oráculo não consegue verificar</p>

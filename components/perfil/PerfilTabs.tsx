@@ -260,9 +260,9 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl }:
           <div className="bg-card border border-border rounded-xl p-4 space-y-2">
             <h3 className="text-sm font-semibold text-white">O que é a Zafe?</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              A Zafe é um mercado de previsões onde você aposta em eventos do mundo real —
+              A Zafe é uma liga de previsões onde você palpita em eventos do mundo real —
               geopolítica, economia, tecnologia e mais. Se sua previsão estiver certa, você
-              recebe parte do que quem errou apostou. Quanto mais certeiros forem seus palpites,
+              recebe parte do que quem errou investiu. Quanto mais certeiros forem seus palpites,
               maior seu lucro.
             </p>
           </div>
@@ -274,11 +274,11 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl }:
               <h3 className="text-sm font-semibold text-white">Eventos Públicos</h3>
             </div>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li className="flex gap-2"><span className="text-primary shrink-0">→</span> Abertos para qualquer usuário apostar</li>
+              <li className="flex gap-2"><span className="text-primary shrink-0">→</span> Abertos para qualquer usuário palpitar</li>
               <li className="flex gap-2"><span className="text-primary shrink-0">→</span> Resolvidos automaticamente por nosso oráculo de IA, que consulta fontes oficiais</li>
               <li className="flex gap-2"><span className="text-primary shrink-0">→</span> Em caso de contradição entre fontes, um administrador revisa manualmente</li>
-              <li className="flex gap-2"><span className="text-primary shrink-0">→</span> Pool parimutuel: o lucro vem proporcional ao quanto você apostou vs. o total do lado vencedor</li>
-              <li className="flex gap-2"><span className="text-primary shrink-0">→</span> Venda antecipada disponível: use o mercado secundário (aba Vender) para liquidar sua posição antes do fechamento</li>
+              <li className="flex gap-2"><span className="text-primary shrink-0">→</span> Pool parimutuel: o lucro vem proporcional ao quanto você investiu vs. o total do lado vencedor</li>
+              <li className="flex gap-2"><span className="text-primary shrink-0">→</span> Venda antecipada disponível: use o mercado secundário (aba Vender) para encerrar sua posição antes do fechamento</li>
             </ul>
           </div>
 
@@ -292,7 +292,7 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl }:
               <li className="flex gap-2"><span className="text-primary shrink-0">→</span> Criados por você para disputar com amigos ou grupos específicos</li>
               <li className="flex gap-2"><span className="text-primary shrink-0">→</span> Duas equipes (Lado A vs. Lado B) com líderes que controlam quem entra</li>
               <li className="flex gap-2"><span className="text-primary shrink-0">→</span> Juiz escolhido e aprovado por ambos os líderes — a plataforma não interfere no julgamento</li>
-              <li className="flex gap-2"><span className="text-primary shrink-0">→</span> Mínimo de 1 juiz aceito por ambos os lados para a aposta começar</li>
+              <li className="flex gap-2"><span className="text-primary shrink-0">→</span> Mínimo de 1 juiz aceito por ambos os lados para o bolão começar</li>
               <li className="flex gap-2"><span className="text-primary shrink-0">→</span> O juiz decide o resultado; em caso de erro ou desonestidade, a responsabilidade é dos líderes que o indicaram</li>
             </ul>
           </div>
@@ -303,7 +303,7 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl }:
             <div className="space-y-2 text-sm text-muted-foreground">
               <div className="flex gap-3 items-start">
                 <span className="bg-primary/15 text-primary rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">1</span>
-                <p>O mercado fecha na data definida</p>
+                <p>O setor fecha na data definida</p>
               </div>
               <div className="flex gap-3 items-start">
                 <span className="bg-primary/15 text-primary rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">2</span>

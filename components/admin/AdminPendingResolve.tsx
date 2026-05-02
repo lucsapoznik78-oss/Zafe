@@ -49,7 +49,7 @@ export default function AdminPendingResolve({ topics }: { topics: Topic[] }) {
       <div className="flex items-center gap-2 mb-1">
         <Clock size={14} className="text-yellow-400" />
         <h3 className="text-sm font-semibold text-white">
-          Mercados Aguardando Resolução Manual
+          Setores Aguardando Resolução Manual
           <span className="ml-2 px-1.5 py-0.5 bg-yellow-500/20 text-yellow-400 rounded text-xs">{topics.length}</span>
         </h3>
       </div>

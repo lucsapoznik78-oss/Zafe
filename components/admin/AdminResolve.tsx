@@ -66,10 +66,10 @@ export default function AdminResolve({ topics, allResolving }: Props) {
       <div className="bg-card border border-border rounded-xl p-4">
         <h3 className="text-sm font-semibold text-white mb-2 flex items-center gap-2">
           <Clock size={14} className="text-muted-foreground" />
-          Mercados Aguardando Resolução
+          Setores Aguardando Resolução
         </h3>
         <p className="text-muted-foreground text-sm text-center py-6">
-          Nenhum mercado pendente — tudo resolvido automaticamente.
+          Nenhum setor pendente — tudo resolvido automaticamente.
         </p>
       </div>
     );
@@ -102,7 +102,7 @@ export default function AdminResolve({ topics, allResolving }: Props) {
         <div className="bg-card border border-yellow-500/30 rounded-xl p-4">
           <h3 className="text-sm font-semibold text-white mb-1 flex items-center gap-2">
             <Clock size={14} className="text-yellow-400" />
-            Mercados Aguardando Resolução
+            Setores Aguardando Resolução
             <span className="px-1.5 py-0.5 bg-yellow-500/20 text-yellow-400 rounded text-xs">{pendingResolving.length}</span>
           </h3>
           <p className="text-xs text-muted-foreground mb-4">

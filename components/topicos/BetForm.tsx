@@ -58,7 +58,7 @@ export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed,
     if (!res.ok) {
       setError(data.error ?? "Erro ao realizar investimento");
     } else {
-      setSuccess(`Aposta registrada! Odds estimadas: ${data.estimated_odds?.toFixed(2)}x. O retorno final depende do pool na resolução.`);
+      setSuccess(`Palpite registrado! Probabilidade estimada: ${(data.estimated_odds ? (1/data.estimated_odds*100).toFixed(0) : "—")}%. O retorno final depende do volume na resolução.`);
       setAmount("");
       router.refresh();
     }
@@ -67,8 +67,8 @@ export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed,
   if (isClosed) {
     return (
       <div className="bg-card border border-border rounded-xl p-4 text-center space-y-1">
-        <p className="text-muted-foreground text-sm font-medium">Mercado encerrado</p>
-        <p className="text-xs text-muted-foreground">O prazo para investir neste mercado já passou.</p>
+        <p className="text-muted-foreground text-sm font-medium">Setor encerrado</p>
+        <p className="text-xs text-muted-foreground">O prazo para palpitar neste setor já passou.</p>
       </div>
     );
   }
@@ -182,7 +182,7 @@ export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed,
               <div className="flex justify-between items-center">
                 <span className="flex items-center gap-1 text-muted-foreground">
                   <Lock size={10} />
-                  Odds estimadas {side.toUpperCase()}
+                  Probabilidade estimada {side.toUpperCase()}
                 </span>
                 <span className="text-white font-bold">{formatOdds(currentOdds)}</span>
               </div>
@@ -193,7 +193,7 @@ export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed,
             </>
           ) : (
             <p className="text-muted-foreground">
-              Você será o primeiro a apostar neste lado. As odds serão definidas conforme outros entrarem.
+              Você será o primeiro a palpitar neste lado. As probabilidades serão definidas conforme outros entrarem.
             </p>
           )}
           <div className="flex justify-between">
@@ -205,7 +205,7 @@ export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed,
             <span className="text-muted-foreground/60">descontada no prêmio</span>
           </div>
           <p className="text-muted-foreground/50 text-[10px]">
-            Odds estimadas com base no pool atual. Mudam conforme mais pessoas apostam. Retorno final é proporcional.
+            Probabilidades estimadas com base no pool atual. Mudam conforme mais pessoas palpitam. Retorno final é proporcional.
           </p>
         </div>
       )}

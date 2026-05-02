@@ -40,7 +40,7 @@ export default function UserResultBanner({ bets, resolution }: Props) {
         <div>
           <p className="text-sim font-bold text-base">Você ganhou {formatCurrency(totalPayout)}!</p>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Apostou {formatCurrency(totalInvested)} no {wonBets[0]?.side?.toUpperCase()} · lucro líquido {formatCurrency(profit > 0 ? profit : totalPayout - totalInvested)}
+            Investiu {formatCurrency(totalInvested)} no {wonBets[0]?.side?.toUpperCase()} · lucro líquido {formatCurrency(profit > 0 ? profit : totalPayout - totalInvested)}
           </p>
         </div>
       </div>
@@ -55,7 +55,7 @@ export default function UserResultBanner({ bets, resolution }: Props) {
         </div>
         <div>
           <p className="text-yellow-400 font-bold text-base">Reembolso de {formatCurrency(totalRefunded)}</p>
-          <p className="text-xs text-muted-foreground mt-0.5">Mercado cancelado ou sem cobertura</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Setor cancelado ou sem cobertura</p>
         </div>
       </div>
     );

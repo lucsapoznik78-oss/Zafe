@@ -1,7 +1,12 @@
 export const dynamic = "force-dynamic";
 import LoginForm from "@/components/auth/LoginForm";
 
-export default function LoginPage() {
+interface Props {
+  searchParams: Promise<{ next?: string }>;
+}
+
+export default async function LoginPage({ searchParams }: Props) {
+  const { next } = await searchParams;
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-sm">
@@ -11,7 +16,7 @@ export default function LoginPage() {
             Investimentos de previsão entre pessoas reais
           </p>
         </div>
-        <LoginForm />
+        <LoginForm next={next} />
       </div>
     </div>
   );

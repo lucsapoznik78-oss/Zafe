@@ -74,12 +74,12 @@ export default function LiveStats({ topicId, chartUrl, initialSim, initialNao, i
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span className={`transition-all duration-300 ${pulse ? "text-primary font-bold scale-105" : ""}`}>
           {totalVolume > 0
-            ? <>{formatCurrency(totalVolume)} apostados</>
-            : "Sem apostas ainda"
+            ? <>{formatCurrency(totalVolume)} investidos</>
+            : "Sem palpites ainda"
           }
         </span>
         {betCount > 0 && (
-          <span>{betCount} {betCount === 1 ? "pessoa apostou" : "pessoas apostaram"}</span>
+          <span>{betCount} {betCount === 1 ? "palpite" : "palpites"}</span>
         )}
       </div>
     </div>

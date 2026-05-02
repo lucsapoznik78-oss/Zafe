@@ -25,11 +25,10 @@ interface PageProps {
 }
 
 const PREMIOS = [
-  { pos: "1º", valor: "R$ 1.000" },
-  { pos: "2º", valor: "R$ 500" },
-  { pos: "3º", valor: "R$ 250" },
-  { pos: "4º–10º", valor: "R$ 100 cada" },
-  { pos: "11º–25º", valor: "R$ 35 cada" },
+  { pos: "1º", valor: "R$ 200" },
+  { pos: "2º", valor: "R$ 150" },
+  { pos: "3º", valor: "R$ 100" },
+  { pos: "4º–5º", valor: "R$ 25 cada" },
 ];
 
 async function EventosConcurso({ category, search, tab }: { category: string; search: string; tab: string }) {
@@ -198,7 +197,7 @@ export default async function ConcursoPage({ searchParams }: PageProps) {
             )
           ) : (
             <Link
-              href="/login"
+              href="/login?next=/concurso"
               className="px-4 py-2 rounded-lg bg-yellow-400 text-black text-sm font-bold hover:bg-yellow-300 transition-colors"
             >
               Entrar para participar

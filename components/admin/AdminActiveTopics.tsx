@@ -44,7 +44,7 @@ export default function AdminActiveTopics({ topics }: { topics: Topic[] }) {
   }
 
   async function deleteTopic(topicId: string) {
-    if (!confirm("Deletar este mercado? Só funciona se não houver apostas.")) return;
+    if (!confirm("Deletar este setor? Só funciona se não houver palpites.")) return;
     setDeleting(topicId);
     const res = await fetch("/api/admin/deletar-topico", {
       method: "POST",
@@ -80,7 +80,7 @@ export default function AdminActiveTopics({ topics }: { topics: Topic[] }) {
     <div className="bg-card border border-border rounded-xl p-4">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold text-white">
-          Mercados Ativos — Editar Prazo
+          Setores Ativos — Editar Prazo
           <span className="ml-2 px-1.5 py-0.5 bg-primary/20 text-primary rounded text-xs">{topics.length}</span>
         </h3>
         <div className="flex items-center gap-2">

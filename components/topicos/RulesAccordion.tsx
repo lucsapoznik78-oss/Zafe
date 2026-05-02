@@ -11,11 +11,11 @@ interface Props {
 const topicoRules = [
   {
     q: "O que acontece se o evento não ocorrer?",
-    a: "Se o evento não acontecer dentro do prazo definido, o resultado é NÃO e os apostadores desse lado recebem o prêmio.",
+    a: "Se o evento não acontecer dentro do prazo definido, o resultado é NÃO e os previsores desse lado recebem o prêmio.",
   },
   {
-    q: "O que acontece se ninguém apostar no lado oposto?",
-    a: "Se apenas um lado tiver apostas, todos recebem reembolso integral. Não há mercado sem cobertura.",
+    q: "O que acontece se ninguém palpitar no lado oposto?",
+    a: "Se apenas um lado tiver palpites, todos recebem reembolso integral. Não há setor sem cobertura.",
   },
   {
     q: "Como o resultado é determinado?",
@@ -23,7 +23,7 @@ const topicoRules = [
   },
   {
     q: "Qual a comissão cobrada?",
-    a: "6% do valor total apostado — descontado proporcionalmente do prêmio de cada vencedor.",
+    a: "6% do valor total investido — descontado proporcionalmente do prêmio de cada vencedor.",
   },
   {
     q: "Posso vender minha posição antes do encerramento?",

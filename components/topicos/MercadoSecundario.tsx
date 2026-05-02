@@ -261,7 +261,7 @@ export default function MercadoSecundario({ topicId, apiBase, isActive, userBets
       return;
     }
     if (orderType === "sell" && !sourceBetId) {
-      setFormMsg({ type: "err", text: "Selecione a aposta a vender" });
+      setFormMsg({ type: "err", text: "Selecione a posição a vender" });
       return;
     }
 
@@ -529,16 +529,16 @@ export default function MercadoSecundario({ topicId, apiBase, isActive, userBets
           {/* Source bet (sell only) */}
           {orderType === "sell" && (
             <div>
-              <label className="text-[11px] text-muted-foreground block mb-1">Aposta a vender</label>
+              <label className="text-[11px] text-muted-foreground block mb-1">Posição a vender</label>
               {sellableBets.length === 0 ? (
-                <p className="text-[11px] text-nao">Sem apostas {side.toUpperCase()} para vender.</p>
+                <p className="text-[11px] text-nao">Sem palpites {side.toUpperCase()} para vender.</p>
               ) : (
                 <select
                   value={sourceBetId}
                   onChange={e => setSourceBetId(e.target.value)}
                   className="w-full bg-background border border-border rounded-lg px-2.5 py-1.5 text-sm text-white focus:outline-none focus:border-white/30"
                 >
-                  <option value="">Selecionar aposta...</option>
+                  <option value="">Selecionar posição...</option>
                   {sellableBets.map(b => (
                     <option key={b.id} value={b.id}>
                       Z$ {b.amount.toFixed(2)} · {b.status}
@@ -606,7 +606,7 @@ export default function MercadoSecundario({ topicId, apiBase, isActive, userBets
             {submitting ? (
               <Loader2 size={14} className="animate-spin mx-auto" />
             ) : (
-              `${orderType === "buy" ? "Comprar" : "Vender"} ${side.toUpperCase()}${isMarket ? " (mercado)" : ""}`
+              `${orderType === "buy" ? "Comprar" : "Vender"} ${side.toUpperCase()}${isMarket ? " (imediato)" : ""}`
             )}
           </button>
         </form>

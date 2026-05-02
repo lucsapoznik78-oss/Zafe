@@ -55,7 +55,7 @@ export default function EditTopicForm({ topic }: { topic: Topic }) {
 
       <div className="bg-card border border-border rounded-xl p-4 space-y-4">
         <div>
-          <label className="text-xs text-muted-foreground">Pergunta da aposta</label>
+          <label className="text-xs text-muted-foreground">Pergunta da previsão</label>
           <input
             className="w-full mt-1 bg-background border border-border rounded-lg px-3 py-2 text-white text-sm"
             value={title}

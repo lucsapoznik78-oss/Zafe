@@ -81,7 +81,7 @@ export default function WatchlistButton({ topicId }: Props) {
       <button
         onClick={toggle}
         disabled={saving}
-        title={watching ? "Deixar de seguir" : "Seguir mercado"}
+        title={watching ? "Deixar de seguir" : "Seguir setor"}
         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
           watching
             ? "bg-primary/10 border-primary/40 text-primary hover:bg-nao/10 hover:border-nao/40 hover:text-nao"
@@ -94,7 +94,7 @@ export default function WatchlistButton({ topicId }: Props) {
 
       {open && (
         <div className="absolute right-0 top-full mt-2 w-64 bg-card border border-border rounded-xl p-4 space-y-3 z-50 shadow-xl">
-          <p className="text-sm font-semibold text-white">Seguir este mercado</p>
+          <p className="text-sm font-semibold text-white">Seguir este setor</p>
           <p className="text-xs text-muted-foreground">
             Você receberá notificações quando a probabilidade mudar, quando faltar 2h para fechar e quando for resolvido.
           </p>

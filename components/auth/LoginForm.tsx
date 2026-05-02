@@ -8,9 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
-export default function LoginForm() {
+export default function LoginForm({ next }: { next?: string }) {
   const router = useRouter();
   const supabase = createClient();
+  const redirectTo = next && next.startsWith("/") ? next : "/topicos";
 
   const [mode, setMode] = useState<"login" | "cadastro">("login");
   const [email, setEmail] = useState("");
@@ -58,7 +59,7 @@ export default function LoginForm() {
         await sendOtp(profile.two_fa_method ?? "email", data.user.email ?? email, profile.phone ?? "");
         setStep("verify-otp");
       } else {
-        router.push("/topicos");
+        router.push(redirectTo);
       }
     } else {
       if (!fullName || !username) {
@@ -123,7 +124,7 @@ export default function LoginForm() {
     if (verifyResult.error) {
       setError("Código inválido ou expirado. Tente novamente.");
     } else {
-      router.push("/topicos");
+      router.push(redirectTo);
     }
     setLoading(false);
   }
@@ -131,7 +132,7 @@ export default function LoginForm() {
   async function handleGoogle() {
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}` },
     });
   }
 

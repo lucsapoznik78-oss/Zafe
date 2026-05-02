@@ -29,7 +29,7 @@ export default function ResolutionBreakdown({
 
       <div className="space-y-2 text-xs">
         <div className="flex justify-between">
-          <span className="text-muted-foreground">Total apostado</span>
+          <span className="text-muted-foreground">Total investido</span>
           <span className="text-white font-semibold">{formatCurrency(totalVolume)}</span>
         </div>
         <div className="flex justify-between">

@@ -80,7 +80,7 @@ export default async function SocialActivity({ topicId, currentUserId }: Props) 
         <div className="space-y-2">
           <div className="flex items-center gap-1.5 text-xs font-semibold text-white">
             <Users size={13} />
-            Seus amigos apostaram
+            Seus amigos palpitaram
           </div>
           <div className="space-y-2">
             {(friendBets ?? []).map((bet: any) => {
