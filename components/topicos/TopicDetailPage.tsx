@@ -304,7 +304,7 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
             totalNao={totalNao}
             isClosed={isClosed}
             userBalance={userBalance}
-            initialSide={initialSide}
+            initialSide={initialSide as "sim" | "nao" | undefined}
           />
 
           <MercadoSecundario
