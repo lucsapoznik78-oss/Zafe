@@ -38,7 +38,7 @@ export async function GET() {
   ]);
 
   const topicEntries = (topics ?? []).map((t) =>
-    urlEntry(`${BASE_URL}/topicos/${t.id}`, new Date(t.created_at).toISOString(), "daily", 0.8)
+    urlEntry(`${BASE_URL}/liga/${t.id}`, new Date(t.created_at).toISOString(), "daily", 0.8)
   );
 
   const profileEntries = (profiles ?? [])

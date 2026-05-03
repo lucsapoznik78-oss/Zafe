@@ -109,7 +109,7 @@ export async function pagarVencedores(
     sendPushToUser(supabase, bet.user_id, {
       title: "Você ganhou! 🏆",
       body: `Seu ${resolution.toUpperCase()} em "${title}" rendeu ${fmt(payout)}.`,
-      url: `/topicos/${topicId}`,
+      url: `/liga/${topicId}`,
     }).catch(() => {});
   }
 

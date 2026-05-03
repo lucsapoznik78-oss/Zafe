@@ -78,7 +78,7 @@ export default function Navbar() {
             { href: "/economico", label: "Econômico" },
             { href: "/ranking", label: "Ranking" },
             { href: "/amigos", label: "Amigos" },
-            { href: "/apostas-privadas", label: "Privadas" },
+            { href: "/privadas", label: "Privadas" },
           ].map((item) => (
             <Link
               key={item.href}

@@ -64,7 +64,7 @@ export default function AdminPendingResolve({ topics }: { topics: Topic[] }) {
               <CategoryBadge category={topic.category as any} className="mb-1.5" />
               <div className="flex items-start gap-2">
                 <p className="text-sm font-semibold text-white flex-1">{topic.title}</p>
-                <Link href={`/topicos/${topic.id}`} target="_blank" className="text-muted-foreground hover:text-white shrink-0">
+                <Link href={`/liga/${topic.id}`} target="_blank" className="text-muted-foreground hover:text-white shrink-0">
                   <ExternalLink size={13} />
                 </Link>
               </div>

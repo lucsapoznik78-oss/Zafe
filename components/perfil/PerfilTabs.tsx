@@ -225,7 +225,7 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl }:
                 return (
                   <div key={bet.id} className="flex items-center justify-between py-3 border-b border-border last:border-0">
                     <div className="flex-1 min-w-0 mr-3">
-                      <Link href={`/topicos/${bet.topic?.id}`} className="hover:text-primary transition-colors">
+                      <Link href={bet.topic?.category === "economia" ? `/economico/${bet.topic?.id}` : `/liga/${bet.topic?.id}`} className="hover:text-primary transition-colors">
                         <p className="text-sm text-white truncate">{bet.topic?.title}</p>
                       </Link>
                       <div className="flex items-center gap-2 mt-0.5 flex-wrap">

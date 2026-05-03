@@ -29,7 +29,7 @@ export default function BetInvites({ invites }: { invites: Invite[] }) {
   return (
     <div className="bg-card border border-border rounded-xl p-4 space-y-3">
       <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-        Convites de Investimento
+        Convites de Palpite
         <span className="px-1.5 py-0.5 bg-primary/20 text-primary rounded text-xs">{invites.length}</span>
       </h3>
       {invites.map((invite) => (

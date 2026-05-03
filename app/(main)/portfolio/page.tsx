@@ -197,7 +197,7 @@ export default async function PortfolioPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="space-y-1">
                       <CategoryBadge category={topic.category} />
-                      <Link href={`/topicos/${topicId}`} className="block text-sm font-semibold text-white hover:text-primary transition-colors line-clamp-2">
+                      <Link href={topic.category === "economia" ? `/economico/${topicId}` : `/liga/${topicId}`} className="block text-sm font-semibold text-white hover:text-primary transition-colors line-clamp-2">
                         {topic.title}
                       </Link>
                     </div>
@@ -278,7 +278,7 @@ export default async function PortfolioPage() {
               return (
                 <div key={topic.id} className="bg-card border border-border rounded-xl p-3 flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <Link href={`/topicos/${topic.id}`} className="text-sm font-medium text-white hover:text-primary transition-colors line-clamp-1">
+                    <Link href={topic.category === "economia" ? `/economico/${topic.id}` : `/liga/${topic.id}`} className="text-sm font-medium text-white hover:text-primary transition-colors line-clamp-1">
                       {topic.title}
                     </Link>
                     <p className="text-[11px] text-muted-foreground mt-0.5">
@@ -287,8 +287,8 @@ export default async function PortfolioPage() {
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="text-xs font-bold text-white">{fmtPct(probSim)}</span>
-                    <Link href={`/topicos/${topic.id}`} className="px-2.5 py-1 bg-primary text-black text-xs font-bold rounded-lg hover:bg-primary/90">
-                      Apostar
+                    <Link href={topic.category === "economia" ? `/economico/${topic.id}` : `/liga/${topic.id}`} className="px-2.5 py-1 bg-primary text-black text-xs font-bold rounded-lg hover:bg-primary/90">
+                      Palpitar
                     </Link>
                   </div>
                 </div>
@@ -303,7 +303,7 @@ export default async function PortfolioPage() {
         <section className="space-y-3">
           <h2 className="text-base font-semibold text-white flex items-center gap-2">
             <Trophy size={15} className="text-muted-foreground" />
-            Histórico de apostas
+            Histórico de palpites
           </h2>
           <div className="space-y-2">
             {(resolvedBets ?? []).slice(0, 20).map((b: any) => {
@@ -315,11 +315,11 @@ export default async function PortfolioPage() {
               return (
                 <div key={b.id} className="bg-card border border-border rounded-xl p-3 flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <Link href={topic ? `/topicos/${b.topic_id}` : "#"} className="text-sm font-medium text-white hover:text-primary transition-colors line-clamp-1">
+                    <Link href={topic ? (topic.category === "economia" ? `/economico/${b.topic_id}` : `/liga/${b.topic_id}`) : "#"} className="text-sm font-medium text-white hover:text-primary transition-colors line-clamp-1">
                       {topic?.title ?? "Mercado removido"}
                     </Link>
                     <p className="text-[11px] text-muted-foreground mt-0.5">
-                      {b.side.toUpperCase()} · {formatCurrency(amt)} apostado
+                      {b.side.toUpperCase()} · {formatCurrency(amt)} em palpite
                     </p>
                   </div>
                   <div className="text-right shrink-0">

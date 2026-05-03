@@ -104,8 +104,8 @@ export default function NotificationBell() {
                 const isPrivate = n.type === "judge_invite" || n.data?.side != null || n.data?.is_private;
                 const href = n.data?.topic_id
                   ? isPrivate
-                    ? `/apostas-privadas/${n.data.topic_id}`
-                    : `/topicos/${n.data.topic_id}`
+                    ? `/privadas/${n.data.topic_id}`
+                    : `/liga/${n.data.topic_id}`
                   : null;
                 return (
                   <div

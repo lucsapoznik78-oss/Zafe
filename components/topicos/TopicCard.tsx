@@ -42,8 +42,10 @@ export default function TopicCard({ topic }: TopicCardProps) {
   const effectiveStatus = isExpired ? "closed" : topic.status;
   const badge = STATUS_BADGE[effectiveStatus] ?? STATUS_BADGE.active;
 
+  const href = topic.category === "economia" ? `/economico/${topic.id}` : `/liga/${topic.id}`;
+
   return (
-    <Link href={`/topicos/${topic.id}`}>
+    <Link href={href}>
       <div className="group bg-card border border-border rounded-xl p-4 hover:border-primary/40 hover:bg-card/80 transition-all duration-200 cursor-pointer h-full flex flex-col">
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex items-center gap-2 flex-wrap">

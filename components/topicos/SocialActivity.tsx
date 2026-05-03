@@ -104,7 +104,7 @@ export default async function SocialActivity({ topicId, currentUserId }: Props) 
                   </div>
                   <div className="flex gap-1 shrink-0">
                     <Link
-                      href={`/topicos/${topicId}?side=${bet.side}`}
+                      href={`/liga/${topicId}?side=${bet.side}`}
                       className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-colors ${
                         isSim
                           ? "bg-sim/15 text-sim hover:bg-sim/25"
@@ -114,7 +114,7 @@ export default async function SocialActivity({ topicId, currentUserId }: Props) 
                       Concordar
                     </Link>
                     <Link
-                      href={`/topicos/${topicId}?side=${bet.side === "sim" ? "nao" : "sim"}`}
+                      href={`/liga/${topicId}?side=${bet.side === "sim" ? "nao" : "sim"}`}
                       className="px-2 py-0.5 rounded text-[10px] font-semibold bg-muted text-muted-foreground hover:text-white transition-colors"
                     >
                       Discordar

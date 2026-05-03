@@ -121,7 +121,7 @@ export default async function MinhasPosicoes() {
                     </span>
                   )}
                 </div>
-                <Link href={`/topicos/${topicId}`} className="block text-sm font-semibold text-white hover:text-primary transition-colors line-clamp-2">
+                <Link href={topic.category === "economia" ? `/economico/${topicId}` : `/liga/${topicId}`} className="block text-sm font-semibold text-white hover:text-primary transition-colors line-clamp-2">
                   {topic.title}
                 </Link>
 

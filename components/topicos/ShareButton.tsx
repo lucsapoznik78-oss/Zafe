@@ -16,7 +16,7 @@ export default function ShareButton({ title, probSim, slug, topicId, pagePath }:
   const [open, setOpen] = useState(false);
 
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://zafe-rho.vercel.app";
-  const path = pagePath ?? (slug ? `/topicos/${slug}` : `/topicos/${topicId}`);
+  const path = pagePath ?? (slug ? `/liga/${slug}` : `/liga/${topicId}`);
   const url = `${baseUrl}${path}`;
   const text = `${title} — SIM ${(probSim * 100).toFixed(0)}% · NÃO ${(100 - probSim * 100).toFixed(0)}% | Zafe`;
 

@@ -89,7 +89,8 @@ export default function WelcomeModal() {
   function goToTopic() {
     if (!featured) return;
     dismiss();
-    const path = featured.slug ? `/topicos/${featured.slug}` : `/topicos/${featured.id}`;
+    const pilar = featured.category === "economia" ? "economico" : "liga";
+    const path = featured.slug ? `/${pilar}/${featured.slug}` : `/${pilar}/${featured.id}`;
     router.push(path);
   }
 
@@ -180,7 +181,7 @@ export default function WelcomeModal() {
                   </div>
                   <div className="flex justify-between text-[10px] text-muted-foreground">
                     <span className="text-sim font-semibold">SIM {probSim.toFixed(1)}%</span>
-                    <span className="text-xs">{formatCurrency(parseFloat(featured.total_volume))} apostados</span>
+                    <span className="text-xs">{formatCurrency(parseFloat(featured.total_volume))} em palpites</span>
                     <span className="text-nao font-semibold">NÃO {probNao.toFixed(1)}%</span>
                   </div>
                 </div>
@@ -189,7 +190,7 @@ export default function WelcomeModal() {
                   onClick={goToTopic}
                   className="w-full py-3 bg-primary text-black font-bold rounded-xl text-sm hover:bg-primary/90 transition-colors"
                 >
-                  Ver e apostar
+                  Ver e palpitar
                 </button>
                 <button
                   onClick={next}
@@ -228,14 +229,14 @@ export default function WelcomeModal() {
               <div className="bg-primary/10 border border-primary/30 rounded-xl p-3 text-left space-y-1.5">
                 <p className="text-xs text-primary font-semibold">Dica rápida</p>
                 <p className="text-xs text-muted-foreground">
-                  Escolha mercados com boas probabilidades, analise as odds e diversifique suas apostas. Boa sorte!
+                  Escolha eventos com boas probabilidades, analise o contexto e diversifique seus palpites. Boa sorte!
                 </p>
               </div>
               <button
                 onClick={dismiss}
                 className="w-full py-3 bg-primary text-black font-bold rounded-xl text-sm hover:bg-primary/90 transition-colors"
               >
-                Começar a apostar
+                Começar a palpitar
               </button>
             </div>
           </>

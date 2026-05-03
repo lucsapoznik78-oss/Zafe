@@ -74,7 +74,7 @@ export async function POST(request: Request) {
       sendPushToMany(supabase, allIds, {
         title: "Mercado fecha em 2h ⏳",
         body: `"${topic.title.slice(0, 60)}" — última chance de apostar.`,
-        url: `/topicos/${topic.id}`,
+        url: `/liga/${topic.id}`,
       }).catch(() => {});
 
       await supabase.from("notifications").insert(allIds.map((uid) => ({

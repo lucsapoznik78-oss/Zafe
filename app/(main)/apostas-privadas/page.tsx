@@ -80,8 +80,8 @@ export default async function ApostaPrivadasPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-white">Apostas Privadas</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Apostas em grupo com juízes e líderes eleitos</p>
+          <h1 className="text-xl font-bold text-white">Privadas</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">Bolão entre amigos com juízes e líderes eleitos</p>
         </div>
         <Link
           href="/apostas-privadas/criar"
@@ -96,15 +96,15 @@ export default async function ApostaPrivadasPage() {
         <div className="bg-card border border-border rounded-xl p-12 text-center space-y-4">
           <Swords size={40} className="text-muted-foreground mx-auto" />
           <div>
-            <p className="text-white font-semibold">Nenhuma aposta privada ainda</p>
-            <p className="text-sm text-muted-foreground mt-1">Crie uma aposta e convide seus amigos para o desafio</p>
+            <p className="text-white font-semibold">Nenhum bolão ainda</p>
+            <p className="text-sm text-muted-foreground mt-1">Crie um bolão e convide seus amigos para competir</p>
           </div>
           <Link
             href="/apostas-privadas/criar"
             className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-primary text-black text-sm font-bold rounded-xl"
           >
             <Plus size={14} />
-            Criar Aposta Privada
+            Criar Bolão
           </Link>
         </div>
       ) : (

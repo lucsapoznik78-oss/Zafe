@@ -7,8 +7,8 @@ import { ArrowDownToLine, ArrowUpFromLine, TrendingUp, TrendingDown, RotateCcw, 
 const TYPE_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   deposit: { label: "Depósito", color: "text-primary", icon: <ArrowDownToLine size={14} /> },
   withdraw: { label: "Saque", color: "text-nao", icon: <ArrowUpFromLine size={14} /> },
-  bet_placed: { label: "Investimento realizado", color: "text-muted-foreground", icon: <TrendingDown size={14} /> },
-  bet_won: { label: "Investimento ganho", color: "text-sim", icon: <TrendingUp size={14} /> },
+  bet_placed: { label: "Palpite realizado", color: "text-muted-foreground", icon: <TrendingDown size={14} /> },
+  bet_won: { label: "Palpite ganho", color: "text-sim", icon: <TrendingUp size={14} /> },
   bet_refund: { label: "Reembolso", color: "text-primary", icon: <RotateCcw size={14} /> },
   commission: { label: "Comissão Zafe", color: "text-muted-foreground", icon: <Percent size={14} /> },
 };

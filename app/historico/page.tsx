@@ -109,7 +109,7 @@ export default async function HistoricoPage() {
               const isSim = topic.resolution === "sim";
 
               return (
-                <Link key={topic.id} href={`/topicos/${topic.id}`}>
+                <Link key={topic.id} href={`/liga/${topic.id}`}>
                   <div className="bg-card border border-border rounded-xl p-4 hover:border-primary/30 transition-colors">
                     <div className="flex items-start gap-4">
                       {/* Ícone resultado */}

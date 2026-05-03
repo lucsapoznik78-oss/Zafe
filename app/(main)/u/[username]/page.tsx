@@ -171,7 +171,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
               return (
                 <div key={i} className="flex items-center justify-between py-2.5 border-b border-border/50 last:border-0">
                   <div className="flex-1 min-w-0 mr-3">
-                    <Link href={`/topicos/${(bet.topic as any)?.id}`} className="hover:text-primary transition-colors">
+                    <Link href={(bet.topic as any)?.category === "economia" ? `/economico/${(bet.topic as any)?.id}` : `/liga/${(bet.topic as any)?.id}`} className="hover:text-primary transition-colors">
                       <p className="text-sm text-white truncate">{(bet.topic as any)?.title}</p>
                     </Link>
                     <div className="flex items-center gap-2 mt-0.5">

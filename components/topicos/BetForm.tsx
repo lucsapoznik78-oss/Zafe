@@ -56,7 +56,7 @@ export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed,
     setLoading(false);
 
     if (!res.ok) {
-      setError(data.error ?? "Erro ao realizar investimento");
+      setError(data.error ?? "Erro ao registrar palpite");
     } else {
       setSuccess(`Palpite registrado! Probabilidade estimada: ${(data.estimated_odds ? (1/data.estimated_odds*100).toFixed(0) : "—")}%. O retorno final depende do volume na resolução.`);
       setAmount("");
@@ -76,7 +76,7 @@ export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed,
   return (
     <div className="bg-card border border-border rounded-xl p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-white">Fazer Investimento</h3>
+        <h3 className="text-sm font-semibold text-white">Fazer Palpite</h3>
         {/* Saldo do usuário */}
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
           <Wallet size={11} />
@@ -96,7 +96,7 @@ export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed,
               <p className="text-[10px] text-sim/60">{formatCurrency(totalSim)}</p>
             </>
           ) : (
-            <p className="text-xs text-muted-foreground mt-1">Sem apostas</p>
+            <p className="text-xs text-muted-foreground mt-1">Sem palpites</p>
           )}
         </div>
         <div className="bg-nao/10 rounded-lg px-3 py-2">
@@ -107,7 +107,7 @@ export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed,
               <p className="text-[10px] text-nao/60">{formatCurrency(totalNao)}</p>
             </>
           ) : (
-            <p className="text-xs text-muted-foreground mt-1">Sem apostas</p>
+            <p className="text-xs text-muted-foreground mt-1">Sem palpites</p>
           )}
         </div>
       </div>
@@ -219,7 +219,7 @@ export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed,
         ) : insufficientBalance && amountNum > 0 ? (
           "Saldo insuficiente"
         ) : (
-          `Investir ${side.toUpperCase()}${amountNum > 0 ? ` · ${formatCurrency(amountNum)}` : ""}`
+          `Palpitar ${side.toUpperCase()}${amountNum > 0 ? ` · ${formatCurrency(amountNum)}` : ""}`
         )}
       </button>
     </div>
