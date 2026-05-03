@@ -9,6 +9,7 @@ import ProbabilityChart from "@/components/topicos/ProbabilityChart";
 import LiveStats from "@/components/topicos/LiveStats";
 import ResolvingBanner from "@/components/topicos/ResolvingBanner";
 import ConcursoBetForm from "@/components/concurso/ConcursoBetForm";
+import ParticipantsList from "@/components/topicos/ParticipantsList";
 import { calcOdds } from "@/lib/odds";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { format } from "date-fns";
@@ -74,7 +75,7 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
   }
 
   // Topic stats
-  const [{ data: statsData }, { data: snapshots }, { data: concursoBetsPool }] = await Promise.all([
+  const [{ data: statsData }, { data: snapshots }, { data: concursoBetsPool }, { data: allConcursoBets }] = await Promise.all([
     admin.from("v_topic_stats").select("*").eq("topic_id", topicId).single(),
     admin.from("topic_snapshots")
       .select("prob_sim, volume_sim, volume_nao, recorded_at")
@@ -84,6 +85,12 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
       .eq("topic_id", topicId)
       .eq("status", "matched")
       .eq("concurso_id", concurso?.id ?? ""),
+    admin.from("concurso_bets")
+      .select("id, side, amount, status, locked_odds, order_id, created_at, profiles(username, full_name)")
+      .eq("topic_id", topicId)
+      .in("status", ["matched", "won", "lost", "refunded"])
+      .order("amount", { ascending: false })
+      .limit(100),
   ]);
 
   const stats = statsData;
@@ -98,6 +105,10 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
   // Concurso pool for this topic
   const poolSim = (concursoBetsPool ?? []).filter((b: any) => b.side === "sim").reduce((s: number, b: any) => s + Number(b.amount), 0);
   const poolNao = (concursoBetsPool ?? []).filter((b: any) => b.side === "nao").reduce((s: number, b: any) => s + Number(b.amount), 0);
+
+  // Participantes — total ZC$ por lado
+  const concursoSimTotal = (allConcursoBets ?? []).filter((b: any) => b.side === "sim").reduce((s: number, b: any) => s + Number(b.amount), 0);
+  const concursoNaoTotal = (allConcursoBets ?? []).filter((b: any) => b.side === "nao").reduce((s: number, b: any) => s + Number(b.amount), 0);
 
   const isClosed = topic.status !== "active" || new Date(topic.closes_at) < new Date();
   const statusBadge = STATUS_BADGE[topic.status] ?? STATUS_BADGE.pending;
@@ -190,6 +201,13 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
           {snapshots && snapshots.length > 0 && (
             <ProbabilityChart topicId={topicId} initialSnapshots={snapshots} initialStats={stats} />
           )}
+
+          {/* Participantes do concurso neste evento */}
+          <ParticipantsList
+            bets={allConcursoBets ?? []}
+            totalSim={concursoSimTotal}
+            totalNao={concursoNaoTotal}
+          />
 
           {/* Meus palpites no concurso */}
           {userConcursoBets.length > 0 && (

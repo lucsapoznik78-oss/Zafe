@@ -110,7 +110,7 @@ export default async function TopicoDetailPage({ params, searchParams }: PagePro
       admin.from("bets")
         .select("id, side, amount, status, locked_odds, order_id, created_at, profiles(username, full_name)")
         .eq("topic_id", topicId)
-        .in("status", ["pending", "matched", "partial", "won", "lost"])
+        .in("status", ["pending", "matched", "partial", "won", "lost", "refunded"])
         .order("amount", { ascending: false })
         .limit(100),
       // Fonte de resolução (oracle log)
