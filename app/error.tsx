@@ -38,10 +38,10 @@ export default function GlobalError({
               Tentar novamente
             </button>
             <Link
-              href="/topicos"
+              href="/liga"
               className="px-6 py-2.5 bg-card border border-border text-white font-semibold rounded-lg hover:bg-card/80 transition-colors"
             >
-              Ver mercados
+              Ver eventos
             </Link>
           </div>
         </div>

@@ -11,7 +11,7 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 export default function LoginForm({ next, theme }: { next?: string; theme?: "concurso" }) {
   const router = useRouter();
   const supabase = createClient();
-  const redirectTo = next && next.startsWith("/") ? next : "/topicos";
+  const redirectTo = next && next.startsWith("/") ? next : "/liga";
   const isConcurso = theme === "concurso";
 
   // Cores dinâmicas baseadas no tema

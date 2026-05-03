@@ -42,10 +42,10 @@ export default async function HistoricoPage() {
       {/* Navbar simples para página pública */}
       <header className="border-b border-border bg-black/90 sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
-          <Link href="/topicos" className="text-xl font-bold text-primary">Zafe</Link>
+          <Link href="/liga" className="text-xl font-bold text-primary">Zafe</Link>
           <div className="flex items-center gap-3">
-            <Link href="/topicos" className="text-sm text-muted-foreground hover:text-white transition-colors">
-              Ver mercados abertos
+            <Link href="/liga" className="text-sm text-muted-foreground hover:text-white transition-colors">
+              Ver eventos abertos
             </Link>
             <Link
               href="/login"
@@ -96,10 +96,10 @@ export default async function HistoricoPage() {
               Os primeiros resultados aparecerão aqui assim que um mercado for encerrado.
             </p>
             <Link
-              href="/topicos"
+              href="/liga"
               className="inline-block mt-2 px-4 py-2 bg-primary text-black text-sm font-semibold rounded-lg hover:bg-primary/90 transition-colors"
             >
-              Ver mercados abertos
+              Ver eventos abertos
             </Link>
           </div>
         ) : (

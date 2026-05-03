@@ -13,10 +13,10 @@ export default function NotFound() {
         </div>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
-            href="/topicos"
+            href="/liga"
             className="px-6 py-2.5 bg-primary text-black font-semibold rounded-lg hover:bg-primary/90 transition-colors"
           >
-            Ver mercados
+            Ver eventos
           </Link>
           <Link
             href="/"
