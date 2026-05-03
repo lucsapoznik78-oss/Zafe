@@ -202,7 +202,7 @@ export default function CreatePrivateBetForm({ userId }: { userId: string }) {
         }),
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error ?? "Erro ao criar aposta"); return; }
+      if (!res.ok) { setError(data.error ?? "Erro ao criar bolão"); return; }
       router.push(`/apostas-privadas/${data.topic_id}`);
     } catch {
       setError("Erro de conexão");
@@ -218,7 +218,7 @@ export default function CreatePrivateBetForm({ userId }: { userId: string }) {
       <div className="bg-card border border-border rounded-xl p-4 space-y-4">
         <p className="text-sm font-semibold text-white">Evento</p>
         <div>
-          <label className="text-xs text-muted-foreground">Pergunta da aposta</label>
+          <label className="text-xs text-muted-foreground">Pergunta do bolão</label>
           <input
             className="w-full mt-1 bg-background border border-border rounded-lg px-3 py-2 text-white text-sm"
             placeholder="Ex: Palmeiras vai ganhar o Brasileirão 2026?"
@@ -243,7 +243,7 @@ export default function CreatePrivateBetForm({ userId }: { userId: string }) {
             </select>
           </div>
           <div>
-            <label className="text-xs text-muted-foreground">Investimento mínimo (Z$)</label>
+            <label className="text-xs text-muted-foreground">Palpite mínimo (Z$)</label>
             <input
               type="number" min="1" step="1"
               className="w-full mt-1 bg-background border border-border rounded-lg px-3 py-2 text-white text-sm"
@@ -291,7 +291,7 @@ export default function CreatePrivateBetForm({ userId }: { userId: string }) {
         type="submit" disabled={loading}
         className="w-full py-3 bg-primary text-black font-bold rounded-xl disabled:opacity-50"
       >
-        {loading ? "Criando..." : "Criar Aposta Privada"}
+        {loading ? "Criando..." : "Criar Bolão"}
       </button>
     </form>
   );

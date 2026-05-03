@@ -38,8 +38,8 @@ export default function ConcursoBetForm({
   async function handleBet() {
     setError("");
     setSuccess("");
-    if (amountNum < 1) { setError("Valor mínimo: ZC$ 1"); return; }
-    if (insufficientBalance) { setError(`Saldo insuficiente. Você tem ZC$ ${zcBalance.toFixed(2)}.`); return; }
+    if (amountNum < 1) { setError("Valor mínimo: Z$ 1"); return; }
+    if (insufficientBalance) { setError(`Saldo insuficiente. Você tem Z$ ${zcBalance.toFixed(2)}.`); return; }
 
     setLoading(true);
     const res = await fetch("/api/concurso/palpitar", {
@@ -53,7 +53,7 @@ export default function ConcursoBetForm({
     if (!res.ok) {
       setError(data.error ?? "Erro ao registrar palpite");
     } else {
-      setSuccess(`Palpite registrado! Odds estimadas: ${data.estimated_odds?.toFixed(2)}x`);
+      setSuccess(`Palpite registrado! Retorno estimado: ${data.estimated_odds?.toFixed(2)}x`);
       setAmount("");
       router.refresh();
     }
@@ -75,7 +75,7 @@ export default function ConcursoBetForm({
           <h3 className="text-sm font-semibold text-yellow-400">Palpite do Concurso</h3>
         </div>
         <span className={`text-xs font-semibold ${insufficientBalance && amountNum > 0 ? "text-red-400" : "text-yellow-300"}`}>
-          ZC$ {zcBalance.toFixed(2)}
+          Z$ {zcBalance.toFixed(2)}
         </span>
       </div>
 
@@ -86,7 +86,7 @@ export default function ConcursoBetForm({
           {poolSim > 0 ? (
             <>
               <p className="text-sm font-bold text-green-400">{formatOdds(simOdds)}</p>
-              <p className="text-[10px] text-green-400/60">ZC$ {poolSim.toFixed(0)}</p>
+              <p className="text-[10px] text-green-400/60">Z$ {poolSim.toFixed(0)}</p>
             </>
           ) : (
             <p className="text-xs text-muted-foreground mt-1">Vazio</p>
@@ -97,7 +97,7 @@ export default function ConcursoBetForm({
           {poolNao > 0 ? (
             <>
               <p className="text-sm font-bold text-red-400">{formatOdds(naoOdds)}</p>
-              <p className="text-[10px] text-red-400/60">ZC$ {poolNao.toFixed(0)}</p>
+              <p className="text-[10px] text-red-400/60">Z$ {poolNao.toFixed(0)}</p>
             </>
           ) : (
             <p className="text-xs text-muted-foreground mt-1">Vazio</p>
@@ -131,9 +131,9 @@ export default function ConcursoBetForm({
 
       {/* Input */}
       <div>
-        <label className="text-xs text-yellow-300/60 mb-1.5 block">Valor em ZC$ (mín. 1)</label>
+        <label className="text-xs text-yellow-300/60 mb-1.5 block">Valor em Z$ (mín. 1)</label>
         <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-yellow-400/60 text-sm">ZC$</span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-yellow-400/60 text-sm">Z$</span>
           <input
             type="number"
             value={amount}
@@ -172,20 +172,20 @@ export default function ConcursoBetForm({
           {poolSim > 0 && poolNao > 0 ? (
             <>
               <div className="flex justify-between">
-                <span className="text-yellow-300/60">Odds estimadas</span>
+                <span className="text-yellow-300/60">Probabilidade estimada</span>
                 <span className="text-yellow-400 font-bold">{formatOdds(currentOdds)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-yellow-300/60">Retorno estimado</span>
-                <span className="text-yellow-300 font-semibold">ZC$ {expectedReturn.toFixed(2)}</span>
+                <span className="text-yellow-300 font-semibold">Z$ {expectedReturn.toFixed(2)}</span>
               </div>
             </>
           ) : (
-            <p className="text-yellow-300/50">Você será o primeiro neste lado — odds definidas conforme outros entram.</p>
+            <p className="text-yellow-300/50">Você será o primeiro neste lado — probabilidades definidas conforme outros entram.</p>
           )}
           <div className="flex justify-between border-t border-yellow-400/10 pt-1">
             <span className="text-yellow-300/50">Lucro potencial</span>
-            <span className="text-green-400 font-semibold">+ZC$ {expectedProfit.toFixed(2)}</span>
+            <span className="text-green-400 font-semibold">+Z$ {expectedProfit.toFixed(2)}</span>
           </div>
           <p className="text-yellow-300/40 text-[10px]">100% parimutuel — retorno proporcional ao pool.</p>
         </div>
@@ -202,9 +202,9 @@ export default function ConcursoBetForm({
         {loading ? (
           <Loader2 size={16} className="animate-spin mx-auto" />
         ) : insufficientBalance && amountNum > 0 ? (
-          "ZC$ insuficiente"
+          "Z$ insuficiente"
         ) : (
-          `Palpite ${side.toUpperCase()}${amountNum > 0 ? ` · ZC$ ${amountNum}` : ""}`
+          `Palpite ${side.toUpperCase()}${amountNum > 0 ? ` · Z$ ${amountNum}` : ""}`
         )}
       </button>
     </div>

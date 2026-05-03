@@ -10,9 +10,9 @@ export default async function CriarApostaPrivadaPage() {
 
   return (
     <div className="py-6 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold text-white mb-1">Nova Aposta Privada</h1>
+      <h1 className="text-2xl font-bold text-white mb-1">Novo Bolão</h1>
       <p className="text-muted-foreground text-sm mb-6">
-        Crie uma aposta entre grupos. Número de juízes: 1, 3, 5 ou 7 (sempre ímpar).
+        Crie um bolão entre grupos. Número de juízes: 1, 3, 5 ou 7 (sempre ímpar).
       </p>
       <CreatePrivateBetForm userId={user.id} />
     </div>

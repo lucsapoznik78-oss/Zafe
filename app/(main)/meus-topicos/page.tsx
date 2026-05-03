@@ -71,16 +71,16 @@ export default async function MinhasPosicoes() {
       <div>
         <h1 className="text-2xl font-bold text-white">Minhas Posições</h1>
         <p className="text-muted-foreground text-sm mt-0.5">
-          {totalBets} aposta{totalBets !== 1 ? "s" : ""} ativa{totalBets !== 1 ? "s" : ""} em {totalTopics} mercado{totalTopics !== 1 ? "s" : ""}
+          {totalBets} palpite{totalBets !== 1 ? "s" : ""} ativo{totalBets !== 1 ? "s" : ""} em {totalTopics} evento{totalTopics !== 1 ? "s" : ""}
         </p>
       </div>
 
       {totalTopics === 0 ? (
         <div className="text-center py-16">
           <p className="text-white font-medium mb-1">Nenhuma posição ativa</p>
-          <p className="text-muted-foreground text-sm">Explore os mercados e faça sua primeira aposta</p>
+          <p className="text-muted-foreground text-sm">Explore os eventos e faça seu primeiro palpite</p>
           <Link href="/liga" className="inline-block mt-4 px-4 py-2 bg-primary text-black font-semibold rounded-lg text-sm">
-            Ver mercados
+            Ver eventos
           </Link>
         </div>
       ) : (
@@ -142,7 +142,7 @@ export default async function MinhasPosicoes() {
                           </span>
                         </div>
                         <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-[11px]">
-                          <span className="text-muted-foreground">Investido</span>
+                          <span className="text-muted-foreground">Palpitado</span>
                           <span className="text-right text-white">{fmt(pos.totalAmt)}</span>
                           <span className="text-muted-foreground">Entrada</span>
                           <span className="text-right text-white">

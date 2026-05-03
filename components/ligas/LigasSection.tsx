@@ -158,7 +158,7 @@ export default function LigasSection({ ligas, currentUserId, friends }: Props) {
               <div className="text-center py-5 space-y-2">
                 <Lock size={28} className="mx-auto text-muted-foreground/40" />
                 <p className="text-sm text-muted-foreground">Nenhuma liga privada</p>
-                <p className="text-xs text-muted-foreground">Crie uma liga e convide seus amigos para investir juntos</p>
+                <p className="text-xs text-muted-foreground">Crie uma liga e convide seus amigos para palpitar juntos</p>
                 <button
                   onClick={() => setShowCreate(true)}
                   className="mt-2 px-4 py-2 bg-primary text-black text-sm font-bold rounded-lg hover:bg-primary/90 transition-colors"

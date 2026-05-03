@@ -18,7 +18,11 @@ function detectSubjectiveTitle(title: string): boolean {
   return SUBJECTIVE_PATTERNS.some((p) => p.test(title));
 }
 
-export default function CreateTopicForm() {
+interface CreateTopicFormProps {
+  excludeCategories?: string[];
+}
+
+export default function CreateTopicForm({ excludeCategories = [] }: CreateTopicFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -78,6 +82,7 @@ export default function CreateTopicForm() {
   const minDate = new Date();
   minDate.setDate(minDate.getDate() + 1);
   const minDateStr = minDate.toISOString().slice(0, 16);
+  const categories = CATEGORIES.filter((cat) => !excludeCategories.includes(cat.value));
 
   return (
     <form onSubmit={handleSubmit} className="bg-card border border-border rounded-xl p-5 space-y-5">
@@ -135,7 +140,7 @@ export default function CreateTopicForm() {
             onChange={(e) => set("category", e.target.value)}
             className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50"
           >
-            {CATEGORIES.map((cat) => (
+            {categories.map((cat) => (
               <option key={cat.value} value={cat.value}>{cat.label}</option>
             ))}
           </select>

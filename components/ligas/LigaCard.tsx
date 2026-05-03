@@ -417,7 +417,7 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
                     </div>
                   ) : !ranking || ranking.length === 0 ? (
                     <p className="text-xs text-muted-foreground text-center py-4">
-                      Nenhuma aposta resolvida nesta liga ainda
+                      Nenhum palpite resolvido nesta liga ainda
                     </p>
                   ) : (
                     <div className="space-y-2">

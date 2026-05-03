@@ -145,7 +145,7 @@ export default async function PortfolioPage() {
           <p className="text-lg font-bold text-white">{formatCurrency(wallet?.balance ?? 0)}</p>
         </div>
         <div className="bg-card border border-border rounded-xl p-4">
-          <p className="text-xs text-muted-foreground mb-1">Investido (ativo)</p>
+          <p className="text-xs text-muted-foreground mb-1">Em palpites (ativo)</p>
           <p className="text-lg font-bold text-white">{formatCurrency(totalInvested)}</p>
         </div>
         <div className={`bg-card border rounded-xl p-4 ${unrealizedPnl >= 0 ? "border-sim/30" : "border-nao/30"}`}>
@@ -225,7 +225,7 @@ export default async function PortfolioPage() {
                             </span>
                           </div>
                           <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-[11px]">
-                            <span className="text-muted-foreground">Investido</span>
+                            <span className="text-muted-foreground">Palpitado</span>
                             <span className="text-right text-white">{formatCurrency(pos.totalAmt)}</span>
                             <span className="text-muted-foreground">Entrada</span>
                             <span className="text-right text-white">{fmtPct(pos.weightedEntry)}</span>
@@ -237,7 +237,7 @@ export default async function PortfolioPage() {
                             </span>
                           </div>
                           <p className="text-[10px] text-muted-foreground mt-2">
-                            Apostou {side.toUpperCase()} a {fmtPct(pos.weightedEntry)} — hoje está em {fmtPct(pos.currentProb)} — {positive ? "+" : ""}{formatCurrency(pos.pnl)} valor de mercado
+                            Palpitou {side.toUpperCase()} a {fmtPct(pos.weightedEntry)} — hoje está em {fmtPct(pos.currentProb)} — {positive ? "+" : ""}{formatCurrency(pos.pnl)} valor atual
                           </p>
                         </div>
                       );
@@ -316,7 +316,7 @@ export default async function PortfolioPage() {
                 <div key={b.id} className="bg-card border border-border rounded-xl p-3 flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <Link href={topic ? (topic.category === "economia" ? `/economico/${b.topic_id}` : `/liga/${b.topic_id}`) : "#"} className="text-sm font-medium text-white hover:text-primary transition-colors line-clamp-1">
-                      {topic?.title ?? "Mercado removido"}
+                      {topic?.title ?? "Evento removido"}
                     </Link>
                     <p className="text-[11px] text-muted-foreground mt-0.5">
                       {b.side.toUpperCase()} · {formatCurrency(amt)} em palpite
@@ -338,9 +338,9 @@ export default async function PortfolioPage() {
       {activeTopicIds.length === 0 && (resolvedBets ?? []).length === 0 && watchlistOnlyTopics.length === 0 && (
         <div className="text-center py-20">
           <p className="text-white font-medium mb-1">Nenhuma posição ainda</p>
-          <p className="text-muted-foreground text-sm">Explore os mercados e faça sua primeira aposta</p>
+          <p className="text-muted-foreground text-sm">Explore os eventos e faça seu primeiro palpite</p>
           <Link href="/liga" className="inline-block mt-4 px-5 py-2.5 bg-primary text-black font-semibold rounded-lg text-sm">
-            Explorar mercados
+            Explorar eventos
           </Link>
         </div>
       )}

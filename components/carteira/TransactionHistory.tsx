@@ -5,8 +5,8 @@ import type { Transaction } from "@/types/database";
 import { ArrowDownToLine, ArrowUpFromLine, TrendingUp, TrendingDown, RotateCcw, Percent } from "lucide-react";
 
 const TYPE_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  deposit: { label: "Depósito", color: "text-primary", icon: <ArrowDownToLine size={14} /> },
-  withdraw: { label: "Saque", color: "text-nao", icon: <ArrowUpFromLine size={14} /> },
+  deposit: { label: "Crédito Z$", color: "text-primary", icon: <ArrowDownToLine size={14} /> },
+  withdraw: { label: "Débito Z$", color: "text-nao", icon: <ArrowUpFromLine size={14} /> },
   bet_placed: { label: "Palpite realizado", color: "text-muted-foreground", icon: <TrendingDown size={14} /> },
   bet_won: { label: "Palpite ganho", color: "text-sim", icon: <TrendingUp size={14} /> },
   bet_refund: { label: "Reembolso", color: "text-primary", icon: <RotateCcw size={14} /> },
@@ -30,7 +30,7 @@ export default function TransactionHistory({ transactions }: { transactions: Tra
         {transactions.map((tx) => {
           const config = TYPE_CONFIG[tx.type] ?? { label: tx.type, color: "text-white", icon: null };
           const isPositive = ["deposit", "bet_won", "bet_refund"].includes(tx.type);
-          const isNegative = ["withdraw", "investimento realizado", "commission"].includes(tx.type);
+          const isNegative = ["withdraw", "investimento realizado", "bet_placed", "commission"].includes(tx.type);
 
           return (
             <div key={tx.id} className="flex items-center justify-between py-2.5 border-b border-border last:border-0">

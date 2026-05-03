@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Clock, Users, Shield, Vote, CheckCircle } from "lucide-react";
 
 const PHASE_LABELS: Record<string, { label: string; step: number }> = {
@@ -9,7 +10,7 @@ const PHASE_LABELS: Record<string, { label: string; step: number }> = {
   leader_election:    { label: "Eleição de líderes",        step: 2 },
   judge_negotiation:  { label: "Negociação de juízes",      step: 3 },
   judge_confirmation: { label: "Confirmação de juízes",     step: 4 },
-  active:             { label: "Aposta ativa",               step: 5 },
+  active:             { label: "Bolão ativo",                 step: 5 },
   voting:             { label: "Votação dos juízes",         step: 6 },
   voting_round2:      { label: "2ª Votação",                 step: 6 },
   resolved:           { label: "Resolvida",                  step: 7 },
@@ -58,6 +59,12 @@ export default function PrivateBetRoom({
             phase === "resolved"  ? "bg-muted text-muted-foreground" :
             "bg-yellow-400/20 text-yellow-400"
           }`}>{phaseInfo.label}</span>
+          <Link
+            href={`/privadas/${topic.id}/participantes`}
+            className="ml-auto text-xs text-muted-foreground hover:text-white transition-colors"
+          >
+            Ver participantes →
+          </Link>
         </div>
         <h1 className="text-2xl font-bold text-white">{topic.title}</h1>
         {topic.description && <p className="text-muted-foreground text-sm mt-1">{topic.description}</p>}
@@ -143,15 +150,15 @@ export default function PrivateBetRoom({
       {/* Resolvido */}
       {phase === "resolved" && (
         <div className="bg-card border border-border rounded-xl p-5 text-center">
-          <p className="text-lg font-bold text-white mb-1">Aposta Resolvida</p>
+          <p className="text-lg font-bold text-white mb-1">Bolão Resolvido</p>
           <p className="text-muted-foreground text-sm">Resultado: {topic.resolution?.toUpperCase() ?? "—"}</p>
         </div>
       )}
 
       {phase === "cancelled" && (
         <div className="bg-red-400/10 border border-red-400/20 rounded-xl p-5 text-center">
-          <p className="text-lg font-bold text-red-400">Aposta Cancelada</p>
-          <p className="text-muted-foreground text-sm mt-1">Os valores apostados foram reembolsados.</p>
+          <p className="text-lg font-bold text-red-400">Bolão Cancelado</p>
+          <p className="text-muted-foreground text-sm mt-1">Os valores foram reembolsados.</p>
         </div>
       )}
     </div>
@@ -300,14 +307,14 @@ function AcceitarConvite({ topicId, minBet, onRefresh }: any) {
 
   return (
     <div className="bg-primary/10 border border-primary/30 rounded-xl p-4 text-center space-y-3">
-      <p className="text-white font-semibold">Você foi convidado para esta aposta!</p>
+      <p className="text-white font-semibold">Você foi convidado para este bolão!</p>
       <p className="text-muted-foreground text-sm">
-        Ao aceitar, Z$ {minBet?.toFixed(2)} serão debitados da sua carteira como aposta mínima.
+        Ao aceitar, Z$ {minBet?.toFixed(2)} serão debitados da sua carteira como palpite mínimo.
       </p>
       <div className="flex gap-3 justify-center">
         <button onClick={aceitar} disabled={loading || recusando}
           className="px-6 py-2 bg-primary text-black font-bold rounded-lg disabled:opacity-50">
-          {loading ? "Aceitando..." : "Aceitar e Apostar"}
+          {loading ? "Aceitando..." : "Aceitar e Palpitar"}
         </button>
         <button onClick={recusar} disabled={loading || recusando}
           className="px-6 py-2 bg-nao/20 text-nao font-semibold rounded-lg hover:bg-nao/30 transition-colors disabled:opacity-50">
@@ -343,7 +350,7 @@ function CancelarAposta({ topicId, onRefresh }: any) {
           onClick={() => setConfirm(true)}
           className="text-xs text-muted-foreground hover:text-nao transition-colors underline underline-offset-2"
         >
-          Cancelar esta aposta
+          Cancelar este bolão
         </button>
       </div>
     );
@@ -351,7 +358,7 @@ function CancelarAposta({ topicId, onRefresh }: any) {
 
   return (
     <div className="bg-nao/10 border border-nao/30 rounded-xl p-4 text-center space-y-3">
-      <p className="text-white font-semibold">Cancelar aposta?</p>
+      <p className="text-white font-semibold">Cancelar bolão?</p>
       <p className="text-muted-foreground text-sm">
         Todos os participantes aceitos serão reembolsados. Esta ação não pode ser desfeita.
       </p>
@@ -482,7 +489,7 @@ function JudgeNegotiationPanel({ topicId, nominations, currentUserId, isLeader, 
       {myPendingConfirm.map((n: any) => (
         <div key={n.id} className="bg-primary/10 border border-primary/30 rounded-lg p-3 space-y-2">
           <p className="text-sm text-white font-semibold">Você foi escolhido como juiz!</p>
-          <p className="text-xs text-muted-foreground">Aceita ser juiz desta aposta?</p>
+          <p className="text-xs text-muted-foreground">Aceita ser juiz deste bolão?</p>
           <div className="bg-muted/40 border border-border/60 rounded-lg px-3 py-2 text-xs text-muted-foreground leading-relaxed">
             <span className="font-semibold text-white/70">Aviso:</span>{" "}
             Ao aceitar, você assume a responsabilidade de votar com imparcialidade.
@@ -536,7 +543,7 @@ function JudgeNegotiationPanel({ topicId, nominations, currentUserId, isLeader, 
         <span className="font-semibold text-white/70">Aviso:</span>{" "}
         O juiz é indicado e aprovado pelos líderes de ambos os lados. A Zafe não se responsabiliza por
         decisões incorretas ou desonestas do juiz — a escolha é de responsabilidade exclusiva dos participantes.
-        Um único juiz aceito por ambos os lados é suficiente para a aposta avançar.
+        Um único juiz aceito por ambos os lados é suficiente para o bolão avançar.
       </div>
 
       {/* Propor novo juiz (líder) */}

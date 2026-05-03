@@ -203,7 +203,7 @@ export default function FriendsList({ sent, received, currentUserId }: Props) {
                         className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
                       >
                         <Swords size={12} />
-                        Investir
+                        Bolão
                       </button>
                       <button
                         onClick={() => { setConfirmRemoveId(friend.friendshipId); setConfirmBlockId(null); }}

@@ -1,6 +1,9 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { checkRecrutamento } from "@/lib/private-bets";
+import { verificarLimiteAnual } from "@/lib/limits/private-bet-limit";
+
+const FRIENDSHIP_MIN_HOURS = 24;
 
 export async function POST(
   req: Request,
@@ -23,6 +26,33 @@ export async function POST(
   if (!participant) return NextResponse.json({ error: "Convite não encontrado" }, { status: 404 });
   if (participant.status !== "invited") return NextResponse.json({ error: "Convite já processado" }, { status: 400 });
 
+  // ── TRAVA 1: Amizade confirmada há mais de 24h com o criador ────────────
+  const { data: topicCreator } = await supabase
+    .from("topics")
+    .select("creator_id")
+    .eq("id", topicId)
+    .single();
+
+  if (topicCreator) {
+    const limiteFriendship = new Date(Date.now() - FRIENDSHIP_MIN_HOURS * 60 * 60 * 1000).toISOString();
+    const { data: friendship } = await admin
+      .from("friendships")
+      .select("id")
+      .eq("status", "accepted")
+      .or(
+        `and(requester_id.eq.${user.id},addressee_id.eq.${topicCreator.creator_id}),and(requester_id.eq.${topicCreator.creator_id},addressee_id.eq.${user.id})`
+      )
+      .lte("created_at", limiteFriendship)
+      .single();
+
+    if (!friendship) {
+      return NextResponse.json(
+        { error: "Só é possível participar de apostas privadas com amigos confirmados há mais de 24 horas." },
+        { status: 403 }
+      );
+    }
+  }
+
   // Verificar topic
   const { data: topic } = await supabase
     .from("topics")
@@ -42,6 +72,14 @@ export async function POST(
   const betAmount = topic.min_bet;
   if (!wallet || wallet.balance < betAmount) {
     return NextResponse.json({ error: "Saldo insuficiente" }, { status: 400 });
+  }
+
+  // ── TRAVA 4: Limite anual por par (joiner vs criador) ───────────────────
+  if (topicCreator) {
+    const check = await verificarLimiteAnual(admin, user.id, topicCreator.creator_id, betAmount);
+    if (!check.ok) {
+      return NextResponse.json({ error: check.mensagem }, { status: 403 });
+    }
   }
 
   // Aceitar convite

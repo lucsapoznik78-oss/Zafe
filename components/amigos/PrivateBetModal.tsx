@@ -50,7 +50,7 @@ export default function PrivateBetModal({ friendId, friendName, onClose }: Props
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-card border border-border rounded-xl p-5 w-full max-w-md z-10 space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-white font-semibold">Investir contra {friendName}</h3>
+          <h3 className="text-white font-semibold">Bolão com {friendName}</h3>
           <button onClick={onClose} className="text-muted-foreground hover:text-white"><X size={18} /></button>
         </div>
 
@@ -70,7 +70,7 @@ export default function PrivateBetModal({ friendId, friendName, onClose }: Props
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs text-muted-foreground">Você investimento em</label>
+            <label className="text-xs text-muted-foreground">Seu palpite</label>
             <div className="grid grid-cols-2 gap-2">
               {(["sim", "nao"] as const).map((side) => (
                 <button

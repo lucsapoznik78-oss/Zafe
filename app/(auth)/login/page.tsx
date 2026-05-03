@@ -13,7 +13,7 @@ export default async function LoginPage({ searchParams }: Props) {
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-primary tracking-tight">Zafe</h1>
           <p className="text-muted-foreground mt-2 text-sm">
-            Investimentos de previsão entre pessoas reais
+            Liga de previsões entre pessoas reais
           </p>
         </div>
         <LoginForm next={next} />

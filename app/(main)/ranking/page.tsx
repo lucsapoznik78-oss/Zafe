@@ -4,16 +4,16 @@ import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Ranking",
-  description: "Veja os melhores apostadores do Zafe. Ranking de acertos, lucros e performance nos mercados de previsão brasileiros.",
+  description: "Veja os melhores previsores do Zafe. Ranking de acertos, lucros e performance na liga de previsões.",
   openGraph: {
     title: "Ranking — Zafe",
-    description: "Veja os melhores apostadores do Zafe. Ranking de acertos, lucros e performance.",
+    description: "Veja os melhores previsores do Zafe. Ranking de acertos, lucros e performance.",
     type: "website",
   },
   twitter: {
     card: "summary",
     title: "Ranking — Zafe",
-    description: "Veja os melhores apostadores do Zafe.",
+    description: "Veja os melhores previsores do Zafe.",
   },
 };
 import { formatCurrency } from "@/lib/utils";
@@ -124,7 +124,7 @@ export default async function RankingPage({ searchParams }: PageProps) {
           Ranking de Preditores
         </h1>
         <p className="text-muted-foreground text-sm mt-0.5">
-          Mínimo {MIN_BETS} apostas resolvidas para aparecer · Ordenado por lucro líquido
+          Mínimo {MIN_BETS} palpites resolvidos para aparecer · Ordenado por lucro líquido
         </p>
       </div>
 
@@ -135,7 +135,7 @@ export default async function RankingPage({ searchParams }: PageProps) {
           <Trophy size={32} className="text-muted-foreground mx-auto" />
           <p className="text-white font-semibold">Nenhum preditor ainda</p>
           <p className="text-sm text-muted-foreground">
-            Faça pelo menos {MIN_BETS} apostas resolvidas para entrar no ranking.
+            Faça pelo menos {MIN_BETS} palpites resolvidos para entrar no ranking.
           </p>
         </div>
       ) : (

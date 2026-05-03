@@ -114,7 +114,7 @@ export default function WelcomeModal() {
                 <TrendingUp size={28} className="text-primary" />
               </div>
               <h2 className="text-xl font-black text-white">Bem-vindo à Zafe!</h2>
-              <p className="text-sm text-muted-foreground">O mercado de previsões brasileiro</p>
+              <p className="text-sm text-muted-foreground">A liga de previsões brasileira</p>
             </div>
             <div className="space-y-3">
               <div className="flex items-start gap-3 p-3 bg-muted/30 rounded-xl">
@@ -155,9 +155,9 @@ export default function WelcomeModal() {
               <X size={16} />
             </button>
             <div className="text-center space-y-1">
-              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Mercado em destaque</p>
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Evento em destaque</p>
               <h2 className="text-lg font-black text-white leading-tight">
-                {loadingTopic ? "Carregando..." : featured?.title ?? "Explore os mercados"}
+                {loadingTopic ? "Carregando..." : featured?.title ?? "Explore os eventos"}
               </h2>
             </div>
 
@@ -206,7 +206,7 @@ export default function WelcomeModal() {
                 onClick={next}
                 className="w-full py-3 bg-primary text-black font-bold rounded-xl text-sm hover:bg-primary/90 transition-colors"
               >
-                Explorar mercados
+                Explorar eventos
               </button>
             )}
           </div>

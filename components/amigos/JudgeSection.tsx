@@ -24,7 +24,7 @@ interface Props {
 
 const PHASE_LABELS: Record<string, string> = {
   judge_confirmation: "Aguardando confirmação",
-  active:             "Apostas em andamento",
+  active:             "Bolões em andamento",
   voting:             "Votação aberta",
   voting_round2:      "2ª Rodada de votação",
   resolved:           "Resolvida",
@@ -52,7 +52,7 @@ export default function JudgeSection({ propostos, pendentes, ativos }: Props) {
         <div>
           <p className="text-white font-semibold">Nenhum convite de juiz</p>
           <p className="text-sm text-muted-foreground mt-1">
-            Quando alguém indicar você como juiz em uma aposta privada, aparecerá aqui.
+            Quando alguém indicar você como juiz em um bolão, aparecerá aqui.
           </p>
         </div>
       </div>
@@ -135,7 +135,7 @@ export default function JudgeSection({ propostos, pendentes, ativos }: Props) {
               </div>
 
               <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-lg px-3 py-2 text-xs text-yellow-300">
-                Como juiz, você não aposta — apenas vota no resultado após o evento. Sua decisão (junto com outros juízes) determina o vencedor.
+                Como juiz, você não palpita — apenas vota no resultado após o evento. Sua decisão (junto com outros juízes) determina o vencedor.
               </div>
 
               <div className="flex gap-2">

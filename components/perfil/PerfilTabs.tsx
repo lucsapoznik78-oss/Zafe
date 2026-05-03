@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { formatCurrency } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Trophy, TrendingDown, Percent, TrendingUp, Flame, Star, User, BookOpen, LayoutList, ShieldCheck, ShieldAlert } from "lucide-react";
+import { Trophy, TrendingDown, Percent, TrendingUp, Flame, Star, User, BookOpen, LayoutList, ShieldCheck, ShieldAlert, Banknote } from "lucide-react";
 import EditProfileForm from "@/components/perfil/EditProfileForm";
 import CpfForm from "@/components/kyc/CpfForm";
 import TwoFaSettings from "@/components/perfil/TwoFaSettings";
 import ReferralSection from "@/components/perfil/ReferralSection";
+import DadosBancariosForm from "@/components/perfil/DadosBancariosForm";
 import CategoryBadge from "@/components/topicos/CategoryBadge";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -33,7 +34,7 @@ interface Props {
 }
 
 export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl }: Props) {
-  const [tab, setTab] = useState<"conta" | "eventos" | "como-funciona">("conta");
+  const [tab, setTab] = useState<"conta" | "eventos" | "como-funciona" | "premios">("conta");
 
   const betsWon    = bets.filter((b) => b.status === "won").length;
   const betsLost   = bets.filter((b) => b.status === "lost").length;
@@ -76,6 +77,7 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl }:
   const tabs = [
     { id: "conta",          label: "Conta",          icon: <User size={14} /> },
     { id: "eventos",        label: "Eventos",         icon: <LayoutList size={14} /> },
+    { id: "premios",        label: "Prêmios",         icon: <Banknote size={14} /> },
     { id: "como-funciona",  label: "Como funciona",   icon: <BookOpen size={14} /> },
   ] as const;
 
@@ -209,6 +211,19 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl }:
         </div>
       )}
 
+      {/* ── PRÊMIOS ── */}
+      {tab === "premios" && (
+        <div className="bg-card border border-border rounded-xl p-4 space-y-4">
+          <div>
+            <h3 className="text-sm font-semibold text-white">Dados bancários para prêmios</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Necessário apenas se você vencer um concurso. O prêmio é pago em R$ via PIX.
+            </p>
+          </div>
+          <DadosBancariosForm />
+        </div>
+      )}
+
       {/* ── EVENTOS ── */}
       {tab === "eventos" && (
         <div className="bg-card border border-border rounded-xl p-4">
@@ -325,7 +340,7 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl }:
             <h3 className="text-sm font-semibold text-white">Taxas</h3>
             <div className="space-y-1.5 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Depósito</span>
+                <span className="text-muted-foreground">Palpite (pool)</span>
                 <span className="text-white">6% (comissão Zafe)</span>
               </div>
               <div className="flex justify-between">
@@ -333,8 +348,8 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl }:
                 <span className="text-white">6% (sobre o valor da venda)</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Saque</span>
-                <span className="text-white">Gratuito (mín. Z$ 20,00)</span>
+                <span className="text-muted-foreground">Z$ virtual</span>
+                <span className="text-white">Sem valor monetário real</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Ganhos</span>

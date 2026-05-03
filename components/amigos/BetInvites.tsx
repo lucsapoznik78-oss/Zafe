@@ -35,7 +35,7 @@ export default function BetInvites({ invites }: { invites: Invite[] }) {
       {invites.map((invite) => (
         <div key={invite.id} className="border border-border rounded-lg p-3 space-y-2">
           <p className="text-xs text-muted-foreground">
-            <span className="text-white font-medium">{invite.inviter.full_name}</span> te convidou para apostar
+            <span className="text-white font-medium">{invite.inviter.full_name}</span> te convidou para palpitar
           </p>
           <p className="text-sm text-white font-medium line-clamp-2">{invite.topic?.title}</p>
           <div className="flex items-center justify-between">

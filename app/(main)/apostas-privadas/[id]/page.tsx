@@ -35,7 +35,7 @@ export default async function ApostaPrivadaPage({ params }: PageProps) {
     // PGRST116 = not found, anything else is a real error
     return (
       <div className="py-12 text-center space-y-2">
-        <p className="text-red-400 font-semibold">Erro ao carregar aposta</p>
+        <p className="text-red-400 font-semibold">Erro ao carregar bolão</p>
         <p className="text-muted-foreground text-xs font-mono">{topicError.message}</p>
       </div>
     );
@@ -52,7 +52,7 @@ export default async function ApostaPrivadaPage({ params }: PageProps) {
   if (!myParticipant && !isJudge) {
     return (
       <div className="py-12 text-center">
-        <p className="text-muted-foreground">Você não tem acesso a esta aposta privada.</p>
+        <p className="text-muted-foreground">Você não tem acesso a este bolão.</p>
       </div>
     );
   }

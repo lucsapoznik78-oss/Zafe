@@ -203,11 +203,21 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
           )}
 
           {/* Participantes do concurso neste evento */}
-          <ParticipantsList
-            bets={allConcursoBets ?? []}
-            totalSim={concursoSimTotal}
-            totalNao={concursoNaoTotal}
-          />
+          <div className="space-y-2">
+            <div className="flex justify-end">
+              <Link
+                href={`/concurso/${topic.slug ?? topicId}/participantes`}
+                className="text-xs text-muted-foreground hover:text-white transition-colors"
+              >
+                Ver histórico completo de participantes →
+              </Link>
+            </div>
+            <ParticipantsList
+              bets={allConcursoBets ?? []}
+              totalSim={concursoSimTotal}
+              totalNao={concursoNaoTotal}
+            />
+          </div>
 
           {/* Meus palpites no concurso */}
           {userConcursoBets.length > 0 && (
@@ -274,12 +284,12 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
             </div>
           )}
 
-          {/* Link para ver na Liga (com aposta normal) */}
+          {/* Link para ver na Liga (com palpite normal) */}
           <Link
-            href={`/topicos/${topicId}`}
+            href={`/${topic.category === "economia" ? "economico" : "liga"}/${topic.slug ?? topicId}`}
             className="block text-center text-xs text-muted-foreground hover:text-white transition-colors py-2"
           >
-            Ver na Liga (apostar com Z$) →
+            Ver na Liga (palpitar com Z$) →
           </Link>
         </div>
       </div>

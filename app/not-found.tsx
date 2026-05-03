@@ -8,7 +8,7 @@ export default function NotFound() {
         <div className="space-y-2">
           <h1 className="text-2xl font-bold text-white">Página não encontrada</h1>
           <p className="text-muted-foreground">
-            Esse mercado pode ter sido removido ou o link está errado.
+            Esse evento pode ter sido removido ou o link está errado.
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">

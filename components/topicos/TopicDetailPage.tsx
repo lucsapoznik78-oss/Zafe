@@ -59,7 +59,7 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
       admin.from("bets")
         .select("id, side, amount, status, locked_odds, order_id, created_at, user_id")
         .eq("topic_id", topicId)
-        .in("status", ["pending", "matched", "partial", "won", "lost", "refunded"])
+        .in("status", ["pending", "matched", "partial", "won", "lost", "refunded", "exited"])
         .order("amount", { ascending: false })
         .limit(100),
       topic.status === "resolved"
@@ -294,7 +294,17 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
           )}
 
           {/* Participantes */}
-          <ParticipantsList bets={allBetsWithProfiles} totalSim={totalSim} totalNao={totalNao} />
+          <div className="space-y-2">
+            <div className="flex justify-end">
+              <Link
+                href={`${eventPath}/participantes`}
+                className="text-xs text-muted-foreground hover:text-white transition-colors"
+              >
+                Ver histórico completo de participantes →
+              </Link>
+            </div>
+            <ParticipantsList bets={allBetsWithProfiles} totalSim={totalSim} totalNao={totalNao} />
+          </div>
 
           {/* Regras */}
           <RulesAccordion description={topic.description} />

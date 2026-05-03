@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, Wallet } from "lucide-react";
+import { LogOut, Wallet, Info } from "lucide-react";
 import NotificationBell from "@/components/layout/NotificationBell";
 import PushSetup from "@/components/layout/PushSetup";
 import { createClient } from "@/lib/supabase/client";
@@ -95,10 +95,20 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <span className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary/10 text-primary text-sm font-medium" title="Z$ virtual — não tem valor monetário real">
-            <Wallet size={14} />
-            {wallet ? formatCurrency(wallet.balance) : "Z$ 0,00"}
-          </span>
+          <div className="relative hidden sm:block group">
+            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary/10 text-primary text-sm font-medium cursor-default">
+              <Wallet size={14} />
+              {wallet ? formatCurrency(wallet.balance) : "Z$ 0,00"}
+              <Info size={11} className="text-primary/50" />
+            </span>
+            {/* Tooltip */}
+            <div className="pointer-events-none absolute right-0 top-full mt-2 w-56 rounded-lg border border-border bg-card px-3 py-2.5 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50">
+              <p className="text-xs font-semibold text-white mb-1">Z$ — moeda virtual</p>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                Z$ é a moeda virtual da Zafe. <span className="text-white font-medium">Não tem valor monetário real</span> e não pode ser convertida em dinheiro.
+              </p>
+            </div>
+          </div>
 
           <PushSetup />
           <NotificationBell />

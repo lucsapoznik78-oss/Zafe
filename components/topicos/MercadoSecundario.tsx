@@ -161,7 +161,7 @@ function PositionCard({
         </span>
       </div>
       <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px]">
-        <div className="text-muted-foreground">Investido</div>
+        <div className="text-muted-foreground">Alocado</div>
         <div className="text-right text-white">{qty(pos.total_amount)}</div>
         <div className="text-muted-foreground">Entrada</div>
         <div className="text-right text-white">
@@ -467,7 +467,7 @@ export default function MercadoSecundario({ topicId, apiBase, isActive, userBets
                   key={t}
                   onClick={() => { if (!canSell) { setOrderType(t); setFormMsg(null); } }}
                   disabled={canSell}
-                  title={canSell ? `Sem apostas ${side.toUpperCase()} para vender` : undefined}
+                  title={canSell ? `Sem palpites ${side.toUpperCase()} para vender` : undefined}
                   className={`flex-1 py-1.5 transition-colors ${
                     orderType === t
                       ? t === "buy" ? "bg-sim text-black" : "bg-nao text-white"

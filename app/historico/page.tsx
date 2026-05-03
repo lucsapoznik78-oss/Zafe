@@ -66,14 +66,14 @@ export default async function HistoricoPage() {
           </div>
           <h1 className="text-3xl font-bold text-white">Histórico de Resoluções</h1>
           <p className="text-muted-foreground max-w-md mx-auto">
-            Todos os mercados resolvidos na Zafe. Resultado público, auditável por qualquer pessoa.
+            Todos os eventos resolvidos na Zafe. Resultado público, auditável por qualquer pessoa.
           </p>
         </div>
 
         {/* Stats gerais */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           {[
-            { icon: <Trophy size={18} />, label: "Mercados resolvidos", value: total, color: "text-primary" },
+            { icon: <Trophy size={18} />, label: "Eventos resolvidos", value: total, color: "text-primary" },
             { icon: <Users size={18} />, label: "Vencedores únicos", value: totalWinners, color: "text-sim" },
             { icon: <CheckCircle2 size={18} />, label: "Taxa de pagamento", value: total > 0 ? "100%" : "—", color: "text-white" },
           ].map((s) => (
@@ -91,9 +91,9 @@ export default async function HistoricoPage() {
             <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
               <Trophy size={24} className="text-primary" />
             </div>
-            <p className="text-white font-semibold">Nenhum mercado resolvido ainda</p>
+            <p className="text-white font-semibold">Nenhum evento resolvido ainda</p>
             <p className="text-muted-foreground text-sm">
-              Os primeiros resultados aparecerão aqui assim que um mercado for encerrado.
+              Os primeiros resultados aparecerão aqui assim que um evento for encerrado.
             </p>
             <Link
               href="/liga"
@@ -136,7 +136,7 @@ export default async function HistoricoPage() {
                         <div className="flex items-center gap-4 mt-1.5 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Users size={11} />
-                            {winners > 0 ? `${winners} vencedor${winners !== 1 ? "es" : ""}` : "Sem investimentos"}
+                            {winners > 0 ? `${winners} vencedor${winners !== 1 ? "es" : ""}` : "Sem palpites"}
                           </span>
                           {topic.resolved_at && (
                             <span>
@@ -163,9 +163,9 @@ export default async function HistoricoPage() {
 
         {/* CTA */}
         <div className="bg-card border border-border rounded-xl p-6 text-center space-y-3">
-          <p className="text-white font-semibold">Quer investir nos próximos eventos?</p>
+          <p className="text-white font-semibold">Quer palpitar nos próximos eventos?</p>
           <p className="text-muted-foreground text-sm">
-            Crie sua conta e comece a investir em eventos reais com outros usuários.
+            Crie sua conta e comece a palpitar em eventos reais com outros usuários.
           </p>
           <Link
             href="/login"

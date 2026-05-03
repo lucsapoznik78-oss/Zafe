@@ -32,7 +32,7 @@ export default function ReferralSection({ referralCode, totalReferrals, complete
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Compartilhe seu link. Quando o amigo fizer o primeiro depósito, <span className="text-white font-semibold">ambos ganham Z$ 5,00</span>.
+        Compartilhe seu link. Quando o amigo criar a conta, <span className="text-white font-semibold">ambos ganham Z$ 5,00</span>.
       </p>
 
       <div className="flex gap-2">

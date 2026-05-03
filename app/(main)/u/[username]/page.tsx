@@ -24,10 +24,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const name = profile.full_name ?? profile.username;
   return {
     title: name,
-    description: `Veja o histórico e desempenho de ${name} nos mercados de previsão do Zafe.`,
+    description: `Veja o histórico e desempenho de ${name} nos liga de previsões do Zafe.`,
     openGraph: {
       title: `${name} — Zafe`,
-      description: `Veja o histórico e desempenho de ${name} nos mercados de previsão do Zafe.`,
+      description: `Veja o histórico e desempenho de ${name} nos liga de previsões do Zafe.`,
       type: "profile",
     },
   };
@@ -163,7 +163,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
       <div className="bg-card border border-border rounded-xl p-4">
         <h3 className="text-sm font-semibold text-white mb-4">Histórico Público</h3>
         {!all.length ? (
-          <p className="text-muted-foreground text-sm text-center py-4">Nenhum investimento ainda</p>
+          <p className="text-muted-foreground text-sm text-center py-4">Nenhum palpite ainda</p>
         ) : (
           <div className="space-y-0">
             {all.slice(0, 30).map((bet, i) => {

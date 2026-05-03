@@ -43,7 +43,7 @@ export default function JudgeInvites({ nominations }: Props) {
         </span>
       </h3>
       <p className="text-xs text-muted-foreground -mt-1">
-        Você foi aprovado como juiz nestas apostas. Confirme se está disponível.
+        Você foi aprovado como juiz nestes bolões. Confirme se está disponível.
       </p>
 
       {nominations.map((nom) => (
