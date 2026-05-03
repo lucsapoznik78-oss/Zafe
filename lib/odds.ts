@@ -1,6 +1,6 @@
 /**
- * Sistema parimutual: quem ganhar divide o pool total proporcional ao que apostou.
- * odds = (pool_total × (1 - comissão)) / pool_do_seu_lado
+ * Sistema parimutual: quem ganhar divide o pool total proporcional ao que investiu.
+ * odds = pool_total / pool_do_seu_lado  (100% — sem comissão)
  */
 export function calcOdds(
   volumeSim: number,

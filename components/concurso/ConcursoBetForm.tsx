@@ -187,7 +187,7 @@ export default function ConcursoBetForm({
             <span className="text-yellow-300/50">Lucro potencial</span>
             <span className="text-green-400 font-semibold">+ZC$ {expectedProfit.toFixed(2)}</span>
           </div>
-          <p className="text-yellow-300/40 text-[10px]">100% parimutuel — sem comissão nos palpites do concurso.</p>
+          <p className="text-yellow-300/40 text-[10px]">100% parimutuel — retorno proporcional ao pool.</p>
         </div>
       )}
 

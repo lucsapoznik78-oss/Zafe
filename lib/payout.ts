@@ -89,36 +89,26 @@ export async function pagarVencedores(
   const totalWinPool  = winnerBets.reduce((s: number, b: any) => s + b.amount, 0);
   const totalLosePool = loserBets.reduce((s: number, b: any) => s + b.amount, 0);
 
-  const COMMISSION_RATE = 0.06;
-
   for (const bet of winnerBets) {
-    const winnings   = parseFloat(((bet.amount / totalWinPool) * totalLosePool).toFixed(2));
-    const grossPayout = bet.amount + winnings;
-    const commission  = parseFloat((grossPayout * COMMISSION_RATE).toFixed(2));
-    const netPayout   = parseFloat((grossPayout - commission).toFixed(2));
+    const winnings = parseFloat(((bet.amount / totalWinPool) * totalLosePool).toFixed(2));
+    const payout   = parseFloat((bet.amount + winnings).toFixed(2));
 
     const { data: w } = await supabase.from("wallets").select("balance").eq("user_id", bet.user_id).single();
-    await supabase.from("wallets").update({ balance: (w?.balance ?? 0) + netPayout }).eq("user_id", bet.user_id);
-    await supabase.from("bets").update({ status: "won", potential_payout: netPayout }).eq("id", bet.id);
-    await supabase.from("transactions").insert([
-      {
-        user_id: bet.user_id, type: "bet_won", amount: grossPayout, net_amount: netPayout,
-        description: `Ganhou — ${resolution.toUpperCase()}`, reference_id: topicId,
-      },
-      {
-        user_id: bet.user_id, type: "commission", amount: commission, net_amount: commission,
-        description: "Comissão Zafe (6%)", reference_id: topicId,
-      },
-    ]);
+    await supabase.from("wallets").update({ balance: (w?.balance ?? 0) + payout }).eq("user_id", bet.user_id);
+    await supabase.from("bets").update({ status: "won", potential_payout: payout }).eq("id", bet.id);
+    await supabase.from("transactions").insert({
+      user_id: bet.user_id, type: "bet_won", amount: payout, net_amount: payout,
+      description: `Ganhou — ${resolution.toUpperCase()}`, reference_id: topicId,
+    });
     await supabase.from("notifications").insert({
       user_id: bet.user_id, type: "bet_won",
       title: "Você ganhou! 🏆",
-      body: `Seu ${resolution.toUpperCase()} em "${title}" rendeu ${fmt(netPayout)} (após 6% de comissão).`,
-      data: { topic_id: topicId, payout: netPayout },
+      body: `Seu ${resolution.toUpperCase()} em "${title}" rendeu ${fmt(payout)}.`,
+      data: { topic_id: topicId, payout },
     });
     sendPushToUser(supabase, bet.user_id, {
       title: "Você ganhou! 🏆",
-      body: `Seu ${resolution.toUpperCase()} em "${title}" rendeu ${fmt(netPayout)}.`,
+      body: `Seu ${resolution.toUpperCase()} em "${title}" rendeu ${fmt(payout)}.`,
       url: `/topicos/${topicId}`,
     }).catch(() => {});
   }
