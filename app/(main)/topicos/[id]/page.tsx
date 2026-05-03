@@ -37,10 +37,10 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     ? await query.eq("id", id).single()
     : await query.eq("slug", id).single();
 
-  if (!topic) return { title: "Mercado não encontrado" };
+  if (!topic) return { title: "Evento não encontrado — Zafe" };
   const desc = topic.description
     ? topic.description.slice(0, 160)
-    : `Aposte no resultado deste evento de ${topic.category} no Zafe.`;
+    : `Preveja o resultado deste evento de ${topic.category} e compita no fantasy game de previsões do Brasil.`;
   const resolvedId = isUUID ? id : (await supabase.from("topics").select("id").eq("slug", id).single())?.data?.id ?? id;
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://zafe-rho.vercel.app";
   const ogImage = `${appUrl}/api/og?id=${resolvedId}&type=topico`;

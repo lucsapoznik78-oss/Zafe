@@ -51,6 +51,7 @@ export async function GET() {
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urlEntry(BASE_URL, now, "daily", 1)}
 ${urlEntry(`${BASE_URL}/liga`, now, "hourly", 0.9)}
+${urlEntry(`${BASE_URL}/concurso`, now, "daily", 0.9)}
 ${urlEntry(`${BASE_URL}/economico`, now, "daily", 0.8)}
 ${urlEntry(`${BASE_URL}/ranking`, now, "daily", 0.6)}
 ${topicEntries.join("\n")}
