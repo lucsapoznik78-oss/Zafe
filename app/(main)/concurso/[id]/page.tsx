@@ -86,7 +86,7 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
       .eq("status", "matched")
       .eq("concurso_id", concurso?.id ?? ""),
     admin.from("concurso_bets")
-      .select("id, side, amount, status, locked_odds, order_id, created_at, profiles(username, full_name)")
+      .select("id, side, amount, status, potential_payout, created_at, profiles(username, full_name)")
       .eq("topic_id", topicId)
       .in("status", ["matched", "won", "lost", "refunded"])
       .order("amount", { ascending: false })

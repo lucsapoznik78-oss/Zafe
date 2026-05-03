@@ -9,7 +9,6 @@ interface Bet {
   amount: number;
   status: string;
   locked_odds?: string | null;
-  order_id?: string | null;
   created_at: string;
   profiles?: { username?: string; full_name?: string } | { username?: string; full_name?: string }[] | null;
 }

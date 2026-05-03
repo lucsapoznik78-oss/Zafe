@@ -23,7 +23,7 @@ export default async function PortfolioPage() {
   ] = await Promise.all([
     // Apostas ativas
     admin.from("bets")
-      .select("id, topic_id, side, amount, locked_odds, status, potential_payout, order_id")
+      .select("id, topic_id, side, amount, locked_odds, status, potential_payout")
       .eq("user_id", user.id)
       .in("status", ["pending", "matched", "partial"])
       .order("topic_id"),

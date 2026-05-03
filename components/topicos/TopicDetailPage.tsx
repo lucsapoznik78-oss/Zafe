@@ -57,7 +57,7 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
             .eq("topic_id", topicId).eq("user_id", user.id)
         : Promise.resolve({ data: null }),
       admin.from("bets")
-        .select("id, side, amount, status, locked_odds, order_id, created_at, user_id")
+        .select("id, side, amount, status, locked_odds, created_at, user_id")
         .eq("topic_id", topicId)
         .in("status", ["pending", "matched", "partial", "won", "lost", "refunded", "exited"])
         .order("amount", { ascending: false })
