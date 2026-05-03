@@ -57,7 +57,7 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
             .eq("topic_id", topicId).eq("user_id", user.id)
         : Promise.resolve({ data: null }),
       admin.from("bets")
-        .select("id, side, amount, status, locked_odds, order_id, created_at, profiles(username, full_name)")
+        .select("id, side, amount, status, locked_odds, order_id, created_at, user_id")
         .eq("topic_id", topicId)
         .in("status", ["pending", "matched", "partial", "won", "lost", "refunded"])
         .order("amount", { ascending: false })
@@ -67,6 +67,17 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
             .eq("mercado_id", topicId).order("resolvido_em", { ascending: false }).limit(1).single()
         : Promise.resolve({ data: null }),
     ]);
+
+  // Buscar profiles dos participantes separadamente (evita depender do FK join)
+  const betUserIds = [...new Set((allBets ?? []).map((b: any) => b.user_id).filter(Boolean))];
+  const { data: betProfiles } = betUserIds.length > 0
+    ? await admin.from("profiles").select("id, username, full_name").in("id", betUserIds)
+    : { data: [] };
+  const profileMap = new Map((betProfiles ?? []).map((p: any) => [p.id, p]));
+  const allBetsWithProfiles = (allBets ?? []).map((b: any) => ({
+    ...b,
+    profiles: profileMap.get(b.user_id) ?? null,
+  }));
 
   const stats = statsData;
   const totalSim = parseFloat(stats?.volume_sim ?? "0");
@@ -283,7 +294,7 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
           )}
 
           {/* Participantes */}
-          <ParticipantsList bets={allBets ?? []} totalSim={totalSim} totalNao={totalNao} />
+          <ParticipantsList bets={allBetsWithProfiles} totalSim={totalSim} totalNao={totalNao} />
 
           {/* Regras */}
           <RulesAccordion description={topic.description} />

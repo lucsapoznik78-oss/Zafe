@@ -1,5 +1,8 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { verificarLimiteAnual } from "@/lib/limits/private-bet-limit";
+
+const FRIENDSHIP_MIN_HOURS = 24;
 
 export async function POST(req: Request) {
   const supabase = await createClient();
@@ -24,16 +27,45 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Juiz não pode ser participante da aposta" }, { status: 400 });
   }
 
+  const admin = createAdminClient();
+  const betAmount = parseFloat(min_bet) || 1;
+
+  // ── TRAVA 1: Só entre amigos confirmados há mais de 24h ─────────────────
+  const limiteFriendship = new Date(Date.now() - FRIENDSHIP_MIN_HOURS * 60 * 60 * 1000).toISOString();
+  for (const adversarioId of adversario_ids) {
+    const { data: friendship } = await admin
+      .from("friendships")
+      .select("id, created_at")
+      .eq("status", "accepted")
+      .or(
+        `and(requester_id.eq.${user.id},addressee_id.eq.${adversarioId}),and(requester_id.eq.${adversarioId},addressee_id.eq.${user.id})`
+      )
+      .lte("created_at", limiteFriendship)
+      .single();
+
+    if (!friendship) {
+      return NextResponse.json(
+        { error: "Só é possível criar apostas privadas com amigos confirmados há mais de 24 horas." },
+        { status: 403 }
+      );
+    }
+  }
+
+  // ── TRAVA 4: Limite anual de Z$ por par ─────────────────────────────────
+  for (const adversarioId of adversario_ids) {
+    const check = await verificarLimiteAnual(admin, user.id, adversarioId, betAmount * 2);
+    if (!check.ok) {
+      return NextResponse.json({ error: check.mensagem }, { status: 403 });
+    }
+  }
+
   // Verificar saldo (auth client para RLS correto)
   const { data: wallet } = await supabase.from("wallets").select("balance").eq("user_id", user.id).single();
-  const betAmount = parseFloat(min_bet) || 1;
   if (!wallet || wallet.balance < betAmount) {
     return NextResponse.json({ error: "Saldo insuficiente" }, { status: 400 });
   }
 
   // Usar admin para todos os writes (sem RLS bloqueando)
-  const admin = createAdminClient();
-
   const recruitmentDeadline = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
   const negotiationDeadline = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString();
 
