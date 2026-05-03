@@ -8,10 +8,26 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
-export default function LoginForm({ next }: { next?: string }) {
+export default function LoginForm({ next, theme }: { next?: string; theme?: "concurso" }) {
   const router = useRouter();
   const supabase = createClient();
   const redirectTo = next && next.startsWith("/") ? next : "/topicos";
+  const isConcurso = theme === "concurso";
+
+  // Cores dinâmicas baseadas no tema
+  const btnClass = isConcurso
+    ? "w-full bg-yellow-400 text-black font-semibold hover:bg-yellow-300"
+    : "w-full bg-primary text-black font-semibold hover:bg-primary/90";
+  const tabActiveClass = isConcurso
+    ? "bg-yellow-400 text-black"
+    : "bg-primary text-black";
+  const inputFocusClass = isConcurso
+    ? "bg-input border-border focus:border-yellow-400"
+    : "bg-input border-border focus:border-primary";
+  const successClass = isConcurso ? "text-yellow-400 text-sm" : "text-primary text-sm";
+  const cardClass = isConcurso
+    ? "bg-yellow-400/5 border border-yellow-400/30 rounded-xl p-6 space-y-5"
+    : "bg-card border border-border rounded-xl p-6 space-y-5";
 
   const [mode, setMode] = useState<"login" | "cadastro">("login");
   const [email, setEmail] = useState("");
@@ -139,7 +155,7 @@ export default function LoginForm({ next }: { next?: string }) {
   // ── Tela de verificação OTP ─────────────────────────────────────
   if (step === "verify-otp") {
     return (
-      <div className="bg-card border border-border rounded-xl p-6 space-y-5">
+      <div className={cardClass}>
         <div className="text-center space-y-1">
           <p className="text-lg font-bold text-white">Verificação em 2 etapas</p>
           <p className="text-sm text-muted-foreground">
@@ -167,7 +183,7 @@ export default function LoginForm({ next }: { next?: string }) {
           <Button
             type="submit"
             disabled={loading || otp.length < 6}
-            className="w-full bg-primary text-black font-semibold hover:bg-primary/90"
+            className={btnClass}
           >
             {loading ? <Loader2 size={16} className="animate-spin" /> : "Verificar código"}
           </Button>
@@ -185,12 +201,12 @@ export default function LoginForm({ next }: { next?: string }) {
 
   // ── Tela principal ───────────────────────────────────────────────
   return (
-    <div className="bg-card border border-border rounded-xl p-6 space-y-5">
+    <div className={cardClass}>
       <div className="flex border border-border rounded-lg p-1 gap-1">
         <button
           onClick={() => setMode("login")}
           className={`flex-1 py-1.5 rounded-md text-sm font-medium transition-colors ${
-            mode === "login" ? "bg-primary text-black" : "text-muted-foreground hover:text-white"
+            mode === "login" ? tabActiveClass : "text-muted-foreground hover:text-white"
           }`}
         >
           Entrar
@@ -198,7 +214,7 @@ export default function LoginForm({ next }: { next?: string }) {
         <button
           onClick={() => setMode("cadastro")}
           className={`flex-1 py-1.5 rounded-md text-sm font-medium transition-colors ${
-            mode === "cadastro" ? "bg-primary text-black" : "text-muted-foreground hover:text-white"
+            mode === "cadastro" ? tabActiveClass : "text-muted-foreground hover:text-white"
           }`}
         >
           Cadastrar
@@ -215,7 +231,7 @@ export default function LoginForm({ next }: { next?: string }) {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="João Silva"
-                className="bg-input border-border focus:border-primary"
+                className={inputFocusClass}
               />
             </div>
             <div className="space-y-1.5">
@@ -225,7 +241,7 @@ export default function LoginForm({ next }: { next?: string }) {
                 value={username}
                 onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s/g, ""))}
                 placeholder="joaosilva"
-                className="bg-input border-border focus:border-primary"
+                className={inputFocusClass}
               />
             </div>
             <div className="space-y-1.5">
@@ -238,7 +254,7 @@ export default function LoginForm({ next }: { next?: string }) {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="(11) 99999-9999"
-                className="bg-input border-border focus:border-primary"
+                className={inputFocusClass}
               />
             </div>
           </>
@@ -252,7 +268,7 @@ export default function LoginForm({ next }: { next?: string }) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="voce@email.com"
-            className="bg-input border-border focus:border-primary"
+            className={inputFocusClass}
             required
           />
         </div>
@@ -266,7 +282,7 @@ export default function LoginForm({ next }: { next?: string }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="bg-input border-border focus:border-primary pr-10"
+              className={`${inputFocusClass} pr-10`}
               required
             />
             <button
@@ -280,12 +296,12 @@ export default function LoginForm({ next }: { next?: string }) {
         </div>
 
         {error && <p className="text-destructive text-sm">{error}</p>}
-        {success && <p className="text-primary text-sm">{success}</p>}
+        {success && <p className={successClass}>{success}</p>}
 
         <Button
           type="submit"
           disabled={loading}
-          className="w-full bg-primary text-black font-semibold hover:bg-primary/90"
+          className={btnClass}
         >
           {loading ? <Loader2 size={16} className="animate-spin" /> : mode === "login" ? "Entrar" : "Criar conta"}
         </Button>

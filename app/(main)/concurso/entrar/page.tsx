@@ -95,7 +95,7 @@ export default async function ConcursoEntrar() {
         </div>
 
         {/* Form de login/cadastro */}
-        <LoginForm next="/concurso/entrar" />
+        <LoginForm next="/concurso/entrar" theme="concurso" />
       </div>
     </div>
   );
