@@ -79,6 +79,7 @@ export interface Topic {
   is_private: boolean;
   resolved_at: string | null;
   resolved_by: string | null;
+  concurso_id: string | null;
   created_at: string;
 }
 

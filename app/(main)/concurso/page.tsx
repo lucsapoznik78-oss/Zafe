@@ -35,11 +35,33 @@ async function EventosConcurso({ category, search, tab }: { category: string; se
   const supabase = await createClient();
   const isEncerrados = tab === "encerrados";
 
+  // Busca o concurso ativo para filtrar topics
+  const { data: concurso } = await admin
+    .from("concursos")
+    .select("id, titulo, descricao, periodo_inicio, periodo_fim, premiacao_total, saldo_inicial")
+    .eq("status", "ativo")
+    .lte("periodo_inicio", now)
+    .gte("periodo_fim", now)
+    .single();
+
+  if (!concurso) {
+    return (
+      <div className="py-20 text-center text-muted-foreground">
+        <Trophy size={40} className="mx-auto mb-3 text-yellow-400/40" />
+        <p className="text-white font-semibold mb-1">Nenhum concurso ativo</p>
+        <p className="text-sm">O próximo concurso será anunciado em breve.</p>
+        <Link href="/liga" className="mt-4 inline-block text-sm text-yellow-400 hover:underline">
+          Jogar na Liga →
+        </Link>
+      </div>
+    );
+  }
+
   let query = supabase
     .from("topics")
     .select("*, creator:profiles!creator_id(id, username, full_name)")
-    .eq("is_private", false)
-    .neq("category", "economia");
+    .eq("concurso_id", concurso.id)
+    .eq("is_private", false);
 
   if (isEncerrados) {
     const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();

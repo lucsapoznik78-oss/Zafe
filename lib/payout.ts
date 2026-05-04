@@ -26,8 +26,13 @@ export async function reembolsarTodos(
   motivo: string,
   resolvedBy?: string
 ) {
-  const { data: topic } = await supabase.from("topics").select("title").eq("id", topicId).single();
+  const { data: topic } = await supabase.from("topics").select("title, concurso_id").eq("id", topicId).single();
   const title = topic?.title?.slice(0, 55) ?? "Mercado";
+
+  // Se o topic pertence a um concurso, ignora — reembolso é feito por pagarConcursoBets
+  if (topic?.concurso_id) {
+    return { note: "skipped_concurso_topic" };
+  }
 
   const { data: bets } = await supabase
     .from("bets").select("*").eq("topic_id", topicId).not("status", "in", '("refunded","exited","won","lost")');
@@ -70,8 +75,13 @@ export async function pagarVencedores(
   resolution: "sim" | "nao",
   resolvedBy?: string
 ) {
-  const { data: topic } = await supabase.from("topics").select("title").eq("id", topicId).single();
+  const { data: topic } = await supabase.from("topics").select("title, concurso_id").eq("id", topicId).single();
   const title = topic?.title?.slice(0, 55) ?? "Mercado";
+
+  // Se o topic pertence a um concurso, ignora — pago é feito por pagarConcursoBets
+  if (topic?.concurso_id) {
+    return { note: "skipped_concurso_topic" };
+  }
 
   const { data: allBets } = await supabase
     .from("bets").select("*").eq("topic_id", topicId).not("status", "in", '("refunded","exited","won","lost")');

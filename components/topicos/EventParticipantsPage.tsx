@@ -99,10 +99,31 @@ export async function EventParticipantsPage({
   privateAccessUserId,
 }: EventParticipantsPageProps) {
   const admin = createAdminClient();
+  const now = new Date().toISOString();
+
+  // Para concurso, precisamos do concurso_id ativo
+  let concursoId: string | null = null;
+  if (pillar === "concurso") {
+    const { data: concurso } = await admin
+      .from("concursos")
+      .select("id")
+      .eq("status", "ativo")
+      .lte("periodo_inicio", now)
+      .gte("periodo_fim", now)
+      .single();
+    concursoId = concurso?.id ?? null;
+  }
+
   const isUUID = /^[0-9a-f-]{36}$/.test(id);
   const topicQuery = admin
     .from("topics")
     .select("id, slug, title, description, category, status, closes_at, is_private, creator_id");
+
+  // Concurso filtra por concurso_id
+  if (pillar === "concurso" && concursoId) {
+    topicQuery.eq("concurso_id", concursoId);
+  }
+
   const { data: topic } = isUUID
     ? await topicQuery.eq("id", id).single()
     : await topicQuery.eq("slug", id).single();
@@ -156,12 +177,17 @@ export async function EventParticipantsPage({
     ? "id, user_id, side, amount, status, potential_payout, created_at"
     : "id, user_id, side, amount, status, locked_odds, potential_payout, created_at";
 
-  const { data: rawBets } = await (admin as any)
+  let betQuery = (admin as any)
     .from(betTable)
     .select(selectFields)
     .eq("topic_id", topic.id)
-    .in("status", ["pending", "matched", "partial", "won", "lost", "refunded", "exited"])
-    .order("created_at", { ascending: true });
+    .in("status", ["pending", "matched", "partial", "won", "lost", "refunded", "exited"]);
+
+  if (isConcurso && concursoId) {
+    betQuery = betQuery.eq("concurso_id", concursoId);
+  }
+
+  const { data: rawBets } = await betQuery.order("created_at", { ascending: true });
 
   const bets = (rawBets ?? []) as BetRow[];
   const userIds = [...new Set(bets.map((bet) => bet.user_id).filter(Boolean))];
@@ -244,11 +270,11 @@ export async function EventParticipantsPage({
         </div>
         <div className="bg-card border border-border rounded-xl p-4">
           <p className="text-xs text-muted-foreground mb-1">SIM</p>
-          <p className="text-xl font-bold text-sim">Z$ {formatZ(totalSim)}</p>
+          <p className={`text-xl font-bold ${isConcurso ? "text-yellow-400" : "text-sim"}`}>{isConcurso ? "ZC$" : "Z$"} {formatZ(totalSim)}</p>
         </div>
         <div className="bg-card border border-border rounded-xl p-4">
           <p className="text-xs text-muted-foreground mb-1">NÃO</p>
-          <p className="text-xl font-bold text-nao">Z$ {formatZ(totalNao)}</p>
+          <p className={`text-xl font-bold ${isConcurso ? "text-yellow-400" : "text-nao"}`}>{isConcurso ? "ZC$" : "Z$"} {formatZ(totalNao)}</p>
         </div>
       </div>
 
@@ -260,7 +286,7 @@ export async function EventParticipantsPage({
           </div>
           <div className="px-4 py-3 flex justify-between text-xs text-muted-foreground">
             <span>SIM {(totalSim / totalVolume * 100).toFixed(1)}%</span>
-            <span>Total Z$ {formatZ(totalVolume)}</span>
+            <span>Total {isConcurso ? "ZC$" : "Z$"} {formatZ(totalVolume)}</span>
             <span>NÃO {(totalNao / totalVolume * 100).toFixed(1)}%</span>
           </div>
         </div>
@@ -301,7 +327,9 @@ export async function EventParticipantsPage({
                       )}
                     </div>
                     <div className="mt-1 flex items-center gap-3 flex-wrap text-[11px] text-muted-foreground">
-                      <span>Z$ {formatZ(participant.total)} alocados</span>
+                      <span className="inline-flex items-center gap-1">
+                        {isConcurso ? "ZC$" : "Z$"} {formatZ(participant.total)} alocados
+                      </span>
                       <span>{participant.bets.length} entrada{participant.bets.length !== 1 ? "s" : ""}</span>
                       {participant.firstEntry && (
                         <span className="inline-flex items-center gap-1">
@@ -312,8 +340,8 @@ export async function EventParticipantsPage({
                     </div>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-xs text-sim font-semibold">SIM Z$ {formatZ(participant.simTotal)}</p>
-                    <p className="text-xs text-nao font-semibold mt-0.5">NÃO Z$ {formatZ(participant.naoTotal)}</p>
+                    <p className={`text-xs font-semibold ${isConcurso ? "text-yellow-400" : "text-sim"}`}>SIM {isConcurso ? "ZC$" : "Z$"} {formatZ(participant.simTotal)}</p>
+                    <p className={`text-xs font-semibold mt-0.5 ${isConcurso ? "text-yellow-400" : "text-nao"}`}>NÃO {isConcurso ? "ZC$" : "Z$"} {formatZ(participant.naoTotal)}</p>
                   </div>
                 </div>
 
@@ -333,7 +361,7 @@ export async function EventParticipantsPage({
                           </span>
                         </div>
                         <div className="text-sm font-semibold text-white">
-                          Z$ {formatZ(Number(bet.amount))}
+                          {isConcurso ? "ZC$" : "Z$"} {formatZ(Number(bet.amount))}
                         </div>
                         <div className="text-xs text-muted-foreground inline-flex items-center gap-1">
                           <ListFilter size={12} />

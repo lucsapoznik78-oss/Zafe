@@ -18,7 +18,15 @@ export async function pagarConcursoBets(
       .eq("topic_id", topicId)
       .eq("status", "matched");
 
-    if (!bets || bets.length === 0) return;
+    if (!bets || bets.length === 0) {
+      // Mesmo sem apostas, atualiza status do topic
+      await adminClient.from("topics").update({
+        status: "resolved",
+        resolution: resolution === "cancelled" ? null : resolution,
+        resolved_at: new Date().toISOString(),
+      }).eq("id", topicId).eq("concurso_id", bets?.[0]?.concurso_id ?? "").is("concurso_id", null).neq("id", "");
+      return;
+    }
 
     if (resolution === "cancelled") {
       for (const bet of bets) {
@@ -35,6 +43,11 @@ export async function pagarConcursoBets(
           .eq("concurso_id", bet.concurso_id);
         await adminClient.from("concurso_bets").update({ status: "refunded" }).eq("id", bet.id);
       }
+      await adminClient.from("topics").update({
+        status: "resolved",
+        resolution: null,
+        resolved_at: new Date().toISOString(),
+      }).eq("id", topicId);
       return;
     }
 
@@ -71,6 +84,14 @@ export async function pagarConcursoBets(
         .eq("user_id", bet.user_id)
         .eq("concurso_id", bet.concurso_id);
     }
+
+    // Atualiza status do topic
+    await adminClient.from("topics").update({
+      status: "resolved",
+      resolution,
+      resolved_at: new Date().toISOString(),
+    }).eq("id", topicId);
+
     console.log(`[concurso-payout] topic=${topicId} winners=${winners.length} losers=${losers.length}`);
   } catch (err) {
     console.error("[concurso-payout] Erro:", err);

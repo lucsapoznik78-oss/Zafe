@@ -32,12 +32,13 @@ export async function replenishMarkets(supabase: any) {
     return { created: 0 };
   }
 
-  // 2. Contar mercados públicos ativos por tamanho
+  // 2. Contar mercados públicos ativos por tamanho (APENAS Liga — concurso_id IS NULL)
   const { data: activeTopics } = await supabase
     .from("topics")
     .select("min_bet")
     .eq("status", "active")
-    .eq("is_private", false);
+    .eq("is_private", false)
+    .is("concurso_id", null);
 
   const activeLarge = (activeTopics ?? []).filter((t: any) => t.min_bet >= MIN_BET_LARGE).length;
   const activeSmall = (activeTopics ?? []).filter((t: any) => t.min_bet < MIN_BET_LARGE).length;

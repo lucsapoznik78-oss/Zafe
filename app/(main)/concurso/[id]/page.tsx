@@ -37,8 +37,8 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
   const isUUID = /^[0-9a-f-]{36}$/.test(id);
   const topicQuery = admin.from("topics").select("*, creator:profiles!creator_id(id, username, full_name)");
   const { data: topic } = isUUID
-    ? await topicQuery.eq("id", id).single()
-    : await topicQuery.eq("slug", id).single();
+    ? await topicQuery.eq("id", id).eq("concurso_id", concurso?.id ?? "").single()
+    : await topicQuery.eq("slug", id).eq("concurso_id", concurso?.id ?? "").single();
 
   if (!topic) notFound();
 
@@ -74,37 +74,31 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
     userConcursoBets = myBets ?? [];
   }
 
-  // Topic stats
-  const [{ data: statsData }, { data: snapshots }, { data: concursoBetsPool }, { data: allConcursoBets }] = await Promise.all([
-    admin.from("v_topic_stats").select("*").eq("topic_id", topicId).single(),
+  // Topic stats — usa APENAS concurso_bets para odds e volume do concurso
+  const [{ data: concursoStats }, { data: snapshots }, { data: allConcursoBets }] = await Promise.all([
+    admin.from("concurso_bets")
+      .select("side, amount, status")
+      .eq("topic_id", topicId)
+      .eq("concurso_id", concurso?.id ?? ""),
     admin.from("topic_snapshots")
       .select("prob_sim, volume_sim, volume_nao, recorded_at")
       .eq("topic_id", topicId).order("recorded_at", { ascending: true }).limit(500),
     admin.from("concurso_bets")
-      .select("side, amount")
-      .eq("topic_id", topicId)
-      .eq("status", "matched")
-      .eq("concurso_id", concurso?.id ?? ""),
-    admin.from("concurso_bets")
       .select("id, side, amount, status, potential_payout, created_at, profiles(username, full_name)")
       .eq("topic_id", topicId)
+      .eq("concurso_id", concurso?.id ?? "")
       .in("status", ["matched", "won", "lost", "refunded"])
       .order("amount", { ascending: false })
       .limit(100),
   ]);
 
-  const stats = statsData;
-  const totalSim = parseFloat(stats?.volume_sim ?? "0");
-  const totalNao = parseFloat(stats?.volume_nao ?? "0");
-  const totalVolume = parseFloat(stats?.total_volume ?? "0");
-  const betCount = parseInt(stats?.bet_count ?? "0");
-  const hasBothSides = totalSim > 0 && totalNao > 0;
-  const probSim = hasBothSides ? (stats?.prob_sim ?? 0.5) : 0.5;
-  const { simOdds, naoOdds } = calcOdds(totalSim, totalNao);
-
-  // Concurso pool for this topic
-  const poolSim = (concursoBetsPool ?? []).filter((b: any) => b.side === "sim").reduce((s: number, b: any) => s + Number(b.amount), 0);
-  const poolNao = (concursoBetsPool ?? []).filter((b: any) => b.side === "nao").reduce((s: number, b: any) => s + Number(b.amount), 0);
+  const poolSim = (concursoStats ?? []).filter((b: any) => b.side === "sim" && b.status === "matched").reduce((s: number, b: any) => s + Number(b.amount), 0);
+  const poolNao = (concursoStats ?? []).filter((b: any) => b.side === "nao" && b.status === "matched").reduce((s: number, b: any) => s + Number(b.amount), 0);
+  const totalVolume = poolSim + poolNao;
+  const betCount = (concursoStats ?? []).filter((b: any) => b.status === "matched").length;
+  const hasBothSides = poolSim > 0 && poolNao > 0;
+  const probSim = hasBothSides ? poolSim / totalVolume : 0.5;
+  const { simOdds, naoOdds } = calcOdds(poolSim, poolNao);
 
   // Participantes — total ZC$ por lado
   const concursoSimTotal = (allConcursoBets ?? []).filter((b: any) => b.side === "sim").reduce((s: number, b: any) => s + Number(b.amount), 0);
@@ -173,7 +167,7 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
         <div className="lg:col-span-2 space-y-4">
           {/* Barra de probabilidade — baseada no pool GERAL da Liga */}
           <div className="bg-card border border-border rounded-xl p-4">
-            <p className="text-xs text-muted-foreground mb-2 font-medium">Probabilidade (pool geral da Liga)</p>
+            <p className="text-xs text-muted-foreground mb-2 font-medium">Probabilidade (pool do concurso)</p>
             <div className="flex rounded-lg overflow-hidden h-8 mb-2">
               <div className="bg-sim flex items-center justify-center text-black text-xs font-bold transition-all" style={{ width: `${probSimPct}%` }}>
                 {Number(probSimPct) > 12 ? `${probSimPct}%` : ""}
@@ -191,8 +185,8 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
           {/* LiveStats */}
           <LiveStats
             topicId={topicId}
-            initialSim={totalSim}
-            initialNao={totalNao}
+            initialSim={poolSim}
+            initialNao={poolNao}
             initialBetCount={betCount}
             isResolved={topic.status === "resolved"}
           />
@@ -284,12 +278,12 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
             </div>
           )}
 
-          {/* Link para ver na Liga (com palpite normal) */}
+          {/* Link para a Liga */}
           <Link
-            href={`/${topic.category === "economia" ? "economico" : "liga"}/${topic.slug ?? topicId}`}
+            href="/liga"
             className="block text-center text-xs text-muted-foreground hover:text-white transition-colors py-2"
           >
-            Ver na Liga (palpitar com Z$) →
+            Ver todos os eventos da Liga (Z$) →
           </Link>
         </div>
       </div>

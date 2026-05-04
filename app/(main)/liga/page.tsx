@@ -41,7 +41,8 @@ async function LigaList({
     .from("topics")
     .select("*, creator:profiles!creator_id(id, username, full_name)")
     .eq("is_private", false)
-    .neq("category", "economia");
+    .neq("category", "economia")
+    .is("concurso_id", null);
 
   if (isEncerrados) {
     const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();

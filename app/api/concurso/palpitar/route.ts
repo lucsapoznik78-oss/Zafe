@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     admin.from("concurso_wallets")
       .select("balance").eq("user_id", user.id).eq("concurso_id", concurso.id).single(),
     admin.from("topics")
-      .select("id, status, closes_at").eq("id", topic_id).single(),
+      .select("id, status, closes_at").eq("id", topic_id).eq("concurso_id", concurso.id).single(),
   ]);
 
   if (!inscricao) {
