@@ -34,6 +34,15 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
   const { data: { user } } = await supabase.auth.getUser();
   const now = new Date().toISOString();
 
+  // Get active concurso first
+  const { data: concurso } = await admin
+    .from("concursos")
+    .select("id, titulo, saldo_inicial")
+    .eq("status", "ativo")
+    .lte("periodo_inicio", now)
+    .gte("periodo_fim", now)
+    .single();
+
   const isUUID = /^[0-9a-f-]{36}$/.test(id);
   const topicQuery = admin.from("topics").select("*, creator:profiles!creator_id(id, username, full_name)");
   const { data: topic } = isUUID
@@ -43,15 +52,6 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
   if (!topic) notFound();
 
   const topicId = topic.id;
-
-  // Get active concurso and user enrollment
-  const { data: concurso } = await admin
-    .from("concursos")
-    .select("id, titulo, saldo_inicial")
-    .eq("status", "ativo")
-    .lte("periodo_inicio", now)
-    .gte("periodo_fim", now)
-    .single();
 
   let enrolled = false;
   let zcBalance = 0;
@@ -191,9 +191,18 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
             isResolved={topic.status === "resolved"}
           />
 
-          {/* Gráfico */}
+           {/* Gráfico */}
           {snapshots && snapshots.length > 0 && (
-            <ProbabilityChart topicId={topicId} initialSnapshots={snapshots} initialStats={stats} />
+            <ProbabilityChart
+              topicId={topicId}
+              initialSnapshots={snapshots}
+              initialStats={{
+                prob_sim: probSim,
+                volume_sim: poolSim,
+                volume_nao: poolNao,
+                total_volume: totalVolume,
+              }}
+            />
           )}
 
           {/* Participantes do concurso neste evento */}

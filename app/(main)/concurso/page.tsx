@@ -31,18 +31,9 @@ const PREMIOS = [
   { pos: "4º–5º", valor: "R$ 25 cada" },
 ];
 
-async function EventosConcurso({ category, search, tab }: { category: string; search: string; tab: string }) {
+async function EventosConcurso({ category, search, tab, concurso, now }: { category: string; search: string; tab: string; concurso: any; now: string }) {
   const supabase = await createClient();
   const isEncerrados = tab === "encerrados";
-
-  // Busca o concurso ativo para filtrar topics
-  const { data: concurso } = await admin
-    .from("concursos")
-    .select("id, titulo, descricao, periodo_inicio, periodo_fim, premiacao_total, saldo_inicial")
-    .eq("status", "ativo")
-    .lte("periodo_inicio", now)
-    .gte("periodo_fim", now)
-    .single();
 
   if (!concurso) {
     return (
@@ -287,6 +278,8 @@ export default async function ConcursoPage({ searchParams }: PageProps) {
               category={category}
               search={search}
               tab={tab === "encerrados" ? "encerrados" : "abertos"}
+              concurso={concurso}
+              now={now}
             />
           </Suspense>
         </>
