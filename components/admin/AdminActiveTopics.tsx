@@ -10,6 +10,7 @@ interface Topic {
   title: string;
   category: string;
   closes_at: string;
+  concurso_id?: string | null;
 }
 
 function fmtDate(iso: string) {
@@ -23,7 +24,7 @@ function toLocalInput(iso: string) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-export default function AdminActiveTopics({ topics }: { topics: Topic[] }) {
+export default function AdminActiveTopics({ topics, showCategory, showConcurso }: { topics: Topic[], showCategory?: boolean, showConcurso?: boolean }) {
   const router = useRouter();
   const [editing, setEditing] = useState<string | null>(null);
   const [value, setValue] = useState("");
@@ -102,10 +103,13 @@ export default function AdminActiveTopics({ topics }: { topics: Topic[] }) {
           return (
             <div key={topic.id} className="border border-border rounded-lg p-3 space-y-1.5">
               <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <CategoryBadge category={topic.category as any} className="mb-1" />
-                  <p className="text-xs font-medium text-white leading-snug line-clamp-2">{topic.title}</p>
-                </div>
+              <div className="flex-1 min-w-0">
+                   {showCategory && <CategoryBadge category={topic.category as any} className="mb-1" />}
+                   {showConcurso && topic.concurso_id && (
+                     <span className="inline-block mb-1 px-1.5 py-0.5 bg-yellow-500/20 text-yellow-400 rounded text-xs mr-1">Concurso</span>
+                   )}
+                   <p className="text-xs font-medium text-white leading-snug line-clamp-2">{topic.title}</p>
+                 </div>
                 {!isEditing && (
                   <div className="flex items-center gap-1 shrink-0">
                     <button

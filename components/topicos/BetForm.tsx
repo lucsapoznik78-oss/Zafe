@@ -29,7 +29,9 @@ export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed,
   const effectiveMin = Math.max(1, minBet);
   const amountNum = parseFloat(amount) || 0;
   const currentOdds = side === "sim" ? simOdds : naoOdds;
-  const expectedReturn = amountNum * currentOdds;
+  // Cap odds at 999 to prevent unrealistic displays
+  const cappedOdds = Math.min(currentOdds, 999);
+  const expectedReturn = amountNum * cappedOdds;
   const expectedProfit = expectedReturn - amountNum;
   const insufficientBalance = amountNum > userBalance;
 

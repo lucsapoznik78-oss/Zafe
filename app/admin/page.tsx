@@ -16,11 +16,10 @@ export default async function AdminPage() {
   const { data: profile } = await supabase.from("profiles").select("is_admin").eq("id", user.id).single();
   if (!profile?.is_admin) redirect("/liga");
 
-  // Todos os DB calls usam adminSupabase — RLS bloquearia a maioria das queries
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const admin = createAdminClient();
 
-  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-
+  // SEPARAR: Econômico vs Liga vs Concurso (separar em JS após buscar todos os ativos)
   const [
     { data: pending },
     { data: allResolving },
@@ -28,7 +27,7 @@ export default async function AdminPage() {
     { data: activeBets },
     { data: openOrders },
     { data: commissionTxs },
-    { data: activeTopics },
+    { data: allActiveTopics },
     { count: totalUsers },
     { count: newUsersWeek },
     { count: totalBets },
@@ -42,7 +41,8 @@ export default async function AdminPage() {
     admin.from("bets").select("amount").in("status", ["pending", "matched", "partial"]),
     admin.from("orders").select("price, quantity, filled_qty").eq("status", "open").eq("side", "buy"),
     admin.from("transactions").select("net_amount").eq("type", "commission"),
-    admin.from("topics").select("id, title, category, closes_at").eq("status", "active").eq("is_private", false).order("closes_at"),
+    // Buscar todos os ativos - separar em JS depois
+    admin.from("topics").select("id, title, category, closes_at, created_at, concurso_id").eq("status", "active").order("closes_at"),
     // Stats de usuários
     admin.from("profiles").select("*", { count: "exact", head: true }),
     admin.from("profiles").select("*", { count: "exact", head: true }).gte("created_at", sevenDaysAgo),
@@ -51,19 +51,17 @@ export default async function AdminPage() {
     admin.from("profiles").select("*", { count: "exact", head: true }).gte("updated_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
   ]);
 
+  // Separar em JS (funciona com ou sem coluna concurso_id no banco)
+  const economicTopics = (allActiveTopics ?? []).filter(t => t.category === 'economia' && !t.concurso_id);
+  const ligaTopics = (allActiveTopics ?? []).filter(t => t.category !== 'economia' && !t.concurso_id);
+  const concursoTopics = (allActiveTopics ?? []).filter(t => t.concurso_id);
+
   const walletBalance  = (wallets ?? []).reduce((s, w: any) => s + (w.balance ?? 0), 0);
   const betsLocked     = (activeBets ?? []).reduce((s, b: any) => s + (b.amount ?? 0), 0);
   const ordersEscrow   = (openOrders ?? []).reduce((s, o: any) => s + parseFloat(o.price) * (parseFloat(o.quantity) - parseFloat(o.filled_qty ?? 0)), 0);
   const commission     = (commissionTxs ?? []).reduce((s, t: any) => s + (t.net_amount ?? 0), 0);
   const passiveTotal   = walletBalance + betsLocked + ordersEscrow;
   const volumeTotal    = (totalVolumeData ?? []).reduce((s, b: any) => s + (b.amount ?? 0), 0);
-
-  const seenTitles = new Set<string>();
-  const uniqueActiveTopics = (activeTopics ?? []).filter((t) => {
-    if (seenTitles.has(t.title)) return false;
-    seenTitles.add(t.title);
-    return true;
-  });
 
   return (
     <div className="py-6 space-y-6 max-w-4xl mx-auto">
@@ -90,7 +88,27 @@ export default async function AdminPage() {
       />
       <AdminQueue topics={pending ?? []} />
       <AdminResolve topics={[]} allResolving={allResolving ?? []} />
-      <AdminActiveTopics topics={uniqueActiveTopics} />
+      
+      {/* Zafe Econômico */}
+      <div>
+        <h2 className="text-lg font-bold text-white mb-1">Zafe Econômico (Admin Cria)</h2>
+        <p className="text-xs text-muted-foreground mb-3">Eventos de categoria econômica criados pela administração</p>
+        <AdminActiveTopics topics={economicTopics ?? []} showCategory />
+      </div>
+
+      {/* Liga - Sem economia */}
+      <div>
+        <h2 className="text-lg font-bold text-white mb-1">Liga (Eventos Gerais)</h2>
+        <p className="text-xs text-muted-foreground mb-3">Eventos que NÃO são econômicos (esportes, política, tecnologia, entretenimento)</p>
+        <AdminActiveTopics topics={ligaTopics ?? []} showCategory />
+      </div>
+
+      {/* Concurso - Com concurso_id */}
+      <div>
+        <h2 className="text-lg font-bold text-white mb-1">Concurso (Eventos com Inscrição)</h2>
+        <p className="text-xs text-muted-foreground mb-3">Eventos que fazem parte do concurso ativo (min_bet = 20 Z$)</p>
+        <AdminActiveTopics topics={concursoTopics ?? []} showCategory showConcurso />
+      </div>
 
       <div>
         <h2 className="text-lg font-bold text-white mb-3">Resoluções Oracle</h2>
