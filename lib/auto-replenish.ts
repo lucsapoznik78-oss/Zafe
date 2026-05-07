@@ -60,7 +60,6 @@ export async function replenishMarkets(supabase: any) {
       .from("topic_templates")
       .select("*")
       .eq("is_large", isLarge)
-      .is("used_at", null)
       .order("created_at", { ascending: true })
       .limit(count);
 
@@ -104,12 +103,6 @@ export async function replenishMarkets(supabase: any) {
         console.error("[auto-replenish] Erro ao criar tópico:", error.message);
         continue;
       }
-
-      // Marcar template como usado
-      await supabase
-        .from("topic_templates")
-        .update({ used_at: new Date().toISOString() })
-        .eq("id", tpl.id);
 
       created++;
     }
