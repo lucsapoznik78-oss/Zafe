@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zafe - A Liga de Previsões</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/reset.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/theme/black.css">
+<style>
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+.reveal { font-size: 1.1rem; }
+
+.reveal h1 { 
+  font-size: 3.5rem; 
+  font-weight: 900; 
+  letter-spacing: -1px;
+  color: #86efac;
+}
+.reveal h2 { 
+  font-size: 2.2rem; 
+  font-weight: 700; 
+  color: #86efac;
+  letter-spacing: -0.5px;
+}
+.reveal h3 { 
+  font-size: 1.6rem; 
+  font-weight: 600; 
+  color: #fff;
+}
+
+.reveal .slides section { text-align: left; padding: 20px; }
+
+.reveal ul { list-style: none; padding-left: 0; }
+.reveal ul li { 
+  padding: 8px 0; 
+  padding-left: 35px; 
+  position: relative; 
+  font-size: 1rem;
+  line-height: 1.6;
+}
+.reveal ul li:before { 
+  content: "✓"; 
+  position: absolute; 
+  left: 0; 
+  color: #86efac; 
+  font-weight: bold; 
+  font-size: 1.1rem;
+}
+
+.reveal .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px; }
+.reveal .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 20px; }
+
+.reveal .card { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 25px; margin: 15px 0; }
+.reveal .card-green { border-color: #86efac; }
+.reveal .card-red { border-color: #ef4444; }
+
+.reveal .badge { 
+  display: inline-block; 
+  padding: 8px 16px; 
+  border-radius: 20px; 
+  font-size: 0.9rem; 
+  font-weight: 600; 
+  margin: 5px;
+}
+.reveal .badge-green { background: #86efac20; color: #86efac; border: 1px solid #86efac; }
+.reveal .badge-blue { background: #3b82f620; color: #3b82f6; border: 1px solid #3b82f6; }
+
+.reveal .highlight { 
+  background: #86efac10; 
+  border-left: 4px solid #86efac; 
+  padding: 20px; 
+  border-radius: 8px; 
+  margin: 20px 0; 
+}
+
+.reveal .alert-box { 
+  background: #ef444415; 
+  border: 2px solid #ef4444; 
+  border-radius: 12px; 
+  padding: 20px; 
+  margin: 20px 0; 
+}
+.reveal .success-box { 
+  background: #86efac15; 
+  border: 2px solid #86efac; 
+  border-radius: 12px; 
+  padding: 20px; 
+  margin: 20px 0; 
+}
+
+.reveal .subtitle { 
+  font-size: 1.3rem; 
+  color: #888; 
+  margin: 30px 0; 
+  font-weight: 300; 
+  line-height: 1.6; 
+}
+
+.reveal .credits { 
+  font-size: 1.3rem; 
+  color: #666; 
+  text-align: center; 
+  margin-top: 40px; 
+  font-weight: 600; 
+  letter-spacing: 1.5px;
+}
+
+.reveal strong.primary { color: #86efac; }
+.reveal strong.accent { color: #ef4444; }
+
+.reveal .logo { 
+  font-size: 5rem; 
+  font-weight: 900; 
+  color: #86efac; 
+  margin-bottom: 20px; 
+  letter-spacing: -2px; 
+}
+
+.reveal table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.9rem; }
+.reveal table th, .reveal table td { padding: 12px; text-align: left; border-bottom: 1px solid #333; }
+.reveal table th { background: #1a1a1a; color: #86efac; font-weight: 600; }
+
+.reveal .formal-text { font-size: 1.1rem; color: #ccc; line-height: 1.8; margin: 15px 0; font-weight: 300; }
+
+.reveal .progress { color: #86efac; height: 4px; }
+
+/* Speaker notes styling */
+.reveal aside.notes { font-size: 0.8rem; }
+</style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides">
+    
+    <!-- SLIDE 1: CAPA -->
+    <section>
+      <div class="logo">ZAFE</div>
+      <h2 style="color: #fff; font-size: 2.5rem;">A Liga de Previsões do Brasil</h2>
+      <p class="subtitle">Competição de habilidade analítica. 100% dentro da legalidade brasileira. Entrada gratuita com 1.000 Z$ e possibilidade de ganhar dinheiro real exclusivamente via concursos legais.</p>
+      <div>
+        <span class="badge badge-green">Lei 5.768/71</span>
+        <span class="badge badge-green">Resolução CMN 5.298</span>
+        <span class="badge badge-blue">4 Camadas de Resolução</span>
+      </div>
+      <div class="credits">FEITO POR LUC SAPOZNIK E LORENZO FRAGALI</div>
+      <aside class="notes">
+        Boa noite. Apresento a vocês a Zafe - A Liga de Previsões do Brasil.
+        Somos uma plataforma 100% legal que opera através de competição de habilidade.
+        Note as três certificações: Lei 5.768/71 (concursos legais) e Resolução CMN 5.298 (compliance total).
+      </aside>
+    </section>
+
+    <!-- SLIDE 2: QUEM SOMOS -->
+    <section>
+      <h2>Quem Somos</h2>
+      <div class="grid-2">
+        <div>
+          <h3 style="color: #86efac; font-size: 1.8rem;">Essência Institucional</h3>
+          <p class="formal-text">
+            A Zafe é uma <strong class="primary">liga de competição de previsões</strong> onde o usuário utiliza habilidade analítica para prever eventos reais, acumulando pontos através de palpites virtuais (Z$) e competindo por posições no ranking nacional.
+          </p>
+          <div class="highlight">
+            <p style="font-size: 1rem; margin: 8px 0;"><strong>Modelo de Negócio:</strong> Assinatura SaaS (Premium - futuro) + Concurso de Habilidade (prêmios reais)</p>
+            <p style="font-size: 1rem; margin: 8px 0;"><strong>Moeda Z$:</strong> Virtual, 1.000 Z$ concedidos gratuitamente, não convertível em dinheiro real</p>
+            <p style="font-size: 1rem; margin: 8px 0;"><strong>Dinheiro Real:</strong> Exclusivamente para prêmios de concurso via PIX (Lei 5.768/71)</p>
+            <p style="font-size: 1rem; margin: 8px 0;"><strong>Plano Futuro:</strong> Possibilidade de converter Z$ em descontos reais via parcerias comerciais</p>
+          </div>
+        </div>
+        <div>
+          <h3 style="color: #ef4444; font-size: 1.8rem;">O que Não Somos</h3>
+          <ul>
+            <li>Casa de apostas (modelo ilegal pós-04/05/2026)</li>
+            <li>Exchange Peer-to-Peer de eventos</li>
+            <li>Intermediadora financeira ou custodiant</li>
+            <li>Plataforma de investimento ou câmbio</li>
+            <li>Cassino ou jogo de azar (modelo proibido)</li>
+          </ul>
+          <div class="alert-box">
+            <p style="color: #ef4444; font-weight: 600; margin-bottom: 10px;">Analogia Institucional</p>
+            <p style="color: #ccc; font-size: 1rem;">Somos o Cartola FC das previsões. Competição de habilidade, não apostas. Nunca colocamos dinheiro real em risco.</p>
+          </div>
+        </div>
+      </div>
+      <div class="highlight" style="text-align: center; margin-top: 30px;">
+        <p style="font-size: 1.2rem; font-weight: 600;"><strong class="primary">Diferencial Regulatório:</strong> Na Zafe você compete, não aposta. Nunca colocamos dinheiro real em risco.</p>
+      </div>
+      <aside class="notes">
+        Explique que somos uma liga esportiva de previsões, modelo Cartola FC.
+        Modelo de negócio: SaaS (assinatura) + Concurso legal (Lei 5.768/71).
+        Z$ é virtual, 1.000 grátis, não convertível. Dinheiro real apenas para prêmios via PIX.
+        Futuro: converter Z$ em descontos reais via parcerias comerciais.
+        O que NÃO somos: não somos casa de apostas, não operamos P2P, não somos intermediadores financeiros.
+      </aside>
+    </section>
+
+    <!-- SLIDE 3: POR QUE SOMOS UMA LIGA -->
+    <section>
+      <h2>Por que somos uma Liga, não Bet</h2>
+      <div class="grid-2">
+        <div>
+          <h3 style="color: #86efac;">A Mudança de Paradigma em 4 de Maio de 2026</h3>
+          <div class="alert-box">
+            <p style="color: #ef4444; font-weight: 600; margin-bottom: 10px;">Resolução CMN nº 5.298/2026</p>
+            <p style="color: #ccc; font-size: 1rem; line-height: 1.8;">
+              Proibiu expressamente a oferta e negociação de contratos derivativos baseados em eventos esportivos, políticos, sociais, culturais e de entretenimento. O modelo antigo (peer-to-peer livre) ficou ilegal.
+            </p>
+          </div>
+          <ul>
+            <li><strong>Antes:</strong> Modelo Polymarket (cripto real, P2P)</li>
+            <li><strong>Depois:</strong> Modelo ilegal no Brasil</li>
+            <li><strong>Zafe:</strong> Pivotou para Liga de Habilidade (Lei 5.768/71)</li>
+          </ul>
+        </div>
+        <div>
+          <h3 style="color: #86efac;">Como a Zafe se Protege Juridicamente</h3>
+          <div class="success-box">
+            <p style="color: #86efac; font-weight: 600; margin-bottom: 10px;">100% Dentro da Lei</p>
+            <p style="color: #ccc; font-size: 1rem; line-height: 1.8;">
+              Z$ é virtual. Dinheiro real entra apenas como assinatura (modelo SaaS) e sai exclusivamente como prêmio de concurso legal (modelo Lei 5.768/71).
+            </p>
+          </div>
+          <ul>
+            <li>Usuário NUNCA deposita dinheiro real na plataforma</li>
+            <li>Usuário NUNCA saca Z$ para conta bancária</li>
+            <li>Prêmios reais via PIX (concurso legal)</li>
+            <li>Sem "banca" ou "house edge" (modelo bet)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="success-box" style="text-align: center; margin-top: 30px;">
+        <p style="font-size: 1.2rem; font-weight: 600;">Este formato abriu a possibilidade de a Zafe ser a única empresa regulada e operando legalmente neste setor no Brasil.</p>
+      </div>
+      <aside class="notes">
+        Em 4 de maio de 2026, a Resolução CMN 5.298 proibiu apostas com dinheiro real.
+        O modelo antigo (Polymarket, P2P) ficou ilegal no Brasil.
+        A Zafe pivotou para Liga de Habilidade (Lei 5.768/71).
+        Z$ é virtual. Dinheiro real apenas para assinatura SaaS e prêmios de concurso.
+        Somos a ÚNICA empresa regulada e operando legalmente neste setor.
+      </aside>
+    </section>
+
+    <!-- SLIDE 4: EVENTO ECONÔMICO -->
+    <section>
+      <h2 style="font-size: 2.5rem;">Zafe Econômico</h2>
+      <div class="grid-2">
+        <div>
+          <h3 style="color: #86efac;">Como Funciona</h3>
+          <ul>
+            <li><strong>Quem Cria:</strong> Exclusivamente Administração ou Sistema Automático</li>
+            <li><strong>Moeda:</strong> Z$ Virtual (não convertível em dinheiro real)</li>
+            <li><strong>Mecânica:</strong> Parimutuel (94% para vencedores)</li>
+            <li><strong>Resolução:</strong> APIs Fixas (Banco Central, Yahoo Finance, CoinGecko)</li>
+            <li><strong>Mercado Secundário:</strong> FIFO para ordens de venda</li>
+            <li><strong>Futuro:</strong> Possibilidade de converter Z$ em descontos reais via parcerias</li>
+          </ul>
+          <div class="card">
+            <p style="color: #86efac; font-weight: 600;">Exemplos de Eventos:</p>
+            <p style="color: #888; font-size: 1rem; line-height: 1.8;">
+              • IPCA abaixo de 0,3%?<br>
+              • Dólar fechará abaixo de R$ 5,70?<br>
+              • Bitcoin atingirá US$ 100k?<br>
+              • Copom cortará Selic em 0,50%?
+            </p>
+          </div>
+        </div>
+        <div>
+          <h3 style="color: #86efac;">Posicionamento Estratégico</h3>
+          <p style="color: #ccc; line-height: 1.8; margin-bottom: 20px;">
+            Indicadores econômicos têm base objetiva de resolução via APIs governamentais e financeiras. O usuário compete com outros investidores e entusiastas em um ambiente livre de pressão financeira real.
+          </p>
+          <div class="highlight">
+            <p style="font-size: 1rem;"><strong>Diferencial Competitivo:</strong> Mercado secundário ativo com matching em tempo real e curadoria técnica de alto nível.</p>
+          </div>
+          <div class="card card-green">
+            <p style="color: #86efac; font-weight: 600;">Público-Alvo</p>
+            <p style="color: #888;">Investidores, economistas, analistas de mercado, entusiastas de finanças</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">
+        Zafe Econômico: apenas admin cria eventos (IPCA, Selic, Dólar, Bitcoin).
+        APIs fixas garantem resolução objetiva (Banco Central, Yahoo Finance).
+        Futuro: converter Z$ em descontos reais via parcerias comerciais.
+        Público-alvo: investidores, economistas, analistas, entusiastas de finanças.
+      </aside>
+    </section>
+
+    <!-- SLIDE 5: EVENTO LIGA -->
+    <section>
+      <h2 style="font-size: 2.5rem;">Zafe Liga</h2>
+      <div class="grid-2">
+        <div>
+          <h3 style="color: #86efac;">Como Funciona</h3>
+          <ul>
+            <li><strong>Quem Cria:</strong> Usuários (vão para "pending") + Administração</li>
+            <li><strong>Moeda:</strong> Z$ Virtual (mesma carteira do Econômico)</li>
+            <li><strong>Mecânica:</strong> Idêntica ao Econômico (parimutuel)</li>
+            <li><strong>Resolução:</strong> 4 camadas (APIs + IA + Retry + Reembolso)</li>
+            <li><strong>Limite:</strong> Máximo de 2 eventos por usuário simultaneamente</li>
+          </ul>
+          <div class="card">
+            <p style="color: #86efac; font-weight: 600;">Categorias Disponíveis:</p>
+            <p style="color: #888; font-size: 1rem; line-height: 1.8;">
+              • Esportes (futebol, F1, tênis)<br>
+              • Política (eleições, reformas, STF)<br>
+              • Tecnologia (IA, startups, cripto)<br>
+              • Entretenimento (BBB, Oscar, Netflix)
+            </p>
+          </div>
+        </div>
+        <div>
+          <h3 style="color: #86efac;">Por que é o Pilar Principal</h3>
+          <p style="color: #ccc; line-height: 1.8; margin-bottom: 20px;">
+            Qualquer evento real pode virar previsão. O usuário cria, a comunidade valida, e todos competem pelo ranking. É a essência de uma liga de previsões nacional.
+          </p>
+          <div class="highlight">
+            <p style="font-size: 1rem;"><strong>Diferencial:</strong> Banner do concurso ativo sempre visível acima da listagem, com prêmios em dinheiro real via PIX.</p>
+          </div>
+          <div class="alert-box">
+            <p style="color: #ef4444; font-weight: 600; font-size: 1rem;">Regra Institucional</p>
+            <p style="color: #888; font-size: 0.9rem;">Liga é para qualquer coisa que NÃO é categoria economia. Economia fica no Econômico!</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">
+        Zafe Liga é o pilar principal - qualquer evento real vira previsão.
+        Usuários criam, Admin aprova. 4 camadas de resolução.
+        Categorias: Esportes, Política, Tecnologia, Entretenimento.
+        Sem "carro-chefe" - é o pilar principal da plataforma.
+        Regra CLAUDE.md: Liga = qualquer coisa NÃO é economia.
+      </aside>
+    </section>
+
+    <!-- SLIDE 6: EVENTO CONCURSO -->
+    <section>
+      <h2 style="font-size: 2.5rem;">Concurso (Sobreposto à Liga)</h2>
+      <div class="grid-2">
+        <div>
+          <h3 style="color: #86efac;">Como Funciona</h3>
+          <ul>
+            <li><strong>Inscrição:</strong> Gratuita na fase beta (futuramente R$ 9,90)</li>
+            <li><strong>Critério:</strong> Maior acurácia agregada (Brier Score)</li>
+            <li><strong>Diversidade:</strong> Previsões em pelo menos 3 categorias diferentes</li>
+            <li><strong>Prêmio:</strong> R$ 2.500 totais distribuídos via PIX</li>
+            <li><strong>Recurso:</strong> Patrocínio de marcas (Coca-Cola, bancos, corretoras)</li>
+          </ul>
+          <div class="card card-green">
+            <p style="color: #86efac; font-weight: 600;">Distribuição de Prêmios:</p>
+            <p style="color: #888; font-size: 1rem; line-height: 1.8;">
+              1º lugar: R$ 1.000<br>
+              2º lugar: R$ 500<br>
+              3º lugar: R$ 250<br>
+              4º a 10º lugar: R$ 100 cada<br>
+              11º a 25º lugar: R$ 35 cada
+            </p>
+          </div>
+        </div>
+        <div>
+          <h3 style="color: #86efac;">Base Legal (Lei 5.768/71)</h3>
+          <p style="color: #ccc; line-height: 1.8; margin-bottom: 15px;">
+            <strong>Art. 1º:</strong> "Concurso de previsões, cálculos ou testes de inteligência" exige autorização SECAP apenas se prêmios > 10% do valor arrecadado.
+          </p>
+          <div class="success-box">
+            <p style="color: #86efac; font-weight: 600; margin-bottom: 10px;">Dispensa SECAP</p>
+            <p style="color: #ccc; font-size: 1rem; line-height: 1.8;">
+              Concurso regular (R$ 2.500) tem patrocínio que cobre prêmios. Não há arrecadação líquida da Zafe, dispensando autorização.
+            </p>
+          </div>
+          <div class="highlight">
+            <p style="font-size: 1rem;"><strong>Concurso Major:</strong> Trimestral R$ 10k-25k. Exige processo formal na SECAP, custo de 10% pago pelo patrocinador.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">
+        Concurso: R$ 2.500 via PIX (Lei 5.768/71).
+        Brier Score: maior acurácia agregada, mínimo 3 categorias.
+        Base legal: Dispensa SECAP (patrocínio cobre prêmios).
+        Concurso Major: R$ 10k-25k (exige SECAP, 10% patrocinador).
+        Recurso: Coca-Cola, bancos, corretoras.
+      </aside>
+    </section>
+
+    <!-- SLIDE 7: EVENTO PRIVADAS -->
+    <section>
+      <h2 style="font-size: 2.5rem;">Zafe Privadas (Bolão entre Amigos)</h2>
+      <div class="grid-2">
+        <div>
+          <h3 style="color: #86efac;">Como Funciona</h3>
+          <ul>
+            <li><strong>Criação:</strong> Um usuário desafia outro(s) para um palpite específico</li>
+            <li><strong>Mercado:</strong> Fechado (participantes definidos na criação)</li>
+            <li><strong>Moeda:</strong> Z$ Virtual (não convertível em dinheiro real)</li>
+            <li><strong>Comissão:</strong> 6% total (3% de cada lado)</li>
+            <li><strong>Resolução:</strong> Supermaioria 67% + Sistema de Juízes Imparciais</li>
+            <li><strong>Futuro:</strong> Possibilidade de converter Z$ em descontos reais via parcerias</li>
+          </ul>
+          <div class="card">
+            <p style="color: #86efac; font-weight: 600;">Exemplo Prático:</p>
+            <p style="color: #888; font-size: 1rem; line-height: 1.8;">
+              João desafia Maria: "Flamengo vai ganhar o clássico?"<br>
+              João: SIM (500 Z$)<br>
+              Maria: NÃO (500 Z$)<br>
+              Vencedor leva 1000 Z$ (valor integral)
+            </p>
+          </div>
+        </div>
+        <div>
+          <h3 style="color: #86efac;">4 Travas Legais (Obrigatórias)</h3>
+          <div class="alert-box">
+            <p style="color: #ef4444; font-weight: 600; margin-bottom: 10px;">Proteção Jurídica</p>
+            <ul style="color: #ccc; font-size: 1rem;">
+              <li>Apenas amigos confirmados (24h após aceite mútuo)</li>
+              <li>Mercado fechado (sem novos participantes após criação)</li>
+              <li>Sem revenda de posição (sem mercado secundário)</li>
+              <li>Limite: 5.000 Z$/ano por par de usuários</li>
+            </ul>
+          </div>
+          <div class="highlight">
+            <p style="font-size: 1rem;"><strong>Sistema de Juízes:</strong> Se há divergência na supermaioria (67%), ativa-se juízes imparciais para decidir o vencedor com base em provas.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">
+        Privadas: bolão entre amigos (4 travas legais obrigatórias).
+        Comissão: 6% total (3% cada lado) - regra legal das 4 travas.
+        Futuro: converter Z$ em descontos reais via parcerias comerciais.
+        Sistema de Juízes: se divergência na supermaioria (67%), ativa-se juízes imparciais.
+      </aside>
+    </section>
+
+    <!-- SLIDE 8: COMO O CÓDIGO RESOLVE -->
+    <section>
+      <h2>Como o Código Sabe quem Ganhou</h2>
+      <div class="grid-2">
+        <div class="card card-green" style="text-align: center;">
+          <h3 style="color: #86efac; font-size: 1.5rem;">Camada 1</h3>
+          <p style="font-size: 1.1rem;"><strong>API Fixa</strong></p>
+          <p style="color: #888; font-size: 1rem; line-height: 1.6;">
+            Banco Central<br>
+            Yahoo Finance<br>
+            CoinGecko<br>
+            TSE, APIs Esportivas
+          </p>
+        </div>
+        <div class="card card-green" style="text-align: center;">
+          <h3 style="color: #86efac; font-size: 1.5rem;">Camada 2</h3>
+          <p style="font-size: 1.1rem;"><strong>IA com Dupla Verificação</strong></p>
+          <p style="color: #888; font-size: 1rem; line-height: 1.6;">
+            2 checks independentes<br>
+            Web Search<br>
+            Confiança ≥ 85%<br>
+            Ambos concordam
+          </p>
+        </div>
+      </div>
+      <div class="grid-2" style="margin-top: 20px;">
+        <div class="card card-green" style="text-align: center;">
+          <h3 style="color: #86efac; font-size: 1.5rem;">Camada 3</h3>
+          <p style="font-size: 1.1rem;"><strong>Retry Automático</strong></p>
+          <p style="color: #888; font-size: 1rem; line-height: 1.6;">
+            Falhou?<br>
+            Tenta novamente<br>
+            a cada 2h<br>
+            (máximo 3x)
+          </p>
+        </div>
+        <div class="card card-red" style="text-align: center;">
+          <h3 style="color: #ef4444; font-size: 1.5rem;">Camada 4</h3>
+          <p style="font-size: 1.1rem;"><strong>Reembolso</strong></p>
+          <p style="color: #888; font-size: 1rem; line-height: 1.6;">
+            Ninguém perde<br>
+            se não resolver<br>
+            Todos recebem Z$<br>
+            de volta
+          </p>
+        </div>
+      </div>
+      <div class="highlight" style="text-align: center; margin-top: 30px;">
+        <p style="font-size: 1.2rem; font-weight: 600;"><strong>Taxa de resolução automática: 87%</strong> | Reembolso: 5% (eventos subjetivos sem fontes claras)</p>
+      </div>
+      <aside class="notes">
+        Sistema de 4 camadas: APIs fixas, IA com dupla verificação, retry automático, reembolso.
+        Taxa: 87% resolução automática, 5% reembolso (eventos subjetivos).
+        APIs: Banco Central, Yahoo Finance, CoinGecko, TSE.
+        IA: 2 checks independentes, confiança ≥85%, ambos concordam.
+      </aside>
+    </section>
+
+    <!-- SLIDE 9: ESTADO ATUAL -->
+    <section>
+      <h2>Estado Atual (Maio/2026)</h2>
+      <div class="grid-2">
+        <div>
+          <h3 style="color: #86efac;">O que somos hoje</h3>
+          <ul>
+            <li>Lançamos utilizando <strong>"Zafes"</strong> como moeda virtual</li>
+            <li>Sistema de resolução em 4 camadas operando com 87% de sucesso</li>
+            <li>Eventos reais rodando na Liga e Econômico</li>
+          </ul>
+          <div class="highlight">
+            <p style="font-size: 1.1rem; font-weight: 600;"><strong>Objetivo Imediato:</strong> Alcançar 1.000 usuários ativos na fase de testes.</p>
+          </div>
+        </div>
+        <div>
+          <h3 style="color: #86efac;">O que muda com 1000 usuários</h3>
+          <ul>
+            <li>Aumentar volume de palpites na Liga</li>
+            <li>Validar modelo de competição social</li>
+            <li>Quando acabarmos de aprimorar o código, faremos o lançamento oficial</li>
+            <li>Primeiro concurso com prêmio real via PIX</li>
+            <li>Atrair patrocinadores corporativos (Coca-Cola, bancos, corretoras)</li>
+          </ul>
+          <div class="success-box">
+            <p style="color: #86efac; font-weight: 600;">Próximo Passo</p>
+            <p style="color: #ccc; font-size: 1rem;">
+              Com 1000 usuários, migramos de "beta" para "lançamento oficial" com campanha de marketing agressiva.
+            </p>
+          </div>
+        </div>
+      </div>
+      <p style="text-align: center; margin-top: 30px; font-size: 1.2rem; color: #86efac; font-weight: 600;">
+        Zafes: A moeda virtual que gera prêmios reais através de comprovação de habilidade analítica.
+      </p>
+      <aside class="notes">
+        Estado atual: maio/2026, usando "Zafes" como moeda virtual.
+        Sistema 4 camadas: 87% sucesso na resolução automática.
+        Objetivo imediato: 1.000 usuários ativos na fase beta.
+        Com 1000 usuários: migramos para lançamento oficial com marketing agressivo.
+        Primeiro concurso com prêmio real via PIX após lançamento.
+      </aside>
+    </section>
+
+    <!-- SLIDE 10: CURTO PRAZO (NOVO) -->
+    <section>
+      <h2>Curto Prazo (1-3 meses)</h2>
+      <div class="grid-2">
+        <div>
+          <h3 style="color: #86efac;">Estruturação Jurídica e Digital</h3>
+          <ul>
+            <li><strong>Criar CNPJ:</strong> Constituir empresa formalmente para operar concursos</li>
+            <li><strong>Comprar Domínio:</strong> Adquirir zafe.com.br (migração de zafe-rho.vercel.app)</li>
+            <li><strong>Email Corporativo:</strong> Criar contas @zafe.com.br (contato, suporte, jurídico)</li>
+            <li><strong>Conta Bancária PJ:</strong> Abrir conta para receber assinaturas e pagar prêmios</li>
+          </ul>
+          <div class="success-box">
+            <p style="color: #86efac; font-weight: 600;">Status Atual</p>
+            <p style="color: #ccc; font-size: 1rem;">Operando com estrutura beta. Regularização formal necessária para escala.</p>
+          </div>
+        </div>
+        <div>
+          <h3 style="color: #86efac;">Marketing e Lançamento</h3>
+          <ul>
+            <li><strong>Criar Redes Sociais:</strong> Instagram, Twitter, TikTok, LinkedIn oficiais</li>
+            <li><strong>Campanha de Advertising:</strong> Ads em redes sociais focadas no público de 18-35 anos</li>
+            <li><strong>Lançar Oficialmente:</strong> Rebrand de "Zafes" para "Zafe" com nova identidade visual</li>
+            <li><strong>Alcançar 1.000 usuários:</strong> Meta de tração orgânica + paga</li>
+            <li><strong>App Mobile PWA:</strong> Notificações nativas e melhor UX mobile</li>
+          </ul>
+          <div class="highlight">
+            <p style="font-size: 1rem;"><strong>Objetivo:</strong> Estar juridicamente regular e com presença digital forte para o lançamento.</p>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">
+        Curto prazo (1-3 meses): Criar CNPJ, comprar domínio zafe.com.br.
+        Email corporativo @zafe.com.br, conta bancária PJ.
+        Marketing: redes sociais (Instagram, TikTok, LinkedIn), ads 18-35 anos.
+        Rebrand "Zafes" para "Zafe", meta 1.000 usuários, app PWA.
+      </aside>
+    </section>
+
+    <!-- SLIDE 11: MÉDIO/LONGO PRAZO -->
+    <section>
+      <h2>Roadmap: Médio e Longo Prazo</h2>
+      <div class="grid-3">
+        <div>
+          <h3 style="color: #86efac;">Médio Prazo (3-6 meses)</h3>
+          <ul style="font-size: 1rem;">
+            <li>Segunda Etapa: Lançamento do Zafe Premium (R$ 19,90/mês)</li>
+            <li>Parcerias de patrocínio corporativo</li>
+            <li>Concurso Trimestral com R$ 25k em prêmios</li>
+            <li>Gamificação (badges, níveis, streaks)</li>
+            <li>Recursos sociais (seguir previsores)</li>
+          </ul>
+        </div>
+        <div>
+          <h3 style="color: #86efac;">Longo Prazo (6-12 meses)</h3>
+          <ul style="font-size: 1rem;">
+            <li><strong>Troca de Zafes:</strong> 10.000 Z$ = 10% desconto em loja X</li>
+            <li><strong>Parcerias Comerciais:</strong> Zafes viram moeda de fidelidade</li>
+            <li><strong>Economico e Privadas:</strong> Possibilidade de converter Z$ em descontos reais</li>
+            <li>Venda de dados B2B (sabedoria das multidões)</li>
+            <li>Modelo de assinatura Premium escalado nacionalmente</li>
+          </ul>
+        </div>
+        <div>
+          <h3 style="color: #86efac;">Visão de Expansão</h3>
+          <ul style="font-size: 1rem;">
+            <li>Consolidação da marca Zafe no mercado nacional</li>
+            <li>Liderança absoluta em liga de previsões no Brasil</li>
+            <li>Parcerias com varejistas para conversão de Zafes</li>
+            <li>Expansão da base de usuários para 100k+</li>
+            <li>Tornar-se referência em competição de habilidade</li>
+          </ul>
+        </div>
+      </div>
+      <div class="success-box" style="text-align: center; margin-top: 30px;">
+        <p style="font-size: 1.2rem; font-weight: 600;">Visão de Longo Prazo: Zafes se tornam uma moeda de troca virtual aceita por parceiros comerciais, gerando descontos reais através de habilidade comprovada.</p>
+      </div>
+      <aside class="notes">
+        Médio prazo (3-6 meses): Zafe Premium R$ 19,90/mês, concurso trimestral R$ 25k.
+        Longo prazo (6-12 meses): Zafes viram moeda de fidelidade, conversão em descontos.
+        Visão: liderança nacional em liga de previsões, 100k+ usuários.
+        Venda de dados B2B (sabedoria das multidões), parcerias com varejistas.
+      </aside>
+    </section>
+
+    <!-- SLIDE 12: FECHAMENTO -->
+    <section>
+      <div style="text-align: center;">
+        <div class="logo">ZAFE</div>
+        <h2 style="color: #fff; font-size: 2.8rem;">A Liga de Previsões do Brasil</h2>
+        <div class="highlight" style="max-width: 800px; margin: 40px auto; text-align: left;">
+          <ul style="font-size: 1.2rem;">
+            <li>100% Legal (Lei 5.768/71 + CMN 5.298)</li>
+            <li>Sem apostas, sem depósitos de dinheiro real</li>
+            <li>Prêmios reais no concurso via PIX</li>
+            <li>Tecnologia de ponta (4 camadas de resolução)</li>
+            <li>Zafes: a moeda virtual que vale descontos reais</li>
+          </ul>
+        </div>
+        <p style="font-size: 1.5rem; color: #86efac; margin-top: 40px; font-weight: 600;">
+          Zafe: A liga onde você compete prevendo o que vai acontecer.
+        </p>
+        <p style="color: #666; margin-top: 20px;">zafe-rho.vercel.app → em breve zafe.com.br</p>
+        <div class="credits" style="position: relative; bottom: auto; left: auto; transform: none; margin-top: 40px;">
+          FEITO POR LUC SAPOZNIK E LORENZO FRAGALI
+        </div>
+      </div>
+      <aside class="notes">
+        Fechamento: Zafe é a liga de previsões do Brasil (100% legal).
+        Lei 5.768/71 + CMN 5.298: sem apostas, sem depósitos reais.
+        Prêmios reais via PIX no concurso, 4 camadas de resolução.
+        Zafes: moeda virtual que vale descontos reais.
+        Obrigado pela atenção. zafe-rho.vercel.app → zafe.com.br.
+      </aside>
+    </section>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/reveal.js"></script>
+<script>
+  Reveal.initialize({
+    hash: true,
+    transition: 'slide', // none/fade/slide/convex/concave/zoom
+    transitionSpeed: 'default', // default/fast/slow
+    backgroundTransition: 'fade',
+    width: 1280,
+    height: 720,
+    
+    // Speaker notes
+    showNotes: false,
+    
+    // Keyboard shortcuts
+    keyboard: {
+      13: 'next', // enter
+      27: function() {}, // escape does nothing
+      79: function() { // 'o' key
+        // Toggle overview
+        Reveal.toggleOverview();
+      }
+    },
+    
+    // Auto-slide (disabled by default)
+    autoSlide: 0,
+    autoSlideStoppable: true,
+    
+    // PDF export
+    pdfSeparateFragments: false,
+  });
+  
+  // Add keyboard navigation info to console
+  console.log('Zafe Presentation Loaded!');
+  console.log('Navigation: Arrow keys or Space (next), Shift+Space (prev)');
+  console.log('Press "o" for overview mode');
+  console.log('Press "s" for speaker notes');
+  console.log('Press "p" for PDF export (print to PDF)');
+</script>
+
+</body>
+</html>

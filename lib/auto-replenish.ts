@@ -70,6 +70,20 @@ export async function replenishMarkets(supabase: any) {
     }
 
     for (const tpl of templates) {
+      // Verificar se já existe tópico ativo com o mesmo título
+      const { data: existingTopic } = await supabase
+        .from("topics")
+        .select("id")
+        .eq("title", tpl.title)
+        .eq("status", "active")
+        .is("concurso_id", null)
+        .maybeSingle();
+
+      if (existingTopic) {
+        console.log(`[auto-replenish] Tópico já existe: ${tpl.title}. Pulando.`);
+        continue;
+      }
+
       const closeDate = new Date(Date.now() + tpl.duration_days * 24 * 60 * 60 * 1000);
       closeDate.setHours(23, 59, 59, 0);
       const closesAt = closeDate.toISOString();

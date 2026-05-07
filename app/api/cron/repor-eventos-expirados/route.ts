@@ -48,7 +48,21 @@ export async function GET(req: Request) {
       if (templates && templates.length > 0) {
         for (const template of templates) {
           try {
-            const novoClosesAt = new Date(agora.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 dias
+            // Verificar se já existe tópico ativo com o mesmo título
+            const { data: existingTopic } = await supabase
+              .from("topics")
+              .select("id")
+              .eq("title", template.title)
+              .eq("status", "active")
+              .is("concurso_id", null)
+              .maybeSingle();
+
+            if (existingTopic) {
+              console.log(`[repor-eventos] Tópico já existe: ${template.title}. Pulando.`);
+              continue;
+            }
+
+            const novoClosesAt = new Date(agora.getTime() + 7 * 24 * 60 * 60 * 1000);
             
             const { error } = await supabase.from("topics").insert({
               title: template.title,
@@ -58,7 +72,7 @@ export async function GET(req: Request) {
               status: "active",
               min_bet: 10,
               is_private: false,
-              creator_id: "89aee166-8ccd-4511-8082-8848925d60db", // Admin ID
+              creator_id: "89aee166-8ccd-4511-8082-8848925d60db",
               total_volume: 0,
               volume_sim: 0,
               volume_nao: 0,
@@ -94,6 +108,20 @@ export async function GET(req: Request) {
       if (templatesEconomico && templatesEconomico.length > 0) {
         for (const template of templatesEconomico) {
           try {
+            // Verificar se já existe tópico ativo com o mesmo título
+            const { data: existingTopic } = await supabase
+              .from("topics")
+              .select("id")
+              .eq("title", template.title)
+              .eq("status", "active")
+              .is("concurso_id", null)
+              .maybeSingle();
+
+            if (existingTopic) {
+              console.log(`[repor-eventos] Tópico já existe: ${template.title}. Pulando.`);
+              continue;
+            }
+
             const novoClosesAt = new Date(agora.getTime() + 7 * 24 * 60 * 60 * 1000);
             
             const { error } = await supabase.from("topics").insert({
