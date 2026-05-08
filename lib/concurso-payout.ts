@@ -19,12 +19,6 @@ export async function pagarConcursoBets(
       .eq("status", "matched");
 
     if (!bets || bets.length === 0) {
-      // Mesmo sem apostas, atualiza status do topic
-      await adminClient.from("topics").update({
-        status: "resolved",
-        resolution: resolution === "cancelled" ? null : resolution,
-        resolved_at: new Date().toISOString(),
-      }).eq("id", topicId).eq("concurso_id", bets?.[0]?.concurso_id ?? "").is("concurso_id", null).neq("id", "");
       return;
     }
 

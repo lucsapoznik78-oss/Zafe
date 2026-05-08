@@ -93,9 +93,9 @@ Use busca na web para verificar se este evento aconteceu antes do prazo:
 IMPORTANTE: Prefira SIM ou NAO a INCERTO sempre que encontrar qualquer evidência.`;
 
       // Tenta com web search via beta API
-      let response: any;
+      let rawText = "";
       try {
-        response = await (claude.beta.messages.create as any)({
+        const betaRes = await (claude.beta.messages.create as any)({
           model: "claude-haiku-4-5-20251001",
           max_tokens: 1024,
           betas: ["web-search-2025-03-05"],
@@ -103,21 +103,27 @@ IMPORTANTE: Prefira SIM ou NAO a INCERTO sempre que encontrar qualquer evidênci
           tools: [{ type: "web_search_20250305", name: "web_search" }],
           messages: [{ role: "user", content: prompt }],
         });
+        const tb = betaRes.content.find((b: any) => b.type === "text") as { type: "text"; text: string } | undefined;
+        rawText = tb?.text ?? "";
       } catch {
-        // Fallback sem web search
-        response = await claude.messages.create({
+        // Fallback sem web search — usa prefill para forçar saída JSON
+        const fallbackRes = await claude.messages.create({
           model: "claude-haiku-4-5-20251001",
           max_tokens: 512,
           system: ORACLE_SYSTEM,
-          messages: [{ role: "user", content: prompt }],
+          messages: [
+            { role: "user", content: prompt },
+            { role: "assistant", content: '{"resultado":' },
+          ],
         });
+        const tb = fallbackRes.content.find((b: any) => b.type === "text") as { type: "text"; text: string } | undefined;
+        rawText = '{"resultado":' + (tb?.text ?? "");
       }
 
-      const textBlock = response.content.find((b: any) => b.type === "text") as { type: "text"; text: string } | undefined;
-      const parsed = extractResultado(textBlock?.text ?? "");
+      const parsed = extractResultado(rawText);
 
       if (!parsed || !["SIM", "NAO", "INCERTO"].includes(parsed.resultado)) {
-        console.error("[resolver-direto] parse falhou para:", topic.title, "| resposta:", textBlock?.text?.slice(0, 200));
+        console.error("[resolver-direto] parse falhou para:", topic.title, "| resposta:", rawText.slice(0, 200));
         results.push({ title: topic.title, outcome: "parse_error" });
         continue;
       }

@@ -54,14 +54,43 @@ async function tryBCB(serie: string, question: string): Promise<OracleResult | n
   const latest = data[data.length - 1];
   const value = parseFloat(latest.valor?.replace(",", ".") ?? "0");
   const fonte = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${serie}/dados/ultimos/5`;
+  const q = question.toLowerCase();
+
+  // Detecta perguntas sobre corte/alta de juros (Copom/Selic)
+  const isCortePergunta = q.includes("cortar") || q.includes("corte") || q.includes("reduzir") || q.includes("redução") || q.includes("cair") && q.includes("selic");
+  const isAltaPergunta = q.includes("subir") || q.includes("alta") || q.includes("aumentar") || q.includes("elevar");
+  const isManterPergunta = q.includes("manter") || q.includes("mantida") || q.includes("manteve") || q.includes("estável");
+
+  if (isCortePergunta || isAltaPergunta || isManterPergunta) {
+    if (data.length >= 2) {
+      const prev = parseFloat(data[data.length - 2].valor?.replace(",", ".") ?? "0");
+      const diff = parseFloat((value - prev).toFixed(4));
+      const numberMatch = question.match(/[\d]+[,.][\d]+/);
+      const targetCut = numberMatch ? parseFloat(numberMatch[0].replace(",", ".")) : null;
+
+      if (isCortePergunta) {
+        if (targetCut !== null) {
+          // "cortar em X%" — verifica se o corte foi exatamente X (com tolerância de 0,01)
+          return { resultado: Math.abs(diff + targetCut) < 0.02 ? "SIM" : "NAO", confianca: 93, fonte };
+        }
+        return { resultado: diff < -0.001 ? "SIM" : "NAO", confianca: 90, fonte };
+      }
+      if (isAltaPergunta) {
+        return { resultado: diff > 0.001 ? "SIM" : "NAO", confianca: 90, fonte };
+      }
+      if (isManterPergunta) {
+        return { resultado: Math.abs(diff) < 0.001 ? "SIM" : "NAO", confianca: 90, fonte };
+      }
+    }
+  }
+
   const numberMatch = question.match(/[\d]+[,.]?[\d]*/);
   if (!numberMatch) return { resultado: "INCERTO", confianca: 50, fonte };
   const target = parseFloat(numberMatch[0].replace(",", "."));
-  const q = question.toLowerCase();
   if (q.includes("superar") || q.includes("acima") || q.includes("ultrapassar")) {
     return { resultado: value > target ? "SIM" : "NAO", confianca: 95, fonte };
   }
-  if (q.includes("abaixo") || q.includes("menor") || q.includes("cair")) {
+  if (q.includes("abaixo") || q.includes("menor")) {
     return { resultado: value < target ? "SIM" : "NAO", confianca: 95, fonte };
   }
   return { resultado: "INCERTO", confianca: 50, fonte };
