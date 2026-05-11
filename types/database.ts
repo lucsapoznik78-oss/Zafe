@@ -35,6 +35,7 @@ export type TransactionType =
   | "bet_won"
   | "bet_refund"
   | "commission"
+  | "bonus"
   | "referral_bonus"
   | "exit_fee"
   | "bet_exited";

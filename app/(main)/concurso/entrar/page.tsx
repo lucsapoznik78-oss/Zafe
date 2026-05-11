@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { Trophy, Users, Calendar } from "lucide-react";
+import { Trophy, Users } from "lucide-react";
 import LoginForm from "@/components/auth/LoginForm";
 import type { Metadata } from "next";
 
@@ -76,7 +76,7 @@ export default async function ConcursoEntrar() {
                 {concurso?.titulo ?? "Concurso Liga Zafe"}
               </p>
               <p className="text-[10px] text-yellow-400/60">
-                Inscrição grátis · ZC$ {(concurso?.saldo_inicial ?? 1000).toLocaleString("pt-BR")} de presente
+                Inscrição grátis · ZC$ {(concurso?.saldo_inicial ?? 500).toLocaleString("pt-BR")} de presente
               </p>
             </div>
           </div>

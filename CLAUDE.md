@@ -38,7 +38,7 @@ A Zafe **não custodiá nem move o dinheiro do usuário** dentro da plataforma. 
 ### O Z$ é virtual para todos os efeitos
 
 Z$ é a moeda de jogo da plataforma. Funciona em Econômico, Privadas e Liga. **Não é convertível em dinheiro real**, nunca, em hipótese alguma. Você ganha Z$ por:
-- Bônus de onboarding (1.000 Z$ ao criar conta)
+- Bônus de onboarding (500 Z$ ao criar conta)
 - Bônus semanal (cron de engajamento)
 - Vencer eventos e concursos *internos* (palpites no Econômico, Privadas, Liga)
 - Promoções e ações pontuais

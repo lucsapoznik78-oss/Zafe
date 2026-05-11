@@ -1,6 +1,11 @@
 -- Migração 013: bônus de boas-vindas (500 Z$) + correção labels ZC$ no concurso
 -- Aplicar no SQL Editor do Supabase
 
+ALTER TYPE transaction_type ADD VALUE IF NOT EXISTS 'bonus';
+ALTER TYPE transaction_type ADD VALUE IF NOT EXISTS 'referral_bonus';
+ALTER TYPE transaction_type ADD VALUE IF NOT EXISTS 'exit_fee';
+ALTER TYPE transaction_type ADD VALUE IF NOT EXISTS 'bet_exited';
+
 -- Atualiza o trigger de criação de usuário para dar 500 Z$ de bônus
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
