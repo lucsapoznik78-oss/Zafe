@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import CategoryBadge from "@/components/topicos/CategoryBadge";
 import BetForm from "@/components/topicos/BetForm";
+import MultiOutcomeBetForm from "@/components/topicos/MultiOutcomeBetForm";
 import CommentSection from "@/components/topicos/CommentSection";
 import CountdownTimer from "@/components/topicos/CountdownTimer";
 import MercadoSecundario from "@/components/topicos/MercadoSecundario";
@@ -44,7 +45,9 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
 
   const topicId = topic.id;
 
-  const [{ data: snapshots }, { data: statsData }, { data: wallet }, { data: userBets }, { data: allBets }, { data: resolucao }] =
+  const isMulti = topic.market_type === "multi";
+
+  const [{ data: snapshots }, { data: statsData }, { data: wallet }, { data: userBets }, { data: allBets }, { data: resolucao }, { data: topicOutcomes }] =
     await Promise.all([
       admin.from("topic_snapshots").select("prob_sim, volume_sim, volume_nao, recorded_at")
         .eq("topic_id", topicId).order("recorded_at", { ascending: true }).limit(500),
@@ -53,7 +56,7 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
         ? supabase.from("wallets").select("balance").eq("user_id", user.id).single()
         : Promise.resolve({ data: null }),
       user
-        ? admin.from("bets").select("id, side, amount, status, potential_payout")
+        ? admin.from("bets").select("id, side, outcome_id, amount, status, potential_payout")
             .eq("topic_id", topicId).eq("user_id", user.id)
         : Promise.resolve({ data: null }),
       admin.from("bets")
@@ -65,6 +68,9 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
       topic.status === "resolved"
         ? admin.from("resolucoes").select("resolvido_por, oracle_usado, resultado_final, check1_fonte, check2_fonte")
             .eq("mercado_id", topicId).order("resolvido_em", { ascending: false }).limit(1).single()
+        : Promise.resolve({ data: null }),
+      isMulti
+        ? admin.from("topic_outcomes").select("id, label, pool, position").eq("topic_id", topicId).order("position")
         : Promise.resolve({ data: null }),
     ]);
 
@@ -167,29 +173,33 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
       )}
 
       {/* Banner de resultado do mercado */}
-      {topic.status === "resolved" && topic.resolution && (
-        <div className={`flex items-center gap-3 rounded-xl px-5 py-4 mb-6 border ${
-          topic.resolution === "sim" ? "bg-sim/10 border-sim/30" : "bg-nao/10 border-nao/30"
-        }`}>
-          <span className={`text-3xl font-black ${topic.resolution === "sim" ? "text-sim" : "text-nao"}`}>
-            {topic.resolution === "sim" ? "SIM" : "NÃO"}
-          </span>
-          <div className="flex-1">
-            <p className={`text-sm font-bold ${topic.resolution === "sim" ? "text-sim" : "text-nao"}`}>
-              Resultado: {topic.resolution === "sim" ? "SIM venceu" : "NÃO venceu"}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Evento resolvido · {resolvedByLabel === "oracle_ai" ? "Oracle AI" : resolvedByLabel === "oracle_api" ? "Oracle API" : "admin"}
-            </p>
+      {topic.status === "resolved" && (topic.resolution || topic.winning_outcome_id) && (() => {
+        const winningLabel = topic.winning_outcome_id
+          ? (topicOutcomes ?? []).find((o: any) => o.id === topic.winning_outcome_id)?.label ?? "Vencedor"
+          : topic.resolution === "sim" ? "SIM" : "NÃO";
+        const isSim = !topic.winning_outcome_id && topic.resolution === "sim";
+        const colorClass = topic.winning_outcome_id ? "bg-primary/10 border-primary/30" : isSim ? "bg-sim/10 border-sim/30" : "bg-nao/10 border-nao/30";
+        const textClass = topic.winning_outcome_id ? "text-primary" : isSim ? "text-sim" : "text-nao";
+        return (
+          <div className={`flex items-center gap-3 rounded-xl px-5 py-4 mb-6 border ${colorClass}`}>
+            <span className={`text-2xl font-black ${textClass} max-w-[180px] truncate`}>{winningLabel}</span>
+            <div className="flex-1">
+              <p className={`text-sm font-bold ${textClass}`}>
+                {topic.winning_outcome_id ? `${winningLabel} venceu` : `${winningLabel} venceu`}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Evento resolvido · {resolvedByLabel === "oracle_ai" ? "Oracle AI" : resolvedByLabel === "oracle_api" ? "Oracle API" : "admin"}
+              </p>
+            </div>
+            {proofUrl && (
+              <a href={proofUrl} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-1 text-xs text-primary hover:underline shrink-0">
+                Ver fonte →
+              </a>
+            )}
           </div>
-          {proofUrl && (
-            <a href={proofUrl} target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-1 text-xs text-primary hover:underline shrink-0">
-              Ver fonte →
-            </a>
-          )}
-        </div>
-      )}
+        );
+      })()}
 
       {/* Layout principal */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -318,15 +328,25 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
 
         {/* Sidebar (1/3) */}
         <div className="space-y-4">
-          <BetForm
-            topicId={topicId}
-            minBet={topic.min_bet}
-            totalSim={totalSim}
-            totalNao={totalNao}
-            isClosed={isClosed}
-            userBalance={userBalance}
-            initialSide={initialSide as "sim" | "nao" | undefined}
-          />
+          {isMulti ? (
+            <MultiOutcomeBetForm
+              topicId={topicId}
+              minBet={topic.min_bet}
+              outcomes={(topicOutcomes ?? []).map((o: any) => ({ id: o.id, label: o.label, pool: Number(o.pool) }))}
+              isClosed={isClosed}
+              userBalance={userBalance}
+            />
+          ) : (
+            <BetForm
+              topicId={topicId}
+              minBet={topic.min_bet}
+              totalSim={totalSim}
+              totalNao={totalNao}
+              isClosed={isClosed}
+              userBalance={userBalance}
+              initialSide={initialSide as "sim" | "nao" | undefined}
+            />
+          )}
 
           <MercadoSecundario
             topicId={topicId}

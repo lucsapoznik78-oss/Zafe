@@ -74,8 +74,10 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
     userConcursoBets = myBets ?? [];
   }
 
+  const isMulti = topic.market_type === "multi";
+
   // Topic stats — usa APENAS concurso_bets para odds e volume do concurso
-  const [{ data: concursoStats }, { data: snapshots }, { data: allConcursoBets }] = await Promise.all([
+  const [{ data: concursoStats }, { data: snapshots }, { data: allConcursoBets }, { data: topicOutcomes }] = await Promise.all([
     admin.from("concurso_bets")
       .select("side, amount, status")
       .eq("topic_id", topicId)
@@ -84,12 +86,15 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
       .select("prob_sim, volume_sim, volume_nao, recorded_at")
       .eq("topic_id", topicId).order("recorded_at", { ascending: true }).limit(500),
     admin.from("concurso_bets")
-      .select("id, side, amount, status, potential_payout, created_at, profiles(username, full_name)")
+      .select("id, side, outcome_id, amount, status, potential_payout, created_at, profiles(username, full_name)")
       .eq("topic_id", topicId)
       .eq("concurso_id", concurso?.id ?? "")
       .in("status", ["matched", "won", "lost", "refunded"])
       .order("amount", { ascending: false })
       .limit(100),
+    isMulti
+      ? admin.from("topic_outcomes").select("id, label, pool, position").eq("topic_id", topicId).order("position")
+      : Promise.resolve({ data: null }),
   ]);
 
   const poolSim = (concursoStats ?? []).filter((b: any) => b.side === "sim" && b.status === "matched").reduce((s: number, b: any) => s + Number(b.amount), 0);
@@ -265,6 +270,8 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
                 poolNao={poolNao}
                 isClosed={isClosed}
                 zcBalance={zcBalance}
+                isMulti={isMulti}
+                outcomes={(topicOutcomes ?? []).map((o: any) => ({ id: o.id, label: o.label, pool: Number(o.pool) }))}
               />
             ) : (
               <div className="bg-yellow-400/5 border border-yellow-400/30 rounded-xl p-4 text-center space-y-3">

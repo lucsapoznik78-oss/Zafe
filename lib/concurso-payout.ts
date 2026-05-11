@@ -91,3 +91,50 @@ export async function pagarConcursoBets(
     console.error("[concurso-payout] Erro:", err);
   }
 }
+
+export async function pagarConcursoBetsMulti(
+  adminClient: SupabaseClient,
+  topicId: string,
+  winningOutcomeId: string
+): Promise<void> {
+  try {
+    const { data: bets } = await adminClient
+      .from("concurso_bets")
+      .select("id, user_id, concurso_id, outcome_id, amount")
+      .eq("topic_id", topicId)
+      .eq("status", "matched");
+
+    if (!bets || bets.length === 0) return;
+
+    const winners = bets.filter((b) => b.outcome_id === winningOutcomeId);
+    const losers  = bets.filter((b) => b.outcome_id !== winningOutcomeId);
+    const totalWinning = winners.reduce((s, b) => s + Number(b.amount), 0);
+    const totalLosing  = losers.reduce((s, b) => s + Number(b.amount), 0);
+
+    for (const bet of losers) {
+      await adminClient.from("concurso_bets").update({ status: "lost" }).eq("id", bet.id);
+    }
+
+    for (const bet of winners) {
+      const winnerShare = totalWinning > 0 ? (Number(bet.amount) / totalWinning) * totalLosing : 0;
+      const payout = Number(bet.amount) + winnerShare;
+      await adminClient.from("concurso_bets").update({ status: "won", potential_payout: payout }).eq("id", bet.id);
+      const { data: w } = await adminClient
+        .from("concurso_wallets").select("balance")
+        .eq("user_id", bet.user_id).eq("concurso_id", bet.concurso_id).single();
+      await adminClient.from("concurso_wallets")
+        .update({ balance: (w?.balance ?? 0) + payout, updated_at: new Date().toISOString() })
+        .eq("user_id", bet.user_id).eq("concurso_id", bet.concurso_id);
+    }
+
+    await adminClient.from("topics").update({
+      status: "resolved",
+      winning_outcome_id: winningOutcomeId,
+      resolved_at: new Date().toISOString(),
+    }).eq("id", topicId);
+
+    console.log(`[concurso-payout/multi] topic=${topicId} winners=${winners.length} losers=${losers.length}`);
+  } catch (err) {
+    console.error("[concurso-payout/multi] Erro:", err);
+  }
+}

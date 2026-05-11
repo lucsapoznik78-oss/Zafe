@@ -69,6 +69,79 @@ export async function reembolsarTodos(
   }
 }
 
+export async function pagarVencedoresMulti(
+  supabase: any,
+  topicId: string,
+  winningOutcomeId: string,
+  resolvedBy?: string
+) {
+  const { data: topic } = await supabase.from("topics").select("title, concurso_id").eq("id", topicId).single();
+  const title = topic?.title?.slice(0, 55) ?? "Mercado";
+
+  if (topic?.concurso_id) {
+    return { note: "skipped_concurso_topic" };
+  }
+
+  const { data: allBets } = await supabase
+    .from("bets").select("*").eq("topic_id", topicId).not("status", "in", '("refunded","exited","won","lost")');
+
+  const bets = allBets ?? [];
+  const winnerBets = bets.filter((b: any) => b.outcome_id === winningOutcomeId);
+  const loserBets  = bets.filter((b: any) => b.outcome_id !== winningOutcomeId);
+
+  if (winnerBets.length === 0) {
+    await reembolsarTodos(supabase, topicId, "Sem apostas no resultado vencedor", resolvedBy);
+    return { note: "no_coverage_refund" };
+  }
+
+  const totalWinPool  = winnerBets.reduce((s: number, b: any) => s + b.amount, 0);
+  const totalLosePool = loserBets.reduce((s: number, b: any) => s + b.amount, 0);
+
+  for (const bet of winnerBets) {
+    const winnings = parseFloat(((bet.amount / totalWinPool) * totalLosePool).toFixed(2));
+    const payout   = parseFloat((bet.amount + winnings).toFixed(2));
+    const { data: w } = await supabase.from("wallets").select("balance").eq("user_id", bet.user_id).single();
+    await supabase.from("wallets").update({ balance: (w?.balance ?? 0) + payout }).eq("user_id", bet.user_id);
+    await supabase.from("bets").update({ status: "won", potential_payout: payout }).eq("id", bet.id);
+    await supabase.from("transactions").insert({
+      user_id: bet.user_id, type: "bet_won", amount: payout, net_amount: payout,
+      description: `Ganhou — resultado vencedor`, reference_id: topicId,
+    });
+    await supabase.from("notifications").insert({
+      user_id: bet.user_id, type: "bet_won",
+      title: "Você ganhou! 🏆",
+      body: `Sua aposta em "${title}" rendeu ${fmt(payout)}.`,
+      data: { topic_id: topicId, payout },
+    });
+  }
+
+  for (const bet of loserBets) {
+    await supabase.from("bets").update({ status: "lost" }).eq("id", bet.id);
+    await supabase.from("notifications").insert({
+      user_id: bet.user_id, type: "market_resolved",
+      title: "Mercado resolvido",
+      body: `"${title}" foi resolvido. Boa sorte na próxima!`,
+      data: { topic_id: topicId },
+    });
+  }
+
+  const { data: topicMeta } = await supabase.from("topics").select("is_private").eq("id", topicId).single();
+  await cancelTopicOrders(supabase, topicId).catch((e: any) => console.error("[payout] cancelTopicOrders:", e));
+
+  await supabase.from("topics").update({
+    status: "resolved",
+    winning_outcome_id: winningOutcomeId,
+    resolved_at: new Date().toISOString(),
+    ...(resolvedBy ? { resolved_by: resolvedBy } : {}),
+  }).eq("id", topicId);
+
+  if (!topicMeta?.is_private) {
+    replenishMarkets(supabase).catch((e: any) => console.error("[payout] replenish:", e));
+  }
+
+  return { note: "paid" };
+}
+
 export async function pagarVencedores(
   supabase: any,
   topicId: string,

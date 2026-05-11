@@ -36,7 +36,7 @@ export default async function AdminPage() {
   ] = await Promise.all([
     admin.from("topics").select("*, creator:profiles!creator_id(username, full_name)").eq("status", "pending").order("created_at"),
     // Todos resolving — admin pode resolver manualmente qualquer um
-    admin.from("topics").select("id, title, category, closes_at, oracle_retry_count").eq("status", "resolving").eq("is_private", false).order("closes_at"),
+    admin.from("topics").select("id, title, category, closes_at, oracle_retry_count, market_type").eq("status", "resolving").eq("is_private", false).order("closes_at"),
     admin.from("wallets").select("balance"),
     admin.from("bets").select("amount").in("status", ["pending", "matched", "partial"]),
     admin.from("orders").select("price, quantity, filled_qty").eq("status", "open").eq("side", "buy"),
@@ -50,6 +50,21 @@ export default async function AdminPage() {
     admin.from("bets").select("amount").in("status", ["matched", "won", "lost"]),
     admin.from("profiles").select("*", { count: "exact", head: true }).gte("updated_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
   ]);
+
+  // Buscar outcomes para topics resolving que são multi
+  const multiResolvingIds = (allResolving ?? []).filter((t: any) => t.market_type === "multi").map((t: any) => t.id);
+  let outcomesMap: Record<string, { id: string; label: string }[]> = {};
+  if (multiResolvingIds.length > 0) {
+    const { data: allOutcomes } = await admin.from("topic_outcomes").select("id, topic_id, label, position").in("topic_id", multiResolvingIds).order("position");
+    for (const o of allOutcomes ?? []) {
+      if (!outcomesMap[o.topic_id]) outcomesMap[o.topic_id] = [];
+      outcomesMap[o.topic_id].push({ id: o.id, label: o.label });
+    }
+  }
+  const resolvingWithOutcomes = (allResolving ?? []).map((t: any) => ({
+    ...t,
+    outcomes: outcomesMap[t.id] ?? [],
+  }));
 
   // Separar em JS (funciona com ou sem coluna concurso_id no banco)
   const economicTopics = (allActiveTopics ?? []).filter(t => t.category === 'economia' && !t.concurso_id);
@@ -87,7 +102,7 @@ export default async function AdminPage() {
         activeUsers30d={activeUsers30d ?? 0}
       />
       <AdminQueue topics={pending ?? []} />
-      <AdminResolve topics={[]} allResolving={allResolving ?? []} />
+      <AdminResolve topics={[]} allResolving={resolvingWithOutcomes} />
       
       {/* Zafe Econômico */}
       <div>

@@ -52,9 +52,12 @@ function extractResultadoJson(raw: string): { resultado: string; confianca?: num
   return null;
 }
 
-function parseCheckResult(raw: string): CheckResult {
+function parseCheckResult(raw: string, outcomes?: string[]): CheckResult {
   const parsed = extractResultadoJson(raw);
-  if (parsed && ["SIM", "NAO", "INCERTO"].includes(parsed.resultado)) {
+  const validValues = outcomes && outcomes.length > 0
+    ? [...outcomes, "INCERTO"]
+    : ["SIM", "NAO", "INCERTO"];
+  if (parsed && validValues.includes(parsed.resultado)) {
     const resultado = parsed.resultado as "SIM" | "NAO" | "INCERTO";
     return {
       resultado,
@@ -65,9 +68,28 @@ function parseCheckResult(raw: string): CheckResult {
   return { resultado: "INCERTO", confianca: 0, fonte: "" };
 }
 
-function buildPrompt(question: string, closesAt: string, tentativa: number): string {
+function buildPrompt(question: string, closesAt: string, tentativa: number, outcomes?: string[]): string {
   const agora = new Date().toISOString();
   const prazo = new Date(closesAt).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
+
+  if (outcomes && outcomes.length > 0) {
+    const opcoesStr = outcomes.map((o) => `"${o}"`).join(", ");
+    return `Data atual: ${agora}
+Prazo do mercado: ${prazo} (horário de Brasília)
+
+Determine qual dos seguintes resultados ocorreu antes do prazo para este evento:
+"${question}"
+
+Opções disponíveis: [${opcoesStr}]
+
+Responda SOMENTE com JSON puro (sem markdown):
+{"resultado":"<label exato de uma das opções>","confianca":95,"fonte":"https://..."}
+ou se incerto:
+{"resultado":"INCERTO","confianca":0,"fonte":""}
+
+IMPORTANTE: "resultado" deve ser EXATAMENTE um dos labels da lista ou "INCERTO".${tentativa > 1 ? "\n- SEGUNDA TENTATIVA: seja mais assertivo." : ""}`;
+  }
+
   return `Data atual: ${agora}
 Prazo do mercado: ${prazo} (horário de Brasília)
 
@@ -82,7 +104,7 @@ Regras:
 }
 
 // Tentativa COM web search
-async function verificacaoComSearch(question: string, closesAt: string, tentativa: number): Promise<CheckResult> {
+async function verificacaoComSearch(question: string, closesAt: string, tentativa: number, outcomes?: string[]): Promise<CheckResult> {
   try {
     const response = await (client.beta.messages.create as any)({
       model: "claude-haiku-4-5-20251001",
@@ -90,10 +112,10 @@ async function verificacaoComSearch(question: string, closesAt: string, tentativ
       betas: ["web-search-2025-03-05"],
       system: ORACLE_SYSTEM,
       tools: [{ type: "web_search_20250305", name: "web_search" }],
-      messages: [{ role: "user", content: buildPrompt(question, closesAt, tentativa) }],
+      messages: [{ role: "user", content: buildPrompt(question, closesAt, tentativa, outcomes) }],
     });
     const textBlock = response.content.find((b: any) => b.type === "text") as { type: "text"; text: string } | undefined;
-    return parseCheckResult(textBlock?.text ?? "");
+    return parseCheckResult(textBlock?.text ?? "", outcomes);
   } catch (e) {
     console.warn("[oracle] web_search falhou:", String(e).slice(0, 200));
     return { resultado: "INCERTO", confianca: 0, fonte: "search_error" };
@@ -101,16 +123,16 @@ async function verificacaoComSearch(question: string, closesAt: string, tentativ
 }
 
 // Fallback SEM web search — Claude usa conhecimento de treinamento
-async function verificacaoSemSearch(question: string, closesAt: string): Promise<CheckResult> {
+async function verificacaoSemSearch(question: string, closesAt: string, outcomes?: string[]): Promise<CheckResult> {
   try {
     const response = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 512,
       system: ORACLE_SYSTEM,
-      messages: [{ role: "user", content: buildPrompt(question, closesAt, 2) }],
+      messages: [{ role: "user", content: buildPrompt(question, closesAt, 2, outcomes) }],
     });
     const textBlock = response.content.find((b: any) => b.type === "text") as { type: "text"; text: string } | undefined;
-    return parseCheckResult(textBlock?.text ?? "");
+    return parseCheckResult(textBlock?.text ?? "", outcomes);
   } catch (e) {
     console.warn("[oracle] fallback sem search falhou:", String(e).slice(0, 200));
     return { resultado: "INCERTO", confianca: 0, fonte: "" };
@@ -127,17 +149,16 @@ export interface TripleCheckResult {
 
 export async function oracleAITripleCheck(
   question: string,
-  closesAt: string
+  closesAt: string,
+  outcomes?: string[]
 ): Promise<TripleCheckResult> {
-  // Tentativa 1: SEM web search (rápido, Claude usa conhecimento de treinamento)
-  const check1 = await verificacaoSemSearch(question, closesAt);
+  const check1 = await verificacaoSemSearch(question, closesAt, outcomes);
 
   if (check1.resultado !== "INCERTO") {
     return { resultado: check1.resultado, confianca: "alta", check1, check2: { resultado: "INCERTO", confianca: 0, fonte: "" }, check3: { resultado: "INCERTO", confianca: 0, fonte: "" } };
   }
 
-  // Tentativa 2: COM web search
-  const check2 = await verificacaoComSearch(question, closesAt, 2);
+  const check2 = await verificacaoComSearch(question, closesAt, 2, outcomes);
 
   if (check2.resultado !== "INCERTO") {
     return { resultado: check2.resultado, confianca: "alta", check1, check2, check3: { resultado: "INCERTO", confianca: 0, fonte: "" } };

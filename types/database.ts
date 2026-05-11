@@ -10,6 +10,16 @@ export type TopicCategory =
 export type TopicStatus = "pending" | "active" | "resolving" | "resolved" | "cancelled";
 export type TopicResolution = "sim" | "nao" | null;
 export type BetSide = "sim" | "nao";
+export type MarketType = "binary" | "multi";
+
+export interface TopicOutcome {
+  id: string;
+  topic_id: string;
+  label: string;
+  position: number;
+  pool: number;
+  created_at: string;
+}
 export type BetStatus =
   | "pending"
   | "matched"

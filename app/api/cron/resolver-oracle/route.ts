@@ -33,7 +33,7 @@ export async function POST(req: Request) {
   // Busca topics resolving prontos (next_retry no passado ou nulo)
   const { data: topics } = await supabase
     .from("topics")
-    .select("id, title, category, oracle_api_id, oracle_retry_count, closes_at")
+    .select("id, title, category, oracle_api_id, oracle_retry_count, closes_at, market_type")
     .eq("status", "resolving")
     .or("oracle_next_retry_at.is.null,oracle_next_retry_at.lte." + new Date().toISOString());
 

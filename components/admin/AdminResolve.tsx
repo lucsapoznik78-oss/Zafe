@@ -23,12 +23,19 @@ interface TopicRevisao {
   resolucoes: Resolucao[];
 }
 
+interface TopicOutcome {
+  id: string;
+  label: string;
+}
+
 interface TopicResolving {
   id: string;
   title: string;
   category: string;
   closes_at: string;
   oracle_retry_count: number | null;
+  market_type?: string;
+  outcomes?: TopicOutcome[];
 }
 
 interface Props {
@@ -40,13 +47,15 @@ export default function AdminResolve({ topics, allResolving }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
   const [done, setDone] = useState<Set<string>>(new Set());
+  const [selectedOutcome, setSelectedOutcome] = useState<Record<string, string>>({});
 
-  async function resolve(topicId: string, resolution: "sim" | "nao" | "cancelled") {
-    setLoading(topicId + resolution);
+  async function resolve(topicId: string, resolution: "sim" | "nao" | "cancelled", winningOutcomeId?: string) {
+    const key = winningOutcomeId ? topicId + winningOutcomeId : topicId + resolution;
+    setLoading(key);
     const res = await fetch("/api/admin/resolver", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ topic_id: topicId, resolution }),
+      body: JSON.stringify({ topic_id: topicId, resolution, winning_outcome_id: winningOutcomeId }),
     });
     setLoading(null);
     if (res.ok) {
@@ -75,8 +84,40 @@ export default function AdminResolve({ topics, allResolving }: Props) {
     );
   }
 
-  function ResolveBtns({ topicId }: { topicId: string }) {
+  function ResolveBtns({ topicId, isMulti, outcomes }: { topicId: string; isMulti?: boolean; outcomes?: TopicOutcome[] }) {
     if (done.has(topicId)) return <p className="text-xs text-sim font-semibold">✅ Resolvido</p>;
+
+    if (isMulti && outcomes && outcomes.length > 0) {
+      const chosen = selectedOutcome[topicId] ?? "";
+      return (
+        <div className="space-y-2">
+          <select
+            value={chosen}
+            onChange={(e) => setSelectedOutcome((s) => ({ ...s, [topicId]: e.target.value }))}
+            className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none"
+          >
+            <option value="">Selecionar resultado vencedor…</option>
+            {outcomes.map((o) => (
+              <option key={o.id} value={o.id}>{o.label}</option>
+            ))}
+          </select>
+          <div className="flex gap-2">
+            <button
+              onClick={() => chosen && resolve(topicId, "sim", chosen)}
+              disabled={!!loading || !chosen}
+              className="flex-1 py-2 bg-primary text-black font-bold text-sm rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
+            >
+              {loading === topicId + chosen ? <Loader2 size={14} className="animate-spin mx-auto" /> : "Confirmar vencedor"}
+            </button>
+            <button onClick={() => resolve(topicId, "cancelled")} disabled={!!loading}
+              className="px-3 py-2 bg-muted text-muted-foreground text-sm rounded-lg hover:text-white transition-colors">
+              Cancelar
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="flex gap-2">
         <button onClick={() => resolve(topicId, "sim")} disabled={!!loading}
@@ -126,7 +167,7 @@ export default function AdminResolve({ topics, allResolving }: Props) {
                     )}
                   </p>
                 </div>
-                <ResolveBtns topicId={topic.id} />
+                <ResolveBtns topicId={topic.id} isMulti={topic.market_type === "multi"} outcomes={topic.outcomes} />
               </div>
             ))}
           </div>
@@ -164,7 +205,7 @@ export default function AdminResolve({ topics, allResolving }: Props) {
                       {formatDistanceToNow(new Date(resolucao.created_at), { addSuffix: true, locale: ptBR })}
                     </div>
                   )}
-                  <ResolveBtns topicId={topic.id} />
+                  <ResolveBtns topicId={topic.id} isMulti={topic.market_type === "multi"} outcomes={topic.outcomes} />
                 </div>
               );
             })}
