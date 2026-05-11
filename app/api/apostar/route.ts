@@ -184,6 +184,5 @@ export async function POST(request: Request) {
     success: true,
     bet_id: bet.id,
     estimated_odds: estimatedOdds,
-    matched: (oppCount ?? 0) > 0,
   });
 }

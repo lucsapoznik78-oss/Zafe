@@ -20,6 +20,8 @@ interface TopicRevisao {
   id: string;
   title: string;
   category: string;
+  market_type?: string;
+  outcomes?: TopicOutcome[];
   resolucoes: Resolucao[];
 }
 
