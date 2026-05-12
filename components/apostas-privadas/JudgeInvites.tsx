@@ -50,7 +50,7 @@ export default function JudgeInvites({ nominations }: Props) {
         <div key={nom.id} className="flex items-start justify-between gap-3 bg-background/50 rounded-lg p-3">
           <div className="flex-1 min-w-0">
             <Link
-              href={`/apostas-privadas/${nom.topic_id}`}
+              href={`/privadas/${nom.topic_id}`}
               className="text-sm font-medium text-white line-clamp-2 hover:text-primary transition-colors flex items-start gap-1"
             >
               {nom.topic.title}

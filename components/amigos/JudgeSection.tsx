@@ -78,7 +78,7 @@ export default function JudgeSection({ propostos, pendentes, ativos }: Props) {
           {propostos.map((nom) => (
             <Link
               key={nom.id}
-              href={`/apostas-privadas/${nom.topic_id}`}
+              href={`/privadas/${nom.topic_id}`}
               className="flex items-center gap-3 bg-card border border-border rounded-xl p-4 hover:border-primary/40 transition-colors"
             >
               <div className="w-9 h-9 rounded-xl bg-muted/20 flex items-center justify-center shrink-0">
@@ -115,7 +115,7 @@ export default function JudgeSection({ propostos, pendentes, ativos }: Props) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <Link
-                    href={`/apostas-privadas/${nom.topic_id}`}
+                    href={`/privadas/${nom.topic_id}`}
                     className="text-sm font-semibold text-white hover:text-primary transition-colors line-clamp-2 flex items-start gap-1"
                   >
                     {nom.topic.title}
@@ -172,7 +172,7 @@ export default function JudgeSection({ propostos, pendentes, ativos }: Props) {
           {ativos.map((nom) => (
             <Link
               key={nom.id}
-              href={`/apostas-privadas/${nom.topic_id}`}
+              href={`/privadas/${nom.topic_id}`}
               className="flex items-center gap-3 bg-card border border-border rounded-xl p-4 hover:border-primary/40 transition-colors"
             >
               <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">

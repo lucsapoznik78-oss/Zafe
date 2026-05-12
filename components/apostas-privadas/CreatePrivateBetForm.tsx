@@ -203,7 +203,7 @@ export default function CreatePrivateBetForm({ userId }: { userId: string }) {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Erro ao criar bolão"); return; }
-      router.push(`/apostas-privadas/${data.topic_id}`);
+      router.push(`/privadas/${data.topic_id}`);
     } catch {
       setError("Erro de conexão");
     } finally {

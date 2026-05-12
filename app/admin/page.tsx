@@ -19,6 +19,12 @@ export default async function AdminPage() {
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const admin = createAdminClient();
 
+  // Usuários órfãos: auth.users sem perfil correspondente
+  const { data: { users: authUsers } } = await admin.auth.admin.listUsers({ perPage: 1000 });
+  const { data: profileIds } = await admin.from("profiles").select("id");
+  const profileIdSet = new Set((profileIds ?? []).map((p: any) => p.id));
+  const orphanedUsers = authUsers.filter((u) => !profileIdSet.has(u.id));
+
   // SEPARAR: Econômico vs Liga vs Concurso (separar em JS após buscar todos os ativos)
   const [
     { data: pending },
@@ -123,6 +129,41 @@ export default async function AdminPage() {
         <h2 className="text-lg font-bold text-white mb-1">Concurso (Eventos com Inscrição)</h2>
         <p className="text-xs text-muted-foreground mb-3">Eventos que fazem parte do concurso ativo (min_bet = 20 Z$)</p>
         <AdminActiveTopics topics={concursoTopics ?? []} showCategory showConcurso />
+      </div>
+
+      {/* Saúde do Sistema */}
+      <div>
+        <h2 className="text-lg font-bold text-white mb-1">Saúde do Sistema</h2>
+        <p className="text-xs text-muted-foreground mb-3">Usuários órfãos — criaram conta mas não têm perfil</p>
+        {orphanedUsers.length === 0 ? (
+          <div className="bg-card border border-border rounded-xl p-4 text-sm text-sim flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-sim inline-block" />
+            Nenhum usuário órfão encontrado. Trigger funcionando corretamente.
+          </div>
+        ) : (
+          <div className="bg-card border border-yellow-500/30 rounded-xl overflow-hidden">
+            <div className="px-4 py-3 bg-yellow-500/10 border-b border-yellow-500/20 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-yellow-400 inline-block" />
+              <span className="text-sm font-semibold text-yellow-400">{orphanedUsers.length} usuário(s) sem perfil</span>
+            </div>
+            <div className="divide-y divide-border">
+              {orphanedUsers.map((u) => (
+                <div key={u.id} className="px-4 py-3 flex items-center justify-between gap-4 text-sm">
+                  <div className="min-w-0">
+                    <p className="text-white font-medium truncate">{u.email}</p>
+                    <p className="text-xs text-muted-foreground font-mono">{u.id}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(u.created_at).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                    </p>
+                    <p className="text-xs text-yellow-400 mt-0.5">{u.email_confirmed_at ? "email confirmado" : "email não confirmado"}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div>

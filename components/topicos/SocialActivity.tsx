@@ -20,12 +20,12 @@ export default async function SocialActivity({ topicId, currentUserId }: Props) 
   // Buscar amigos
   const { data: friendRows } = await supabase
     .from("friendships")
-    .select("user_id, friend_id")
-    .or(`user_id.eq.${currentUserId},friend_id.eq.${currentUserId}`)
+    .select("requester_id, addressee_id")
+    .or(`requester_id.eq.${currentUserId},addressee_id.eq.${currentUserId}`)
     .eq("status", "accepted");
 
   const friendIds = (friendRows ?? []).map((r: any) =>
-    r.user_id === currentUserId ? r.friend_id : r.user_id
+    r.requester_id === currentUserId ? r.addressee_id : r.requester_id
   );
 
   if (!friendIds.length) return null;

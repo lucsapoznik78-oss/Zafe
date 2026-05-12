@@ -17,6 +17,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Data de encerramento inválida" }, { status: 400 });
   }
 
+  // Bloquear criação de eventos econômicos para não-admins
+  if (category === "economia") {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role, pode_criar_economico")
+      .eq("id", user.id)
+      .single();
+    const canCreate = (profile as any)?.role === "admin" || (profile as any)?.pode_criar_economico === true;
+    if (!canCreate) {
+      return NextResponse.json({ error: "Apenas administradores podem criar eventos econômicos" }, { status: 403 });
+    }
+  }
+
   const isMulti = market_type === "multi";
   if (isMulti) {
     const labels: string[] = (outcomes ?? []).map((o: string) => o.trim()).filter(Boolean);

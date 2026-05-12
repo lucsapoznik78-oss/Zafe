@@ -345,6 +345,7 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
               isClosed={isClosed}
               userBalance={userBalance}
               initialSide={initialSide as "sim" | "nao" | undefined}
+              pilar={pilar}
             />
           )}
 

@@ -302,7 +302,7 @@ function AcceitarConvite({ topicId, minBet, onRefresh }: any) {
     setRecusando(true);
     await fetch(`/api/apostas-privadas/${topicId}/recusar`, { method: "POST" });
     setRecusando(false);
-    router.push("/apostas-privadas");
+    router.push("/privadas");
   }
 
   return (
@@ -335,7 +335,7 @@ function CancelarAposta({ topicId, onRefresh }: any) {
     const res = await fetch(`/api/apostas-privadas/${topicId}/cancelar`, { method: "POST" });
     setLoading(false);
     if (res.ok) {
-      router.push("/apostas-privadas");
+      router.push("/privadas");
     } else {
       const d = await res.json();
       alert(d.error ?? "Erro ao cancelar");
