@@ -90,7 +90,14 @@ export async function pagarVencedoresMulti(
   const loserBets  = bets.filter((b: any) => b.outcome_id !== winningOutcomeId);
 
   if (winnerBets.length === 0) {
-    await reembolsarTodos(supabase, topicId, "Sem apostas no resultado vencedor", resolvedBy);
+    await reembolsarTodos(supabase, topicId, "Sem palpites no resultado vencedor", resolvedBy);
+    return { note: "no_coverage_refund" };
+  }
+
+  // Reembolsa se menos de 2 outcomes distintos têm palpites (sem competição real)
+  const outcomesComBets = new Set(bets.map((b: any) => b.outcome_id)).size;
+  if (outcomesComBets < 2) {
+    await reembolsarTodos(supabase, topicId, "Apenas 1 resultado teve palpites — sem competição", resolvedBy);
     return { note: "no_coverage_refund" };
   }
 
