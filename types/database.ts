@@ -85,6 +85,8 @@ export interface Topic {
   category: TopicCategory;
   status: TopicStatus;
   resolution: TopicResolution;
+  market_type: MarketType;
+  winning_outcome_id: string | null;
   min_bet: number;
   closes_at: string;
   is_private: boolean;

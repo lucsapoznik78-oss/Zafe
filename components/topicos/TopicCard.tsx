@@ -29,20 +29,25 @@ const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
 };
 
 export default function TopicCard({ topic }: TopicCardProps) {
+  const isMulti = topic.market_type === "multi";
   const volumeSim = topic.stats?.volume_sim ?? 0;
   const volumeNao = topic.stats?.volume_nao ?? 0;
-  const hasRealBets = (topic.stats?.total_volume ?? 0) > 0;
+  const totalVolume = topic.stats?.total_volume ?? 0;
+  const hasRealBets = totalVolume > 0;
   const hasBothSides = volumeSim > 0 && volumeNao > 0;
 
   const probSim = hasBothSides ? (topic.stats?.prob_sim ?? 0.5) : 0.5;
   const { simOdds, naoOdds } = calcOdds(volumeSim, volumeNao);
 
-  // Determinar status efetivo (active + expired = fechado)
   const isExpired = topic.status === "active" && new Date(topic.closes_at) < new Date();
   const effectiveStatus = isExpired ? "closed" : topic.status;
   const badge = STATUS_BADGE[effectiveStatus] ?? STATUS_BADGE.active;
 
-  const href = topic.category === "economia" ? `/economico/${topic.id}` : `/liga/${topic.id}`;
+  const slug = (topic as any).slug;
+  const base = topic.category === "economia" ? "/economico" : "/liga";
+  const href = `${base}/${slug ?? topic.id}`;
+
+  const fmtZ = (v: number) => "Z$ " + new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 }).format(v);
 
   return (
     <Link href={href}>
@@ -53,6 +58,11 @@ export default function TopicCard({ topic }: TopicCardProps) {
             <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${badge.cls}`}>
               {badge.label}
             </span>
+            {isMulti && (
+              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-primary/15 text-primary">
+                MULTI
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-1 text-muted-foreground text-xs shrink-0">
             <Clock size={11} />
@@ -64,17 +74,16 @@ export default function TopicCard({ topic }: TopicCardProps) {
           {topic.title}
         </h3>
 
-        <ProbabilityBar probSim={probSim} showLabels={hasBothSides} className="mb-3" />
+        {/* Barra de probabilidade só para binários */}
+        {!isMulti && <ProbabilityBar probSim={probSim} showLabels={hasBothSides} className="mb-3" />}
 
-        {/* Resultado ou volumes */}
+        {/* Footer do card */}
         {topic.status === "resolved" ? (
-          topic.resolution ? (
-            <div className={`text-center py-1.5 rounded-lg text-xs font-bold ${
-              topic.resolution === "sim" ? "bg-sim/20 text-sim" : "bg-nao/20 text-nao"
-            }`}>
-              RESULTADO: {topic.resolution.toUpperCase()}
+          topic.winning_outcome_id || topic.resolution ? (
+            <div className="text-center py-1.5 rounded-lg text-xs font-bold bg-primary/10 text-primary">
+              RESOLVIDO
             </div>
-          ) : (topic.stats?.total_volume ?? 0) > 0 ? (
+          ) : hasRealBets ? (
             <div className="text-center py-1.5 rounded-lg text-xs font-bold bg-yellow-500/10 text-yellow-400">
               REEMBOLSADO
             </div>
@@ -83,21 +92,26 @@ export default function TopicCard({ topic }: TopicCardProps) {
               SEM PALPITES
             </div>
           )
+        ) : isMulti ? (
+          <div className="flex items-center justify-between bg-muted/30 rounded-lg px-3 py-2">
+            <span className="text-xs text-muted-foreground">
+              {hasRealBets ? `${fmtZ(totalVolume)} no pool` : "Seja o primeiro a palpitar"}
+            </span>
+            <span className="text-[10px] text-primary font-semibold">
+              {topic.stats?.bet_count ? `${topic.stats.bet_count} palpites` : "Múltiplos resultados"}
+            </span>
+          </div>
         ) : hasBothSides ? (
           <div className="grid grid-cols-2 gap-2">
             <div className="bg-sim/10 rounded-lg px-3 py-2 text-center">
               <p className="text-[10px] text-sim/70 font-medium">SIM</p>
               <p className="text-sm font-bold text-sim">{formatOdds(simOdds)}</p>
-              <p className="text-[10px] text-sim/50 mt-0.5">
-                {"Z$ " + new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 }).format(volumeSim)}
-              </p>
+              <p className="text-[10px] text-sim/50 mt-0.5">{fmtZ(volumeSim)}</p>
             </div>
             <div className="bg-nao/10 rounded-lg px-3 py-2 text-center">
               <p className="text-[10px] text-nao/70 font-medium">NÃO</p>
               <p className="text-sm font-bold text-nao">{formatOdds(naoOdds)}</p>
-              <p className="text-[10px] text-nao/50 mt-0.5">
-                {"Z$ " + new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 }).format(volumeNao)}
-              </p>
+              <p className="text-[10px] text-nao/50 mt-0.5">{fmtZ(volumeNao)}</p>
             </div>
           </div>
         ) : hasRealBets ? (
