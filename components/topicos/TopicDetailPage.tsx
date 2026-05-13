@@ -220,6 +220,47 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
             />
 
             {/* Tabela de probabilidades */}
+            {isMulti ? (() => {
+              const outcomes = topicOutcomes ?? [];
+              const totalPool = outcomes.reduce((s: number, o: any) => s + Number(o.pool), 0);
+              return (
+                <div>
+                  <div className="grid grid-cols-3 text-[11px] text-muted-foreground pb-2 border-b border-border">
+                    <span>Resultado</span>
+                    <span className="text-center">Retorno</span>
+                    <span className="text-center">Probabilidade</span>
+                  </div>
+                  {outcomes.map((o: any, i: number) => {
+                    const pool = Number(o.pool);
+                    const prob = totalPool > 0 ? (pool / totalPool) * 100 : 0;
+                    const odds = pool > 0 && totalPool > 0 ? totalPool / pool : null;
+                    const isWinner = topic.status === "resolved" && topic.winning_outcome_id === o.id;
+                    return (
+                      <div key={o.id} className={`grid grid-cols-3 items-center py-3 ${i < outcomes.length - 1 ? "border-b border-border/40" : ""}`}>
+                        <div className="flex flex-col gap-1">
+                          {isWinner && <div className="h-[3px] w-8 rounded-full bg-primary" />}
+                          <span className={`font-semibold text-sm ${isWinner ? "text-primary" : "text-white"}`}>{o.label}</span>
+                        </div>
+                        <div className="text-center">
+                          {odds !== null
+                            ? <span className="text-white font-bold text-sm">{formatOdds(odds)}</span>
+                            : <span className="text-muted-foreground text-xs">—</span>}
+                        </div>
+                        <div className="flex justify-center">
+                          {isWinner ? (
+                            <span className="px-3 py-1 rounded-full bg-primary/20 text-primary font-bold text-sm border border-primary">✓ Venceu</span>
+                          ) : (
+                            <span className={`px-3 py-1 rounded-full font-bold text-sm border ${totalPool > 0 ? "border-border text-muted-foreground" : "border-border text-muted-foreground"}`}>
+                              {totalPool > 0 ? `${prob.toFixed(1)}%` : "—"}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })() : (
             <div>
               <div className="grid grid-cols-3 text-[11px] text-muted-foreground pb-2 border-b border-border">
                 <span>Previsão</span>
@@ -271,6 +312,7 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
                 </div>
               </div>
             </div>
+            )}
 
             {/* Gráfico histórico */}
             <div className="border-t border-border/40 pt-4">

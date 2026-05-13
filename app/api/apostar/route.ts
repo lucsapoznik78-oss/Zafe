@@ -142,7 +142,9 @@ export async function POST(request: Request) {
     type: "bet_placed",
     amount,
     net_amount: amount,
-    description: `Aposta ${side.toUpperCase()} — odds estimadas ${estimatedOdds.toFixed(2)}x`,
+    description: isMulti
+      ? `Palpite multi — odds estimadas ${estimatedOdds.toFixed(2)}x`
+      : `Aposta ${(side as string).toUpperCase()} — odds estimadas ${estimatedOdds.toFixed(2)}x`,
     reference_id: topic_id,
   });
 

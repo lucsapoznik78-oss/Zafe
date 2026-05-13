@@ -40,7 +40,7 @@ export default function UserResultBanner({ bets, resolution }: Props) {
         <div>
           <p className="text-sim font-bold text-base">Você ganhou {formatCurrency(totalPayout)}!</p>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Investiu {formatCurrency(totalInvested)} no {wonBets[0]?.side?.toUpperCase()} · lucro líquido {formatCurrency(profit > 0 ? profit : totalPayout - totalInvested)}
+            Investiu {formatCurrency(totalInvested)}{wonBets[0]?.side ? ` no ${wonBets[0].side.toUpperCase()}` : ""} · lucro líquido {formatCurrency(profit > 0 ? profit : totalPayout - totalInvested)}
           </p>
         </div>
       </div>
