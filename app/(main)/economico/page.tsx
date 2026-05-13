@@ -8,6 +8,8 @@ import LegalFooter from "@/components/layout/LegalFooter";
 import type { TopicWithStats } from "@/types/database";
 import { Suspense } from "react";
 
+const EVENT_LIST_LIMIT = 200;
+
 export const metadata: Metadata = {
   title: "Econômico — Zafe",
   description: "Palpites em indicadores econômicos: IPCA, Selic, PIB e outros eventos do mercado financeiro.",
@@ -45,7 +47,7 @@ async function EconomicoList({ search, tab }: { search: string; tab: string }) {
   }
 
   if (search) query = query.ilike("title", `%${search}%`);
-  query = query.order("created_at", { ascending: false }).limit(50);
+  query = query.order("created_at", { ascending: false }).limit(EVENT_LIST_LIMIT);
 
   const { data: topics, error } = await query;
 

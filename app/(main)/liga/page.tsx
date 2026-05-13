@@ -10,6 +10,8 @@ import type { TopicWithStats } from "@/types/database";
 import { Suspense } from "react";
 import ConcursoBanner from "@/components/liga/ConcursoBanner";
 
+const EVENT_LIST_LIMIT = 200;
+
 export const metadata: Metadata = {
   title: "Liga — Zafe",
   description: "Faça palpites em eventos e compita com outros usuários na liga de previsões do Zafe.",
@@ -53,7 +55,7 @@ async function LigaList({
 
   if (category) query = query.eq("category", category);
   if (search) query = query.ilike("title", `%${search}%`);
-  query = query.order("created_at", { ascending: false }).limit(50);
+  query = query.order("created_at", { ascending: false }).limit(EVENT_LIST_LIMIT);
 
   const { data: topics, error } = await query;
 

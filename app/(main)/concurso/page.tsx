@@ -15,6 +15,8 @@ import LegalFooter from "@/components/layout/LegalFooter";
 import EnrollButton from "@/components/concurso/EnrollButton";
 import RankingList from "@/components/concurso/RankingList";
 
+const EVENT_LIST_LIMIT = 200;
+
 export const metadata: Metadata = {
   title: "Concurso — Zafe Liga",
   description: "Compita com palpites virtuais (ZC$) e ganhe prêmios reais em dinheiro.",
@@ -63,7 +65,7 @@ async function EventosConcurso({ category, search, tab, concurso, now }: { categ
 
   if (category) query = query.eq("category", category);
   if (search) query = query.ilike("title", `%${search}%`);
-  query = query.order("created_at", { ascending: false }).limit(50);
+  query = query.order("created_at", { ascending: false }).limit(EVENT_LIST_LIMIT);
 
   const { data: topics } = await query;
   if (!topics || topics.length === 0) {
