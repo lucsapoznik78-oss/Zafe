@@ -152,19 +152,27 @@ export async function oracleAITripleCheck(
   closesAt: string,
   outcomes?: string[]
 ): Promise<TripleCheckResult> {
-  const check1 = await verificacaoSemSearch(question, closesAt, outcomes);
+  // Check1: web search primeiro — eventos recentes (pós training cutoff ago/2025) precisam disso
+  const check1 = await verificacaoComSearch(question, closesAt, 1, outcomes);
 
   if (check1.resultado !== "INCERTO") {
     return { resultado: check1.resultado, confianca: "alta", check1, check2: { resultado: "INCERTO", confianca: 0, fonte: "" }, check3: { resultado: "INCERTO", confianca: 0, fonte: "" } };
   }
 
+  // Check2: segunda busca com web search (abordagem diferente)
   const check2 = await verificacaoComSearch(question, closesAt, 2, outcomes);
 
   if (check2.resultado !== "INCERTO") {
     return { resultado: check2.resultado, confianca: "alta", check1, check2, check3: { resultado: "INCERTO", confianca: 0, fonte: "" } };
   }
 
-  return { resultado: "INCERTO", confianca: "baixa", check1, check2, check3: { resultado: "INCERTO", confianca: 0, fonte: "" } };
+  // Fallback: sem search (só resolve eventos dentro do training cutoff)
+  const check3 = await verificacaoSemSearch(question, closesAt, outcomes);
+  if (check3.resultado !== "INCERTO") {
+    return { resultado: check3.resultado, confianca: "baixa", check1, check2, check3 };
+  }
+
+  return { resultado: "INCERTO", confianca: "baixa", check1, check2, check3 };
 }
 
 // Validação cruzada — confirma resultado já obtido por API fixa
