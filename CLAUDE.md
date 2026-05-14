@@ -275,18 +275,12 @@ GET    /api/economico/[id]/status      # Polling para ResolvingBanner
 **Localização:** `/privadas` (renomeação de `/apostas-privadas`)
 
 ### O que é
-**Literalmente o sistema atual de apostas privadas, com 4 travas novas e usando Z$ virtual.** Bolão entre amigos confirmados. Dois ou mais combinam um palpite, alocam Z$, a Zafe segura e libera para o vencedor após apuração. **Comissão de 6%** (3% de cada lado).
+Bolão entre usuários. Dois ou mais combinam um palpite, alocam Z$, a Zafe segura e libera para o vencedor após apuração. **Comissão de 6%** (3% de cada lado).
 
-### As 4 travas novas (obrigatórias para legalidade pós-5.298)
+### Restrições
 
-Embutidas no produto, não só nos termos:
-
-1. **Só entre amigos confirmados mutuamente** com tempo mínimo de conexão de **24h após aceite**
-2. **Mercado fechado** — participantes definidos no momento da criação
-3. **Sem revenda de posição** — sem mercado secundário neste pilar
-4. **Limite anual por par de usuários: 5.000 Z$** entre os mesmos dois usuários (configurável via env, default 5000)
-
-Validação dessas 4 travas ocorre em `POST /api/privadas/criar` e `POST /api/privadas/[id]/aceitar`. Falha em qualquer trava → 403 com mensagem amigável.
+- **Mercado fechado** — participantes definidos no momento da criação
+- **Sem revenda de posição** — sem mercado secundário neste pilar
 
 ### Mecânica preservada do código atual
 
@@ -564,7 +558,7 @@ Implementação em `lib/premium/curadoria.ts`. Salva em `curadorias` com `gerada
 - **`proof-processor.ts`** — pipeline de prova de desafios: links → fetchText, fotos → base64 + Google Vision, YouTube → oEmbed.
 - **`desafios-payout.ts`** — `pagarDesafio(id)` / `reembolsarDesafio(id)`.
 - **`payout.ts`** — `pagarVencedores()`, `reembolsarTodos()` (em Z$).
-- **`private-bets.ts`** — supermaioria 67%, juízes. **Adicionar enforcement das 4 travas novas**.
+- **`private-bets.ts`** — supermaioria 67%, juízes.
 - **`slugify.ts`**, **`utils.ts`** (`cn()`, `formatZ()`, `formatPercent()`, `applyCommission()`, `CATEGORIES`).
 
 ### Novos
@@ -574,7 +568,6 @@ Implementação em `lib/premium/curadoria.ts`. Salva em `curadorias` com `gerada
 - **`lib/concursos/payout-concurso.ts`** — pagamento **em Real via PIX** aos vencedores, debitado de conta operacional Zafe
 - **`lib/premium/curadoria.ts`** — geração e cache de curadoria via Claude API com web search
 - **`lib/premium/billing.ts`** — integração com provedor de pagamento (Stripe/Pagar.me/Iugu)
-- **`lib/limits/private-bet-limit.ts`** — checagem da trava de 5.000 Z$/ano por par no Privadas
 
 ---
 
@@ -600,9 +593,6 @@ Implementação em `lib/premium/curadoria.ts`. Salva em `curadorias` com `gerada
   - Atenção: campo é `premiacao_total_brl` (Real), não Z$. Concurso paga em Real.
 - **`inscricoes_concurso`** — id, user_id, concurso_id, qualificado, num_previsoes_atuais, num_categorias_atuais, brier_score_atual, posicao_atual, created_at
 - **`concurso_resultados`** — id, concurso_id, user_id, brier_score, num_previsoes, num_categorias, posicao, premio_brl, pago_em (PIX), pix_transaction_id
-
-#### Privadas (enforcement das travas)
-- **`private_bet_pair_volume`** — pair_user_a, pair_user_b, year, total_z (em Z$, limite 5.000/ano)
 
 #### Premium
 - **`subscriptions`** — id, user_id, plan, status, started_at, current_period_end, canceled_at, provider, provider_subscription_id, provider_customer_id, price_brl
@@ -665,7 +655,6 @@ Dois canais: insert em `notifications` (in-app) + `sendPushToUser()` (Web Push).
 ### Crons novos
 - **`POST /api/cron/atualizar-ranking-concurso`** (diário) — recalcula Brier score de cada inscrito
 - **`POST /api/cron/finalizar-concurso`** (diário, idempotente) — congela ranking ao fim do período e dispara payout em Real
-- **`POST /api/cron/zerar-volume-anual-privadas`** (1× ao ano em 31/12)
 - **`POST /api/cron/cobrar-premium`** (diário) — verifica assinaturas expirando, dispara cobrança/cancelamento
 - **`POST /api/cron/gerar-curadorias`** (a cada 6h) — pré-gera curadoria para top 20 eventos por volume
 
@@ -785,7 +774,7 @@ Decisão pendente — mover para `/privadas/desafios/` como subcategoria de Priv
 | Pilar | Como ganha | O que entra | Risco regulatório |
 |---|---|---|---|
 | Econômico | Comissão de plataforma sobre Z$ | Não gera receita em Real direta | Baixo |
-| Privadas | Comissão sobre Z$ | Não gera receita em Real direta | Médio (mitigado por travas) |
+| Privadas | Comissão sobre Z$ | Não gera receita em Real direta | Médio |
 | Liga | Premium + patrocínio + inscrição em concurso futuro | Mensalidade Premium, patrocínio de concurso, inscrição em concurso paga (futuro) | Muito baixo |
 | Premium | Mensalidade R$ 19,90/mês | **Receita principal em Real** | — |
 
