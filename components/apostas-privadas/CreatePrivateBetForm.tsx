@@ -134,6 +134,7 @@ export default function CreatePrivateBetForm({ userId }: { userId: string }) {
   const [category, setCategory] = useState("outros");
   const [minBet, setMinBet] = useState("10");
   const [closesAt, setClosesAt] = useState("");
+  const [aliados, setAliados] = useState<UserRow[]>([]);
   const [adversarios, setAdversarios] = useState<UserRow[]>([]);
   const [judges, setJudges] = useState<UserRow[]>([]);
   const [allUsers, setAllUsers] = useState<UserRow[]>([]);
@@ -155,8 +156,17 @@ export default function CreatePrivateBetForm({ userId }: { userId: string }) {
       });
   }, [userId]);
 
+  function addAliado(u: UserRow) {
+    if ([...aliados, ...adversarios, ...judges].find((x) => x.id === u.id)) {
+      setError("Usuário já adicionado em outra lista");
+      return;
+    }
+    setAliados((p) => [...p, u]);
+    setError("");
+  }
+
   function addAdversario(u: UserRow) {
-    if ([...adversarios, ...judges].find((x) => x.id === u.id)) {
+    if ([...aliados, ...adversarios, ...judges].find((x) => x.id === u.id)) {
       setError("Usuário já adicionado em outra lista");
       return;
     }
@@ -166,7 +176,7 @@ export default function CreatePrivateBetForm({ userId }: { userId: string }) {
 
   function addJudge(u: UserRow) {
     if (judges.length >= 7) { setError("Máximo de 7 juízes"); return; }
-    if ([...adversarios, ...judges].find((x) => x.id === u.id)) {
+    if ([...aliados, ...adversarios, ...judges].find((x) => x.id === u.id)) {
       setError("Usuário já adicionado em outra lista");
       return;
     }
@@ -197,6 +207,7 @@ export default function CreatePrivateBetForm({ userId }: { userId: string }) {
           title, description, category,
           min_bet: parseFloat(minBet),
           closes_at: closesDate.toISOString(),
+          aliado_ids: aliados.map((a) => a.id),
           adversario_ids: adversarios.map((a) => a.id),
           judge_ids: judges.map((j) => j.id),
         }),
@@ -260,6 +271,17 @@ export default function CreatePrivateBetForm({ userId }: { userId: string }) {
           />
         </div>
       </div>
+
+      <UserPicker
+        label="Aliados"
+        sublabel="(Lado A — apostam SIM)"
+        selected={aliados}
+        allUsers={allUsers}
+        loading={loadingUsers}
+        userId={userId}
+        onAdd={addAliado}
+        onRemove={(id) => setAliados((p) => p.filter((x) => x.id !== id))}
+      />
 
       <UserPicker
         label="Adversários"

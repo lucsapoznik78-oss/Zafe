@@ -11,9 +11,12 @@ export async function POST(req: Request) {
 
   const {
     title, description, category, min_bet, closes_at,
+    aliado_ids,
     adversario_ids,
     judge_ids,
   } = await req.json();
+
+  const aliadoIds = aliado_ids ?? [];
 
   const numJudges = judge_ids?.length ?? 0;
   if (!title || !closes_at || !adversario_ids?.length || numJudges < 1 || numJudges > 7 || numJudges % 2 === 0) {
@@ -21,7 +24,7 @@ export async function POST(req: Request) {
   }
 
   // Juiz não pode ser participante
-  const allParticipants = [user.id, ...adversario_ids];
+  const allParticipants = [user.id, ...aliadoIds, ...adversario_ids];
   const judgeConflict = judge_ids.some((jid: string) => allParticipants.includes(jid));
   if (judgeConflict) {
     return NextResponse.json({ error: "Juiz não pode ser participante da aposta" }, { status: 400 });
@@ -115,6 +118,16 @@ export async function POST(req: Request) {
     reference_id: topic.id,
   });
 
+  // Convidar aliados (Lado A)
+  if (aliadoIds.length > 0) {
+    const aInvites = aliadoIds.map((uid: string) => ({
+      topic_id: topic.id, user_id: uid,
+      side: "A", status: "invited",
+      invited_by: user.id,
+    }));
+    await admin.from("topic_participants").insert(aInvites);
+  }
+
   // Convidar adversários (Lado B)
   const bInvites = adversario_ids.map((uid: string) => ({
     topic_id: topic.id, user_id: uid,
@@ -128,12 +141,22 @@ export async function POST(req: Request) {
     .from("profiles").select("username").eq("id", user.id).single();
   const creatorName = creatorProfile?.username ?? "Alguém";
 
+  // Notificar aliados
+  const aNotifs = aliadoIds.map((uid: string) => ({
+    user_id: uid,
+    type: "bet_invite",
+    title: "Convite para aposta privada",
+    body: `@${creatorName} te convidou como aliado: "${title.slice(0, 50)}"`,
+    data: { topic_id: topic.id, side: "A" },
+  }));
+  if (aNotifs.length > 0) await admin.from("notifications").insert(aNotifs);
+
   // Notificar adversários
   const bNotifs = adversario_ids.map((uid: string) => ({
     user_id: uid,
     type: "bet_invite",
     title: "Convite para aposta privada",
-    body: `@${creatorName} te convidou para uma aposta: "${title.slice(0, 50)}"`,
+    body: `@${creatorName} te convidou como adversário: "${title.slice(0, 50)}"`,
     data: { topic_id: topic.id, side: "B" },
   }));
   await admin.from("notifications").insert(bNotifs);
