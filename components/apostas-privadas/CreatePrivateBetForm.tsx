@@ -143,14 +143,29 @@ export default function CreatePrivateBetForm({ userId }: { userId: string }) {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    createClient()
-      .from("profiles")
-      .select("id, username, full_name")
-      .neq("id", userId)
-      .eq("is_admin", false)
-      .order("full_name", { ascending: true })
-      .limit(200)
-      .then(({ data }) => {
+    const supabase = createClient();
+    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    supabase
+      .from("friendships")
+      .select("requester_id, addressee_id")
+      .eq("status", "accepted")
+      .lte("created_at", cutoff)
+      .or(`requester_id.eq.${userId},addressee_id.eq.${userId}`)
+      .then(async ({ data: friendships }) => {
+        const friendIds = (friendships ?? []).map((f) =>
+          f.requester_id === userId ? f.addressee_id : f.requester_id
+        );
+        if (friendIds.length === 0) {
+          setAllUsers([]);
+          setLoadingUsers(false);
+          return;
+        }
+        const { data } = await supabase
+          .from("profiles")
+          .select("id, username, full_name")
+          .in("id", friendIds)
+          .eq("is_admin", false)
+          .order("full_name", { ascending: true });
         setAllUsers(data ?? []);
         setLoadingUsers(false);
       });
@@ -304,6 +319,7 @@ export default function CreatePrivateBetForm({ userId }: { userId: string }) {
 
 
 
+      {error && <p className="text-red-400 text-sm bg-red-400/10 rounded-lg px-3 py-2">{error}</p>}
       <button
         type="submit" disabled={loading}
         className="w-full py-3 bg-primary text-black font-bold rounded-xl disabled:opacity-50"
