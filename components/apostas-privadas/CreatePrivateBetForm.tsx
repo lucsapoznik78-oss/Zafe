@@ -136,7 +136,7 @@ export default function CreatePrivateBetForm({ userId }: { userId: string }) {
   const [closesAt, setClosesAt] = useState("");
   const [aliados, setAliados] = useState<UserRow[]>([]);
   const [adversarios, setAdversarios] = useState<UserRow[]>([]);
-  const [judges, setJudges] = useState<UserRow[]>([]);
+  const [juiz, setJuiz] = useState<UserRow[]>([]);
   const [allUsers, setAllUsers] = useState<UserRow[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -157,7 +157,7 @@ export default function CreatePrivateBetForm({ userId }: { userId: string }) {
   }, [userId]);
 
   function addAliado(u: UserRow) {
-    if ([...aliados, ...adversarios, ...judges].find((x) => x.id === u.id)) {
+    if ([...aliados, ...adversarios, ...juiz].find((x) => x.id === u.id)) {
       setError("Usuário já adicionado em outra lista");
       return;
     }
@@ -166,7 +166,7 @@ export default function CreatePrivateBetForm({ userId }: { userId: string }) {
   }
 
   function addAdversario(u: UserRow) {
-    if ([...aliados, ...adversarios, ...judges].find((x) => x.id === u.id)) {
+    if ([...aliados, ...adversarios, ...juiz].find((x) => x.id === u.id)) {
       setError("Usuário já adicionado em outra lista");
       return;
     }
@@ -174,23 +174,19 @@ export default function CreatePrivateBetForm({ userId }: { userId: string }) {
     setError("");
   }
 
-  function addJudge(u: UserRow) {
-    if (judges.length >= 7) { setError("Máximo de 7 juízes"); return; }
-    if ([...aliados, ...adversarios, ...judges].find((x) => x.id === u.id)) {
+  function addJuiz(u: UserRow) {
+    if ([...aliados, ...adversarios, ...juiz].find((x) => x.id === u.id)) {
       setError("Usuário já adicionado em outra lista");
       return;
     }
-    setJudges((p) => [...p, u]);
+    setJuiz([u]);
     setError("");
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (adversarios.length < 1) { setError("Adicione pelo menos 1 adversário"); return; }
-    if (judges.length < 1 || judges.length > 7 || judges.length % 2 === 0) {
-      setError("Número de juízes deve ser ímpar: 1, 3, 5 ou 7");
-      return;
-    }
+    if (juiz.length < 1) { setError("Adicione um juiz para o bolão"); return; }
     if (!title || !closesAt) { setError("Preencha todos os campos"); return; }
 
     setLoading(true);
@@ -209,7 +205,7 @@ export default function CreatePrivateBetForm({ userId }: { userId: string }) {
           closes_at: closesDate.toISOString(),
           aliado_ids: aliados.map((a) => a.id),
           adversario_ids: adversarios.map((a) => a.id),
-          judge_ids: judges.map((j) => j.id),
+          judge_id: juiz[0]?.id,
         }),
       });
       const data = await res.json();
@@ -295,19 +291,18 @@ export default function CreatePrivateBetForm({ userId }: { userId: string }) {
       />
 
       <UserPicker
-        label="Juízes propostos"
-        sublabel={`(${judges.length}/7 — ímpar: 1, 3, 5 ou 7)`}
-        selected={judges}
+        label="Juiz"
+        sublabel="(confirma o resultado — obrigatório)"
+        selected={juiz}
         allUsers={allUsers}
         loading={loadingUsers}
-        maxSelect={7}
+        maxSelect={1}
         userId={userId}
-        onAdd={addJudge}
-        onRemove={(id) => setJudges((p) => p.filter((x) => x.id !== id))}
+        onAdd={addJuiz}
+        onRemove={() => setJuiz([])}
       />
-      <p className="text-xs text-muted-foreground -mt-3 px-1">
-        Número ímpar garante desempate na votação. Os adversários podem aceitar ou rejeitar cada juiz.
-      </p>
+
+
 
       <button
         type="submit" disabled={loading}

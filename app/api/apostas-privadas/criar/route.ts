@@ -13,21 +13,13 @@ export async function POST(req: Request) {
     title, description, category, min_bet, closes_at,
     aliado_ids,
     adversario_ids,
-    judge_ids,
+    judge_id,
   } = await req.json();
 
   const aliadoIds = aliado_ids ?? [];
 
-  const numJudges = judge_ids?.length ?? 0;
-  if (!title || !closes_at || !adversario_ids?.length || numJudges < 1 || numJudges > 7 || numJudges % 2 === 0) {
-    return NextResponse.json({ error: "Número de juízes deve ser ímpar entre 1 e 7 (1, 3, 5 ou 7)" }, { status: 400 });
-  }
-
-  // Juiz não pode ser participante
-  const allParticipants = [user.id, ...aliadoIds, ...adversario_ids];
-  const judgeConflict = judge_ids.some((jid: string) => allParticipants.includes(jid));
-  if (judgeConflict) {
-    return NextResponse.json({ error: "Juiz não pode ser participante da aposta" }, { status: 400 });
+  if (!title || !closes_at || !adversario_ids?.length || !judge_id) {
+    return NextResponse.json({ error: "Preencha todos os campos obrigatórios" }, { status: 400 });
   }
 
   const admin = createAdminClient();
@@ -35,13 +27,14 @@ export async function POST(req: Request) {
 
   // ── TRAVA 1: Só entre amigos confirmados há mais de 24h ─────────────────
   const limiteFriendship = new Date(Date.now() - FRIENDSHIP_MIN_HOURS * 60 * 60 * 1000).toISOString();
-  for (const adversarioId of adversario_ids) {
+  const todosConvidados = [...adversario_ids, ...aliadoIds, judge_id];
+  for (const convidadoId of todosConvidados) {
     const { data: friendship } = await admin
       .from("friendships")
       .select("id, created_at")
       .eq("status", "accepted")
       .or(
-        `and(requester_id.eq.${user.id},addressee_id.eq.${adversarioId}),and(requester_id.eq.${adversarioId},addressee_id.eq.${user.id})`
+        `and(requester_id.eq.${user.id},addressee_id.eq.${convidadoId}),and(requester_id.eq.${convidadoId},addressee_id.eq.${user.id})`
       )
       .lte("created_at", limiteFriendship)
       .single();
@@ -55,8 +48,8 @@ export async function POST(req: Request) {
   }
 
   // ── TRAVA 4: Limite anual de Z$ por par ─────────────────────────────────
-  for (const adversarioId of adversario_ids) {
-    const check = await verificarLimiteAnual(admin, user.id, adversarioId, betAmount * 2);
+  for (const convidadoId of todosConvidados) {
+    const check = await verificarLimiteAnual(admin, user.id, convidadoId, betAmount * 2);
     if (!check.ok) {
       return NextResponse.json({ error: check.mensagem }, { status: 403 });
     }
@@ -68,11 +61,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Saldo insuficiente" }, { status: 400 });
   }
 
-  // Usar admin para todos os writes (sem RLS bloqueando)
-  const recruitmentDeadline = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
-  const negotiationDeadline = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString();
-
-  // Criar o topic
+  // Criar o topic — pendente até juiz + ≥1 adversário aceitarem
   const { data: topic, error: topicErr } = await admin.from("topics").insert({
     creator_id: user.id,
     title, description, category,
@@ -80,10 +69,7 @@ export async function POST(req: Request) {
     closes_at,
     status: "pending",
     is_private: true,
-    private_phase: "recruiting",
-    recruitment_deadline: recruitmentDeadline,
-    negotiation_deadline: negotiationDeadline,
-    min_participants: 5,
+    judge_id,
   }).select().single();
 
   if (topicErr || !topic) {
@@ -136,6 +122,13 @@ export async function POST(req: Request) {
   }));
   await admin.from("topic_participants").insert(bInvites);
 
+  // Convidar juiz (Lado J)
+  await admin.from("topic_participants").insert({
+    topic_id: topic.id, user_id: judge_id,
+    side: "J", status: "invited",
+    invited_by: user.id,
+  });
+
   // Buscar perfil do criador
   const { data: creatorProfile } = await admin
     .from("profiles").select("username").eq("id", user.id).single();
@@ -161,28 +154,14 @@ export async function POST(req: Request) {
   }));
   await admin.from("notifications").insert(bNotifs);
 
-  // Criar nomeações iniciais dos juízes
-  const responseDeadline = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-  const judgeRows = judge_ids.map((jid: string) => ({
-    topic_id: topic.id,
-    judge_user_id: jid,
-    proposed_by_side: "A",
-    leader_a_approved: true,
-    leader_b_approved: null,
-    status: "proposed",
-    response_deadline: responseDeadline,
-  }));
-  await admin.from("judge_nominations").insert(judgeRows);
-
-  // Notificar juízes propostos
-  const judgeNotifs = judge_ids.map((jid: string) => ({
-    user_id: jid,
-    type: "judge_invite",
-    title: "Proposta de juiz",
-    body: `@${creatorName} te propôs como juiz na aposta: "${title.slice(0, 50)}"`,
-    data: { topic_id: topic.id },
-  }));
-  await admin.from("notifications").insert(judgeNotifs);
+  // Notificar juiz
+  await admin.from("notifications").insert({
+    user_id: judge_id,
+    type: "bet_invite",
+    title: "Convite para ser juiz",
+    body: `@${creatorName} te convidou como juiz do bolão: "${title.slice(0, 50)}"`,
+    data: { topic_id: topic.id, side: "J" },
+  });
 
   return NextResponse.json({ success: true, topic_id: topic.id });
 }
