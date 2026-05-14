@@ -54,7 +54,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Saldo insuficiente" }, { status: 400 });
   }
 
-  // Impedir aposta nos dois lados do mesmo tópico (binário) ou em outcome diferente (multi)
+  // Binário: impedir aposta no lado oposto
+  // Multi: impedir qualquer segunda aposta (só 1 outcome por usuário)
   if (!isMulti) {
     const oppositeSide = side === "sim" ? "nao" : "sim";
     const { data: existingOpposite } = await supabase
@@ -69,6 +70,20 @@ export async function POST(request: Request) {
     if (existingOpposite && existingOpposite.length > 0) {
       return NextResponse.json({
         error: `Você já apostou ${oppositeSide.toUpperCase()} neste tópico.`,
+      }, { status: 400 });
+    }
+  } else {
+    const { data: existingMulti } = await supabase
+      .from("bets")
+      .select("id")
+      .eq("topic_id", topic_id)
+      .eq("user_id", user.id)
+      .not("status", "in", '("refunded","lost")')
+      .limit(1);
+
+    if (existingMulti && existingMulti.length > 0) {
+      return NextResponse.json({
+        error: "Você já fez um palpite neste evento. Só é permitido um palpite por evento.",
       }, { status: 400 });
     }
   }
