@@ -164,6 +164,7 @@ app/(main)/
   liga/             # Pilar 3 — Z$ virtual, qualquer evento, concurso por cima
   premium/          # Pilar 4 — Real (mensalidade), curadoria de informação
   concurso/         # Página própria do concurso ativo (regulamento, ranking, inscrição)
+  comunidade/       # Pilar 5 — Z$ virtual, qualquer usuário cria e resolve, reputação
 ```
 
 A migração é gradual. Ver "Plano de migração" abaixo.
@@ -548,6 +549,78 @@ Implementação em `lib/premium/curadoria.ts`. Salva em `curadorias` com `gerada
 
 ---
 
+## Pilar 5 — Zafe Comunidade
+
+**Localização:** `/comunidade`
+
+### O que é
+Eventos criados e resolvidos pela galera. O criador é o juiz soberano. Pura diversão com Z$ virtual, sem curadoria da Zafe.
+
+### Regra de isolamento
+- Usa a **mesma carteira Z$** (não cria economia paralela)
+- **Conta** para ranking geral e stats do perfil público
+- **NÃO conta** para Brier Score do concurso
+- **NÃO conta** para ranking do concurso
+- **NÃO tem** mercado secundário (order book)
+- **NÃO entra** no sitemap/SEO principal
+
+### Quem cria eventos
+Qualquer usuário com nota de criador >= 30 (novos começam em 50). Rate limit: 5 eventos ativos (10 se nota >= 90).
+
+### Resolução pelo criador
+- Evento fecha (`closes_at`) -> status `awaiting_resolution`
+- Criador tem 72h para resolver (botão SIM ou NÃO)
+- Se não resolver: `auto_cancelled`, reembolso total, nota -5
+- 3 abandonos = bloqueio de 30 dias
+
+### Comissão
+- 6% total (2% criador + 4% Zafe), parimutuel
+- Criador recebe comissão em Z$ ao resolver honestamente
+
+### Sistema de reputação (`creator_reputation`)
+- Nota 0-100, começa em 50
+- Sobe: +2 por resolução sem contestação, bônus por volume e streak
+- Desce: -15 por resolução revertida, -5 por abandono, -20 por remoção
+- Nota < 30 = bloqueado de criar
+
+### Sistema de contestação
+- Janela de 48h após resolução
+- Apenas participantes podem contestar (taxa Z$ 10, devolvida se aceita)
+- Se >= 30% contestam -> escala para revisão (under_review)
+- Admin decide manualmente (futuro: Claude AI triple check)
+- Resolução revertida = nota criador -15, payout recalculado
+
+### Tabelas
+- `community_events` — eventos da comunidade
+- `community_bets` — palpites
+- `creator_reputation` — reputação do criador
+- `community_contestations` — contestações
+- `community_snapshots` — histórico de probabilidade
+- `v_community_event_stats` — view com stats agregadas
+
+### API endpoints
+```
+POST   /api/comunidade/criar              -- cria evento
+POST   /api/comunidade/[id]/palpitar      -- fazer palpite
+POST   /api/comunidade/[id]/resolver      -- criador resolve
+POST   /api/comunidade/[id]/contestar     -- participante contesta
+GET    /api/comunidade/[id]/contestacoes  -- lista contestações
+```
+
+### Crons
+- `comunidade-fechar` (30 min) — move eventos expirados para awaiting_resolution
+- `comunidade-abandonados` (6h) — cancela e reembolsa eventos não resolvidos em 72h
+- `comunidade-contestacoes` (1h) — escala contestações que atingiram 30%
+- `comunidade-snapshots` (30 min) — grava snapshots de probabilidade
+
+### Copy e UI
+- Badge "COMUNIDADE" roxo nos cards (borda tracejada)
+- Nota do criador visível em todos os cards
+- Disclaimer: "Estes eventos são criados e resolvidos por usuários. A Zafe não garante a veracidade do resultado."
+- Frase-âncora: **"Zafe Comunidade — crie, palpite, resolva. Quem manda é a galera."**
+
+---
+
 ## Lógica de negócio (`/lib`) — preservar e estender
 
 ### Mantidos integralmente
@@ -562,6 +635,7 @@ Implementação em `lib/premium/curadoria.ts`. Salva em `curadorias` com `gerada
 - **`slugify.ts`**, **`utils.ts`** (`cn()`, `formatZ()`, `formatPercent()`, `applyCommission()`, `CATEGORIES`).
 
 ### Novos
+- **`lib/comunidade.ts`** — palpitar, payout, reembolso, reputação, reversão para Comunidade (Pilar 5)
 - **`lib/concursos/brier-score.ts`** — cálculo agregado por usuário no período
 - **`lib/concursos/inscricao.ts`** — gestão de inscrições, validação de elegibilidade
 - **`lib/concursos/ranking-concurso.ts`** — geração do ranking final

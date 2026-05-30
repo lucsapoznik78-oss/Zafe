@@ -51,15 +51,32 @@ export default async function PublicProfilePage({ params }: PageProps) {
 
   if (!profile) notFound();
 
-  const { data: bets } = await adminSupabase
-    .from("bets")
-    .select("amount, potential_payout, status, side, created_at, topic:topics(id, title, category, status)")
-    .eq("user_id", profile.id)
-    .in("status", ["won", "lost", "matched", "pending", "refunded", "partial"])
-    .order("created_at", { ascending: false })
-    .limit(100);
+  const [{ data: bets }, { data: communityBets }] = await Promise.all([
+    adminSupabase
+      .from("bets")
+      .select("amount, potential_payout, status, side, created_at, topic:topics(id, title, category, status)")
+      .eq("user_id", profile.id)
+      .in("status", ["won", "lost", "matched", "pending", "refunded", "partial"])
+      .order("created_at", { ascending: false })
+      .limit(100),
+    adminSupabase
+      .from("community_bets")
+      .select("amount, potential_payout, status, side, created_at, event:community_events(id, title, category)")
+      .eq("user_id", profile.id)
+      .in("status", ["won", "lost", "matched", "refunded"])
+      .order("created_at", { ascending: false })
+      .limit(50),
+  ]);
 
-  const all      = bets ?? [];
+  // Merge community bets into all bets for unified stats
+  const normalizedCommunity = (communityBets ?? []).map((b: any) => ({
+    ...b,
+    topic: b.event ? { id: b.event.id, title: b.event.title, category: b.event.category, status: "resolved", _community: true } : null,
+  }));
+
+  const all = [...(bets ?? []), ...normalizedCommunity].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
   const resolved = all.filter((b) => b.status === "won" || b.status === "lost");
   const betsWon  = resolved.filter((b) => b.status === "won").length;
   const betsLost = resolved.filter((b) => b.status === "lost").length;
@@ -171,7 +188,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
               return (
                 <div key={i} className="flex items-center justify-between py-2.5 border-b border-border/50 last:border-0">
                   <div className="flex-1 min-w-0 mr-3">
-                    <Link href={(bet.topic as any)?.category === "economia" ? `/economico/${(bet.topic as any)?.id}` : `/liga/${(bet.topic as any)?.id}`} className="hover:text-primary transition-colors">
+                    <Link href={(bet.topic as any)?._community ? `/comunidade/${(bet.topic as any)?.id}` : (bet.topic as any)?.category === "economia" ? `/economico/${(bet.topic as any)?.id}` : `/liga/${(bet.topic as any)?.id}`} className="hover:text-primary transition-colors">
                       <p className="text-sm text-white truncate">{(bet.topic as any)?.title}</p>
                     </Link>
                     <div className="flex items-center gap-2 mt-0.5">
