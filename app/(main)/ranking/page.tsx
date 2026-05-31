@@ -71,16 +71,10 @@ export default async function RankingPage({ searchParams }: PageProps) {
     statsMap.set(bet.user_id, s);
   }
 
-  // Filtrar mínimo de apostas e ordenar por acertos (desbempate: % de acerto, depois lucro)
+  // Filtrar mínimo de apostas e ordenar por lucro líquido em Z$ (quem mais ganhou)
   const userIds = Array.from(statsMap.entries())
     .filter(([, s]) => s.wins + s.losses >= MIN_BETS)
-    .sort((a, b) => {
-      if (b[1].wins !== a[1].wins) return b[1].wins - a[1].wins;
-      const rateA = a[1].wins / (a[1].wins + a[1].losses);
-      const rateB = b[1].wins / (b[1].wins + b[1].losses);
-      if (rateB !== rateA) return rateB - rateA;
-      return b[1].lucro - a[1].lucro;
-    })
+    .sort((a, b) => b[1].lucro - a[1].lucro)
     .map(([id]) => id);
 
   // Buscar perfis
@@ -120,7 +114,7 @@ export default async function RankingPage({ searchParams }: PageProps) {
           Ranking de Preditores
         </h1>
         <p className="text-muted-foreground text-sm mt-0.5">
-          Ordenado por número de acertos
+          Ordenado por lucro líquido em Z$
         </p>
       </div>
 
