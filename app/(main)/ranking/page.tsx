@@ -21,8 +21,8 @@ import { Trophy, TrendingUp, Medal } from "lucide-react";
 import Link from "next/link";
 import RankingFilters from "@/components/ranking/RankingFilters";
 
-// Mínimo de apostas resolvidas para aparecer no ranking — evita contas com 1 acerto de sorte
-const MIN_BETS = 3;
+// Mínimo de apostas resolvidas para aparecer no ranking
+const MIN_BETS = 1;
 
 interface PageProps {
   searchParams: Promise<{ periodo?: string }>;
@@ -40,22 +40,12 @@ export default async function RankingPage({ searchParams }: PageProps) {
       ? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
       : null;
 
-  // Excluir admins
-  const { data: admins } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("is_admin", true);
-  const adminIds = (admins ?? []).map((a: any) => a.id);
-
   // Buscar apostas resolvidas
   let query = supabase
     .from("bets")
     .select("user_id, amount, potential_payout, status")
     .in("status", ["won", "lost"]);
 
-  if (adminIds.length > 0) {
-    query = query.not("user_id", "in", `(${adminIds.join(",")})`);
-  }
   if (desde) {
     query = query.gte("created_at", desde);
   }
@@ -81,10 +71,16 @@ export default async function RankingPage({ searchParams }: PageProps) {
     statsMap.set(bet.user_id, s);
   }
 
-  // Filtrar mínimo de apostas e ordenar por lucro
+  // Filtrar mínimo de apostas e ordenar por acertos (desbempate: % de acerto, depois lucro)
   const userIds = Array.from(statsMap.entries())
     .filter(([, s]) => s.wins + s.losses >= MIN_BETS)
-    .sort((a, b) => b[1].lucro - a[1].lucro)
+    .sort((a, b) => {
+      if (b[1].wins !== a[1].wins) return b[1].wins - a[1].wins;
+      const rateA = a[1].wins / (a[1].wins + a[1].losses);
+      const rateB = b[1].wins / (b[1].wins + b[1].losses);
+      if (rateB !== rateA) return rateB - rateA;
+      return b[1].lucro - a[1].lucro;
+    })
     .map(([id]) => id);
 
   // Buscar perfis
@@ -124,7 +120,7 @@ export default async function RankingPage({ searchParams }: PageProps) {
           Ranking de Preditores
         </h1>
         <p className="text-muted-foreground text-sm mt-0.5">
-          Mínimo {MIN_BETS} palpites resolvidos para aparecer · Ordenado por lucro líquido
+          Ordenado por número de acertos
         </p>
       </div>
 
@@ -135,7 +131,7 @@ export default async function RankingPage({ searchParams }: PageProps) {
           <Trophy size={32} className="text-muted-foreground mx-auto" />
           <p className="text-white font-semibold">Nenhum preditor ainda</p>
           <p className="text-sm text-muted-foreground">
-            Faça pelo menos {MIN_BETS} palpites resolvidos para entrar no ranking.
+            Tenha pelo menos um palpite resolvido para entrar no ranking.
           </p>
         </div>
       ) : (
