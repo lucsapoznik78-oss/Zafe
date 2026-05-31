@@ -43,7 +43,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Inscreva-se no concurso primeiro" }, { status: 403 });
   }
   if (!wallet || wallet.balance < Number(amount)) {
-    return NextResponse.json({ error: `Saldo ZC$ insuficiente. Você tem ZC$ ${wallet?.balance ?? 0}.` }, { status: 400 });
+    return NextResponse.json({ error: `Saldo insuficiente. Você tem Z$ ${wallet?.balance ?? 0} no concurso.` }, { status: 400 });
   }
   if (!topic || topic.status !== "active" || new Date(topic.closes_at) < new Date()) {
     return NextResponse.json({ error: "Este evento não está disponível" }, { status: 400 });

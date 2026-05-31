@@ -11,7 +11,7 @@ function formatCloseDate(closesAt: string): string {
   const m = String(d.getMinutes()).padStart(2, "0");
   return `${day}/${month} às ${h}:${m}`;
 }
-import { calcOdds, formatOdds } from "@/lib/odds";
+import { calcOdds } from "@/lib/odds";
 import { Clock } from "lucide-react";
 import type { TopicWithStats } from "@/types/database";
 import ProbabilityBar from "./ProbabilityBar";
@@ -37,7 +37,8 @@ export default function TopicCard({ topic }: TopicCardProps) {
   const hasBothSides = volumeSim > 0 && volumeNao > 0;
 
   const probSim = hasBothSides ? (topic.stats?.prob_sim ?? 0.5) : 0.5;
-  const { simOdds, naoOdds } = calcOdds(volumeSim, volumeNao);
+  const probSimPct = (probSim * 100).toFixed(1);
+  const probNaoPct = ((1 - probSim) * 100).toFixed(1);
 
   const isExpired = topic.status === "active" && new Date(topic.closes_at) < new Date();
   const effectiveStatus = isExpired ? "closed" : topic.status;
@@ -105,12 +106,12 @@ export default function TopicCard({ topic }: TopicCardProps) {
           <div className="grid grid-cols-2 gap-2">
             <div className="bg-sim/10 rounded-lg px-3 py-2 text-center">
               <p className="text-[10px] text-sim/70 font-medium">SIM</p>
-              <p className="text-sm font-bold text-sim">{formatOdds(simOdds)}</p>
+              <p className="text-sm font-bold text-sim">{probSimPct}%</p>
               <p className="text-[10px] text-sim/50 mt-0.5">{fmtZ(volumeSim)}</p>
             </div>
             <div className="bg-nao/10 rounded-lg px-3 py-2 text-center">
               <p className="text-[10px] text-nao/70 font-medium">NÃO</p>
-              <p className="text-sm font-bold text-nao">{formatOdds(naoOdds)}</p>
+              <p className="text-sm font-bold text-nao">{probNaoPct}%</p>
               <p className="text-[10px] text-nao/50 mt-0.5">{fmtZ(volumeNao)}</p>
             </div>
           </div>

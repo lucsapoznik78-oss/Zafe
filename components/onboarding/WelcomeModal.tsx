@@ -120,7 +120,7 @@ export default function WelcomeModal() {
               <div className="flex items-start gap-3 p-3 bg-muted/30 rounded-xl">
                 <Zap size={16} className="text-yellow-400 shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-semibold text-white">Aposte em eventos reais</p>
+                  <p className="text-sm font-semibold text-white">Palpite em eventos reais</p>
                   <p className="text-xs text-muted-foreground">Política, esportes, economia — tudo verificável</p>
                 </div>
               </div>

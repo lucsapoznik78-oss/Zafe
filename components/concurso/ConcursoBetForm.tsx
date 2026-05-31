@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { calcOdds, formatOdds } from "@/lib/odds";
+import { calcOdds } from "@/lib/odds";
 import { Loader2, Trophy } from "lucide-react";
 import type { BetSide } from "@/types/database";
 
@@ -42,6 +42,10 @@ export default function ConcursoBetForm({
   const { simOdds, naoOdds } = calcOdds(poolSim, poolNao);
   const amountNum = parseFloat(amount) || 0;
   const currentOdds = side === "sim" ? simOdds : naoOdds;
+  const totalPool = poolSim + poolNao;
+  const probSimPct = totalPool > 0 ? (poolSim / totalPool * 100).toFixed(1) : null;
+  const probNaoPct = totalPool > 0 ? (poolNao / totalPool * 100).toFixed(1) : null;
+  const currentProbPct = currentOdds > 0 ? (1 / currentOdds * 100).toFixed(1) : null;
   const expectedReturn = amountNum * currentOdds;
   const expectedProfit = expectedReturn - amountNum;
   const insufficientBalance = amountNum > zcBalance;
@@ -58,8 +62,8 @@ export default function ConcursoBetForm({
   async function handleBet() {
     setError("");
     setSuccess("");
-    if (amountNum < 1) { setError("Valor mínimo: ZC$ 1"); return; }
-    if (insufficientBalance) { setError(`Saldo insuficiente. Você tem ZC$ ${zcBalance.toFixed(2)}.`); return; }
+    if (amountNum < 1) { setError("Valor mínimo: Z$ 1"); return; }
+    if (insufficientBalance) { setError(`Saldo insuficiente. Você tem Z$ ${zcBalance.toFixed(2)}.`); return; }
     if (isMulti && !selectedOutcomeId) { setError("Selecione um resultado"); return; }
 
     setLoading(true);
@@ -78,7 +82,7 @@ export default function ConcursoBetForm({
     if (!res.ok) {
       setError(data.error ?? "Erro ao registrar palpite");
     } else {
-      setSuccess(`Palpite registrado! Retorno estimado: ${data.estimated_odds?.toFixed(2)}x`);
+      setSuccess(`Palpite registrado! Retorno estimado: Z$ ${(amountNum * (data.estimated_odds ?? 1)).toFixed(2)}`);
       setAmount("");
       router.refresh();
     }
@@ -100,7 +104,7 @@ export default function ConcursoBetForm({
           <h3 className="text-sm font-semibold text-yellow-400">Palpite do Concurso</h3>
         </div>
         <span className={`text-xs font-semibold ${insufficientBalance && amountNum > 0 ? "text-red-400" : "text-yellow-300"}`}>
-          ZC$ {zcBalance.toFixed(2)}
+          Z$ {zcBalance.toFixed(2)}
         </span>
       </div>
 
@@ -109,12 +113,11 @@ export default function ConcursoBetForm({
         <div className="space-y-2">
           <div className="bg-yellow-400/10 rounded-lg px-3 py-2 text-center">
             <p className="text-[10px] text-yellow-300/60 font-medium">POOL TOTAL</p>
-            <p className="text-sm font-bold text-yellow-300">ZC$ {totalMultiPool.toFixed(0)}</p>
+            <p className="text-sm font-bold text-yellow-300">Z$ {totalMultiPool.toFixed(0)}</p>
           </div>
           {outcomes.map((o) => {
             const active = selectedOutcomeId === o.id;
             const prob = totalMultiPool > 0 ? ((o.pool / totalMultiPool) * 100).toFixed(1) : "—";
-            const odds = totalMultiPool > 0 && o.pool > 0 ? (totalMultiPool / o.pool).toFixed(2) : "—";
             return (
               <button
                 key={o.id}
@@ -127,8 +130,7 @@ export default function ConcursoBetForm({
               >
                 <span className="font-medium flex-1 pr-2 text-sm">{o.label}</span>
                 <div className="flex gap-3 text-xs shrink-0">
-                  <span className={active ? "text-yellow-300 font-bold" : "text-yellow-400/60"}>{odds}x</span>
-                  <span className="text-yellow-400/50">{prob}%</span>
+                  <span className={active ? "text-yellow-300 font-bold" : "text-yellow-400/60"}>{prob}%</span>
                 </div>
               </button>
             );
@@ -142,8 +144,8 @@ export default function ConcursoBetForm({
               <p className="text-[10px] text-green-400/70 font-medium">POOL SIM</p>
               {poolSim > 0 ? (
                 <>
-                  <p className="text-sm font-bold text-green-400">{formatOdds(simOdds)}</p>
-                  <p className="text-[10px] text-green-400/60">ZC$ {poolSim.toFixed(0)}</p>
+                  <p className="text-sm font-bold text-green-400">{probSimPct}%</p>
+                  <p className="text-[10px] text-green-400/60">Z$ {poolSim.toFixed(0)}</p>
                 </>
               ) : (
                 <p className="text-xs text-muted-foreground mt-1">Vazio</p>
@@ -153,8 +155,8 @@ export default function ConcursoBetForm({
               <p className="text-[10px] text-red-400/70 font-medium">POOL NÃO</p>
               {poolNao > 0 ? (
                 <>
-                  <p className="text-sm font-bold text-red-400">{formatOdds(naoOdds)}</p>
-                  <p className="text-[10px] text-red-400/60">ZC$ {poolNao.toFixed(0)}</p>
+                  <p className="text-sm font-bold text-red-400">{probNaoPct}%</p>
+                  <p className="text-[10px] text-red-400/60">Z$ {poolNao.toFixed(0)}</p>
                 </>
               ) : (
                 <p className="text-xs text-muted-foreground mt-1">Vazio</p>
@@ -190,9 +192,9 @@ export default function ConcursoBetForm({
 
       {/* Input */}
       <div>
-        <label className="text-xs text-yellow-300/60 mb-1.5 block">Valor em ZC$ (mín. 1)</label>
+        <label className="text-xs text-yellow-300/60 mb-1.5 block">Valor em Z$ (mín. 1)</label>
         <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-yellow-400/60 text-sm">ZC$</span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-yellow-400/60 text-sm">Z$</span>
           <input
             type="number"
             value={amount}
@@ -237,7 +239,7 @@ export default function ConcursoBetForm({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-yellow-300/60">Retorno estimado</span>
-                  <span className="text-yellow-300 font-semibold">ZC$ {multiReturn.toFixed(2)}</span>
+                  <span className="text-yellow-300 font-semibold">Z$ {multiReturn.toFixed(2)}</span>
                 </div>
               </>
             ) : (
@@ -246,12 +248,12 @@ export default function ConcursoBetForm({
           ) : poolSim > 0 && poolNao > 0 ? (
             <>
               <div className="flex justify-between">
-                <span className="text-yellow-300/60">Probabilidade estimada</span>
-                <span className="text-yellow-400 font-bold">{formatOdds(currentOdds)}</span>
+                <span className="text-yellow-300/60">Probabilidade de {side.toUpperCase()}</span>
+                <span className="text-yellow-400 font-bold">{currentProbPct ? `${currentProbPct}%` : "—"}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-yellow-300/60">Retorno estimado</span>
-                <span className="text-yellow-300 font-semibold">ZC$ {expectedReturn.toFixed(2)}</span>
+                <span className="text-yellow-300 font-semibold">Z$ {expectedReturn.toFixed(2)}</span>
               </div>
             </>
           ) : (
@@ -260,7 +262,7 @@ export default function ConcursoBetForm({
           {!isMulti && (
             <div className="flex justify-between border-t border-yellow-400/10 pt-1">
               <span className="text-yellow-300/50">Lucro potencial</span>
-              <span className="text-green-400 font-semibold">+ZC$ {expectedProfit.toFixed(2)}</span>
+              <span className="text-green-400 font-semibold">+Z$ {expectedProfit.toFixed(2)}</span>
             </div>
           )}
           <p className="text-yellow-300/40 text-[10px]">100% parimutuel — retorno proporcional ao pool.</p>
@@ -278,11 +280,11 @@ export default function ConcursoBetForm({
         {loading ? (
           <Loader2 size={16} className="animate-spin mx-auto" />
         ) : insufficientBalance && amountNum > 0 ? (
-          "ZC$ insuficiente"
+          "Z$ insuficiente"
         ) : isMulti ? (
-          `Palpitar${selectedOutcome ? ` · ${selectedOutcome.label.slice(0, 18)}` : ""}${amountNum > 0 ? ` · ZC$ ${amountNum}` : ""}`
+          `Palpitar${selectedOutcome ? ` · ${selectedOutcome.label.slice(0, 18)}` : ""}${amountNum > 0 ? ` · Z$ ${amountNum}` : ""}`
         ) : (
-          `Palpite ${side.toUpperCase()}${amountNum > 0 ? ` · ZC$ ${amountNum}` : ""}`
+          `Palpite ${side.toUpperCase()}${amountNum > 0 ? ` · Z$ ${amountNum}` : ""}`
         )}
       </button>
     </div>

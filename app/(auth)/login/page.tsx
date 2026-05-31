@@ -11,7 +11,7 @@ export default async function LoginPage({ searchParams }: Props) {
     <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-primary tracking-tight">Zafe</h1>
+          <img src="/zafe-logo-full.png" alt="Zafe" className="h-12 mx-auto mb-3" />
           <p className="text-muted-foreground mt-2 text-sm">
             Liga de previsões entre pessoas reais
           </p>

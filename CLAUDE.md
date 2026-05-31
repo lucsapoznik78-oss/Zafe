@@ -179,7 +179,7 @@ Dark theme (black bg). Verde primário `#86efac`. Lados do palpite: `--sim` (ver
 **Localização:** `/economico` (renomeação de `/topicos` filtrado por categoria `economia`)
 
 ### O que é
-Plataforma onde usuários competem em palpites sobre indicadores econômico-financeiros. **Moeda virtual: Z$.** Comissão de plataforma de **6%** (94% para vencedores, parimutuel — preserva exatamente o `lib/odds.ts` atual).
+Plataforma onde usuários competem em palpites sobre indicadores econômico-financeiros. **Moeda virtual: Z$.** Sem comissão de plataforma — **100% do pool é distribuído aos vencedores** (parimutuel puro, conforme `lib/odds.ts`).
 
 **No período beta e pós-beta inicial, este pilar é exclusivamente Z$ virtual. Não existe versão "com dinheiro real" do Econômico.** Se no futuro a Zafe quiser oferecer um produto pago equivalente, será via inscrição em torneio paralelo (modelo de buy-in regulamentado pela SECAP) — nunca via depósito/saque livre.
 
@@ -239,7 +239,7 @@ Cada evento individual em `/economico/[id-or-slug]` preserva **toda** a mecânic
 ### Mercado secundário (Order Book) — preservado em Z$
 
 `lib/order-matching.ts` continua exatamente como está, ativo no Econômico:
-- **Engine FIFO price-time matching** com **2% de comissão sobre o vendedor**
+- **Engine FIFO price-time matching** — **sem comissão de plataforma** (`COMMISSION_RATE = 0`)
 - **Endpoints**:
   - `GET /api/economico/[id]/orderbook`
   - `POST /api/economico/[id]/ordem`
@@ -276,7 +276,7 @@ GET    /api/economico/[id]/status      # Polling para ResolvingBanner
 **Localização:** `/privadas` (renomeação de `/apostas-privadas`)
 
 ### O que é
-Bolão entre usuários. Dois ou mais combinam um palpite, alocam Z$, a Zafe segura e libera para o vencedor após apuração. **Comissão de 6%** (3% de cada lado).
+Bolão entre usuários. Dois ou mais combinam um palpite, alocam Z$, a Zafe segura e libera para o vencedor após apuração. **Sem comissão de plataforma** — 100% do pool vai para o vencedor.
 
 ### Restrições
 
@@ -323,7 +323,7 @@ Cron `apostas-privadas-timeout` continua expirando convites pendentes.
 - **Não há OG image pública** (privacidade dos participantes)
 
 ### Comissão
-**6% total** (3% de cada lado), em Z$.
+**Sem comissão de plataforma.** 100% do pool é distribuído ao vencedor, em Z$.
 
 ### Copy e UI
 - Linguagem coloquial de bolão: "combinar", "palpite", "vencedor", "liberar"
@@ -351,7 +351,7 @@ Cron `apostas-privadas-timeout` continua expirando convites pendentes.
 
 Tudo igual ao Econômico:
 - Status, slug URLs, lados SIM/NÃO, probabilidade ao vivo, volume agregado em Z$, gráfico histórico, componentes UI, OG image, notificação 2h antes
-- Mercado secundário ativo (em Z$, FIFO, 2% comissão sobre vendedor)
+- Mercado secundário ativo (em Z$, FIFO, sem comissão de plataforma)
 
 ### Resolução do evento — pipeline em 4 camadas preservado
 
@@ -574,8 +574,8 @@ Qualquer usuário com nota de criador >= 30 (novos começam em 50). Rate limit: 
 - 3 abandonos = bloqueio de 30 dias
 
 ### Comissão
-- 6% total (2% criador + 4% Zafe), parimutuel
-- Criador recebe comissão em Z$ ao resolver honestamente
+- Sem comissão de plataforma. Apenas **2% de recompensa ao criador** (parimutuel), como incentivo a resolver honestamente
+- O restante (98%) é distribuído aos vencedores
 
 ### Sistema de reputação (`creator_reputation`)
 - Nota 0-100, começa em 50
@@ -624,15 +624,15 @@ GET    /api/comunidade/[id]/contestacoes  -- lista contestações
 ## Lógica de negócio (`/lib`) — preservar e estender
 
 ### Mantidos integralmente
-- **`odds.ts`** — odds parimutuel, **6% comissão**, 94% payout. Vale para Econômico, Privadas e Liga (todos em Z$).
-- **`order-matching.ts`** — order book FIFO price-time, **2% comissão sobre vendedor**. Ativo no Econômico e Liga (Z$). Aceita `topicId` ou `desafioId`.
+- **`odds.ts`** — odds parimutuel, **sem comissão**, 100% payout aos vencedores. Vale para Econômico, Privadas e Liga (todos em Z$).
+- **`order-matching.ts`** — order book FIFO price-time, **sem comissão de plataforma** (`COMMISSION_RATE = 0`). Ativo no Econômico e Liga (Z$). Aceita `topicId` ou `desafioId`.
 - **`webpush.ts`** — `sendPushToUser(userId, payload)` via VAPID, auto-limpa subscriptions stale.
 - **`oracles/`** — agentes Anthropic por categoria, estrutura completa preservada (4 camadas).
 - **`proof-processor.ts`** — pipeline de prova de desafios: links → fetchText, fotos → base64 + Google Vision, YouTube → oEmbed.
 - **`desafios-payout.ts`** — `pagarDesafio(id)` / `reembolsarDesafio(id)`.
 - **`payout.ts`** — `pagarVencedores()`, `reembolsarTodos()` (em Z$).
 - **`private-bets.ts`** — supermaioria 67%, juízes.
-- **`slugify.ts`**, **`utils.ts`** (`cn()`, `formatZ()`, `formatPercent()`, `applyCommission()`, `CATEGORIES`).
+- **`slugify.ts`**, **`utils.ts`** (`cn()`, `formatCurrency()`, `formatPercent()`, `timeUntil()`, `CATEGORIES`).
 
 ### Novos
 - **`lib/comunidade.ts`** — palpitar, payout, reembolso, reputação, reversão para Comunidade (Pilar 5)
@@ -751,7 +751,7 @@ Mantida como está:
 `active` → `resolving` → `awaiting_proof` → `proof_submitted` → `under_contestation` → `admin_review` → `resolved` | `cancelled`
 
 ### Comissão dos Desafios
-6% creator + 6% platform + 88% para vencedores (em Z$).
+Sem comissão de plataforma — 100% do pool para os vencedores (em Z$).
 
 ### Onde ficam os Desafios pós-pivot
 
@@ -762,7 +762,7 @@ Decisão pendente — mover para `/privadas/desafios/` como subcategoria de Priv
 ## SEO / Sitemap
 
 - **`app/sitemap.xml/route.ts`** — dynamic route handler usando `createAdminClient()`. Inclui `/economico/*`, `/liga/*`, `/privadas/*`, `/premium`, `/concurso`.
-- **Deploy:** `zafe-rho.vercel.app` (vai virar `zafe.com.br` na Fase 2 do roadmap operacional). Sem GitHub auto-deploy — `npx vercel --prod`.
+- **Deploy:** domínio de produção `zafe.app.br`. Sem GitHub auto-deploy — `npx vercel --prod`.
 
 ---
 
@@ -847,12 +847,12 @@ Decisão pendente — mover para `/privadas/desafios/` como subcategoria de Priv
 
 | Pilar | Como ganha | O que entra | Risco regulatório |
 |---|---|---|---|
-| Econômico | Comissão de plataforma sobre Z$ | Não gera receita em Real direta | Baixo |
-| Privadas | Comissão sobre Z$ | Não gera receita em Real direta | Médio |
+| Econômico | Não gera receita direta (Z$ virtual, sem comissão) | Não gera receita em Real direta | Baixo |
+| Privadas | Não gera receita direta (Z$ virtual, sem comissão) | Não gera receita em Real direta | Médio |
 | Liga | Premium + patrocínio + inscrição em concurso futuro | Mensalidade Premium, patrocínio de concurso, inscrição em concurso paga (futuro) | Muito baixo |
 | Premium | Mensalidade R$ 19,90/mês | **Receita principal em Real** | — |
 
-**Importante:** o Z$ não é fonte direta de receita em Real. As comissões em Z$ servem para balancear o jogo (sumidouro virtual que evita inflação de Z$ no sistema). A receita real vem **integralmente** de Premium e patrocínio.
+**Importante:** o Z$ não é fonte de receita. **Não há comissão de plataforma em nenhum pilar** — 100% dos pools são distribuídos aos vencedores. A receita real vem **integralmente** de Premium, patrocínio e inscrição em concurso (PIX).
 
 ### Projeção ano 1 (100k usuários ativos, conservador)
 - **Premium**: 3% conversão × R$ 19,90 × 12 = **R$ 720k**

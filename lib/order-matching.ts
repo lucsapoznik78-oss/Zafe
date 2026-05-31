@@ -5,12 +5,12 @@
  * Preço = probabilidade implícita [0.01, 0.99] — ex: 0.65 = 65¢ por Z$1 de face value.
  * Quantidade = Z$ de face value da posição negociada.
  *
- * Comissão: 2% sobre o vendedor, cobrada na execução.
+ * Sem comissão de plataforma — o vendedor recebe 100% do valor negociado.
  * O comprador paga exatamente o preço da ordem de venda (preço do maker).
  * Excesso de escrow do comprador é devolvido se executou abaixo do limite.
  */
 
-export const COMMISSION_RATE = 0.06; // 6% ao vendedor
+export const COMMISSION_RATE = 0; // sem comissão de plataforma
 
 /** Calcula as odds parimutuel inline (sem import circular) */
 function impliedOdds(volSim: number, volNao: number, side: "sim" | "nao") {
@@ -196,7 +196,7 @@ async function executeTrade(admin: any, p: {
     type:         "bet_exited",
     amount:       tradeValue,
     net_amount:   netSeller,
-    description:  `Venda mercado secundário ${p.side.toUpperCase()} · ${(p.price * 100).toFixed(1)}¢ · taxa 6%`,
+    description:  `Venda mercado secundário ${p.side.toUpperCase()} · ${(p.price * 100).toFixed(1)}¢`,
     reference_id: refId,
   });
 

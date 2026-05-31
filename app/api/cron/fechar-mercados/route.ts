@@ -73,7 +73,7 @@ export async function POST(request: Request) {
     if (allIds.length > 0) {
       sendPushToMany(supabase, allIds, {
         title: "Mercado fecha em 2h ⏳",
-        body: `"${topic.title.slice(0, 60)}" — última chance de apostar.`,
+        body: `"${topic.title.slice(0, 60)}" — última chance de palpitar.`,
         url: `/liga/${topic.id}`,
       }).catch(() => {});
 
@@ -81,7 +81,7 @@ export async function POST(request: Request) {
         user_id: uid,
         type: "market_closing" as const,
         title: "Mercado fecha em 2h ⏳",
-        body: `"${topic.title.slice(0, 60)}" — ${betIds.has(uid) ? "última chance de apostar ou vender sua posição" : "mercado que você segue"}.`,
+        body: `"${topic.title.slice(0, 60)}" — ${betIds.has(uid) ? "última chance de palpitar ou vender sua posição" : "evento que você segue"}.`,
         data: { topic_id: topic.id },
       })));
     }

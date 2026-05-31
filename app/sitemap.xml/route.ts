@@ -6,7 +6,7 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://zafe-rho.vercel.app";
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://zafe.app.br";
 
 function urlEntry(loc: string, lastmod: string, freq: string, priority: number) {
   return `  <url>

@@ -13,14 +13,6 @@ export function formatPercent(value: number): string {
   return `${(value * 100).toFixed(1)}%`;
 }
 
-export function applyCommission(amount: number): number {
-  return amount * 0.94;
-}
-
-export function commissionAmount(amount: number): number {
-  return amount * 0.06;
-}
-
 export function timeUntil(date: string): string {
   const now = new Date();
   const target = new Date(date);

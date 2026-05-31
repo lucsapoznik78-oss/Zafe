@@ -6,6 +6,45 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+const BONUS_PIONEIRO = 10;
+
+async function pagarBonusPioneiroConcurso(
+  adminClient: SupabaseClient,
+  topicId: string,
+  topicTitle: string
+) {
+  for (const side of ["sim", "nao"] as const) {
+    const { data: first } = await adminClient
+      .from("concurso_bets")
+      .select("user_id")
+      .eq("topic_id", topicId)
+      .eq("side", side)
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .single();
+
+    if (!first) continue;
+
+    const { data: w } = await adminClient.from("wallets").select("balance").eq("user_id", first.user_id).single();
+    await adminClient.from("wallets").update({ balance: (w?.balance ?? 0) + BONUS_PIONEIRO }).eq("user_id", first.user_id);
+    await adminClient.from("transactions").insert({
+      user_id: first.user_id,
+      type: "bonus",
+      amount: BONUS_PIONEIRO,
+      net_amount: BONUS_PIONEIRO,
+      description: `Bônus pioneiro ${side.toUpperCase()} — "${topicTitle.slice(0, 50)}"`,
+      reference_id: topicId,
+    });
+    await adminClient.from("notifications").insert({
+      user_id: first.user_id,
+      type: "bonus",
+      title: "Bônus pioneiro! +Z$ 10",
+      body: `Você foi o primeiro a palpitar ${side.toUpperCase()} em "${topicTitle.slice(0, 50)}" e o evento foi confirmado.`,
+      data: { topic_id: topicId },
+    });
+  }
+}
+
 export async function pagarConcursoBets(
   adminClient: SupabaseClient,
   topicId: string,
@@ -85,6 +124,12 @@ export async function pagarConcursoBets(
       resolution,
       resolved_at: new Date().toISOString(),
     }).eq("id", topicId);
+
+    // Bônus pioneiro — Z$ 10 para primeiro de cada lado (wallet principal)
+    const { data: topicMeta } = await adminClient.from("topics").select("title").eq("id", topicId).single();
+    pagarBonusPioneiroConcurso(adminClient, topicId, topicMeta?.title ?? "").catch((e) =>
+      console.error("[concurso-payout] bonus pioneiro error:", e)
+    );
 
     console.log(`[concurso-payout] topic=${topicId} winners=${winners.length} losers=${losers.length}`);
   } catch (err) {

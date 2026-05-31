@@ -60,7 +60,7 @@ export async function POST(
     await admin.from("transactions").insert({
       user_id: user.id, type: "bet_placed",
       amount: betAmount, net_amount: betAmount,
-      description: `Aposta privada — ${topicCreator.title?.slice(0, 40)}`,
+      description: `Bolão — ${topicCreator.title?.slice(0, 40)}`,
       reference_id: topicId,
     });
   } else {

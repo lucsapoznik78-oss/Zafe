@@ -10,6 +10,45 @@ function fmt(v: number) {
   return "Z$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+const BONUS_PIONEIRO = 10;
+
+/**
+ * Dá Z$ 10 para o primeiro palpite de cada lado (SIM e NAO) quando o evento é confirmado.
+ * Incentivo para abertura de eventos.
+ */
+async function pagarBonusPioneiro(supabase: any, topicId: string, topicTitle: string) {
+  for (const side of ["sim", "nao"] as const) {
+    const { data: first } = await supabase
+      .from("bets")
+      .select("user_id")
+      .eq("topic_id", topicId)
+      .eq("side", side)
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .single();
+
+    if (!first) continue;
+
+    const { data: w } = await supabase.from("wallets").select("balance").eq("user_id", first.user_id).single();
+    await supabase.from("wallets").update({ balance: (w?.balance ?? 0) + BONUS_PIONEIRO }).eq("user_id", first.user_id);
+    await supabase.from("transactions").insert({
+      user_id: first.user_id,
+      type: "bonus",
+      amount: BONUS_PIONEIRO,
+      net_amount: BONUS_PIONEIRO,
+      description: `Bônus pioneiro ${side.toUpperCase()} — "${topicTitle.slice(0, 50)}"`,
+      reference_id: topicId,
+    });
+    await supabase.from("notifications").insert({
+      user_id: first.user_id,
+      type: "bonus",
+      title: "Bônus pioneiro! +Z$ 10",
+      body: `Você foi o primeiro a palpitar ${side.toUpperCase()} em "${topicTitle.slice(0, 50)}" e o evento foi confirmado.`,
+      data: { topic_id: topicId },
+    });
+  }
+}
+
 export async function refundBet(supabase: any, bet: any, topicId: string, reason: string) {
   const { data: w } = await supabase.from("wallets").select("balance").eq("user_id", bet.user_id).single();
   await supabase.from("wallets").update({ balance: (w?.balance ?? 0) + bet.amount }).eq("user_id", bet.user_id);
@@ -117,7 +156,7 @@ export async function pagarVencedoresMulti(
     await supabase.from("notifications").insert({
       user_id: bet.user_id, type: "bet_won",
       title: "Você ganhou! 🏆",
-      body: `Sua aposta em "${title}" rendeu ${fmt(payout)}.`,
+      body: `Seu palpite em "${title}" rendeu ${fmt(payout)}.`,
       data: { topic_id: topicId, payout },
     });
   }
@@ -141,6 +180,11 @@ export async function pagarVencedoresMulti(
     resolved_at: new Date().toISOString(),
     ...(resolvedBy ? { resolved_by: resolvedBy } : {}),
   }).eq("id", topicId);
+
+  // Bônus pioneiro — Z$ 10 para primeiro de cada lado
+  pagarBonusPioneiro(supabase, topicId, title).catch((e: any) =>
+    console.error("[payout] bonus pioneiro error:", e)
+  );
 
   if (!topicMeta?.is_private) {
     replenishMarkets(supabase).catch((e: any) => console.error("[payout] replenish:", e));
@@ -225,6 +269,11 @@ export async function pagarVencedores(
     resolved_at: new Date().toISOString(),
     ...(resolvedBy ? { resolved_by: resolvedBy } : {}),
   }).eq("id", topicId);
+
+  // Bônus pioneiro — Z$ 10 para primeiro de cada lado
+  pagarBonusPioneiro(supabase, topicId, title).catch((e) =>
+    console.error("[payout] bonus pioneiro error:", e)
+  );
 
   // Repor mercado público automaticamente
   if (!topicMeta2?.is_private) {

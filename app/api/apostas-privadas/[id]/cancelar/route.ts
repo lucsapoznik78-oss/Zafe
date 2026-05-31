@@ -23,7 +23,12 @@ export async function POST(
 
   if (!topic) return NextResponse.json({ error: "Aposta não encontrada" }, { status: 404 });
   if (topic.creator_id !== user.id) return NextResponse.json({ error: "Apenas o criador pode cancelar" }, { status: 403 });
-  if (!["recruiting", "leader_election", "judge_negotiation"].includes(topic.private_phase)) {
+
+  // Modelo por fases: só cancelável durante recrutamento/eleição/negociação.
+  // Modelo simples (private_phase nulo): cancelável enquanto ainda pendente.
+  const cancellablePhase = ["recruiting", "leader_election", "judge_negotiation"].includes(topic.private_phase);
+  const cancellableSimple = !topic.private_phase && topic.status === "pending";
+  if (!cancellablePhase && !cancellableSimple) {
     return NextResponse.json({ error: "Não é possível cancelar nesta fase" }, { status: 400 });
   }
 
@@ -44,14 +49,14 @@ export async function POST(
         type: "refund",
         amount: topic.min_bet,
         net_amount: topic.min_bet,
-        description: `Reembolso — aposta privada cancelada: ${topic.title?.slice(0, 40)}`,
+        description: `Reembolso — bolão cancelado: ${topic.title?.slice(0, 40)}`,
         reference_id: topicId,
       });
       await admin.from("notifications").insert({
         user_id: p.user_id,
         type: "bet_invite",
-        title: "Aposta privada cancelada",
-        body: `A aposta "${topic.title?.slice(0, 50)}" foi cancelada. Seu valor foi reembolsado.`,
+        title: "Bolão cancelado",
+        body: `O bolão "${topic.title?.slice(0, 50)}" foi cancelado. Seu valor foi reembolsado.`,
         data: { topic_id: topicId },
       });
     }

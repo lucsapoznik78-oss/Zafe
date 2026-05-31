@@ -7,7 +7,6 @@ import { TrendingUp, TrendingDown, Clock } from "lucide-react";
 
 function fmt(n: number) { return `Z$ ${n.toFixed(2)}`; }
 function fmtPct(n: number) { return `${(n * 100).toFixed(1)}%`; }
-function fmtOdds(n: number) { return n > 0 ? `${(1 / n).toFixed(2)}x` : "—"; }
 
 export default async function MinhasPosicoes() {
   const supabase = await createClient();
@@ -145,15 +144,9 @@ export default async function MinhasPosicoes() {
                           <span className="text-muted-foreground">Palpitado</span>
                           <span className="text-right text-white">{fmt(pos.totalAmt)}</span>
                           <span className="text-muted-foreground">Entrada</span>
-                          <span className="text-right text-white">
-                            {fmtPct(pos.weightedEntry)}
-                            <span className="text-muted-foreground ml-1">({fmtOdds(pos.weightedEntry)})</span>
-                          </span>
+                          <span className="text-right text-white">{fmtPct(pos.weightedEntry)}</span>
                           <span className="text-muted-foreground">Atual</span>
-                          <span className="text-right text-white">
-                            {fmtPct(pos.currentProb)}
-                            <span className="text-muted-foreground ml-1">({fmtOdds(pos.currentProb)})</span>
-                          </span>
+                          <span className="text-right text-white">{fmtPct(pos.currentProb)}</span>
                           <span className="text-muted-foreground">Valor atual</span>
                           <span className={`text-right font-semibold ${positive ? "text-sim" : "text-nao"}`}>
                             {fmt(pos.currentValue)}

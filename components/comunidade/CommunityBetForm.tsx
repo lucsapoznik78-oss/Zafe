@@ -95,7 +95,7 @@ export default function CommunityBetForm({ eventId, totalSim, totalNao, isClosed
       {amountNum > 0 && (
         <div className="text-xs text-muted-foreground space-y-1">
           <div className="flex justify-between">
-            <span>Odds estimadas</span>
+            <span>Cotação estimada</span>
             <span className="text-white">{Math.min(currentOdds, 999).toFixed(2)}x</span>
           </div>
           <div className="flex justify-between">

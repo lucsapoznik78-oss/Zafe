@@ -1,8 +1,8 @@
 {
-  "name": "Zafe — Mercados de Previsão",
+  "name": "Zafe — Fantasy Game de Previsões",
   "short_name": "Zafe",
-  "description": "Invista em eventos reais com outros usuários. Plataforma brasileira de mercados de previsão.",
-  "start_url": "/topicos",
+  "description": "O fantasy game de previsões do Brasil. Compete prevendo eventos reais.",
+  "start_url": "/liga",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#86efac",

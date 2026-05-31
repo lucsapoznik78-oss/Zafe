@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Tópico inválido ou encerrado" }, { status: 400 });
   }
   if (new Date(topic.closes_at) < new Date()) {
-    return NextResponse.json({ error: "O prazo para apostar neste mercado já encerrou" }, { status: 400 });
+    return NextResponse.json({ error: "O prazo para palpitar neste evento já encerrou" }, { status: 400 });
   }
 
   const effectiveMin = Math.max(MIN_BET, topic.min_bet ?? MIN_BET);
@@ -69,7 +69,7 @@ export async function POST(request: Request) {
 
     if (existingOpposite && existingOpposite.length > 0) {
       return NextResponse.json({
-        error: `Você já apostou ${oppositeSide.toUpperCase()} neste tópico.`,
+        error: `Você já palpitou ${oppositeSide.toUpperCase()} neste evento.`,
       }, { status: 400 });
     }
   } else {
@@ -149,7 +149,7 @@ export async function POST(request: Request) {
 
   if (betError) {
     await supabase.from("wallets").update({ balance: wallet.balance }).eq("user_id", user.id);
-    return NextResponse.json({ error: "Erro ao registrar aposta" }, { status: 500 });
+    return NextResponse.json({ error: "Erro ao registrar palpite" }, { status: 500 });
   }
 
   await supabase.from("transactions").insert({
@@ -158,8 +158,8 @@ export async function POST(request: Request) {
     amount,
     net_amount: amount,
     description: isMulti
-      ? `Palpite multi — odds estimadas ${estimatedOdds.toFixed(2)}x`
-      : `Aposta ${(side as string).toUpperCase()} — odds estimadas ${estimatedOdds.toFixed(2)}x`,
+      ? `Palpite multi — cotação estimada ${estimatedOdds.toFixed(2)}x`
+      : `Palpite ${(side as string).toUpperCase()} — cotação estimada ${estimatedOdds.toFixed(2)}x`,
     reference_id: topic_id,
   });
 
@@ -189,8 +189,8 @@ export async function POST(request: Request) {
       await supabase.from("notifications").insert({
         user_id: user.id,
         type: "bet_matched",
-        title: "Aposta confirmada! 🎯",
-        body: `Sua aposta ${side.toUpperCase()} foi aceita — há apostadores do lado oposto.`,
+        title: "Palpite confirmado! 🎯",
+        body: `Seu palpite ${side.toUpperCase()} foi aceito — há previsores do lado oposto.`,
         data: { topic_id },
       });
     }

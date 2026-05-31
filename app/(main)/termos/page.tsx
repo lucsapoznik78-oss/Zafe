@@ -43,7 +43,7 @@ export default function TermosPage() {
         <h2 className="text-base font-semibold text-white">4. Como funcionam os palpites</h2>
         <p>
           Usuários alocam Z$ em palpites SIM ou NÃO sobre eventos. Quando o evento é resolvido, os vencedores
-          recebem o Z$ do lado perdedor proporcional ao valor alocado, menos a comissão de 6% da plataforma.
+          recebem o Z$ do lado perdedor proporcional ao valor alocado, sem comissão da plataforma (100% do pool é distribuído).
           As probabilidades variam conforme novos palpites são registrados.
         </p>
       </section>

@@ -58,16 +58,16 @@ export async function POST(
   const { data: profile } = await supabase
     .from("profiles").select("username").eq("id", user.id).single();
 
-  const inviteBody = `${profile?.username ?? "Alguém"} te convidou para a aposta: "${topic?.title?.slice(0, 50)}"`;
+  const inviteBody = `${profile?.username ?? "Alguém"} te convidou para o bolão: "${topic?.title?.slice(0, 50)}"`;
   await admin.from("notifications").insert({
     user_id: inviteeId,
     type: "bet_invite",
-    title: "Convite para aposta privada",
+    title: "Convite para bolão",
     body: inviteBody,
     data: { topic_id: topicId, side: me.side },
   });
   sendPushToUser(supabase, inviteeId, {
-    title: "Convite para aposta privada 🤝",
+    title: "Convite para bolão 🤝",
     body: inviteBody,
     url: `/apostas-privadas/${topicId}`,
   }).catch(() => {});

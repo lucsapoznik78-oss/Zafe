@@ -103,7 +103,6 @@ export default function MultiOutcomeBetForm({
         {outcomes.map((o) => {
           const active = selectedOutcomeId === o.id;
           const prob = totalPool > 0 ? ((o.pool / totalPool) * 100).toFixed(1) : "—";
-          const odds = totalPool > 0 && o.pool > 0 ? (totalPool / o.pool).toFixed(2) : "—";
           return (
             <button
               key={o.id}
@@ -116,10 +115,7 @@ export default function MultiOutcomeBetForm({
             >
               <span className="font-medium flex-1 pr-2">{o.label}</span>
               <div className="flex gap-3 text-xs shrink-0">
-                <span className={active ? "text-primary font-bold" : "text-muted-foreground"}>
-                  {odds}x
-                </span>
-                <span className="text-muted-foreground">{prob}%</span>
+                <span className={active ? "text-primary font-bold" : "text-muted-foreground"}>{prob}%</span>
               </div>
             </button>
           );

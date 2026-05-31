@@ -9,7 +9,6 @@ interface Props {
   passiveTotal: number;
   walletBalance: number;
   betsLocked: number;
-  commission: number;
   pendingCount: number;
   toResolveCount: number;
   totalUsers: number;
@@ -19,7 +18,7 @@ interface Props {
   activeUsers30d: number;
 }
 
-export default function AdminStats({ passiveTotal, walletBalance, betsLocked, commission, pendingCount, toResolveCount, totalUsers, newUsersWeek, totalBets, volumeTotal, activeUsers30d }: Props) {
+export default function AdminStats({ passiveTotal, walletBalance, betsLocked, pendingCount, toResolveCount, totalUsers, newUsersWeek, totalBets, volumeTotal, activeUsers30d }: Props) {
   const router = useRouter();
   const [cronLoading, setCronLoading] = useState(false);
   const [cronResult, setCronResult] = useState("");
@@ -107,11 +106,6 @@ export default function AdminStats({ passiveTotal, walletBalance, betsLocked, co
           </p>
         </div>
         <div className="bg-card border border-border rounded-xl p-4">
-          <div className="mb-2 text-primary"><TrendingUp size={18} /></div>
-          <p className="text-2xl font-bold text-primary">{formatCurrency(commission)}</p>
-          <p className="text-xs text-muted-foreground mt-1">Comissões acumuladas</p>
-        </div>
-        <div className="bg-card border border-border rounded-xl p-4">
           <div className="mb-2 text-yellow-400"><Clock size={18} /></div>
           <p className="text-2xl font-bold text-yellow-400">{pendingCount}</p>
           <p className="text-xs text-muted-foreground mt-1">Aguardando aprovação</p>
@@ -133,16 +127,44 @@ export default function AdminStats({ passiveTotal, walletBalance, betsLocked, co
         <button
           onClick={async () => {
             setDirectLoading(true);
-            setDirectResult("Consultando Claude...");
-            const res = await fetch("/api/admin/resolver-direto", { method: "POST" });
-            const d = await res.json();
-            if (res.ok) {
-              setDirectResult(d.resolved > 0
-                ? `✅ ${d.resolved}/${d.total} setor(es) resolvido(s): ${d.results?.map((r: any) => `${r.outcome}`).join(", ")}`
-                : `⚠️ Nenhum resolvido: ${d.results?.map((r: any) => r.outcome).join(", ") || d.message}`
-              );
-            } else {
-              setDirectResult(`❌ ${d.error}`);
+            let totalResolved = 0;
+            let totalIncerto = 0;
+            let rounds = 0;
+            try {
+              while (true) {
+                rounds++;
+                setDirectResult(`Consultando Claude... (lote ${rounds}${totalResolved > 0 ? ` · ${totalResolved} resolvido(s)` : ""})`);
+                const res = await fetch("/api/admin/resolver-direto", { method: "POST" });
+                let d: any;
+                try {
+                  d = await res.json();
+                } catch {
+                  // Resposta não-JSON = função estourou o tempo (504 da Vercel). Os lotes já
+                  // processados foram salvos no banco; basta clicar de novo para continuar.
+                  setDirectResult(`⏱️ Um lote demorou demais (timeout). ${totalResolved} resolvido(s) até agora — clique de novo para continuar.`);
+                  break;
+                }
+                if (!res.ok) {
+                  setDirectResult(`❌ ${d.error ?? "Erro ao resolver"}`);
+                  break;
+                }
+                totalResolved += d.resolved ?? 0;
+                totalIncerto += d.incerto ?? 0;
+
+                if (d.done || (d.processed ?? 0) === 0) {
+                  const parts = [];
+                  if (totalResolved > 0) parts.push(`✅ ${totalResolved} resolvido(s)`);
+                  if (totalIncerto > 0) parts.push(`⚠️ ${totalIncerto} incerto(s) — resolva manualmente abaixo`);
+                  if (parts.length === 0) parts.push("Nenhum setor pendente");
+                  setDirectResult(parts.join(" · "));
+                  break;
+                }
+                setDirectResult(`Resolvendo... ${totalResolved} resolvido(s), ${d.remaining} restante(s)`);
+                if (rounds >= 30) { setDirectResult(`⏸️ Parado após 30 lotes — ${totalResolved} resolvido(s), ${d.remaining} restante(s). Clique de novo.`); break; }
+                router.refresh();
+              }
+            } catch (e) {
+              setDirectResult(`❌ Falha de rede: ${String(e).slice(0, 80)}`);
             }
             setDirectLoading(false);
             router.refresh();

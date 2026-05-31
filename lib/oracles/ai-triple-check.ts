@@ -111,11 +111,34 @@ async function verificacaoComSearch(question: string, closesAt: string, tentativ
       max_tokens: 1024,
       betas: ["web-search-2025-03-05"],
       system: ORACLE_SYSTEM,
-      tools: [{ type: "web_search_20250305", name: "web_search" }],
+      tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 3 }],
       messages: [{ role: "user", content: buildPrompt(question, closesAt, tentativa, outcomes) }],
     });
-    const textBlock = response.content.find((b: any) => b.type === "text") as { type: "text"; text: string } | undefined;
-    return parseCheckResult(textBlock?.text ?? "", outcomes);
+    const allText = response.content.filter((b: any) => b.type === "text").map((b: any) => b.text).join("\n");
+
+    // Às vezes já vem JSON direto.
+    const direto = parseCheckResult(allText, outcomes);
+    if (direto.resultado !== "INCERTO") return direto;
+
+    // Mas com web search o modelo quase sempre responde em PROSA (raciocínio, sem JSON),
+    // o que dava sempre INCERTO. 2º passo barato extrai o veredito da própria análise.
+    if (allText.trim()) {
+      const valores = outcomes && outcomes.length > 0
+        ? outcomes.map((o) => `"${o}"`).join(", ") + ' ou "INCERTO"'
+        : '"SIM", "NAO" ou "INCERTO"';
+      const r2 = await client.messages.create({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 40,
+        system: `Com base na análise fornecida, responda SOMENTE com JSON no formato {"resultado":X} onde X é um de: ${valores}`,
+        messages: [
+          { role: "user", content: `Evento: "${question}"\n\nAnálise:\n${allText}\n\nQual o resultado?` },
+          { role: "assistant", content: '{"resultado":"' },
+        ],
+      });
+      const t2 = r2.content.filter((b: any) => b.type === "text").map((b: any) => b.text).join("");
+      return parseCheckResult('{"resultado":"' + t2, outcomes);
+    }
+    return direto;
   } catch (e) {
     console.warn("[oracle] web_search falhou:", String(e).slice(0, 200));
     return { resultado: "INCERTO", confianca: 0, fonte: "search_error" };
@@ -131,8 +154,8 @@ async function verificacaoSemSearch(question: string, closesAt: string, outcomes
       system: ORACLE_SYSTEM,
       messages: [{ role: "user", content: buildPrompt(question, closesAt, 2, outcomes) }],
     });
-    const textBlock = response.content.find((b: any) => b.type === "text") as { type: "text"; text: string } | undefined;
-    return parseCheckResult(textBlock?.text ?? "", outcomes);
+    const allText = response.content.filter((b: any) => b.type === "text").map((b: any) => b.text).join("\n");
+    return parseCheckResult(allText, outcomes);
   } catch (e) {
     console.warn("[oracle] fallback sem search falhou:", String(e).slice(0, 200));
     return { resultado: "INCERTO", confianca: 0, fonte: "" };
@@ -183,7 +206,7 @@ export async function validacaoAI(question: string, resultadoDeclarado: string):
       max_tokens: 256,
       betas: ["web-search-2025-03-05"],
       system: 'Responda SOMENTE com JSON: {"confirmado":true,"fonte":"url"} ou {"confirmado":false,"fonte":"url"}',
-      tools: [{ type: "web_search_20250305", name: "web_search" }],
+      tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 3 }],
       messages: [{
         role: "user",
         content: `Confirme este resultado com busca na web.
@@ -191,8 +214,8 @@ Evento: "${question}"
 Resultado declarado: ${resultadoDeclarado}`,
       }],
     });
-    const textBlock = response.content.find((b: any) => b.type === "text") as { type: "text"; text: string } | undefined;
-    return parseCheckResult(textBlock?.text ?? "").resultado !== "INCERTO";
+    const allText = response.content.filter((b: any) => b.type === "text").map((b: any) => b.text).join("\n");
+    return parseCheckResult(allText).resultado !== "INCERTO";
   } catch {
     return true;
   }

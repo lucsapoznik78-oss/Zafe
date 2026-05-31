@@ -13,7 +13,7 @@ export default function ConcursoBanner() {
         <div>
           <p className="text-sm font-semibold text-white">Concurso Mensal</p>
           <p className="text-xs text-muted-foreground mt-0.5">
-            30+ palpites no mês para concorrer a prêmios em dinheiro via PIX
+            É aqui que vale de verdade — prêmio em dinheiro via PIX para os melhores previsores
           </p>
         </div>
       </div>

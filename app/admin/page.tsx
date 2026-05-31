@@ -6,7 +6,6 @@ import AdminResolve from "@/components/admin/AdminResolve";
 import AdminStats from "@/components/admin/AdminStats";
 import AdminActiveTopics from "@/components/admin/AdminActiveTopics";
 import OracleLog from "@/components/admin/OracleLog";
-import RelatorioFinanceiro from "@/components/admin/RelatorioFinanceiro";
 
 export default async function AdminPage() {
   const supabase = await createClient();
@@ -32,7 +31,6 @@ export default async function AdminPage() {
     { data: wallets },
     { data: activeBets },
     { data: openOrders },
-    { data: commissionTxs },
     { data: allActiveTopics },
     { count: totalUsers },
     { count: newUsersWeek },
@@ -46,7 +44,6 @@ export default async function AdminPage() {
     admin.from("wallets").select("balance"),
     admin.from("bets").select("amount").in("status", ["pending", "matched", "partial"]),
     admin.from("orders").select("price, quantity, filled_qty").eq("status", "open").eq("side", "buy"),
-    admin.from("transactions").select("net_amount").eq("type", "commission"),
     // Buscar todos os ativos - separar em JS depois
     admin.from("topics").select("id, title, category, closes_at, created_at, concurso_id").eq("status", "active").order("closes_at"),
     // Stats de usuários
@@ -80,7 +77,6 @@ export default async function AdminPage() {
   const walletBalance  = (wallets ?? []).reduce((s, w: any) => s + (w.balance ?? 0), 0);
   const betsLocked     = (activeBets ?? []).reduce((s, b: any) => s + (b.amount ?? 0), 0);
   const ordersEscrow   = (openOrders ?? []).reduce((s, o: any) => s + parseFloat(o.price) * (parseFloat(o.quantity) - parseFloat(o.filled_qty ?? 0)), 0);
-  const commission     = (commissionTxs ?? []).reduce((s, t: any) => s + (t.net_amount ?? 0), 0);
   const passiveTotal   = walletBalance + betsLocked + ordersEscrow;
   const volumeTotal    = (totalVolumeData ?? []).reduce((s, b: any) => s + (b.amount ?? 0), 0);
 
@@ -98,7 +94,6 @@ export default async function AdminPage() {
         passiveTotal={passiveTotal}
         walletBalance={walletBalance}
         betsLocked={betsLocked}
-        commission={commission}
         pendingCount={pending?.length ?? 0}
         toResolveCount={allResolving?.length ?? 0}
         totalUsers={totalUsers ?? 0}
@@ -169,12 +164,6 @@ export default async function AdminPage() {
       <div>
         <h2 className="text-lg font-bold text-white mb-3">Resoluções Oracle</h2>
         <OracleLog />
-      </div>
-
-      <div>
-        <h2 className="text-lg font-bold text-white mb-1">Relatório Financeiro</h2>
-        <p className="text-xs text-muted-foreground mb-3">Separação contábil: receita própria vs volume custodiado</p>
-        <RelatorioFinanceiro />
       </div>
     </div>
   );

@@ -270,7 +270,7 @@ export default function CreatePrivateBetForm({ userId }: { userId: string }) {
 
       <UserPicker
         label="Aliados"
-        sublabel="(Lado A — apostam SIM)"
+        sublabel="(Lado A — palpitam SIM)"
         selected={aliados}
         allUsers={allUsers}
         loading={loadingUsers}
@@ -281,7 +281,7 @@ export default function CreatePrivateBetForm({ userId }: { userId: string }) {
 
       <UserPicker
         label="Adversários"
-        sublabel="(Lado B — apostam NÃO)"
+        sublabel="(Lado B — palpitam NÃO)"
         selected={adversarios}
         allUsers={allUsers}
         loading={loadingUsers}

@@ -124,7 +124,7 @@ export default async function PremiumPage() {
             {
               icon: <Zap size={18} className="text-primary" />,
               title: "Concursos com prêmio em dinheiro",
-              desc: "Acumule 30+ palpites no mês e concorra a prêmios em dinheiro via PIX.",
+              desc: "É aqui que vale de verdade — concorra a prêmios em dinheiro via PIX.",
             },
           ].map((item) => (
             <div key={item.title} className="flex items-start gap-3 bg-card border border-border rounded-xl p-4">

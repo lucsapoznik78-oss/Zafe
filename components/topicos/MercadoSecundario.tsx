@@ -72,7 +72,6 @@ interface Props {
   apiBase?: string;
   isActive: boolean;
   userBets?: { id: string; side: "sim" | "nao"; amount: number; status: string }[];
-  commissionPct?: number;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -85,7 +84,6 @@ const LIQUIDITY_LABEL = {
 
 function pct(p: number)  { return `${(p * 100).toFixed(1)}%`; }
 function qty(q: number)  { return `Z$ ${q.toFixed(2)}`; }
-function odds(p: number) { return p > 0 ? `${(1 / p).toFixed(2)}x` : "—"; }
 
 function Sparkline({ data, color }: { data: TradePoint[]; color: string }) {
   if (data.length < 2) return null;
@@ -164,15 +162,9 @@ function PositionCard({
         <div className="text-muted-foreground">Alocado</div>
         <div className="text-right text-white">{qty(pos.total_amount)}</div>
         <div className="text-muted-foreground">Entrada</div>
-        <div className="text-right text-white">
-          {pct(pos.avg_entry_price)}
-          <span className="text-muted-foreground ml-1">({odds(pos.avg_entry_price)})</span>
-        </div>
+        <div className="text-right text-white">{pct(pos.avg_entry_price)}</div>
         <div className="text-muted-foreground">Atual</div>
-        <div className="text-right text-white">
-          {pct(pos.current_price)}
-          <span className="text-muted-foreground ml-1">({odds(pos.current_price)})</span>
-        </div>
+        <div className="text-right text-white">{pct(pos.current_price)}</div>
         <div className="text-muted-foreground">Valor atual</div>
         <div className={`text-right font-semibold ${positive ? "text-sim" : "text-nao"}`}>{qty(pos.current_value)}</div>
       </div>
@@ -182,7 +174,7 @@ function PositionCard({
           <span className={`font-semibold ${pos.sell_now_estimate >= pos.total_amount ? "text-sim" : "text-nao"}`}>
             ~{qty(pos.sell_now_estimate)}
           </span>
-          <span className="text-muted-foreground text-[10px] ml-1">(após 2% taxa)</span>
+          <span className="text-muted-foreground text-[10px] ml-1">(sem taxa)</span>
         </div>
       )}
     </div>
@@ -191,7 +183,7 @@ function PositionCard({
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function MercadoSecundario({ topicId, apiBase, isActive, userBets = [], commissionPct = 2 }: Props) {
+export default function MercadoSecundario({ topicId, apiBase, isActive, userBets = [] }: Props) {
   const router = useRouter();
   const base = apiBase ?? (topicId ? `/api/topicos/${topicId}` : "");
 
@@ -335,8 +327,9 @@ export default function MercadoSecundario({ topicId, apiBase, isActive, userBets
 
   if (error || !data) {
     return (
-      <div className="bg-card border border-border rounded-xl p-4 text-sm text-muted-foreground text-center">
-        {error ?? "Sem dados"}
+      <div className="bg-card border border-border rounded-xl p-4 text-center space-y-1">
+        <p className="text-sm text-muted-foreground">{error ?? "Mercado secundário indisponível"}</p>
+        <button onClick={fetchBook} className="text-xs text-primary hover:underline">Tentar novamente</button>
       </div>
     );
   }
@@ -426,7 +419,7 @@ export default function MercadoSecundario({ topicId, apiBase, isActive, userBets
           <span>Preço (asks)</span><span className="text-right">Qtd</span>
         </div>
         {book!.asks.length === 0 ? (
-          <p className="text-[11px] text-muted-foreground text-center py-1">Sem vendedores</p>
+          <p className="text-[11px] text-muted-foreground text-center py-1.5 italic">Nenhuma oferta de venda ainda</p>
         ) : (
           [...book!.asks].reverse().map((lvl, i) => (
             <DepthRow key={i} level={lvl} type="ask" maxQty={maxAsk} />
@@ -438,7 +431,7 @@ export default function MercadoSecundario({ topicId, apiBase, isActive, userBets
 
         {/* Bids (buy side — highest price first) */}
         {book!.bids.length === 0 ? (
-          <p className="text-[11px] text-muted-foreground text-center py-1">Sem compradores</p>
+          <p className="text-[11px] text-muted-foreground text-center py-1.5 italic">Nenhuma oferta de compra ainda</p>
         ) : (
           book!.bids.map((lvl, i) => (
             <DepthRow key={i} level={lvl} type="bid" maxQty={maxBid} />
@@ -531,7 +524,10 @@ export default function MercadoSecundario({ topicId, apiBase, isActive, userBets
             <div>
               <label className="text-[11px] text-muted-foreground block mb-1">Posição a vender</label>
               {sellableBets.length === 0 ? (
-                <p className="text-[11px] text-nao">Sem palpites {side.toUpperCase()} para vender.</p>
+                <p className="text-[11px] text-muted-foreground">
+                  Nenhum palpite {side.toUpperCase()} ativo para vender.{" "}
+                  <span className="text-primary/70">Palpite primeiro no setor principal.</span>
+                </p>
               ) : (
                 <select
                   value={sourceBetId}
@@ -661,7 +657,7 @@ export default function MercadoSecundario({ topicId, apiBase, isActive, userBets
 
       {/* Disclaimer */}
       <p className="text-[10px] text-muted-foreground/60 border-t border-border/30 pt-2">
-        Mercado secundário. Taxa de {commissionPct}% sobre vendedor. Ordens limitadas ficam no livro até execução ou cancelamento.
+        Mercado secundário. Sem taxa de plataforma. Ordens limitadas ficam no livro até execução ou cancelamento.
       </p>
     </div>
   );

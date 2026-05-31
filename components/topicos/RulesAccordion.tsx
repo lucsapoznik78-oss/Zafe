@@ -23,11 +23,11 @@ const topicoRules = [
   },
   {
     q: "Qual a comissão cobrada?",
-    a: "6% do valor total do pool — descontado proporcionalmente do prêmio de cada vencedor.",
+    a: "Nenhuma. 100% do pool é distribuído proporcionalmente aos vencedores — a Zafe não cobra comissão.",
   },
   {
     q: "Posso vender minha posição antes do encerramento?",
-    a: "Sim, pelo mercado secundário (aba Vender) — coloque uma ordem de venda e outro usuário compra sua posição. Taxa de 6% sobre o valor da venda.",
+    a: "Sim, pelo mercado secundário (aba Vender) — coloque uma ordem de venda e outro usuário compra sua posição. Sem taxa sobre a venda.",
   },
 ];
 
@@ -46,11 +46,11 @@ const desafioRules = [
   },
   {
     q: "Qual a comissão cobrada?",
-    a: "12% do valor total do pool — 6% para o criador do desafio e 6% para a plataforma — descontados proporcionalmente do prêmio de cada vencedor.",
+    a: "Nenhuma comissão de plataforma. 100% do pool é distribuído proporcionalmente aos vencedores.",
   },
   {
     q: "Posso vender minha posição antes do encerramento?",
-    a: "Sim, pelo mercado secundário (aba Vender) — coloque uma ordem de venda e outro usuário compra sua posição. Taxa de 6% sobre o valor da venda.",
+    a: "Sim, pelo mercado secundário (aba Vender) — coloque uma ordem de venda e outro usuário compra sua posição. Sem taxa sobre a venda.",
   },
 ];
 

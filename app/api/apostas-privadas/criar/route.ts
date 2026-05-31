@@ -40,7 +40,7 @@ export async function POST(req: Request) {
   }).select().single();
 
   if (topicErr || !topic) {
-    return NextResponse.json({ error: "Erro ao criar aposta" }, { status: 500 });
+    return NextResponse.json({ error: "Erro ao criar bolão" }, { status: 500 });
   }
 
   // Criar lados A e B
@@ -67,7 +67,7 @@ export async function POST(req: Request) {
   await admin.from("transactions").insert({
     user_id: user.id, type: "bet_placed",
     amount: betAmount, net_amount: betAmount,
-    description: `Aposta privada — ${title.slice(0, 40)}`,
+    description: `Bolão — ${title.slice(0, 40)}`,
     reference_id: topic.id,
   });
 
@@ -105,7 +105,7 @@ export async function POST(req: Request) {
   const aNotifs = aliadoIds.map((uid: string) => ({
     user_id: uid,
     type: "bet_invite",
-    title: "Convite para aposta privada",
+    title: "Convite para bolão",
     body: `@${creatorName} te convidou como aliado: "${title.slice(0, 50)}"`,
     data: { topic_id: topic.id, side: "A" },
   }));
@@ -115,7 +115,7 @@ export async function POST(req: Request) {
   const bNotifs = adversario_ids.map((uid: string) => ({
     user_id: uid,
     type: "bet_invite",
-    title: "Convite para aposta privada",
+    title: "Convite para bolão",
     body: `@${creatorName} te convidou como adversário: "${title.slice(0, 50)}"`,
     data: { topic_id: topic.id, side: "B" },
   }));

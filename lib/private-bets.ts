@@ -35,7 +35,7 @@ export async function checkRecrutamento(supabase: any, topicId: string) {
     user_id: m.user_id,
     type: "market_resolved",
     title: "Vote no seu líder!",
-    body: "A aposta privada já tem participantes suficientes. Vote em quem vai representar seu lado.",
+    body: "O bolão já tem participantes suficientes. Vote em quem vai representar seu lado.",
     data: { topic_id: topicId, phase: "leader_election" },
   }));
   if (notifications.length > 0) {
@@ -128,7 +128,7 @@ export async function checkLideresEleitos(supabase: any, topicId: string) {
       user_id: sideA.leader_id,
       type: "market_resolved",
       title: "Você é o líder! Proponha os juízes",
-      body: "Você foi eleito líder. Proponha 3 juízes para a aposta.",
+      body: "Você foi eleito líder. Proponha 3 juízes para o bolão.",
       data: { topic_id: topicId, phase: "judge_negotiation", role: "leader" },
     },
     {
@@ -166,8 +166,8 @@ export async function checkJuizesConfirmados(supabase: any, topicId: string) {
   const notifs = (members ?? []).map((m: any) => ({
     user_id: m.user_id,
     type: "market_resolved",
-    title: "Aposta ativa!",
-    body: "Todos os juízes foram confirmados. A aposta está ativa.",
+    title: "Bolão ativo!",
+    body: "Todos os juízes foram confirmados. O bolão está ativo.",
     data: { topic_id: topicId, phase: "active" },
   }));
   if (notifs.length > 0) {
@@ -207,7 +207,7 @@ export async function abrirVotacao(supabase: any, topicId: string, round: number
     user_id: j.judge_user_id,
     type: "market_resolved",
     title: round === 1 ? "Vote no resultado!" : "Segunda votação aberta",
-    body: "Você tem 1 hora para votar no resultado da aposta. Acesse agora.",
+    body: "Você tem 1 hora para votar no resultado do bolão. Acesse agora.",
     data: { topic_id: topicId, phase, round },
   }));
   if (notifs.length > 0) {

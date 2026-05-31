@@ -17,14 +17,17 @@ export default async function PrivadaDetailPage({ params }: PageProps) {
     { data: topic, error: topicError },
     { data: sides },
     { data: participants },
-    { data: stats },
+    { data: nominations },
   ] = await Promise.all([
     admin.from("topics").select("*, creator:profiles!creator_id(username)").eq("id", id).single(),
     admin.from("topic_sides").select("*, leader:profiles(id, username, created_at)").eq("topic_id", id),
     admin.from("topic_participants")
       .select("*, profile:profiles!topic_participants_user_id_fkey(id, username, full_name, avatar_url, created_at)")
       .eq("topic_id", id),
-    admin.from("v_topic_stats").select("*").eq("topic_id", id).single(),
+    admin.from("judge_nominations")
+      .select("*, judge:profiles(id, username)")
+      .eq("topic_id", id)
+      .order("created_at", { ascending: true }),
   ]);
 
   if (topicError && topicError.code !== "PGRST116") {
@@ -40,8 +43,9 @@ export default async function PrivadaDetailPage({ params }: PageProps) {
 
   const myParticipant = participants?.find((p: any) => p.user_id === user.id) ?? null;
   const isCreator = topic.creator_id === user.id;
+  const isJudge = nominations?.some((n: any) => n.judge_user_id === user.id) ?? false;
 
-  if (!myParticipant && !isCreator) {
+  if (!myParticipant && !isCreator && !isJudge) {
     return (
       <div className="py-12 text-center">
         <p className="text-muted-foreground">Você não tem acesso a este bolão.</p>
@@ -49,14 +53,38 @@ export default async function PrivadaDetailPage({ params }: PageProps) {
     );
   }
 
+  let leaderVotes: any[] = [];
+  if (topic.private_phase === "leader_election" && myParticipant) {
+    const { data: votes } = await admin
+      .from("leader_votes")
+      .select("candidate_id")
+      .eq("topic_id", id)
+      .eq("side", myParticipant.side);
+    leaderVotes = votes ?? [];
+  }
+
+  let judgeVotes: any[] = [];
+  if (["voting", "voting_round2"].includes(topic.private_phase ?? "")) {
+    const round = topic.private_phase === "voting" ? 1 : 2;
+    const { data: jv } = await admin
+      .from("judge_outcome_votes")
+      .select("judge_id, vote, voted_at")
+      .eq("topic_id", id)
+      .eq("round", round);
+    judgeVotes = jv ?? [];
+  }
+
   return (
     <PrivateBetRoom
       topic={topic}
       sides={sides ?? []}
       participants={participants ?? []}
-      stats={stats ?? null}
+      nominations={nominations ?? []}
+      leaderVotes={leaderVotes}
+      judgeVotes={judgeVotes}
       currentUserId={user.id}
       myParticipant={myParticipant}
+      isJudge={isJudge}
     />
   );
 }

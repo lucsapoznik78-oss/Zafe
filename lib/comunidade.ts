@@ -174,8 +174,8 @@ export async function executeCommunityBet(
 
 // ── Payout da Comunidade ────────────────────────────────────────
 
-const CREATOR_COMMISSION_RATE = 0.02; // 2% pro criador
-const PLATFORM_COMMISSION_RATE = 0.04; // 4% pra Zafe
+const CREATOR_COMMISSION_RATE = 0.02; // 2% de recompensa pro criador que resolve honestamente
+const PLATFORM_COMMISSION_RATE = 0; // sem comissão de plataforma
 
 export async function pagarComunidade(
   supabase: any,

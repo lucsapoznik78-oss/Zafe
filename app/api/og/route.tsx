@@ -149,7 +149,7 @@ export async function GET(req: Request) {
 
         {/* Footer */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontSize: "16px", color: "#52525b" }}>zafe-rho.vercel.app</span>
+          <span style={{ fontSize: "16px", color: "#52525b" }}>zafe.app.br</span>
           <span style={{ fontSize: "16px", color: "#52525b" }}>Liga de previsões brasileira</span>
         </div>
       </div>

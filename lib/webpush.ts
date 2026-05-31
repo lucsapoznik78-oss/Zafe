@@ -34,7 +34,7 @@ export async function sendPushToUser(
   const payload = JSON.stringify({
     title: notification.title,
     body: notification.body,
-    data: { url: notification.url ?? "/topicos" },
+    data: { url: notification.url ?? "/liga" },
   });
 
   await Promise.allSettled(

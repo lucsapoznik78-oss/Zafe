@@ -53,7 +53,7 @@ export async function POST(request: Request) {
       user_id: wallet.user_id,
       type: "market_resolved",
       title: "Bônus semanal! 🎁",
-      body: `Z$ ${actualBonus.toFixed(2).replace(".", ",")} creditados na sua carteira.`,
+      body: `Z$ ${actualBonus.toFixed(2).replace(".", ",")} creditados no seu saldo.`,
     });
 
     credited++;

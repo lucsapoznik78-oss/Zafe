@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
-import { calcOdds, formatOdds } from "@/lib/odds";
+import { calcOdds } from "@/lib/odds";
 import { Loader2, Wallet, Lock } from "lucide-react";
 import type { BetSide } from "@/types/database";
 
@@ -30,10 +30,16 @@ export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed,
   const effectiveMin = Math.max(1, minBet);
   const amountNum = parseFloat(amount) || 0;
   const currentOdds = side === "sim" ? simOdds : naoOdds;
-  // Cap odds at 999 to prevent unrealistic displays
   const cappedOdds = Math.min(currentOdds, 999);
   const expectedReturn = amountNum * cappedOdds;
   const expectedProfit = expectedReturn - amountNum;
+
+  const totalPool = totalSim + totalNao;
+  const probSimPct = totalPool > 0 ? (totalSim / totalPool * 100).toFixed(1) : null;
+  const probNaoPct = totalPool > 0 ? (totalNao / totalPool * 100).toFixed(1) : null;
+  const currentProbPct = totalPool > 0
+    ? ((side === "sim" ? totalSim : totalNao) / totalPool * 100).toFixed(1)
+    : null;
   const insufficientBalance = amountNum > userBalance;
 
   async function handleBet() {
@@ -107,7 +113,7 @@ export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed,
           <p className="text-[10px] text-sim/70 font-medium">POOL SIM</p>
           {totalSim > 0 ? (
             <>
-              <p className="text-sm font-bold text-sim">{formatOdds(simOdds)}</p>
+              <p className="text-sm font-bold text-sim">{probSimPct}%</p>
               <p className="text-[10px] text-sim/60">{formatCurrency(totalSim)}</p>
             </>
           ) : (
@@ -118,7 +124,7 @@ export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed,
           <p className="text-[10px] text-nao/70 font-medium">POOL NÃO</p>
           {totalNao > 0 ? (
             <>
-              <p className="text-sm font-bold text-nao">{formatOdds(naoOdds)}</p>
+              <p className="text-sm font-bold text-nao">{probNaoPct}%</p>
               <p className="text-[10px] text-nao/60">{formatCurrency(totalNao)}</p>
             </>
           ) : (
@@ -197,9 +203,9 @@ export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed,
               <div className="flex justify-between items-center">
                 <span className="flex items-center gap-1 text-muted-foreground">
                   <Lock size={10} />
-                  Probabilidade estimada {side.toUpperCase()}
+                  Probabilidade {side.toUpperCase()}
                 </span>
-                <span className="text-white font-bold">{formatOdds(currentOdds)}</span>
+                <span className="text-white font-bold">{currentProbPct ? `${currentProbPct}%` : "—"}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Retorno estimado se ganhar</span>

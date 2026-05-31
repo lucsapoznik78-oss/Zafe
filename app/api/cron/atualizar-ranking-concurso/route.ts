@@ -11,17 +11,17 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { verifyCronAuth } from "@/lib/cron-auth";
 
+async function isAdminRequest(): Promise<boolean> {
+  const { createClient } = await import("@/lib/supabase/server");
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return false;
+  const { data: profile } = await supabase.from("profiles").select("is_admin").eq("id", user.id).single();
+  return profile?.is_admin === true;
+}
+
 export async function POST(req: Request) {
-  const authorized =
-    verifyCronAuth(req) ||
-    (async () => {
-      const { createClient } = await import("@/lib/supabase/server");
-      const supabase = await createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return false;
-      const { data: profile } = await supabase.from("profiles").select("is_admin").eq("id", user.id).single();
-      return profile?.is_admin === true;
-    })();
+  const authorized = verifyCronAuth(req) || (await isAdminRequest());
 
   if (!authorized) return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
 

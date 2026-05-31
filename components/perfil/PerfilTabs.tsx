@@ -341,11 +341,11 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl }:
             <div className="space-y-1.5 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Palpite (pool)</span>
-                <span className="text-white">6% (comissão Zafe)</span>
+                <span className="text-sim font-medium">Sem comissão</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Mercado secundário</span>
-                <span className="text-white">6% (sobre o valor da venda)</span>
+                <span className="text-sim font-medium">Sem taxa</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Z$ virtual</span>
