@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { calcOdds } from "@/lib/odds";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { debitBalance, creditBalance } from "@/lib/wallet";
 
 /** Core palpitar logic shared by /api/apostar and /api/liga|economico/[id]/palpitar */
 export async function executePalpitar(
@@ -69,14 +70,12 @@ export async function executePalpitar(
   const { simOdds, naoOdds } = calcOdds(volSim, volNao);
   const estimatedOdds = side === "sim" ? simOdds : naoOdds;
 
-  const { error: walletError } = await supabase
-    .from("wallets")
-    .update({ balance: wallet.balance - amount })
-    .eq("user_id", userId)
-    .eq("balance", wallet.balance);
-
-  if (walletError) {
-    return NextResponse.json({ error: "Erro ao debitar saldo. Tente novamente." }, { status: 409 });
+  const debit = await debitBalance(supabase, userId, amount);
+  if (!debit.ok) {
+    return NextResponse.json(
+      { error: debit.reason === "insufficient" ? "Saldo insuficiente" : "Erro ao debitar saldo. Tente novamente." },
+      { status: debit.reason === "insufficient" ? 400 : 409 },
+    );
   }
 
   const { data: bet, error: betError } = await supabase
@@ -98,7 +97,7 @@ export async function executePalpitar(
     .single();
 
   if (betError) {
-    await supabase.from("wallets").update({ balance: wallet.balance }).eq("user_id", userId);
+    await creditBalance(supabase, userId, amount);
     return NextResponse.json({ error: "Erro ao registrar palpite" }, { status: 500 });
   }
 

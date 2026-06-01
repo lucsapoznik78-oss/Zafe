@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { calcOdds } from "@/lib/odds";
+import { debitBalance, creditBalance } from "@/lib/wallet";
 
 const MIN_BET = 1;
 
@@ -111,15 +112,13 @@ export async function POST(request: Request) {
     estimatedOdds = side === "sim" ? simOdds : naoOdds;
   }
 
-  // Debitar saldo (optimistic lock)
-  const { error: walletError } = await supabase
-    .from("wallets")
-    .update({ balance: wallet.balance - amount })
-    .eq("user_id", user.id)
-    .eq("balance", wallet.balance);
-
-  if (walletError) {
-    return NextResponse.json({ error: "Erro ao debitar saldo. Tente novamente." }, { status: 409 });
+  // Debitar saldo (trava otimista via CAS)
+  const debit = await debitBalance(supabase, user.id, amount);
+  if (!debit.ok) {
+    return NextResponse.json(
+      { error: debit.reason === "insufficient" ? "Saldo insuficiente" : "Erro ao debitar saldo. Tente novamente." },
+      { status: debit.reason === "insufficient" ? 400 : 409 },
+    );
   }
 
   // Inserir aposta no pool
@@ -148,7 +147,7 @@ export async function POST(request: Request) {
     .single();
 
   if (betError) {
-    await supabase.from("wallets").update({ balance: wallet.balance }).eq("user_id", user.id);
+    await creditBalance(supabase, user.id, amount);
     return NextResponse.json({ error: "Erro ao registrar palpite" }, { status: 500 });
   }
 

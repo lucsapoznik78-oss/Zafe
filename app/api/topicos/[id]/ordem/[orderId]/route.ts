@@ -4,6 +4,7 @@
  */
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { creditBalance } from "@/lib/wallet";
 
 interface RouteParams { params: Promise<{ id: string; orderId: string }> }
 
@@ -40,13 +41,9 @@ export async function DELETE(_req: Request, { params }: RouteParams) {
     const refund = parseFloat((unfilledQty * order.price).toFixed(2));
 
     if (refund > 0.01) {
-      const { data: wallet } = await supabase.from("wallets")
-        .select("balance").eq("user_id", user.id).single();
-      await supabase.from("wallets")
-        .update({ balance: (wallet?.balance ?? 0) + refund })
-        .eq("user_id", user.id);
+      await creditBalance(admin, user.id, refund);
 
-      await supabase.from("transactions").insert({
+      await admin.from("transactions").insert({
         user_id:      user.id,
         type:         "bet_refund",
         amount:       refund,

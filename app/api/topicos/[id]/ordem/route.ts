@@ -16,6 +16,7 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { tryMatchOrders } from "@/lib/order-matching";
+import { debitBalance, creditBalance } from "@/lib/wallet";
 
 interface RouteParams { params: Promise<{ id: string }> }
 
@@ -106,14 +107,30 @@ export async function POST(request: Request, { params }: RouteParams) {
       }, { status: 400 });
 
   } else {
-    // BUY: só valida saldo — dinheiro sai apenas quando a ordem for executada
+    // BUY: debita o escrow (preço × quantidade) no momento da colocação.
+    // Sem isso, várias ordens concorrentes apostam o mesmo saldo (double-spend).
+    // Excesso é devolvido na execução (preço do maker ≤ limite) e o saldo não
+    // executado é devolvido ao cancelar/expirar a ordem.
     const needed = parseFloat((price * quantity).toFixed(2));
-    const { data: wallet } = await supabase.from("wallets")
-      .select("balance").eq("user_id", user.id).single();
-    if (!wallet || wallet.balance < needed)
-      return NextResponse.json({
-        error: `Saldo insuficiente. Necessário: Z$ ${needed.toFixed(2)}`,
-      }, { status: 400 });
+    const debit = await debitBalance(admin, user.id, needed);
+    if (!debit.ok)
+      return NextResponse.json(
+        {
+          error: debit.reason === "insufficient"
+            ? `Saldo insuficiente. Necessário: Z$ ${needed.toFixed(2)}`
+            : "Erro ao reservar saldo. Tente novamente.",
+        },
+        { status: debit.reason === "insufficient" ? 400 : 409 },
+      );
+
+    await admin.from("transactions").insert({
+      user_id:      user.id,
+      type:         "bet_placed",
+      amount:       needed,
+      net_amount:   needed,
+      description:  `Escrow ordem de compra ${side.toUpperCase()} · ${(price * 100).toFixed(1)}¢`,
+      reference_id: topicId,
+    });
   }
 
   // ── Inserir ordem ─────────────────────────────────────────────────
@@ -130,6 +147,10 @@ export async function POST(request: Request, { params }: RouteParams) {
   }).select().single();
 
   if (orderErr || !order) {
+    // Reverter escrow caso a ordem de compra não tenha sido criada
+    if (order_type === "buy") {
+      await creditBalance(admin, user.id, parseFloat((price * quantity).toFixed(2)));
+    }
     return NextResponse.json({ error: "Erro ao criar ordem" }, { status: 500 });
   }
 
@@ -152,9 +173,25 @@ export async function POST(request: Request, { params }: RouteParams) {
     }
   }
 
-  // Ordem a mercado: cancelar o que não foi executado (sem escrow a devolver)
+  // Ordem a mercado: cancelar o que não foi executado e devolver o escrow
+  // correspondente à quantidade não preenchida (apenas BUY tem escrow).
   if (is_market && matchResult.totalFilled < quantity - 0.01) {
     await admin.from("orders").update({ status: "cancelled" }).eq("id", order.id);
+    if (order_type === "buy") {
+      const unfilled = parseFloat((quantity - matchResult.totalFilled).toFixed(2));
+      const refund = parseFloat((unfilled * price).toFixed(2));
+      if (refund > 0.01) {
+        await creditBalance(admin, user.id, refund);
+        await admin.from("transactions").insert({
+          user_id:      user.id,
+          type:         "bet_refund",
+          amount:       refund,
+          net_amount:   refund,
+          description:  "Ordem a mercado não executada — escrow devolvido",
+          reference_id: topicId,
+        });
+      }
+    }
   }
 
   // Estado final da ordem

@@ -5,6 +5,7 @@
 import { replenishMarkets } from "@/lib/auto-replenish";
 import { sendPushToUser } from "@/lib/webpush";
 import { cancelTopicOrders } from "@/lib/order-matching";
+import { creditBalance } from "@/lib/wallet";
 
 function fmt(v: number) {
   return "Z$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -29,8 +30,7 @@ async function pagarBonusPioneiro(supabase: any, topicId: string, topicTitle: st
 
     if (!first) continue;
 
-    const { data: w } = await supabase.from("wallets").select("balance").eq("user_id", first.user_id).single();
-    await supabase.from("wallets").update({ balance: (w?.balance ?? 0) + BONUS_PIONEIRO }).eq("user_id", first.user_id);
+    await creditBalance(supabase, first.user_id, BONUS_PIONEIRO);
     await supabase.from("transactions").insert({
       user_id: first.user_id,
       type: "bonus",
@@ -50,8 +50,7 @@ async function pagarBonusPioneiro(supabase: any, topicId: string, topicTitle: st
 }
 
 export async function refundBet(supabase: any, bet: any, topicId: string, reason: string) {
-  const { data: w } = await supabase.from("wallets").select("balance").eq("user_id", bet.user_id).single();
-  await supabase.from("wallets").update({ balance: (w?.balance ?? 0) + bet.amount }).eq("user_id", bet.user_id);
+  await creditBalance(supabase, bet.user_id, bet.amount);
   await supabase.from("bets").update({ status: "refunded" }).eq("id", bet.id);
   await supabase.from("transactions").insert({
     user_id: bet.user_id, type: "bet_refund", amount: bet.amount, net_amount: bet.amount,
@@ -146,8 +145,7 @@ export async function pagarVencedoresMulti(
   for (const bet of winnerBets) {
     const winnings = parseFloat(((bet.amount / totalWinPool) * totalLosePool).toFixed(2));
     const payout   = parseFloat((bet.amount + winnings).toFixed(2));
-    const { data: w } = await supabase.from("wallets").select("balance").eq("user_id", bet.user_id).single();
-    await supabase.from("wallets").update({ balance: (w?.balance ?? 0) + payout }).eq("user_id", bet.user_id);
+    await creditBalance(supabase, bet.user_id, payout);
     await supabase.from("bets").update({ status: "won", potential_payout: payout }).eq("id", bet.id);
     await supabase.from("transactions").insert({
       user_id: bet.user_id, type: "bet_won", amount: payout, net_amount: payout,
@@ -227,8 +225,7 @@ export async function pagarVencedores(
     const winnings = parseFloat(((bet.amount / totalWinPool) * totalLosePool).toFixed(2));
     const payout   = parseFloat((bet.amount + winnings).toFixed(2));
 
-    const { data: w } = await supabase.from("wallets").select("balance").eq("user_id", bet.user_id).single();
-    await supabase.from("wallets").update({ balance: (w?.balance ?? 0) + payout }).eq("user_id", bet.user_id);
+    await creditBalance(supabase, bet.user_id, payout);
     await supabase.from("bets").update({ status: "won", potential_payout: payout }).eq("id", bet.id);
     await supabase.from("transactions").insert({
       user_id: bet.user_id, type: "bet_won", amount: payout, net_amount: payout,

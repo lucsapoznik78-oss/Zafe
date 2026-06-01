@@ -1,5 +1,7 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { debitBalance } from "@/lib/wallet";
+import { verificarLimiteAnual } from "@/lib/limits/private-bet-limit";
 
 export async function POST(
   req: Request,
@@ -40,13 +42,29 @@ export async function POST(
       return NextResponse.json({ error: "Saldo insuficiente" }, { status: 400 });
     }
 
+    // Verificar limite anual Z$ por par de usuários (CMN 5.298/2026)
+    const limite = await verificarLimiteAnual(admin, user.id, topicCreator.creator_id, betAmount);
+    if (!limite.ok) {
+      return NextResponse.json({ error: limite.mensagem }, { status: 400 });
+    }
+
+    // Debitar saldo de forma atômica ANTES de registrar a aposta, para que uma
+    // corrida perdida não crie aposta sem o débito correspondente.
+    const debit = await debitBalance(admin, user.id, betAmount);
+    if (!debit.ok) {
+      return NextResponse.json(
+        { error: debit.reason === "insufficient" ? "Saldo insuficiente" : "Erro ao debitar saldo. Tente novamente." },
+        { status: debit.reason === "insufficient" ? 400 : 409 },
+      );
+    }
+
     // Aceitar convite
     await admin.from("topic_participants").update({
       status: "accepted",
       joined_at: new Date().toISOString(),
     }).eq("topic_id", topicId).eq("user_id", user.id);
 
-    // Criar aposta mínima
+    // Criar aposta mínima (saldo já debitado acima)
     const betSide = participant.side === "A" ? "sim" : "nao";
     await admin.from("bets").insert({
       topic_id: topicId, user_id: user.id,
@@ -55,8 +73,6 @@ export async function POST(
       is_private: true,
     });
 
-    // Debitar saldo
-    await admin.from("wallets").update({ balance: wallet.balance - betAmount }).eq("user_id", user.id);
     await admin.from("transactions").insert({
       user_id: user.id, type: "bet_placed",
       amount: betAmount, net_amount: betAmount,

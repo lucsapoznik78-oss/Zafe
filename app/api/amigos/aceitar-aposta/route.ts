@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { debitBalance, creditBalance } from "@/lib/wallet";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -34,6 +35,24 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invitante sem saldo suficiente" }, { status: 400 });
   }
 
+  // Debitar ambos os saldos de forma atômica ANTES de criar as apostas.
+  // Se o segundo débito falhar, reverte o primeiro para não reter Z$.
+  const inviterDebit = await debitBalance(supabase, invite.inviter_id, invite.amount);
+  if (!inviterDebit.ok) {
+    return NextResponse.json(
+      { error: inviterDebit.reason === "insufficient" ? "Invitante sem saldo suficiente" : "Erro ao debitar saldo. Tente novamente." },
+      { status: inviterDebit.reason === "insufficient" ? 400 : 409 },
+    );
+  }
+  const inviteeDebit = await debitBalance(supabase, user.id, invite.amount);
+  if (!inviteeDebit.ok) {
+    await creditBalance(supabase, invite.inviter_id, invite.amount);
+    return NextResponse.json(
+      { error: inviteeDebit.reason === "insufficient" ? "Saldo insuficiente" : "Erro ao debitar saldo. Tente novamente." },
+      { status: inviteeDebit.reason === "insufficient" ? 400 : 409 },
+    );
+  }
+
   // Criar apostas privadas
   const [{ data: inviterBet }, { data: inviteeBet }] = await Promise.all([
     supabase.from("bets").insert({
@@ -60,11 +79,7 @@ export async function POST(request: Request) {
     });
   }
 
-  // Debitar saldo de ambos
-  await Promise.all([
-    supabase.from("wallets").update({ balance: inviterWallet.balance - invite.amount }).eq("user_id", invite.inviter_id),
-    supabase.from("wallets").update({ balance: wallet.balance - invite.amount }).eq("user_id", user.id),
-  ]);
+  // (saldos de ambos já debitados de forma atômica acima)
 
   await supabase.from("private_bet_invites").update({ status: "accepted" }).eq("id", invite_id);
 

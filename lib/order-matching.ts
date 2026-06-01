@@ -10,6 +10,8 @@
  * Excesso de escrow do comprador é devolvido se executou abaixo do limite.
  */
 
+import { creditBalance } from "@/lib/wallet";
+
 export const COMMISSION_RATE = 0; // sem comissão de plataforma
 
 /** Calcula as odds parimutuel inline (sem import circular) */
@@ -187,9 +189,8 @@ async function executeTrade(admin: any, p: {
   }
   await admin.from("trades").insert(tradeInsert);
 
-  // ── 2. Creditar vendedor ─────────────────────────────────────────
-  const { data: sw } = await admin.from("wallets").select("balance").eq("user_id", p.sellerId).single();
-  await admin.from("wallets").update({ balance: (sw?.balance ?? 0) + netSeller }).eq("user_id", p.sellerId);
+  // ── 2. Creditar vendedor (trava otimista) ───────────────────────
+  await creditBalance(admin, p.sellerId, netSeller);
 
   await admin.from("transactions").insert({
     user_id:      p.sellerId,
@@ -200,24 +201,22 @@ async function executeTrade(admin: any, p: {
     reference_id: refId,
   });
 
-  // ── 3. Debitar comprador na execução ────────────────────────────
-  const { data: bw } = await admin.from("wallets").select("balance").eq("user_id", p.buyerId).single();
-  const buyerBalance = bw?.balance ?? 0;
-  if (buyerBalance < tradeValue) {
-    console.error(`[order-matching] Comprador sem saldo: tem ${buyerBalance}, precisa ${tradeValue}`);
-    return;
+  // ── 3. Comprador: escrow já debitado na criação da ordem ────────
+  // O comprador depositou buyLimitPrice × quantidade ao colocar a ordem.
+  // Como a execução ocorre ao preço do maker (≤ limite), devolvemos o
+  // excesso de escrow correspondente a esta fração executada.
+  const escrowExcess = parseFloat(((p.buyLimitPrice - p.price) * p.quantity).toFixed(2));
+  if (escrowExcess > 0.01) {
+    await creditBalance(admin, p.buyerId, escrowExcess);
+    await admin.from("transactions").insert({
+      user_id:      p.buyerId,
+      type:         "bet_refund",
+      amount:       escrowExcess,
+      net_amount:   escrowExcess,
+      description:  `Reembolso de escrow ${p.side.toUpperCase()} — execução a ${(p.price * 100).toFixed(1)}¢`,
+      reference_id: refId,
+    });
   }
-  const newBuyerBalance = parseFloat((buyerBalance - tradeValue).toFixed(2));
-  await admin.from("wallets").update({ balance: newBuyerBalance }).eq("user_id", p.buyerId);
-
-  await admin.from("transactions").insert({
-    user_id:      p.buyerId,
-    type:         "bet_placed",
-    amount:       tradeValue,
-    net_amount:   tradeValue,
-    description:  `Compra mercado secundário ${p.side.toUpperCase()} · ${(p.price * 100).toFixed(1)}¢`,
-    reference_id: refId,
-  });
 
   // ── 4. Encerrar aposta do vendedor ───────────────────────────────
   const betTable = isDesafio ? "desafio_bets" : "bets";
@@ -279,7 +278,29 @@ export async function cancelTopicOrders(admin: any, topicId: string) {
 
   for (const order of openOrders ?? []) {
     await admin.from("orders").update({ status: "expired" }).eq("id", order.id);
+    await refundBuyOrderEscrow(admin, order);
   }
+}
+
+/**
+ * Devolve o escrow não executado de uma ordem BUY.
+ * Ordens SELL não têm escrow (o vendedor detém a posição, não Z$).
+ */
+async function refundBuyOrderEscrow(admin: any, order: any) {
+  if (order.order_type !== "buy") return;
+  const unfilled = parseFloat((order.quantity - order.filled_qty).toFixed(2));
+  const refund = parseFloat((unfilled * order.price).toFixed(2));
+  if (refund <= 0.01) return;
+
+  await creditBalance(admin, order.user_id, refund);
+  await admin.from("transactions").insert({
+    user_id:      order.user_id,
+    type:         "bet_refund",
+    amount:       refund,
+    net_amount:   refund,
+    description:  "Ordem de compra cancelada — escrow devolvido",
+    reference_id: order.topic_id ?? order.desafio_id ?? "",
+  });
 }
 
 /** Cancela todas as ordens abertas de um desafio. */
@@ -292,5 +313,6 @@ export async function cancelDesafioOrders(admin: any, desafioId: string) {
 
   for (const order of openOrders ?? []) {
     await admin.from("orders").update({ status: "expired" }).eq("id", order.id);
+    await refundBuyOrderEscrow(admin, order);
   }
 }

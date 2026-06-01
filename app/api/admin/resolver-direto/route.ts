@@ -1,158 +1,128 @@
 /**
- * Resolve mercados expirados diretamente via Claude com web search.
- * Usado quando o oracle automático falha por timeout ou INCERTO.
+ * Resolve mercados expirados via UMA única chamada ao Claude com web search.
+ * Todos os setores pendentes vão num só prompt e voltam num array JSON —
+ * sem lotes, sem chamada por evento. Rápido e barato.
  */
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-import { pagarVencedores, reembolsarTodos } from "@/lib/payout";
+import { pagarVencedores } from "@/lib/payout";
+import { pagarConcursoBets } from "@/lib/concurso-payout";
 
 const claude = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 export const maxDuration = 60;
 
-/** Quantos setores resolver por chamada. 2 web searches em paralelo cabem nos 60s
- *  do plano Hobby; com 4 a função estourava o tempo e gastava a API sem salvar nada. */
-const BATCH = 2;
+/** Máximo de setores por chamada. ~1 web search por evento; 12 cabe folgado nos 60s
+ *  do plano Hobby e no contexto do modelo (cada busca infla os input tokens). */
+const MAX_EVENTS = 12;
 /** Após N tentativas sem sucesso (INCERTO/erro), para de tentar automaticamente */
 const MAX_ATTEMPTS = 3;
 
 const ORACLE_SYSTEM = `Você é o oracle do site brasileiro de prediction markets Zafe.
-Sua única função é determinar o resultado de eventos e responder SOMENTE com JSON puro.
-Formato obrigatório (sem markdown, sem texto extra, sem explicação):
-{"resultado":"SIM","confianca":95}
-ou
-{"resultado":"NAO","confianca":95}
-ou
-{"resultado":"INCERTO","confianca":0}
-Valores permitidos para resultado: "SIM", "NAO", "INCERTO"`;
+Determina o resultado de eventos usando busca na web e responde com um array JSON.
+Cada item: {"i":<número do evento>,"resultado":"SIM"|"NAO"|"INCERTO"}.
+Prefira SIM ou NAO a INCERTO sempre que houver qualquer evidência.`;
+
+type TopicRow = { id: string; title: string; category: string; closes_at: string; status: string; oracle_retry_count: number | null; concurso_id: string | null };
+type Verdict = { i: number; resultado: "SIM" | "NAO" | "INCERTO" };
 
 /**
- * Extrai o JSON com campo "resultado" de uma string possivelmente com prose ao redor.
- * Resolve o problema do regex greedy que captura múltiplos objetos JSON.
+ * Extrai os vereditos de uma resposta que pode vir como array JSON puro
+ * ou com prosa ao redor. Coleta cada objeto {"i":N,"resultado":"X"} válido.
  */
-function extractResultado(text: string): { resultado: string; confianca: number } | null {
+function extractVerdicts(text: string): Verdict[] {
   const clean = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
 
-  // Parse direto
-  try { return JSON.parse(clean); } catch {}
+  // Tenta o array direto primeiro
+  try {
+    const arr = JSON.parse(clean);
+    if (Array.isArray(arr)) {
+      const ok = arr.filter((o) => typeof o?.i === "number" && ["SIM", "NAO", "INCERTO"].includes(o?.resultado));
+      if (ok.length) return ok;
+    }
+  } catch {}
 
-  // Tenta cada objeto simples (sem nesting) até achar um com "resultado"
-  const matches = clean.match(/\{[^{}]+\}/g) ?? [];
-  for (const m of matches) {
+  // Tenta um array embutido na prosa
+  const arrMatch = clean.match(/\[\s*\{[\s\S]*?\}\s*\]/);
+  if (arrMatch) {
     try {
-      const obj = JSON.parse(m);
-      if (["SIM", "NAO", "INCERTO"].includes(obj.resultado)) return obj;
+      const arr = JSON.parse(arrMatch[0]);
+      if (Array.isArray(arr)) {
+        const ok = arr.filter((o) => typeof o?.i === "number" && ["SIM", "NAO", "INCERTO"].includes(o?.resultado));
+        if (ok.length) return ok;
+      }
+    } catch {}
+  }
+
+  // Fallback: coleta cada objeto simples válido espalhado no texto
+  const objs = clean.match(/\{[^{}]+\}/g) ?? [];
+  const out: Verdict[] = [];
+  for (const m of objs) {
+    try {
+      const o = JSON.parse(m);
+      if (typeof o.i === "number" && ["SIM", "NAO", "INCERTO"].includes(o.resultado)) {
+        out.push({ i: o.i, resultado: o.resultado });
+      }
     } catch { continue; }
   }
-
-  // Fallback: regex literal para capturar o valor de "resultado"
-  const rm = clean.match(/"resultado"\s*:\s*"(SIM|NAO|INCERTO)"/);
-  if (rm) {
-    const cm = clean.match(/"confianca"\s*:\s*(\d+)/);
-    return { resultado: rm[1], confianca: cm ? parseInt(cm[1]) : 90 };
-  }
-
-  return null;
+  return out;
 }
 
-type TopicRow = { id: string; title: string; category: string; closes_at: string; status: string; oracle_retry_count: number | null };
+/** Manda todos os setores numa só chamada e devolve os vereditos por índice. */
+async function consultarClaude(topics: TopicRow[]): Promise<Map<number, "SIM" | "NAO" | "INCERTO">> {
+  const agora = new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
+  const lista = topics
+    .map((t, idx) => {
+      const prazo = new Date(t.closes_at).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
+      return `${idx + 1}. "${t.title}" (prazo: ${prazo})`;
+    })
+    .join("\n");
 
-/** Consulta o Claude (web search, com fallback) e devolve o resultado bruto. */
-async function consultarClaude(topic: TopicRow): Promise<{ resultado: string; confianca: number } | null> {
-  const prazo = new Date(topic.closes_at).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
-  const prompt = `Data atual: ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })} (horário de Brasília)
-Prazo do mercado: ${prazo} (horário de Brasília)
+  const prompt = `Data atual: ${agora} (horário de Brasília).
+Use busca na web para determinar o resultado de CADA evento abaixo (se aconteceu antes do prazo):
 
-Use busca na web para verificar se este evento aconteceu antes do prazo:
-"${topic.title}"
+${lista}
 
-IMPORTANTE: Prefira SIM ou NAO a INCERTO sempre que encontrar qualquer evidência.`;
+Responda SOMENTE com um array JSON, um objeto por evento:
+[{"i":1,"resultado":"SIM"},{"i":2,"resultado":"NAO"}]
+Valores permitidos: "SIM", "NAO" ou "INCERTO". Prefira SIM/NAO a INCERTO sempre que houver evidência.`;
 
+  let verdicts: Verdict[] = [];
   try {
-    const betaRes = await (claude.beta.messages.create as any)({
+    const res = await (claude.beta.messages.create as any)({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 1024,
+      max_tokens: 4096,
       betas: ["web-search-2025-03-05"],
       system: ORACLE_SYSTEM,
-      tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 3 }],
+      tools: [{ type: "web_search_20250305", name: "web_search", max_uses: MAX_EVENTS }],
       messages: [{ role: "user", content: prompt }],
     });
-    const prose = betaRes.content.filter((b: any) => b.type === "text").map((b: any) => b.text).join("\n");
+    const prose = res.content.filter((b: any) => b.type === "text").map((b: any) => b.text).join("\n");
+    verdicts = extractVerdicts(prose);
 
-    // Às vezes o modelo já devolve o JSON direto.
-    const direto = extractResultado(prose);
-    if (direto) return direto;
-
-    // Mas com web search ele quase sempre responde em PROSA (raciocínio, sem JSON).
-    // 2º passo barato (sem busca, ~40 tokens) extrai o veredito da própria análise.
-    if (prose.trim()) {
+    // Com web search o modelo às vezes responde só em prosa (sem o array).
+    // 2º passo barato (sem busca) converte a análise no array JSON.
+    if (verdicts.length === 0 && prose.trim()) {
       const r2 = await claude.messages.create({
         model: "claude-haiku-4-5-20251001",
-        max_tokens: 40,
-        system: 'Com base na análise fornecida, responda SOMENTE com JSON: {"resultado":"SIM"}, {"resultado":"NAO"} ou {"resultado":"INCERTO"}',
+        max_tokens: 1024,
+        system: 'Converta a análise num array JSON: [{"i":1,"resultado":"SIM"}], valores "SIM"|"NAO"|"INCERTO".',
         messages: [
-          { role: "user", content: `Evento: "${topic.title}"\n\nAnálise:\n${prose}\n\nQual o resultado?` },
-          { role: "assistant", content: '{"resultado":"' },
+          { role: "user", content: `Eventos:\n${lista}\n\nAnálise:\n${prose}\n\nMonte o array JSON com o resultado de cada evento.` },
+          { role: "assistant", content: "[" },
         ],
       });
       const t2 = r2.content.filter((b: any) => b.type === "text").map((b: any) => b.text).join("");
-      return extractResultado('{"resultado":"' + t2);
+      verdicts = extractVerdicts("[" + t2);
     }
-    return null;
-  } catch {
-    // Fallback sem web search — usa prefill para forçar saída JSON
-    const fallbackRes = await claude.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 512,
-      system: ORACLE_SYSTEM,
-      messages: [
-        { role: "user", content: prompt },
-        { role: "assistant", content: '{"resultado":' },
-      ],
-    });
-    const tb = fallbackRes.content.filter((b: any) => b.type === "text").map((b: any) => b.text).join("");
-    return extractResultado('{"resultado":' + tb);
+  } catch (e) {
+    console.error("[resolver-direto] consulta falhou:", String(e).slice(0, 200));
   }
-}
 
-/** Resolve um único setor. Devolve o desfecho para o relatório. */
-async function resolverUm(admin: any, topic: TopicRow, userId: string): Promise<{ title: string; outcome: string }> {
-  try {
-    const parsed = await consultarClaude(topic);
-
-    if (!parsed || !["SIM", "NAO", "INCERTO"].includes(parsed.resultado)) {
-      console.error("[resolver-direto] parse falhou para:", topic.title, "| parsed:", JSON.stringify(parsed));
-      await admin.from("topics")
-        .update({ oracle_retry_count: (topic.oracle_retry_count ?? 0) + 1 })
-        .eq("id", topic.id);
-      return { title: topic.title, outcome: "parse_error" };
-    }
-
-    if (parsed.resultado === "INCERTO") {
-      await admin.from("topics")
-        .update({ oracle_retry_count: (topic.oracle_retry_count ?? 0) + 1 })
-        .eq("id", topic.id);
-      return { title: topic.title, outcome: "incerto" };
-    }
-
-    const resolucao = parsed.resultado.toLowerCase() as "sim" | "nao";
-    await admin.from("resolucoes").insert({
-      mercado_id: topic.id,
-      resolvido_por: "oracle_ai_direto",
-      oracle_usado: "claude-haiku-4-5-20251001",
-      numero_tentativa: (topic.oracle_retry_count ?? 0) + 1,
-      resultado_final: parsed.resultado,
-    });
-
-    await pagarVencedores(admin, topic.id, resolucao, userId);
-    return { title: topic.title, outcome: parsed.resultado };
-  } catch (err) {
-    await admin.from("topics")
-      .update({ oracle_retry_count: (topic.oracle_retry_count ?? 0) + 1 })
-      .eq("id", topic.id);
-    return { title: topic.title, outcome: `erro: ${String(err).slice(0, 100)}` };
-  }
+  const map = new Map<number, "SIM" | "NAO" | "INCERTO">();
+  for (const v of verdicts) map.set(v.i, v.resultado);
+  return map;
 }
 
 export async function POST(req: Request) {
@@ -166,30 +136,74 @@ export async function POST(req: Request) {
   const admin = createAdminClient();
   const now = new Date().toISOString();
 
-  // Move qualquer active expirado para resolving (retry_count 0 → entram na frente da fila)
+  // Move qualquer active expirado para resolving
   await admin.from("topics")
     .update({ status: "resolving", oracle_retry_count: 0, oracle_next_retry_at: null })
     .eq("status", "active").eq("is_private", false).lt("closes_at", now);
 
-  // Pega só um lote desta vez, priorizando os que tiveram menos tentativas.
-  // Setores que ficaram INCERTO/erro MAX_ATTEMPTS vezes são ignorados (resolva manual).
-  const { data: batch } = await admin
+  // Pega os setores pendentes (menos tentados primeiro), ignorando os que esgotaram tentativas
+  const { data: topics } = await admin
     .from("topics")
-    .select("id, title, category, closes_at, status, oracle_retry_count")
+    .select("id, title, category, closes_at, status, oracle_retry_count, concurso_id")
     .eq("status", "resolving").eq("is_private", false)
     .lt("oracle_retry_count", MAX_ATTEMPTS)
     .order("oracle_retry_count", { ascending: true })
     .order("closes_at", { ascending: true })
-    .limit(BATCH);
+    .limit(MAX_EVENTS);
 
-  if (!batch || batch.length === 0) {
-    return NextResponse.json({ message: "Nenhum setor pendente para resolver automaticamente", resolved: 0, incerto: 0, processed: 0, remaining: 0, done: true, results: [] });
+  if (!topics || topics.length === 0) {
+    return NextResponse.json({ message: "Nenhum setor pendente", resolved: 0, incerto: 0, processed: 0, remaining: 0, done: true, results: [] });
   }
 
-  // Resolve o lote em paralelo (cabe no limite de 60s)
-  const results = await Promise.all(batch.map((t: TopicRow) => resolverUm(admin, t, user.id)));
+  // UMA chamada resolve todos
+  const veredictos = await consultarClaude(topics as TopicRow[]);
 
-  // Quantos ainda restam para próximas chamadas (excluindo os que esgotaram tentativas)
+  const results: { title: string; outcome: string }[] = [];
+  for (let idx = 0; idx < topics.length; idx++) {
+    const topic = topics[idx] as TopicRow;
+    const resultado = veredictos.get(idx + 1);
+
+    // Tópicos de concurso pagam de concurso_bets; os demais, de bets.
+    const betsTable = topic.concurso_id ? "concurso_bets" : "bets";
+    const { count: matched } = await admin
+      .from(betsTable)
+      .select("id", { count: "exact", head: true })
+      .eq("topic_id", topic.id).eq("status", "matched");
+    const semBets = (matched ?? 0) === 0;
+
+    if (resultado === "SIM" || resultado === "NAO") {
+      try {
+        const resolucao = resultado.toLowerCase() as "sim" | "nao";
+        await admin.from("resolucoes").insert({
+          mercado_id: topic.id,
+          resolvido_por: "oracle_ai_direto",
+          oracle_usado: "claude-haiku-4-5-20251001",
+          numero_tentativa: (topic.oracle_retry_count ?? 0) + 1,
+          resultado_final: resultado,
+        });
+        if (topic.concurso_id) await pagarConcursoBets(admin, topic.id, resolucao);
+        else await pagarVencedores(admin, topic.id, resolucao, user.id);
+        // Sem palpites nenhum payout marca o tópico — fecha manualmente
+        if (semBets) {
+          await admin.from("topics").update({ status: "resolved", resolution: resolucao, resolved_at: new Date().toISOString() }).eq("id", topic.id);
+        }
+        results.push({ title: topic.title, outcome: resultado });
+      } catch (err) {
+        await admin.from("topics").update({ oracle_retry_count: (topic.oracle_retry_count ?? 0) + 1 }).eq("id", topic.id);
+        results.push({ title: topic.title, outcome: `erro: ${String(err).slice(0, 100)}` });
+      }
+    } else if (semBets) {
+      // INCERTO sem palpites: ninguém afetado, encerra como anulado para sair da fila
+      await admin.from("topics").update({ status: "resolved", resolution: null, resolved_at: new Date().toISOString() }).eq("id", topic.id);
+      results.push({ title: topic.title, outcome: "anulado" });
+    } else {
+      // INCERTO com palpites → conta tentativa
+      await admin.from("topics").update({ oracle_retry_count: (topic.oracle_retry_count ?? 0) + 1 }).eq("id", topic.id);
+      results.push({ title: topic.title, outcome: "incerto" });
+    }
+  }
+
+  // Quantos ainda restam (excluindo os que esgotaram tentativas)
   const { count: remaining } = await admin
     .from("topics")
     .select("id", { count: "exact", head: true })

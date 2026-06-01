@@ -1,5 +1,7 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { debitBalance, creditBalance } from "@/lib/wallet";
+import { verificarLimiteAnual } from "@/lib/limits/private-bet-limit";
 
 export async function POST(req: Request) {
   const supabase = await createClient();
@@ -28,6 +30,25 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Saldo insuficiente" }, { status: 400 });
   }
 
+  // Verificar limite anual Z$ por par de usuários (CMN 5.298/2026)
+  for (const adversarioId of adversario_ids) {
+    const limite = await verificarLimiteAnual(admin, user.id, adversarioId, betAmount);
+    if (!limite.ok) {
+      return NextResponse.json({ error: limite.mensagem }, { status: 400 });
+    }
+  }
+
+  // Debitar aposta mínima do criador ANTES de criar o bolão (trava otimista).
+  // Feito antes da criação do topic para que uma corrida perdida não deixe
+  // um bolão órfão sem o débito correspondente.
+  const debit = await debitBalance(admin, user.id, betAmount);
+  if (!debit.ok) {
+    return NextResponse.json(
+      { error: debit.reason === "insufficient" ? "Saldo insuficiente" : "Erro ao debitar saldo. Tente novamente." },
+      { status: debit.reason === "insufficient" ? 400 : 409 },
+    );
+  }
+
   // Criar o topic — pendente até juiz + ≥1 adversário aceitarem
   const { data: topic, error: topicErr } = await admin.from("topics").insert({
     creator_id: user.id,
@@ -40,6 +61,8 @@ export async function POST(req: Request) {
   }).select().single();
 
   if (topicErr || !topic) {
+    // Reverter o débito já efetuado para não reter Z$ do criador
+    await creditBalance(admin, user.id, betAmount);
     return NextResponse.json({ error: "Erro ao criar bolão" }, { status: 500 });
   }
 
@@ -56,8 +79,7 @@ export async function POST(req: Request) {
     joined_at: new Date().toISOString(),
   });
 
-  // Debitar aposta mínima do criador
-  await admin.from("wallets").update({ balance: wallet.balance - betAmount }).eq("user_id", user.id);
+  // (saldo já debitado de forma atômica acima)
   await admin.from("bets").insert({
     topic_id: topic.id, user_id: user.id,
     side: "sim", amount: betAmount,

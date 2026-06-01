@@ -55,8 +55,8 @@ export default function TermosPage() {
           nos termos da Lei 5.768/71 (concurso de previsões). A participação é gratuita no período beta.
         </p>
         <p>
-          Prêmios são pagos via PIX diretamente ao vencedor. Prêmios acima de R$ 1.903,98 estão sujeitos
-          a imposto de renda retido na fonte de 30% conforme a legislação vigente (Lei 11.196/2005, Art. 70).
+          Prêmios são pagos via PIX diretamente ao vencedor. Prêmios de concursos estão sujeitos
+          a imposto de renda retido na fonte (IRRF) de 30% sobre o valor total, conforme Lei 11.196/2005, Art. 70.
           Para receber prêmios, o usuário deve cadastrar CPF e chave PIX válidos.
         </p>
         <p>

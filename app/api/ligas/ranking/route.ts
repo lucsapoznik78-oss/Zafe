@@ -34,7 +34,7 @@ export async function GET(req: Request) {
   // Buscar todos os bets dos membros em tópicos desta liga
   const { data: bets } = await supabase
     .from("bets")
-    .select("user_id, amount, payout, status, topic:topics!inner(liga_id)")
+    .select("user_id, amount, potential_payout, status, topic:topics!inner(liga_id)")
     .in("user_id", memberIds)
     .eq("topics.liga_id", ligaId);
 
@@ -45,7 +45,7 @@ export async function GET(req: Request) {
     s.invested += b.amount;
     s.total += 1;
     if (b.status === "won") {
-      s.payout += b.payout ?? 0;
+      s.payout += b.potential_payout ?? 0;
       s.won += 1;
     }
     statsMap.set(b.user_id, s);

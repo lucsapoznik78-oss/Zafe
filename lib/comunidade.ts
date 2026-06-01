@@ -6,6 +6,7 @@
 
 import { calcOdds } from "@/lib/odds";
 import { sendPushToUser } from "@/lib/webpush";
+import { debitBalance, creditBalance } from "@/lib/wallet";
 
 function fmt(v: number) {
   return "Z$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -111,15 +112,10 @@ export async function executeCommunityBet(
   const { simOdds, naoOdds } = calcOdds(volSim, volNao);
   const estimatedOdds = side === "sim" ? simOdds : naoOdds;
 
-  // Debitar saldo (optimistic lock)
-  const { error: walletError } = await supabase
-    .from("wallets")
-    .update({ balance: wallet.balance - amount })
-    .eq("user_id", userId)
-    .eq("balance", wallet.balance);
-
-  if (walletError) {
-    return { error: "Erro ao debitar saldo. Tente novamente.", status: 409 };
+  // Debitar saldo (trava otimista via CAS)
+  const debit = await debitBalance(supabase, userId, amount);
+  if (!debit.ok) {
+    return { error: debit.reason === "insufficient" ? "Saldo insuficiente" : "Erro ao debitar saldo. Tente novamente.", status: debit.reason === "insufficient" ? 400 : 409 };
   }
 
   const { data: bet, error: betError } = await supabase
@@ -137,7 +133,7 @@ export async function executeCommunityBet(
     .single();
 
   if (betError) {
-    await supabase.from("wallets").update({ balance: wallet.balance }).eq("user_id", userId);
+    await creditBalance(supabase, userId, amount);
     return { error: "Erro ao registrar palpite", status: 500 };
   }
 
@@ -217,8 +213,7 @@ export async function pagarComunidade(
     const share = bet.amount / totalWinPool;
     const payout = parseFloat((share * distributablePool).toFixed(2));
 
-    const { data: w } = await supabase.from("wallets").select("balance").eq("user_id", bet.user_id).single();
-    await supabase.from("wallets").update({ balance: (w?.balance ?? 0) + payout }).eq("user_id", bet.user_id);
+    await creditBalance(supabase, bet.user_id, payout);
     await supabase.from("community_bets").update({ status: "won", potential_payout: payout }).eq("id", bet.id);
     await supabase.from("transactions").insert({
       user_id: bet.user_id,
@@ -255,8 +250,7 @@ export async function pagarComunidade(
 
   // Pagar comissão ao criador
   if (event?.creator_id && creatorCommission > 0) {
-    const { data: cw } = await supabase.from("wallets").select("balance").eq("user_id", event.creator_id).single();
-    await supabase.from("wallets").update({ balance: (cw?.balance ?? 0) + creatorCommission }).eq("user_id", event.creator_id);
+    await creditBalance(supabase, event.creator_id, creatorCommission);
     await supabase.from("transactions").insert({
       user_id: event.creator_id,
       type: "commission",
@@ -300,8 +294,7 @@ export async function reembolsarComunidade(
     .not("status", "in", '("refunded","won","lost")');
 
   for (const bet of bets ?? []) {
-    const { data: w } = await supabase.from("wallets").select("balance").eq("user_id", bet.user_id).single();
-    await supabase.from("wallets").update({ balance: (w?.balance ?? 0) + bet.amount }).eq("user_id", bet.user_id);
+    await creditBalance(supabase, bet.user_id, bet.amount);
     await supabase.from("community_bets").update({ status: "refunded" }).eq("id", bet.id);
     await supabase.from("transactions").insert({
       user_id: bet.user_id,
@@ -326,9 +319,7 @@ export async function reverterResolucao(supabase: any, eventId: string, novaReso
 
   for (const bet of wonBets ?? []) {
     const payout = bet.potential_payout ?? bet.amount;
-    const { data: w } = await supabase.from("wallets").select("balance").eq("user_id", bet.user_id).single();
-    const newBal = Math.max(0, (w?.balance ?? 0) - payout);
-    await supabase.from("wallets").update({ balance: newBal }).eq("user_id", bet.user_id);
+    await debitBalance(supabase, bet.user_id, payout);
     await supabase.from("community_bets").update({ status: "matched" }).eq("id", bet.id);
   }
 
@@ -351,9 +342,7 @@ export async function reverterResolucao(supabase: any, eventId: string, novaReso
     .single();
 
   if (event?.creator_id && event.creator_commission > 0) {
-    const { data: cw } = await supabase.from("wallets").select("balance").eq("user_id", event.creator_id).single();
-    const newBal = Math.max(0, (cw?.balance ?? 0) - event.creator_commission);
-    await supabase.from("wallets").update({ balance: newBal }).eq("user_id", event.creator_id);
+    await debitBalance(supabase, event.creator_id, event.creator_commission);
   }
 
   // Marcar como reversed e re-pagar com novo resultado

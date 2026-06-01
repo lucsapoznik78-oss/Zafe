@@ -127,21 +127,21 @@ export default function AdminStats({ passiveTotal, walletBalance, betsLocked, pe
         <button
           onClick={async () => {
             setDirectLoading(true);
+            setDirectResult("Consultando Claude...");
             let totalResolved = 0;
             let totalIncerto = 0;
             let rounds = 0;
             try {
+              // Cada chamada resolve até 12 setores numa única consulta ao Claude.
+              // Continua automaticamente enquanto sobrar fila — sem clicar de novo.
               while (true) {
                 rounds++;
-                setDirectResult(`Consultando Claude... (lote ${rounds}${totalResolved > 0 ? ` · ${totalResolved} resolvido(s)` : ""})`);
                 const res = await fetch("/api/admin/resolver-direto", { method: "POST" });
                 let d: any;
                 try {
                   d = await res.json();
                 } catch {
-                  // Resposta não-JSON = função estourou o tempo (504 da Vercel). Os lotes já
-                  // processados foram salvos no banco; basta clicar de novo para continuar.
-                  setDirectResult(`⏱️ Um lote demorou demais (timeout). ${totalResolved} resolvido(s) até agora — clique de novo para continuar.`);
+                  setDirectResult(`⏱️ A consulta demorou demais. ${totalResolved} resolvido(s) — clique de novo para continuar.`);
                   break;
                 }
                 if (!res.ok) {
@@ -150,6 +150,7 @@ export default function AdminStats({ passiveTotal, walletBalance, betsLocked, pe
                 }
                 totalResolved += d.resolved ?? 0;
                 totalIncerto += d.incerto ?? 0;
+                router.refresh();
 
                 if (d.done || (d.processed ?? 0) === 0) {
                   const parts = [];
@@ -160,8 +161,7 @@ export default function AdminStats({ passiveTotal, walletBalance, betsLocked, pe
                   break;
                 }
                 setDirectResult(`Resolvendo... ${totalResolved} resolvido(s), ${d.remaining} restante(s)`);
-                if (rounds >= 30) { setDirectResult(`⏸️ Parado após 30 lotes — ${totalResolved} resolvido(s), ${d.remaining} restante(s). Clique de novo.`); break; }
-                router.refresh();
+                if (rounds >= 20) { setDirectResult(`⏸️ Pausado — ${totalResolved} resolvido(s), ${d.remaining} restante(s). Clique de novo.`); break; }
               }
             } catch (e) {
               setDirectResult(`❌ Falha de rede: ${String(e).slice(0, 80)}`);
