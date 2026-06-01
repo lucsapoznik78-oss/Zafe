@@ -42,7 +42,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/liga", request.url));
   }
 
-  if (pathname.startsWith("/admin")) {
+  if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("is_admin")

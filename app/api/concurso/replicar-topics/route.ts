@@ -6,8 +6,8 @@ export async function POST(request: Request) {
   const { data: { user } } = await authClient.auth.getUser();
   if (!user) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
-  const { data: profile } = await authClient.from("profiles").select("role").eq("id", user.id).single();
-  if (profile?.role !== "admin") return NextResponse.json({ error: "Acesso restrito a administradores" }, { status: 403 });
+  const { data: profile } = await authClient.from("profiles").select("is_admin").eq("id", user.id).single();
+  if (!profile?.is_admin) return NextResponse.json({ error: "Acesso restrito a administradores" }, { status: 403 });
 
   const supabase = await createAdminClient();
   const { concurso_id, category, source_topic_ids } = await request.json();

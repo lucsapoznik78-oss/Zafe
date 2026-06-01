@@ -24,6 +24,18 @@ export async function POST(req: Request) {
   const admin = createAdminClient();
   const betAmount = parseFloat(min_bet) || 1;
 
+  if (betAmount <= 0) {
+    return NextResponse.json({ error: "Valor mínimo deve ser positivo" }, { status: 400 });
+  }
+
+  // Impedir auto-aposta
+  if (adversario_ids.includes(user.id) || aliadoIds.includes(user.id)) {
+    return NextResponse.json({ error: "Você não pode se incluir como adversário ou aliado" }, { status: 400 });
+  }
+  if (judge_id === user.id) {
+    return NextResponse.json({ error: "O criador não pode ser o próprio juiz" }, { status: 400 });
+  }
+
   // Verificar saldo (auth client para RLS correto)
   const { data: wallet } = await supabase.from("wallets").select("balance").eq("user_id", user.id).single();
   if (!wallet || wallet.balance < betAmount) {

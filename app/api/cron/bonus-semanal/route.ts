@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { creditBalance } from "@/lib/wallet";
 
 const BONUS = 100;
 const TETO = 1000;
@@ -38,13 +39,12 @@ export async function POST(request: Request) {
       skipped++;
       continue;
     }
-    const newBalance = Math.min(wallet.balance + BONUS, TETO);
-    const actualBonus = newBalance - wallet.balance;
+    const actualBonus = Math.min(BONUS, TETO - wallet.balance);
 
-    await supabase.from("wallets").update({ balance: newBalance }).eq("user_id", wallet.user_id);
+    await creditBalance(supabase, wallet.user_id, actualBonus);
     await supabase.from("transactions").insert({
       user_id: wallet.user_id,
-      type: "referral_bonus",
+      type: "weekly_bonus",
       amount: actualBonus,
       net_amount: actualBonus,
       description: `Bônus semanal Zafe — Z$ ${actualBonus.toFixed(2).replace(".", ",")}`,

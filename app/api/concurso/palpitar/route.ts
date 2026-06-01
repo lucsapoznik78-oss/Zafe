@@ -107,7 +107,8 @@ export async function POST(request: Request) {
     await admin.from("concurso_wallets")
       .update({ balance: wallet.balance, updated_at: now })
       .eq("user_id", user.id).eq("concurso_id", concurso.id);
-    return NextResponse.json({ error: betError.message }, { status: 500 });
+    console.error("[concurso/palpitar]", betError);
+    return NextResponse.json({ error: "Erro ao registrar palpite no concurso" }, { status: 500 });
   }
 
   return NextResponse.json({ success: true, estimated_odds: estimatedOdds });

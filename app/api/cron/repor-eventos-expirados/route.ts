@@ -72,7 +72,7 @@ export async function GET(req: Request) {
               status: "active",
               min_bet: 10,
               is_private: false,
-              creator_id: "89aee166-8ccd-4511-8082-8848925d60db",
+              creator_id: process.env.SYSTEM_USER_ID ?? "89aee166-8ccd-4511-8082-8848925d60db",
               total_volume: 0,
               volume_sim: 0,
               volume_nao: 0,
@@ -132,7 +132,7 @@ export async function GET(req: Request) {
               status: "active",
               min_bet: 10,
               is_private: false,
-              creator_id: "89aee166-8ccd-4511-8082-8848925d60db",
+              creator_id: process.env.SYSTEM_USER_ID ?? "89aee166-8ccd-4511-8082-8848925d60db",
               total_volume: 0,
               volume_sim: 0,
               volume_nao: 0,
@@ -155,8 +155,9 @@ export async function GET(req: Request) {
     });
 
   } catch (error: any) {
+    console.error("[repor-eventos] Erro:", error);
     return NextResponse.json(
-      { error: error.message },
+      { error: "Erro interno ao repor eventos" },
       { status: 500 }
     );
   }

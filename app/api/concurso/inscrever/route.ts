@@ -36,13 +36,19 @@ export async function POST() {
     .from("inscricoes_concurso")
     .insert({ user_id: user.id, concurso_id: concurso.id });
 
-  if (e1) return NextResponse.json({ error: e1.message }, { status: 500 });
+  if (e1) {
+    console.error("[concurso/inscrever]", e1);
+    return NextResponse.json({ error: "Erro ao inscrever no concurso" }, { status: 500 });
+  }
 
   const { error: e2 } = await admin
     .from("concurso_wallets")
     .insert({ user_id: user.id, concurso_id: concurso.id, balance: concurso.saldo_inicial });
 
-  if (e2) return NextResponse.json({ error: e2.message }, { status: 500 });
+  if (e2) {
+    console.error("[concurso/inscrever]", e2);
+    return NextResponse.json({ error: "Erro ao criar carteira do concurso" }, { status: 500 });
+  }
 
   return NextResponse.json({ success: true, balance: concurso.saldo_inicial });
 }

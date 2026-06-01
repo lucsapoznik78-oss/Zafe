@@ -3,6 +3,7 @@
  */
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { creditBalance } from "@/lib/wallet";
 
 export async function POST(
   _req: Request,
@@ -41,10 +42,8 @@ export async function POST(
 
   // Reembolsar cada participante aceito
   for (const p of accepted ?? []) {
-    const { data: wallet } = await admin.from("wallets").select("balance").eq("user_id", p.user_id).single();
-    if (wallet) {
-      await admin.from("wallets").update({ balance: wallet.balance + topic.min_bet }).eq("user_id", p.user_id);
-      await admin.from("transactions").insert({
+    await creditBalance(admin, p.user_id, topic.min_bet);
+    await admin.from("transactions").insert({
         user_id: p.user_id,
         type: "refund",
         amount: topic.min_bet,
@@ -52,14 +51,13 @@ export async function POST(
         description: `Reembolso — bolão cancelado: ${topic.title?.slice(0, 40)}`,
         reference_id: topicId,
       });
-      await admin.from("notifications").insert({
-        user_id: p.user_id,
-        type: "bet_invite",
-        title: "Bolão cancelado",
-        body: `O bolão "${topic.title?.slice(0, 50)}" foi cancelado. Seu valor foi reembolsado.`,
-        data: { topic_id: topicId },
-      });
-    }
+    await admin.from("notifications").insert({
+      user_id: p.user_id,
+      type: "bet_invite",
+      title: "Bolão cancelado",
+      body: `O bolão "${topic.title?.slice(0, 50)}" foi cancelado. Seu valor foi reembolsado.`,
+      data: { topic_id: topicId },
+    });
   }
 
   // Cancelar bets e marcar topic como cancelado

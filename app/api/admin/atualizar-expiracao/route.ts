@@ -17,7 +17,10 @@ export async function POST(request: Request) {
 
   const admin = createAdminClient();
   const { error } = await admin.from("topics").update({ closes_at: date.toISOString() }).eq("id", topic_id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("[atualizar-expiracao]", error);
+    return NextResponse.json({ error: "Erro ao atualizar expiração" }, { status: 500 });
+  }
 
   return NextResponse.json({ success: true, closes_at: date.toISOString() });
 }

@@ -6,11 +6,21 @@ import { NextResponse } from "next/server";
  * Mantém o que tem mais volume de apostas; os outros são cancelados.
  */
 export async function POST(req: Request) {
-  // Verificação simples via header (mesmo padrão de outros crons/admin)
   const authHeader = req.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  const cronSecret = process.env.CRON_SECRET;
+  let authorized = false;
+  if (cronSecret && authHeader === `Bearer ${cronSecret}`) {
+    authorized = true;
+  } else {
+    const { createClient } = await import("@/lib/supabase/server");
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: profile } = await supabase.from("profiles").select("is_admin").eq("id", user.id).single();
+      authorized = profile?.is_admin === true;
+    }
   }
+  if (!authorized) return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
 
   const admin = createAdminClient();
 
@@ -54,7 +64,8 @@ export async function POST(req: Request) {
   const { error } = await admin.from("topics").update({ status: "cancelled" }).in("id", toDelete);
   
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("[limpar-duplicados]", error);
+    return NextResponse.json({ error: "Erro ao limpar duplicados" }, { status: 500 });
   }
 
   return NextResponse.json({ removed: toDelete.length, ids: toDelete });

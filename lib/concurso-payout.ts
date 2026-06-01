@@ -5,6 +5,7 @@
  */
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { creditBalance } from "@/lib/wallet";
 
 const BONUS_PIONEIRO = 10;
 
@@ -25,8 +26,7 @@ async function pagarBonusPioneiroConcurso(
 
     if (!first) continue;
 
-    const { data: w } = await adminClient.from("wallets").select("balance").eq("user_id", first.user_id).single();
-    await adminClient.from("wallets").update({ balance: (w?.balance ?? 0) + BONUS_PIONEIRO }).eq("user_id", first.user_id);
+    await creditBalance(adminClient, first.user_id, BONUS_PIONEIRO);
     await adminClient.from("transactions").insert({
       user_id: first.user_id,
       type: "bonus",
