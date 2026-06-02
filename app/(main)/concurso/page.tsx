@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Trophy, Medal, Users, Calendar } from "lucide-react";
+import { Trophy, Medal, Users, Calendar, Mail } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { TopicWithStats } from "@/types/database";
@@ -230,6 +230,13 @@ export default async function ConcursoPage({ searchParams }: PageProps) {
                 <span className="text-[10px] text-yellow-300/60 ml-1">{p.valor}</span>
               </div>
             ))}
+          </div>
+          <div className="mt-3 flex items-start gap-2 rounded-lg bg-yellow-400/10 border border-yellow-400/20 px-3 py-2">
+            <Mail size={14} className="text-yellow-400 shrink-0 mt-0.5" />
+            <p className="text-[11px] text-yellow-300/70 leading-relaxed">
+              Ao fim do concurso, quem ficar no <span className="font-semibold text-yellow-400">topo do ranking (top 5%)</span> receberá
+              um email com os detalhes de como resgatar o prêmio em dinheiro. Mantenha o email da sua conta atualizado.
+            </p>
           </div>
         </div>
       </div>
