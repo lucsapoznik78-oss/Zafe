@@ -4,11 +4,54 @@
  *   "bcb:{serie}" — ex: "bcb:433" (IPCA), "bcb:11" (Selic)
  *   "crypto:BTC-BRL" — preço de crypto via CoinGecko
  *   "ptax:USD-BRL" — câmbio oficial BCB
+ *   "firecrawl:{url}" — scrape de uma página/API e extração do valor via Firecrawl
  *
- * Auto-detecção: tópicos sobre dólar sem oracle_api_id usam PTAX histórico automaticamente.
+ * Auto-detecção: tópicos sobre dólar sem oracle_api_id usam PTAX histórico
+ * automaticamente; perguntas sobre Selic/juros caem no Firecrawl como base.
  */
 
 import type { OracleResult } from "./sports";
+import { firecrawlExtract } from "@/lib/firecrawl";
+
+// Compara um valor numérico contra o alvo extraído da pergunta (acima/abaixo).
+function compararValor(value: number, question: string, fonte: string): OracleResult {
+  const q = question.toLowerCase();
+  const numberMatch = question.match(/[\d]+[.,]?[\d]*/);
+  if (!numberMatch) return { resultado: "INCERTO", confianca: 50, fonte };
+  const target = parseFloat(numberMatch[0].replace(".", "").replace(",", "."));
+  if (q.includes("superar") || q.includes("acima") || q.includes("ultrapassar") || q.includes("maior")) {
+    return { resultado: value > target ? "SIM" : "NAO", confianca: 92, fonte };
+  }
+  if (q.includes("abaixo") || q.includes("menor") || q.includes("cair")) {
+    return { resultado: value < target ? "SIM" : "NAO", confianca: 92, fonte };
+  }
+  return { resultado: "INCERTO", confianca: 50, fonte };
+}
+
+// Base Firecrawl: faz scrape de um URL e extrai o valor numérico do indicador.
+async function tryFirecrawl(url: string, question: string): Promise<OracleResult | null> {
+  const data = await firecrawlExtract<{ valor?: number; data?: string }>(
+    url,
+    {
+      type: "object",
+      properties: {
+        valor: {
+          type: "number",
+          description:
+            "O valor numérico atual do indicador econômico relevante para a pergunta (ex: taxa Selic, IPCA, câmbio do dólar). Use ponto como separador decimal.",
+        },
+        data: {
+          type: "string",
+          description: "Data de referência do valor (ex: 17/06/2026), se disponível.",
+        },
+      },
+      required: ["valor"],
+    },
+    `Extraia o valor numérico atual do indicador econômico relevante para esta pergunta: "${question}". Retorne apenas o número (ponto como separador decimal) e a data de referência.`
+  );
+  if (!data || typeof data.valor !== "number") return null;
+  return compararValor(data.valor, question, url);
+}
 
 async function fetchJson(url: string): Promise<any> {
   try {
@@ -162,6 +205,7 @@ export async function oracleEconomia(
   if (tipo === "bcb") return tryBCB(id, question);
   if (tipo === "crypto") return tryCoinGecko(id, question);
   if (tipo === "ptax") return tryPTAX(question, closesAt);
+  if (tipo === "firecrawl") return tryFirecrawl(id, question);
   return null;
 }
 
@@ -187,5 +231,12 @@ export async function oracleEconomiaAuto(question: string, closesAt: string): Pr
       }
     } catch { /* ignore */ }
   }
+
+  // Selic / juros via Firecrawl (página oficial do BCB) como base de fallback
+  if (q.includes("selic") || q.includes("juros") || q.includes("copom")) {
+    const fc = await tryFirecrawl("https://www.bcb.gov.br/controleinflacao/taxaselic", question);
+    if (fc && fc.resultado !== "INCERTO") return fc;
+  }
+
   return null;
 }
