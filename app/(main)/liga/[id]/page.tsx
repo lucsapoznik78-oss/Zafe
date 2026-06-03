@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     ? topic.description.slice(0, 160)
     : `Preveja o resultado deste evento e compita na liga de previsões do Zafe.`;
   const resolvedId = isUUID ? id : (await supabase.from("topics").select("id").eq("slug", id).single())?.data?.id ?? id;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://zafe.app.br";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.zafe.app.br";
   const ogImage = `${appUrl}/api/og?id=${resolvedId}&type=liga`;
   const canonicalUrl = `${appUrl}/liga/${resolvedId}`;
   return {

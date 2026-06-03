@@ -20,7 +20,7 @@ export default async function PerfilPage() {
     supabase.from("referrals").select("status").eq("referrer_id", user.id),
   ]);
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://zafe.app";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.zafe.app.br";
 
   return (
     <PerfilTabs
