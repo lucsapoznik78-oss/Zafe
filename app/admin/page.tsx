@@ -36,7 +36,7 @@ export default async function AdminPage() {
     { count: newUsersWeek },
     { count: totalBets },
     { data: totalVolumeData },
-    { count: activeUsers30d },
+    { data: activeBettors30dRaw },
   ] = await Promise.all([
     admin.from("topics").select("*, creator:profiles!creator_id(username, full_name)").eq("status", "pending").order("created_at"),
     // Todos resolving — admin pode resolver manualmente qualquer um
@@ -51,8 +51,13 @@ export default async function AdminPage() {
     admin.from("profiles").select("*", { count: "exact", head: true }).gte("created_at", sevenDaysAgo),
     admin.from("bets").select("*", { count: "exact", head: true }),
     admin.from("bets").select("amount").in("status", ["matched", "won", "lost"]),
-    admin.from("profiles").select("*", { count: "exact", head: true }).gte("updated_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
+    // "Ativos (30 dias)" = usuários distintos com pelo menos 1 palpite nos últimos
+    // 30 dias. `profiles.updated_at` não existe (a query antiga retornava lixo);
+    // sem instrumentação de last_seen, atividade de aposta é o melhor proxy real.
+    admin.from("bets").select("user_id").gte("created_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
   ]);
+
+  const activeUsers30d = new Set((activeBettors30dRaw ?? []).map((b: any) => b.user_id)).size;
 
   // Buscar outcomes para topics resolving que são multi
   const multiResolvingIds = (allResolving ?? []).filter((t: any) => t.market_type === "multi").map((t: any) => t.id);

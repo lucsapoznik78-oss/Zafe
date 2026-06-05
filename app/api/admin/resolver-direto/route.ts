@@ -163,13 +163,14 @@ export async function POST(req: Request) {
     const topic = topics[idx] as TopicRow;
     const resultado = veredictos.get(idx + 1);
 
-    // Tópicos de concurso pagam de concurso_bets; os demais, de bets.
-    const betsTable = topic.concurso_id ? "concurso_bets" : "bets";
-    const { count: matched } = await admin
-      .from(betsTable)
-      .select("id", { count: "exact", head: true })
-      .eq("topic_id", topic.id).eq("status", "matched");
-    const semBets = (matched ?? 0) === 0;
+    // Um tópico pode ter palpites em `bets` (Liga) E em `concurso_bets`
+    // (Concurso). Pagar só uma tabela com base em concurso_id deixava o outro
+    // conjunto sem pagamento. Conta as duas e paga ambas quando houver matched.
+    const [{ count: matchedBets }, { count: matchedConcurso }] = await Promise.all([
+      admin.from("bets").select("id", { count: "exact", head: true }).eq("topic_id", topic.id).eq("status", "matched"),
+      admin.from("concurso_bets").select("id", { count: "exact", head: true }).eq("topic_id", topic.id).eq("status", "matched"),
+    ]);
+    const semBets = (matchedBets ?? 0) === 0 && (matchedConcurso ?? 0) === 0;
 
     if (resultado === "SIM" || resultado === "NAO") {
       try {
@@ -181,8 +182,11 @@ export async function POST(req: Request) {
           numero_tentativa: (topic.oracle_retry_count ?? 0) + 1,
           resultado_final: resultado,
         });
-        if (topic.concurso_id) await pagarConcursoBets(admin, topic.id, resolucao);
-        else await pagarVencedores(admin, topic.id, resolucao, user.id);
+        // Ordem importa: pagarVencedores faz o claim atômico do tópico (C7) e
+        // marca resolved; rodá-lo primeiro garante que pagarConcursoBets (sem
+        // claim) ainda pague o seu conjunto em tópicos mistos.
+        if ((matchedBets ?? 0) > 0) await pagarVencedores(admin, topic.id, resolucao, user.id);
+        if ((matchedConcurso ?? 0) > 0) await pagarConcursoBets(admin, topic.id, resolucao);
         // Sem palpites nenhum payout marca o tópico — fecha manualmente
         if (semBets) {
           await admin.from("topics").update({ status: "resolved", resolution: resolucao, resolved_at: new Date().toISOString() }).eq("id", topic.id);
