@@ -8,6 +8,10 @@ export async function POST(req: Request) {
 
   const { blocked_id } = await req.json();
   if (!blocked_id) return NextResponse.json({ error: "blocked_id obrigatório" }, { status: 400 });
+  // blocked_id é interpolado num filtro `.or()`; exigir formato UUID impede
+  // injeção de filtro PostgREST via caracteres estruturais (vírgula, ponto, etc.).
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!UUID_RE.test(blocked_id)) return NextResponse.json({ error: "blocked_id inválido" }, { status: 400 });
   if (blocked_id === user.id) return NextResponse.json({ error: "Não pode bloquear a si mesmo" }, { status: 400 });
 
   // Verificar se já existe uma relação

@@ -58,7 +58,8 @@ export async function executeCommunityBet(
   side: string,
   amount: number
 ) {
-  if (!["sim", "nao"].includes(side) || !amount || amount <= 0) {
+  amount = Number(amount);
+  if (!["sim", "nao"].includes(side) || !Number.isFinite(amount) || amount <= 0) {
     return { error: "Dados inválidos", status: 400 };
   }
 

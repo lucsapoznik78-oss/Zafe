@@ -10,9 +10,10 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
-  const { topic_id, side, outcome_id, amount } = await request.json();
+  const { topic_id, side, outcome_id, amount: amountRaw } = await request.json();
+  const amount = Number(amountRaw);
 
-  if (!topic_id || !amount) {
+  if (!topic_id || !Number.isFinite(amount) || amount <= 0) {
     return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
   }
 

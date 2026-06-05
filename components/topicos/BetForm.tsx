@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
-import { calcOdds } from "@/lib/odds";
 import { Loader2, Wallet, Lock } from "lucide-react";
 import type { BetSide } from "@/types/database";
 
@@ -26,15 +25,20 @@ export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed,
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const { simOdds, naoOdds } = calcOdds(totalSim, totalNao);
   const effectiveMin = Math.max(1, minBet);
   const amountNum = parseFloat(amount) || 0;
-  const currentOdds = side === "sim" ? simOdds : naoOdds;
-  const cappedOdds = Math.min(currentOdds, 999);
-  const expectedReturn = amountNum * cappedOdds;
-  const expectedProfit = expectedReturn - amountNum;
 
   const totalPool = totalSim + totalNao;
+  const sidePool = side === "sim" ? totalSim : totalNao;
+  // Payout parimutuel real: o próprio palpite entra no pool antes do rateio,
+  // logo o denominador é (pool do lado + aposta), não o pool atual. Usar as odds
+  // de mercado puras inflava o retorno exibido (ex.: pools 100/100, aposta 100 →
+  // mostrava Z$200, mas o payout real é Z$150).
+  const expectedReturn = amountNum > 0 && sidePool + amountNum > 0
+    ? amountNum * ((totalPool + amountNum) / (sidePool + amountNum))
+    : 0;
+  const expectedProfit = expectedReturn - amountNum;
+
   const probSimPct = totalPool > 0 ? (totalSim / totalPool * 100).toFixed(1) : null;
   const probNaoPct = totalPool > 0 ? (totalNao / totalPool * 100).toFixed(1) : null;
   const currentProbPct = totalPool > 0

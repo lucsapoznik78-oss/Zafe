@@ -11,25 +11,24 @@ export const LIMITE_ANUAL_PAR = parseInt(process.env.PRIVATE_BET_LIMIT_Z ?? "500
 
 /**
  * Calcula o volume total de Z$ apostado entre dois usuários em apostas privadas
- * no ano corrente (apenas bets não reembolsados e não saídos).
+ * na janela móvel dos últimos 365 dias (apenas bets não reembolsados e não
+ * saídos). Janela móvel — e não ano-calendário — evita o reset em 1º de janeiro
+ * que permitia dobrar o teto virando o ano.
  */
 export async function getVolumeAnualPar(
   admin: any,
   userA: string,
   userB: string
 ): Promise<number> {
-  const ano = new Date().getFullYear();
-  const inicioAno = `${ano}-01-01T00:00:00.000Z`;
-  const fimAno = `${ano + 1}-01-01T00:00:00.000Z`;
+  const inicioJanela = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString();
 
-  // Buscar topics privados onde userA tem bets no ano
+  // Buscar topics privados onde userA tem bets na janela
   const { data: betsA } = await admin
     .from("bets")
     .select("topic_id, amount")
     .eq("user_id", userA)
     .eq("is_private", true)
-    .gte("created_at", inicioAno)
-    .lt("created_at", fimAno)
+    .gte("created_at", inicioJanela)
     .not("status", "in", '("refunded","exited")');
 
   if (!betsA || betsA.length === 0) return 0;
@@ -43,8 +42,7 @@ export async function getVolumeAnualPar(
     .eq("user_id", userB)
     .eq("is_private", true)
     .in("topic_id", topicIdsA)
-    .gte("created_at", inicioAno)
-    .lt("created_at", fimAno)
+    .gte("created_at", inicioJanela)
     .not("status", "in", '("refunded","exited")');
 
   if (!betsB || betsB.length === 0) return 0;

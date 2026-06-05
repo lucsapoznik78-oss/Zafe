@@ -48,10 +48,28 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Nenhum topic elegível encontrado" }, { status: 404 });
   }
 
-  // Clona os topics para o concurso
+  // Clona os topics para o concurso por WHITELIST de colunas. Espalhar `...topic`
+  // arrastava estado de resolução/oráculo da origem (status, resolution,
+  // resolved_at/by, winning_outcome_id, contadores de retry do oráculo) — um
+  // topic já resolvido/em apuração corromperia o clone. Aqui só carregamos as
+  // colunas de conteúdo + a config de oráculo, e resetamos todo o estado.
   const clonedTopics = ligaTopics.map((topic: any) => ({
-    ...topic,
-    id: undefined, // Gera novo ID
+    creator_id: topic.creator_id,
+    title: topic.title,
+    description: topic.description,
+    category: topic.category,
+    market_type: topic.market_type,
+    min_bet: topic.min_bet,
+    closes_at: topic.closes_at,
+    oracle_api_id: topic.oracle_api_id,
+    // Estado sempre resetado — nunca herdado da origem:
+    status: "active",
+    resolution: null,
+    resolved_at: null,
+    resolved_by: null,
+    winning_outcome_id: null,
+    is_private: false,
+    liga_id: null,
     concurso_id,
     slug: `${topic.slug}-concurso-${concurso_id.slice(0, 8)}`,
     created_at: new Date().toISOString(),

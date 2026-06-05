@@ -4,6 +4,7 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { sendPushToUser } from "@/lib/webpush";
+import { verificarLimiteAnual } from "@/lib/limits/private-bet-limit";
 
 export async function POST(
   req: Request,
@@ -31,7 +32,7 @@ export async function POST(
   // Verificar fase
   const { data: topic } = await supabase
     .from("topics")
-    .select("private_phase, title")
+    .select("private_phase, title, creator_id, min_bet")
     .eq("id", topicId).single();
 
   if (topic?.private_phase !== "recruiting") {
@@ -47,6 +48,14 @@ export async function POST(
     .single();
 
   if (existing) return NextResponse.json({ error: "Usuário já convidado ou participando" }, { status: 400 });
+
+  // Pré-checagem do teto anual (CMN 5.298/2026) já no convite — espelha a
+  // verificação autoritativa do /aceitar para rejeitar convites acima do limite
+  // antes de criar o participante. O débito/checagem final continua no aceitar.
+  const limite = await verificarLimiteAnual(admin, inviteeId, topic.creator_id, Number(topic.min_bet) || 1);
+  if (!limite.ok) {
+    return NextResponse.json({ error: limite.mensagem }, { status: 400 });
+  }
 
   // Criar convite para o mesmo lado do convidador
   await admin.from("topic_participants").insert({

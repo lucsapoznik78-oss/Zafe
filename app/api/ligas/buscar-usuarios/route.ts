@@ -13,11 +13,17 @@ export async function GET(request: Request) {
 
   const admin = createAdminClient();
 
+  // Neutraliza injeção de filtro PostgREST: remove os caracteres com significado
+  // estrutural no grammar de `.or()` (vírgula, parênteses, ponto, aspas, barra e
+  // os wildcards) antes de interpolar a busca do usuário no filtro `ilike`.
+  const safeQ = q.replace(/[,()."*\\%_]/g, "");
+  if (safeQ.length < 2) return NextResponse.json([]);
+
   // Search profiles by username or full_name
   const { data: profiles } = await admin
     .from("profiles")
     .select("id, username, full_name")
-    .or(`username.ilike.%${q}%,full_name.ilike.%${q}%`)
+    .or(`username.ilike.%${safeQ}%,full_name.ilike.%${safeQ}%`)
     .neq("id", user.id)
     .limit(10);
 
