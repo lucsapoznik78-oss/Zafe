@@ -45,7 +45,7 @@ export async function POST(
     await creditBalance(admin, p.user_id, topic.min_bet);
     await admin.from("transactions").insert({
         user_id: p.user_id,
-        type: "refund",
+        type: "bet_refund",
         amount: topic.min_bet,
         net_amount: topic.min_bet,
         description: `Reembolso — bolão cancelado: ${topic.title?.slice(0, 40)}`,

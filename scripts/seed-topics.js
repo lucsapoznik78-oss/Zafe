@@ -1,9 +1,12 @@
 const { createClient } = require("@supabase/supabase-js");
 
-const supabase = createClient(
-  "https://mhckuhqyyfoapzgrqeco.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1oY2t1aHF5eWZvYXB6Z3JxZWNvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDYzNTI1NywiZXhwIjoyMDkwMjExMjU3fQ.w-Bum-ydpJGFLsTaBkGrm52mxmNeDQIk8Ib7fnJs-0s"
-);
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!SUPABASE_URL || !SERVICE_KEY) {
+  console.error("Faltam env vars: NEXT_PUBLIC_SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY");
+  process.exit(1);
+}
+const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 
 const ADMIN_ID = "89aee166-8ccd-4511-8082-8848925d60db";
 

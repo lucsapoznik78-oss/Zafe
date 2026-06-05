@@ -1,6 +1,7 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { calcOdds } from "@/lib/odds";
+import { debitConcursoBalance, creditConcursoBalance } from "@/lib/wallet";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -77,16 +78,12 @@ export async function POST(request: Request) {
 
   const potentialPayout = Number(amount) * estimatedOdds;
 
-  // Debita a carteira (lock otimista — só debita se balance >= amount)
-  const { error: debitError, count } = await admin
-    .from("concurso_wallets")
-    .update({ balance: wallet.balance - Number(amount), updated_at: now })
-    .eq("user_id", user.id)
-    .eq("concurso_id", concurso.id)
-    .gte("balance", Number(amount));
-
-  if (debitError || count === 0) {
-    return NextResponse.json({ error: "Falha ao debitar saldo" }, { status: 500 });
+  // Debita a carteira com trava otimista (CAS): confirma que 1 linha foi
+  // alterada. Fecha o double-spend silencioso do `.gte()` (count vinha null).
+  const debit = await debitConcursoBalance(admin, user.id, concurso.id, Number(amount));
+  if (!debit.ok) {
+    const msg = debit.reason === "insufficient" ? "Saldo insuficiente no concurso" : "Falha ao debitar saldo";
+    return NextResponse.json({ error: msg }, { status: 400 });
   }
 
   const betPayload: Record<string, any> = {
@@ -103,10 +100,10 @@ export async function POST(request: Request) {
   const { error: betError } = await admin.from("concurso_bets").insert(betPayload);
 
   if (betError) {
-    // Rollback
-    await admin.from("concurso_wallets")
-      .update({ balance: wallet.balance, updated_at: now })
-      .eq("user_id", user.id).eq("concurso_id", concurso.id);
+    // Rollback atômico: credita de volta exatamente o valor debitado (não
+    // sobrescreve com um saldo absoluto lido antes — evita apagar débitos
+    // concorrentes).
+    await creditConcursoBalance(admin, user.id, concurso.id, Number(amount));
     console.error("[concurso/palpitar]", betError);
     return NextResponse.json({ error: "Erro ao registrar palpite no concurso" }, { status: 500 });
   }

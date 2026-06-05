@@ -10,6 +10,9 @@ import { resolverTopic } from "@/lib/oracles";
 
 export const maxDuration = 300;
 
+// Vercel cron dispatch é GET; reaproveita o mesmo handler (declaração hoisted).
+export const GET = POST;
+
 export async function POST(req: Request) {
   const auth = req.headers.get("authorization");
 

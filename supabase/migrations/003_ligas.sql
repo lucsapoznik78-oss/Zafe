@@ -8,6 +8,11 @@ CREATE TABLE ligas (
   description TEXT CHECK (char_length(description) <= 200),
   creator_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   color TEXT DEFAULT '#86efac',
+  -- is_public / parent_liga_id são exigidos pelas policies da migration 018
+  -- (is_liga_public, ligas_subliga_member_read). Declarados aqui para que um
+  -- banco limpo aplique a 018 sem erro de coluna inexistente.
+  is_public BOOLEAN NOT NULL DEFAULT false,
+  parent_liga_id UUID REFERENCES ligas(id) ON DELETE CASCADE,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

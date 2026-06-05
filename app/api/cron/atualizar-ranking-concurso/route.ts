@@ -20,6 +20,9 @@ async function isAdminRequest(): Promise<boolean> {
   return profile?.is_admin === true;
 }
 
+// Vercel cron dispatch é GET; reaproveita o mesmo handler (declaração hoisted).
+export const GET = POST;
+
 export async function POST(req: Request) {
   const authorized = verifyCronAuth(req) || (await isAdminRequest());
 

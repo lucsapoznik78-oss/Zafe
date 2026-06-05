@@ -65,6 +65,9 @@ function emailVencedorHtml(params: {
   </div>`;
 }
 
+// Vercel cron dispatch é GET; reaproveita o mesmo handler (declaração hoisted).
+export const GET = POST;
+
 export async function POST(req: Request) {
   const authorized = verifyCronAuth(req) || (await isAdminRequest());
   if (!authorized) return NextResponse.json({ error: "Não autorizado" }, { status: 403 });

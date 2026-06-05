@@ -5,7 +5,7 @@
  */
 
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { creditBalance } from "@/lib/wallet";
+import { creditBalance, creditConcursoBalance } from "@/lib/wallet";
 
 const BONUS_PIONEIRO = 10;
 
@@ -63,17 +63,7 @@ export async function pagarConcursoBets(
 
     if (resolution === "cancelled") {
       for (const bet of bets) {
-        const { data: w } = await adminClient
-          .from("concurso_wallets")
-          .select("balance")
-          .eq("user_id", bet.user_id)
-          .eq("concurso_id", bet.concurso_id)
-          .single();
-        await adminClient
-          .from("concurso_wallets")
-          .update({ balance: (w?.balance ?? 0) + bet.amount, updated_at: new Date().toISOString() })
-          .eq("user_id", bet.user_id)
-          .eq("concurso_id", bet.concurso_id);
+        await creditConcursoBalance(adminClient, bet.user_id, bet.concurso_id, Number(bet.amount));
         await adminClient.from("concurso_bets").update({ status: "refunded" }).eq("id", bet.id);
       }
       await adminClient.from("topics").update({
@@ -104,18 +94,7 @@ export async function pagarConcursoBets(
         .update({ status: "won", potential_payout: payout })
         .eq("id", bet.id);
 
-      const { data: w } = await adminClient
-        .from("concurso_wallets")
-        .select("balance")
-        .eq("user_id", bet.user_id)
-        .eq("concurso_id", bet.concurso_id)
-        .single();
-
-      await adminClient
-        .from("concurso_wallets")
-        .update({ balance: (w?.balance ?? 0) + payout, updated_at: new Date().toISOString() })
-        .eq("user_id", bet.user_id)
-        .eq("concurso_id", bet.concurso_id);
+      await creditConcursoBalance(adminClient, bet.user_id, bet.concurso_id, payout);
     }
 
     // Atualiza status do topic
@@ -164,12 +143,7 @@ export async function pagarConcursoBetsMulti(
       const winnerShare = totalWinning > 0 ? (Number(bet.amount) / totalWinning) * totalLosing : 0;
       const payout = Number(bet.amount) + winnerShare;
       await adminClient.from("concurso_bets").update({ status: "won", potential_payout: payout }).eq("id", bet.id);
-      const { data: w } = await adminClient
-        .from("concurso_wallets").select("balance")
-        .eq("user_id", bet.user_id).eq("concurso_id", bet.concurso_id).single();
-      await adminClient.from("concurso_wallets")
-        .update({ balance: (w?.balance ?? 0) + payout, updated_at: new Date().toISOString() })
-        .eq("user_id", bet.user_id).eq("concurso_id", bet.concurso_id);
+      await creditConcursoBalance(adminClient, bet.user_id, bet.concurso_id, payout);
     }
 
     await adminClient.from("topics").update({

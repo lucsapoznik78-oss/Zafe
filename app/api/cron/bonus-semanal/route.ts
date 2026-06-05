@@ -5,6 +5,9 @@ import { creditBalance } from "@/lib/wallet";
 const BONUS = 100;
 const TETO = 1000;
 
+// Vercel cron dispatch é GET; reaproveita o mesmo handler (declaração hoisted).
+export const GET = POST;
+
 export async function POST(request: Request) {
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;

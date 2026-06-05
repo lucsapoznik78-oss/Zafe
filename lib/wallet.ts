@@ -62,3 +62,55 @@ export function creditBalance(client: SupabaseClient, userId: string, amount: nu
 export function debitBalance(client: SupabaseClient, userId: string, amount: number) {
   return adjustBalance(client, userId, -Math.abs(amount));
 }
+
+/**
+ * Ajuste atômico (CAS) para carteiras de concurso (ZC$), chaveadas por
+ * user_id + concurso_id. Mesma trava otimista de adjustBalance: lê o saldo,
+ * escreve condicionando em `.eq("balance", saldoLido)` e confirma via
+ * `.select()` que 1 linha foi alterada — caso contrário re-tenta. Isto fecha
+ * o double-spend silencioso em que `.gte()` casava 0 linhas sem erro.
+ */
+export async function adjustConcursoBalance(
+  client: SupabaseClient,
+  userId: string,
+  concursoId: string,
+  delta: number,
+): Promise<BalanceResult> {
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    const { data: wallet } = await client
+      .from("concurso_wallets")
+      .select("balance")
+      .eq("user_id", userId)
+      .eq("concurso_id", concursoId)
+      .single();
+
+    if (!wallet) return { ok: false, reason: "missing" };
+
+    const current = wallet.balance as number;
+    const next = parseFloat((current + delta).toFixed(2));
+    if (next < 0) return { ok: false, reason: "insufficient" };
+
+    const { data: updated } = await client
+      .from("concurso_wallets")
+      .update({ balance: next, updated_at: new Date().toISOString() })
+      .eq("user_id", userId)
+      .eq("concurso_id", concursoId)
+      .eq("balance", current)
+      .select("balance");
+
+    if (updated && updated.length > 0) {
+      return { ok: true, balance: next };
+    }
+  }
+  return { ok: false, reason: "conflict" };
+}
+
+/** Credita a carteira de concurso (atômico). */
+export function creditConcursoBalance(client: SupabaseClient, userId: string, concursoId: string, amount: number) {
+  return adjustConcursoBalance(client, userId, concursoId, Math.abs(amount));
+}
+
+/** Debita a carteira de concurso (atômico). Falha se saldo insuficiente. */
+export function debitConcursoBalance(client: SupabaseClient, userId: string, concursoId: string, amount: number) {
+  return adjustConcursoBalance(client, userId, concursoId, -Math.abs(amount));
+}

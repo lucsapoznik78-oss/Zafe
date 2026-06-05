@@ -14,6 +14,25 @@ function fmt(v: number) {
 const BONUS_PIONEIRO = 10;
 
 /**
+ * Trava atômica de resolução. Marca o topic como `resolved` condicionando em
+ * que ele ainda NÃO esteja num estado terminal (`resolved`/`cancelled`) e
+ * confirma via `.select()` que esta chamada foi a que alterou a linha. Fecha a
+ * corrida de dupla-resolução: o botão admin "Resolver agora" e o cron oracle
+ * selecionam os mesmos topics `resolving` e chamam pagarVencedores; sem esta
+ * trava ambos passam pelo filtro de status antes de qualquer escrita e
+ * pagam os vencedores duas vezes. Quem perde a corrida recebe 0 linhas e sai.
+ */
+async function claimTopicForResolution(supabase: any, topicId: string): Promise<boolean> {
+  const { data } = await supabase
+    .from("topics")
+    .update({ status: "resolved", resolved_at: new Date().toISOString() })
+    .eq("id", topicId)
+    .not("status", "in", '("resolved","cancelled")')
+    .select("id");
+  return !!(data && data.length > 0);
+}
+
+/**
  * Dá Z$ 10 para o primeiro palpite de cada lado (SIM e NAO) quando o evento é confirmado.
  * Incentivo para abertura de eventos.
  */
@@ -62,7 +81,8 @@ export async function reembolsarTodos(
   supabase: any,
   topicId: string,
   motivo: string,
-  resolvedBy?: string
+  resolvedBy?: string,
+  alreadyClaimed = false
 ) {
   const { data: topic } = await supabase.from("topics").select("title, concurso_id").eq("id", topicId).single();
   const title = topic?.title?.slice(0, 55) ?? "Mercado";
@@ -70,6 +90,12 @@ export async function reembolsarTodos(
   // Se o topic pertence a um concurso, ignora — reembolso é feito por pagarConcursoBets
   if (topic?.concurso_id) {
     return { note: "skipped_concurso_topic" };
+  }
+
+  // Trava de dupla-resolução (pulada quando chamada internamente por um
+  // pagarVencedores que já reivindicou o topic).
+  if (!alreadyClaimed && !(await claimTopicForResolution(supabase, topicId))) {
+    return { note: "already_resolved" };
   }
 
   const { data: bets } = await supabase
@@ -120,6 +146,11 @@ export async function pagarVencedoresMulti(
     return { note: "skipped_concurso_topic" };
   }
 
+  // Trava atômica de dupla-resolução — quem perde a corrida sai sem pagar.
+  if (!(await claimTopicForResolution(supabase, topicId))) {
+    return { note: "already_resolved" };
+  }
+
   const { data: allBets } = await supabase
     .from("bets").select("*").eq("topic_id", topicId).not("status", "in", '("refunded","exited","won","lost")');
 
@@ -128,14 +159,14 @@ export async function pagarVencedoresMulti(
   const loserBets  = bets.filter((b: any) => b.outcome_id !== winningOutcomeId);
 
   if (winnerBets.length === 0) {
-    await reembolsarTodos(supabase, topicId, "Sem palpites no resultado vencedor", resolvedBy);
+    await reembolsarTodos(supabase, topicId, "Sem palpites no resultado vencedor", resolvedBy, true);
     return { note: "no_coverage_refund" };
   }
 
   // Reembolsa se menos de 2 outcomes distintos têm palpites (sem competição real)
   const outcomesComBets = new Set(bets.map((b: any) => b.outcome_id)).size;
   if (outcomesComBets < 2) {
-    await reembolsarTodos(supabase, topicId, "Apenas 1 resultado teve palpites — sem competição", resolvedBy);
+    await reembolsarTodos(supabase, topicId, "Apenas 1 resultado teve palpites — sem competição", resolvedBy, true);
     return { note: "no_coverage_refund" };
   }
 
@@ -205,6 +236,11 @@ export async function pagarVencedores(
     return { note: "skipped_concurso_topic" };
   }
 
+  // Trava atômica de dupla-resolução — quem perde a corrida sai sem pagar.
+  if (!(await claimTopicForResolution(supabase, topicId))) {
+    return { note: "already_resolved" };
+  }
+
   const { data: allBets } = await supabase
     .from("bets").select("*").eq("topic_id", topicId).not("status", "in", '("refunded","exited","won","lost")');
 
@@ -214,7 +250,7 @@ export async function pagarVencedores(
 
   // Um lado sem apostas → reembolso total
   if (winnerBets.length === 0 || loserBets.length === 0) {
-    await reembolsarTodos(supabase, topicId, "Sem apostas no lado oposto", resolvedBy);
+    await reembolsarTodos(supabase, topicId, "Sem apostas no lado oposto", resolvedBy, true);
     return { note: "no_coverage_refund" };
   }
 

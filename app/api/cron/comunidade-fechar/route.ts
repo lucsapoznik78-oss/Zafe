@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { verifyCronAuth } from "@/lib/cron-auth";
 
+// Vercel cron dispatch é GET; reaproveita o mesmo handler (declaração hoisted).
+export const GET = POST;
+
 export async function POST(req: Request) {
   if (!verifyCronAuth(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

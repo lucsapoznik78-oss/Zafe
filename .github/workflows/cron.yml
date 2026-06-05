@@ -1,10 +1,13 @@
 name: Zafe Cron Jobs
 
+# NOTE: O agendamento de produção agora é feito EXCLUSIVAMENTE pelos Vercel
+# Crons (vercel.json), que têm horários por-job e disparam GET nas rotas
+# /api/cron/* (todas agora aceitam GET). Este workflow ficou apenas como
+# gatilho MANUAL (workflow_dispatch) — manter um segundo agendador automático
+# causava disparo duplo de payouts não-idempotentes. Não reative `schedule:`
+# sem antes garantir idempotência e remover os crons equivalentes do Vercel.
 on:
-  schedule:
-    - cron: "0 * * * *"    # a cada hora
-    - cron: "0 11 * * *"   # 8h Brasília (11:00 UTC) — news agent
-  workflow_dispatch:        # permite rodar manualmente
+  workflow_dispatch:        # somente execução manual
 
 jobs:
   cron:

@@ -1,5 +1,6 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { debitBalance } from "@/lib/wallet";
 
 const CONTESTATION_FEE = 10;
 
@@ -57,18 +58,15 @@ export async function POST(request: Request, { params }: { params: { id: string 
     return NextResponse.json({ error: "Você já contestou este evento" }, { status: 400 });
   }
 
-  // Charge fee
-  const { data: wallet } = await admin
-    .from("wallets")
-    .select("balance")
-    .eq("user_id", user.id)
-    .single();
-
-  if (!wallet || wallet.balance < CONTESTATION_FEE) {
-    return NextResponse.json({ error: `Saldo insuficiente. Taxa de contestação: Z$ ${CONTESTATION_FEE}` }, { status: 400 });
+  // Charge fee via optimistic-lock (CAS) debit — no read-modify-write race.
+  const debit = await debitBalance(admin, user.id, CONTESTATION_FEE);
+  if (!debit.ok) {
+    const msg = debit.reason === "insufficient"
+      ? `Saldo insuficiente. Taxa de contestação: Z$ ${CONTESTATION_FEE}`
+      : "Falha ao debitar taxa de contestação";
+    return NextResponse.json({ error: msg }, { status: 400 });
   }
 
-  await admin.from("wallets").update({ balance: wallet.balance - CONTESTATION_FEE }).eq("user_id", user.id);
   await admin.from("transactions").insert({
     user_id: user.id,
     type: "commission",

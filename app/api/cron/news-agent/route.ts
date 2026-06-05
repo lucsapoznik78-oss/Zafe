@@ -57,6 +57,9 @@ interface MarketData {
   closes_at: string;
 }
 
+// Vercel cron dispatch é GET; reaproveita o mesmo handler (declaração hoisted).
+export const GET = POST;
+
 export async function POST(request: Request) {
   const auth = request.headers.get("Authorization");
   if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
