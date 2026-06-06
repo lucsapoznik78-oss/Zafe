@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { Trophy } from "lucide-react";
 
-export default function EnrollButton() {
+export default function EnrollButton({ saldoInicial }: { saldoInicial?: number }) {
   const router = useRouter();
 
   return (
@@ -13,9 +13,13 @@ export default function EnrollButton() {
         className="flex items-center gap-2 px-4 py-2 rounded-lg bg-yellow-400 text-black text-sm font-bold hover:bg-yellow-300 transition-colors"
       >
         <Trophy size={14} />
-        Inscrever-se grátis
+        Participar
       </button>
-      <p className="text-[10px] text-yellow-300/40 mt-1">Receba ZC$ 1.000 para competir</p>
+      {saldoInicial != null && (
+        <p className="text-[10px] text-yellow-300/40 mt-1">
+          Receba ZC$ {saldoInicial.toLocaleString("pt-BR")} para competir
+        </p>
+      )}
     </div>
   );
 }

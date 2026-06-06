@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Trophy, Medal, Users, Calendar, Mail } from "lucide-react";
+import { Trophy, Medal, Users, Calendar, Mail, CheckCircle2, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { TopicWithStats } from "@/types/database";
@@ -203,20 +203,33 @@ export default async function ConcursoPage({ searchParams }: PageProps) {
           {user ? (
             enrolled ? (
               <div className="text-right shrink-0">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 mb-1 rounded-full bg-yellow-400/20 border border-yellow-400/30 text-[10px] font-bold text-yellow-400">
+                  <CheckCircle2 size={11} /> Você está participando
+                </span>
                 <p className="text-xs text-yellow-300/60 mb-0.5">Seu saldo ZC$</p>
                 <p className="text-2xl font-bold text-yellow-400">ZC$ {walletBalance.toLocaleString("pt-BR", { minimumFractionDigits: 0 })}</p>
                 <p className="text-[10px] text-yellow-300/40 mt-0.5">Iniciou com ZC$ {concurso.saldo_inicial}</p>
               </div>
             ) : (
-              <EnrollButton />
+              <div className="shrink-0 text-right space-y-1.5">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted border border-border text-[10px] font-semibold text-muted-foreground">
+                  <AlertCircle size={11} /> Você ainda não está participando
+                </span>
+                <EnrollButton saldoInicial={concurso.saldo_inicial} />
+              </div>
             )
           ) : (
-            <Link
-              href="/concurso/entrar"
-              className="px-4 py-2 rounded-lg bg-yellow-400 text-black text-sm font-bold hover:bg-yellow-300 transition-colors"
-            >
-              Entrar para participar
-            </Link>
+            <div className="shrink-0 text-right space-y-1.5">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted border border-border text-[10px] font-semibold text-muted-foreground">
+                <AlertCircle size={11} /> Você ainda não está participando
+              </span>
+              <Link
+                href="/concurso/entrar"
+                className="block px-4 py-2 rounded-lg bg-yellow-400 text-black text-sm font-bold hover:bg-yellow-300 transition-colors"
+              >
+                Entrar para participar
+              </Link>
+            </div>
           )}
         </div>
 

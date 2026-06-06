@@ -4,6 +4,7 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { Trophy, Users } from "lucide-react";
 import LoginForm from "@/components/auth/LoginForm";
+import ConfirmarInscricao from "@/components/concurso/ConfirmarInscricao";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -35,8 +36,12 @@ export default async function ConcursoEntrar() {
     .select("*", { count: "exact", head: true })
     .eq("concurso_id", concurso?.id ?? "");
 
+  if (user && !concurso) {
+    redirect("/concurso");
+  }
+
   if (user && concurso) {
-    // Verifica se já inscrito
+    // Já inscrito? Vai direto pro concurso.
     const { data: existing } = await admin
       .from("inscricoes_concurso")
       .select("id")
@@ -44,21 +49,22 @@ export default async function ConcursoEntrar() {
       .eq("concurso_id", concurso.id)
       .single();
 
-    if (!existing) {
-      // Auto-inscreve
-      await admin
-        .from("inscricoes_concurso")
-        .insert({ user_id: user.id, concurso_id: concurso.id });
-      await admin
-        .from("concurso_wallets")
-        .insert({ user_id: user.id, concurso_id: concurso.id, balance: concurso.saldo_inicial });
+    if (existing) {
+      redirect("/concurso");
     }
 
-    redirect("/concurso");
-  }
-
-  if (user && !concurso) {
-    redirect("/concurso");
+    // Logado mas não inscrito — pede confirmação explícita (re-autenticação)
+    return (
+      <div className="min-h-[calc(100vh-56px)] flex flex-col items-center justify-center py-8 px-4">
+        <div className="w-full max-w-sm">
+          <ConfirmarInscricao
+            email={user.email ?? ""}
+            titulo={concurso.titulo}
+            saldoInicial={concurso.saldo_inicial}
+          />
+        </div>
+      </div>
+    );
   }
 
   // Não logado — mostra login/cadastro com contexto do concurso
