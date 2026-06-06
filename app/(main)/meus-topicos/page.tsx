@@ -22,6 +22,14 @@ export default async function MinhasPosicoes() {
     .in("status", ["pending", "matched", "partial"])
     .order("topic_id");
 
+  // Apostas já resolvidas (ganhou / perdeu / reembolsada)
+  const { data: resolvedBets } = await admin
+    .from("bets")
+    .select("id, topic_id, side, amount, status, potential_payout")
+    .eq("user_id", user.id)
+    .in("status", ["won", "lost", "refunded"])
+    .order("topic_id");
+
   // Ordens abertas no secundário
   const { data: orders } = await admin
     .from("orders")
@@ -30,16 +38,18 @@ export default async function MinhasPosicoes() {
     .in("status", ["open", "partial"])
     .order("created_at", { ascending: false });
 
-  // Buscar tópicos únicos
-  const topicIds = [...new Set([
+  // Buscar tópicos únicos (ativos + resolvidos)
+  const activeTopicIds = [...new Set([
     ...(bets ?? []).map((b: any) => b.topic_id),
     ...(orders ?? []).map((o: any) => o.topic_id),
   ])];
+  const resolvedTopicIds = [...new Set((resolvedBets ?? []).map((b: any) => b.topic_id))];
+  const topicIds = [...new Set([...activeTopicIds, ...resolvedTopicIds])];
 
   const [{ data: topics }, { data: statsData }] = topicIds.length
     ? await Promise.all([
-        admin.from("topics").select("id, title, category, status, closes_at").in("id", topicIds),
-        admin.from("v_topic_stats").select("topic_id, prob_sim").in("topic_id", topicIds),
+        admin.from("topics").select("id, title, category, status, closes_at, resolution, resolved_at").in("id", topicIds),
+        admin.from("v_topic_stats").select("topic_id, prob_sim").in("topic_id", activeTopicIds.length ? activeTopicIds : ["_"]),
       ])
     : [{ data: [] }, { data: [] }];
 
@@ -62,7 +72,15 @@ export default async function MinhasPosicoes() {
     ordersByTopic.set(o.topic_id, arr);
   }
 
-  const totalTopics = topicIds.length;
+  // Agrupa apostas resolvidas por tópico
+  const resolvedByTopic = new Map<string, any[]>();
+  for (const b of resolvedBets ?? []) {
+    const arr = resolvedByTopic.get(b.topic_id) ?? [];
+    arr.push(b);
+    resolvedByTopic.set(b.topic_id, arr);
+  }
+
+  const totalTopics = activeTopicIds.length;
   const totalBets   = (bets ?? []).length;
 
   return (
@@ -74,7 +92,7 @@ export default async function MinhasPosicoes() {
         </p>
       </div>
 
-      {totalTopics === 0 ? (
+      {activeTopicIds.length === 0 && resolvedTopicIds.length === 0 ? (
         <div className="text-center py-16">
           <p className="text-white font-medium mb-1">Nenhuma posição ativa</p>
           <p className="text-muted-foreground text-sm">Explore os eventos e faça seu primeiro palpite</p>
@@ -83,8 +101,15 @@ export default async function MinhasPosicoes() {
           </Link>
         </div>
       ) : (
-        <div className="space-y-4">
-          {topicIds.map(topicId => {
+        <div className="space-y-6">
+        {activeTopicIds.length > 0 && (
+        <section className="space-y-3">
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-bold text-white uppercase tracking-wide">Ativos</h2>
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{activeTopicIds.length}</span>
+          </div>
+          <div className="space-y-4">
+          {activeTopicIds.map(topicId => {
             const topic     = topicMap.get(topicId);
             if (!topic) return null;
             const probSim   = probMap.get(topicId) ?? 0.5;
@@ -180,6 +205,90 @@ export default async function MinhasPosicoes() {
               </div>
             );
           })}
+          </div>
+        </section>
+        )}
+
+        {resolvedTopicIds.length > 0 && (
+        <section className="space-y-3">
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-bold text-white uppercase tracking-wide">Resolvidos</h2>
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{resolvedTopicIds.length}</span>
+          </div>
+          <div className="space-y-4">
+          {resolvedTopicIds.map(topicId => {
+            const topic = topicMap.get(topicId);
+            if (!topic) return null;
+            const tBets = resolvedByTopic.get(topicId) ?? [];
+
+            // Resultado do evento: SIM, NÃO ou anulado (reembolso)
+            const anulado = tBets.every((b: any) => b.status === "refunded");
+            const resultado = topic.resolution === "sim" ? "SIM" : topic.resolution === "nao" ? "NÃO" : null;
+
+            // Agrupa as apostas resolvidas por lado
+            const buildResolved = (side: "sim" | "nao") => {
+              const sideBets = tBets.filter((b: any) => b.side === side);
+              if (!sideBets.length) return null;
+              const totalAmt = sideBets.reduce((s: number, b: any) => s + parseFloat(b.amount), 0);
+              const payout = sideBets.reduce((s: number, b: any) => s + (parseFloat(b.potential_payout) || 0), 0);
+              const status = sideBets[0].status as "won" | "lost" | "refunded";
+              return { totalAmt, payout, status };
+            };
+            const simRes = buildResolved("sim");
+            const naoRes = buildResolved("nao");
+
+            return (
+              <div key={topicId} className="bg-card border border-border rounded-xl p-4 space-y-3">
+                {/* Cabeçalho do tópico */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <CategoryBadge category={topic.category} />
+                  {anulado ? (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-bold">ANULADO</span>
+                  ) : resultado ? (
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${resultado === "SIM" ? "bg-sim/15 text-sim" : "bg-nao/15 text-nao"}`}>
+                      RESULTADO: {resultado}
+                    </span>
+                  ) : (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">Resolvido</span>
+                  )}
+                </div>
+                <Link href={topic.category === "economia" ? `/economico/${topicId}` : `/liga/${topicId}`} className="block text-sm font-semibold text-white hover:text-primary transition-colors line-clamp-2">
+                  {topic.title}
+                </Link>
+
+                {/* Resultado por lado */}
+                {[simRes && { res: simRes, side: "sim" as const }, naoRes && { res: naoRes, side: "nao" as const }]
+                  .filter(Boolean)
+                  .map(({ res, side }: any) => {
+                    const sideColor = side === "sim" ? "text-sim" : "text-nao";
+                    const won = res.status === "won";
+                    const refunded = res.status === "refunded";
+                    const bg = refunded ? "bg-muted/30 border-border" : won ? "bg-sim/5 border-sim/20" : "bg-nao/5 border-nao/20";
+                    return (
+                      <div key={side} className={`rounded-lg border p-2.5 ${bg}`}>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className={`text-xs font-bold ${sideColor}`}>{side.toUpperCase()}</span>
+                          <span className={`text-xs font-bold flex items-center gap-1 ${refunded ? "text-muted-foreground" : won ? "text-sim" : "text-nao"}`}>
+                            {refunded ? "Reembolsado" : won ? <><TrendingUp size={11} /> Você acertou</> : <><TrendingDown size={11} /> Você errou</>}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-[11px]">
+                          <span className="text-muted-foreground">Palpitado</span>
+                          <span className="text-right text-white">{fmt(res.totalAmt)}</span>
+                          <span className="text-muted-foreground">{refunded ? "Devolvido" : won ? "Recebido" : "Resultado"}</span>
+                          <span className={`text-right font-semibold ${refunded ? "text-white" : won ? "text-sim" : "text-nao"}`}>
+                            {refunded ? fmt(res.totalAmt) : won ? `+${fmt(res.payout)}` : `-${fmt(res.totalAmt)}`}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            );
+          })}
+          </div>
+        </section>
+        )}
         </div>
       )}
     </div>
