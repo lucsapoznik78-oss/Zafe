@@ -70,9 +70,7 @@ export default async function EventosEmAlta() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {topics.map((topic) => (
-            <Link key={topic.id} href={`/liga/${topic.id}`} className="block">
-              <TopicCard topic={topic} />
-            </Link>
+            <TopicCard key={topic.id} topic={topic} href={`/liga/${topic.id}`} />
           ))}
         </div>
 

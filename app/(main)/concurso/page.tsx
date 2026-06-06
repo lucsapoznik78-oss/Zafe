@@ -103,17 +103,17 @@ async function EventosConcurso({ category, search, tab, concurso, now }: { categ
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {enriched.map((topic) => (
-        <Link key={topic.id} href={`/concurso/${topic.id}`} className="block">
-          {/* Wrapper amarelo sobre o TopicCard */}
-          <div className="relative rounded-xl ring-1 ring-yellow-400/20 hover:ring-yellow-400/50 transition-all">
-            <TopicCard topic={topic as TopicWithStats} />
-            <div className="absolute bottom-2 left-2">
-              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-yellow-400/20 text-yellow-400 border border-yellow-400/30">
-                ZC$
-              </span>
-            </div>
+        // Wrapper amarelo sobre o TopicCard. O link fica DENTRO do próprio
+        // TopicCard (via prop href) — nunca aninhar <a> dentro de <a>, senão o
+        // navegador segue o link interno (/liga) e o palpite cai no fluxo Z$.
+        <div key={topic.id} className="relative rounded-xl ring-1 ring-yellow-400/20 hover:ring-yellow-400/50 transition-all">
+          <TopicCard topic={topic as TopicWithStats} href={`/concurso/${topic.id}`} />
+          <div className="absolute bottom-2 left-2 pointer-events-none">
+            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-yellow-400/20 text-yellow-400 border border-yellow-400/30">
+              ZC$
+            </span>
           </div>
-        </Link>
+        </div>
       ))}
     </div>
   );

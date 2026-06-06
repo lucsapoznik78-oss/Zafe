@@ -19,6 +19,7 @@ import CategoryBadge from "./CategoryBadge";
 
 interface TopicCardProps {
   topic: TopicWithStats;
+  href?: string;
 }
 
 const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
@@ -28,7 +29,7 @@ const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
   closed:    { label: "Fechado",   cls: "bg-yellow-500/15 text-yellow-400" },
 };
 
-export default function TopicCard({ topic }: TopicCardProps) {
+export default function TopicCard({ topic, href: hrefProp }: TopicCardProps) {
   const isMulti = topic.market_type === "multi";
   const volumeSim = topic.stats?.volume_sim ?? 0;
   const volumeNao = topic.stats?.volume_nao ?? 0;
@@ -46,7 +47,7 @@ export default function TopicCard({ topic }: TopicCardProps) {
 
   const slug = (topic as any).slug;
   const base = topic.category === "economia" ? "/economico" : "/liga";
-  const href = `${base}/${slug ?? topic.id}`;
+  const href = hrefProp ?? `${base}/${slug ?? topic.id}`;
 
   const fmtZ = (v: number) => "Z$ " + new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 }).format(v);
 

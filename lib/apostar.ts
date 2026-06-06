@@ -17,12 +17,20 @@ export async function executePalpitar(
 
   const { data: topic } = await supabase
     .from("topics")
-    .select("status, closes_at, min_bet")
+    .select("status, closes_at, min_bet, concurso_id")
     .eq("id", topic_id)
     .single();
 
   if (!topic || topic.status !== "active") {
     return NextResponse.json({ error: "Tópico inválido ou encerrado" }, { status: 400 });
+  }
+  // Eventos do Concurso usam o saldo ZC$ via /api/concurso/palpitar.
+  // Nunca debitar Z$ (carteira pessoal) por um evento do concurso.
+  if (topic.concurso_id) {
+    return NextResponse.json(
+      { error: "Este evento é do Concurso. Palpite por ele usando seu saldo ZC$." },
+      { status: 400 },
+    );
   }
   if (new Date(topic.closes_at) < new Date()) {
     return NextResponse.json({ error: "O prazo para palpitar neste setor já encerrou" }, { status: 400 });

@@ -34,8 +34,13 @@ export default function PrivateBetRoom({
   currentUserId, myParticipant, isJudge,
 }: Props) {
   const router = useRouter();
-  const phase = topic.private_phase ?? "recruiting";
+  // Modelo simples (juiz único): topic.private_phase é nulo e o resultado é
+  // definido por topic.judge_id. O fluxo por fases (recruiting → voting…) só
+  // vale quando private_phase está preenchido.
+  const isSimpleModel = !topic.private_phase;
+  const phase = topic.private_phase ?? "active";
   const phaseInfo = PHASE_LABELS[phase] ?? { label: phase, step: 0 };
+  const isSimpleJudge = isSimpleModel && topic.judge_id === currentUserId;
 
   const sideA = sides.find(s => s.side === "A");
   const sideB = sides.find(s => s.side === "B");
@@ -54,11 +59,23 @@ export default function PrivateBetRoom({
       <div>
         <div className="flex items-center gap-2 mb-2">
           <span className="px-2 py-0.5 bg-primary/20 text-primary text-xs font-bold rounded">PRIVADA</span>
-          <span className={`px-2 py-0.5 text-xs font-bold rounded ${
-            phase === "cancelled" ? "bg-red-400/20 text-red-400" :
-            phase === "resolved"  ? "bg-muted text-muted-foreground" :
-            "bg-yellow-400/20 text-yellow-400"
-          }`}>{phaseInfo.label}</span>
+          {isSimpleModel ? (
+            <span className={`px-2 py-0.5 text-xs font-bold rounded ${
+              topic.status === "cancelled" ? "bg-red-400/20 text-red-400" :
+              topic.status === "resolved"  ? "bg-muted text-muted-foreground" :
+              "bg-yellow-400/20 text-yellow-400"
+            }`}>{
+              topic.status === "resolved" ? "Resolvida" :
+              topic.status === "cancelled" ? "Cancelada" :
+              topic.status === "pending" ? "Aguardando aceites" : "Bolão ativo"
+            }</span>
+          ) : (
+            <span className={`px-2 py-0.5 text-xs font-bold rounded ${
+              phase === "cancelled" ? "bg-red-400/20 text-red-400" :
+              phase === "resolved"  ? "bg-muted text-muted-foreground" :
+              "bg-yellow-400/20 text-yellow-400"
+            }`}>{phaseInfo.label}</span>
+          )}
           <Link
             href={`/privadas/${topic.id}/participantes`}
             className="ml-auto text-xs text-muted-foreground hover:text-white transition-colors"
@@ -70,8 +87,8 @@ export default function PrivateBetRoom({
         {topic.description && <p className="text-muted-foreground text-sm mt-1">{topic.description}</p>}
       </div>
 
-      {/* Progresso das fases */}
-      <PhaseProgress currentStep={phaseInfo.step} />
+      {/* Progresso das fases — só no modelo por fases */}
+      {!isSimpleModel && <PhaseProgress currentStep={phaseInfo.step} />}
 
       {/* Participantes por lado */}
       <div className="grid grid-cols-2 gap-4">
@@ -95,15 +112,52 @@ export default function PrivateBetRoom({
         />
       </div>
 
-      {/* Fase: recrutamento — convidado pode aceitar ou recusar */}
-      {phase === "recruiting" && myParticipant?.status === "invited" && (
+      {/* Convidado pode aceitar ou recusar (recrutamento no fluxo por fases, ou
+          a qualquer momento antes do encerramento no modelo simples) */}
+      {((isSimpleModel && topic.status !== "resolved" && topic.status !== "cancelled") || phase === "recruiting") &&
+        myParticipant?.status === "invited" && (
         <AcceitarConvite topicId={topic.id} minBet={topic.min_bet} onRefresh={() => router.refresh()} />
       )}
 
-      {/* Criador pode cancelar durante recrutamento, eleição ou negociação */}
-      {["recruiting", "leader_election", "judge_negotiation"].includes(phase) &&
+      {/* Modelo simples: juiz único define o resultado */}
+      {isSimpleJudge && topic.status !== "resolved" && topic.status !== "cancelled" && (
+        <SimpleJudgePanel
+          topicId={topic.id}
+          status={topic.status}
+          closesAt={topic.closes_at}
+          onRefresh={() => router.refresh()}
+        />
+      )}
+
+      {/* Modelo simples: participante aguardando o juiz */}
+      {isSimpleModel && !isSimpleJudge && topic.status === "active" && (
+        <div className="bg-card border border-border rounded-xl p-4 text-center">
+          <p className="text-sm text-muted-foreground">
+            Bolão em andamento. Após o evento, o juiz definirá o resultado e os vencedores serão pagos automaticamente.
+          </p>
+        </div>
+      )}
+
+      {/* Criador pode cancelar (recrutamento/eleição/negociação no fluxo por
+          fases; pendente ou ativo no modelo simples) */}
+      {((isSimpleModel && (topic.status === "pending" || topic.status === "active")) ||
+        ["recruiting", "leader_election", "judge_negotiation"].includes(phase)) &&
         topic.creator_id === currentUserId && (
         <CancelarAposta topicId={topic.id} onRefresh={() => router.refresh()} />
+      )}
+
+      {/* Modelo simples: resultado final */}
+      {isSimpleModel && topic.status === "resolved" && (
+        <div className="bg-card border border-border rounded-xl p-5 text-center">
+          <p className="text-lg font-bold text-white mb-1">Bolão Resolvido</p>
+          <p className="text-muted-foreground text-sm">Resultado: {topic.resolution?.toUpperCase() ?? "—"}</p>
+        </div>
+      )}
+      {isSimpleModel && topic.status === "cancelled" && (
+        <div className="bg-red-400/10 border border-red-400/20 rounded-xl p-5 text-center">
+          <p className="text-lg font-bold text-red-400">Bolão Cancelado</p>
+          <p className="text-muted-foreground text-sm mt-1">Os valores foram reembolsados.</p>
+        </div>
       )}
 
       {/* Fase: eleição de líder */}
@@ -632,6 +686,67 @@ function JudgeVotingPanel({ topicId, round, deadline, myVote, onRefresh }: any) 
           </button>
         </div>
       )}
+    </div>
+  );
+}
+
+function SimpleJudgePanel({ topicId, status, closesAt, onRefresh }: any) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  // O endpoint só aceita resolução quando o bolão está ativo (juiz + ≥1
+  // adversário aceitaram) ou após o prazo de encerramento.
+  const canResolve = status === "active" || (closesAt && new Date(closesAt) <= new Date());
+
+  async function resolver(vote: "sim" | "nao") {
+    setLoading(true);
+    setError("");
+    const res = await fetch(`/api/apostas-privadas/${topicId}/votar-resultado`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ vote }),
+    });
+    const d = await res.json().catch(() => ({}));
+    setLoading(false);
+    if (!res.ok) {
+      setError(d.error ?? "Erro ao definir o resultado");
+      return;
+    }
+    onRefresh();
+  }
+
+  if (!canResolve) {
+    return (
+      <div className="bg-card border border-border rounded-xl p-4 text-center space-y-1">
+        <div className="flex items-center justify-center gap-2 text-white font-semibold text-sm">
+          <Shield size={15} className="text-primary" /> Você é o juiz
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Você poderá definir o resultado quando o bolão estiver ativo (juiz e ao menos um adversário aceitarem) ou após o prazo de encerramento.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-card border border-primary/30 rounded-xl p-4 space-y-3">
+      <div className="flex items-center gap-2">
+        <Shield size={16} className="text-primary" />
+        <p className="text-sm font-semibold text-white">Você é o juiz — qual foi o resultado?</p>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Sua decisão paga os vencedores automaticamente. Esta ação é definitiva.
+      </p>
+      <div className="grid grid-cols-2 gap-3">
+        <button onClick={() => resolver("sim")} disabled={loading}
+          className="py-3 bg-sim/20 text-sim font-bold rounded-xl text-sm hover:bg-sim/30 transition-colors disabled:opacity-50">
+          SIM aconteceu
+        </button>
+        <button onClick={() => resolver("nao")} disabled={loading}
+          className="py-3 bg-nao/20 text-nao font-bold rounded-xl text-sm hover:bg-nao/30 transition-colors disabled:opacity-50">
+          NÃO aconteceu
+        </button>
+      </div>
+      {error && <p className="text-xs text-nao">{error}</p>}
     </div>
   );
 }
