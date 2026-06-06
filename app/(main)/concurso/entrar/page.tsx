@@ -53,7 +53,14 @@ export default async function ConcursoEntrar() {
       redirect("/concurso");
     }
 
-    // Logado mas não inscrito — pede confirmação explícita (re-autenticação)
+    // Dados já existentes do perfil para pré-preencher o formulário
+    const { data: perfil } = await admin
+      .from("profiles")
+      .select("full_name, username")
+      .eq("id", user.id)
+      .single();
+
+    // Logado mas não inscrito — pede confirmação explícita (re-autenticação + identificação)
     return (
       <div className="min-h-[calc(100vh-56px)] flex flex-col items-center justify-center py-8 px-4">
         <div className="w-full max-w-sm">
@@ -61,6 +68,8 @@ export default async function ConcursoEntrar() {
             email={user.email ?? ""}
             titulo={concurso.titulo}
             saldoInicial={concurso.saldo_inicial}
+            initialFullName={perfil?.full_name ?? ""}
+            initialUsername={perfil?.username ?? ""}
           />
         </div>
       </div>

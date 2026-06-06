@@ -7,27 +7,49 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Trophy, Loader2, Eye, EyeOff, AlertCircle, CheckCircle2 } from "lucide-react";
+import { formatarCPF, validarCPF } from "@/lib/cpf";
 
 interface Props {
   email: string;
   titulo: string;
   saldoInicial: number;
+  initialFullName?: string;
+  initialUsername?: string;
 }
 
-export default function ConfirmarInscricao({ email, titulo, saldoInicial }: Props) {
+export default function ConfirmarInscricao({ email, titulo, saldoInicial, initialFullName = "", initialUsername = "" }: Props) {
   const router = useRouter();
   const supabase = createClient();
 
+  const [fullName, setFullName] = useState(initialFullName);
+  const [username, setUsername] = useState(initialUsername);
+  const [cpf, setCpf] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
 
+  const cpfValido = validarCPF(cpf);
+
   async function handleConfirm(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
     setError("");
+
+    if (fullName.trim().length < 3) {
+      setError("Informe seu nome completo.");
+      return;
+    }
+    if (!/^[a-z0-9_.]{3,20}$/.test(username.trim().toLowerCase())) {
+      setError("Username inválido (3-20 caracteres: letras, números, _ ou .).");
+      return;
+    }
+    if (!cpfValido) {
+      setError("CPF inválido.");
+      return;
+    }
+
+    setLoading(true);
 
     // Re-autenticação: confirma a senha da conta logada antes de inscrever
     const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
@@ -37,8 +59,16 @@ export default function ConfirmarInscricao({ email, titulo, saldoInicial }: Prop
       return;
     }
 
-    // Inscrição
-    const res = await fetch("/api/concurso/inscrever", { method: "POST" });
+    // Inscrição (envia identificação completa)
+    const res = await fetch("/api/concurso/inscrever", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fullName: fullName.trim(),
+        username: username.trim().toLowerCase(),
+        cpf: cpf.replace(/\D/g, ""),
+      }),
+    });
     const data = await res.json();
     if (!res.ok) {
       setError(data?.error ?? "Não foi possível confirmar sua participação.");
@@ -84,11 +114,59 @@ export default function ConfirmarInscricao({ email, titulo, saldoInicial }: Prop
         <AlertCircle size={15} className="text-yellow-400 shrink-0 mt-0.5" />
         <p className="text-[12px] text-yellow-300/80 leading-relaxed">
           Você ainda <span className="font-bold text-yellow-400">não está participando</span> deste concurso.
-          Confirme sua senha abaixo para entrar.
+          Como o prêmio é pago em R$, confirme seus dados abaixo para entrar.
         </p>
       </div>
 
       <form onSubmit={handleConfirm} className="space-y-4">
+        <div className="space-y-1.5">
+          <Label htmlFor="confirm-fullname" className="text-sm text-muted-foreground">
+            Nome completo
+          </Label>
+          <Input
+            id="confirm-fullname"
+            type="text"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            placeholder="Seu nome completo"
+            className="bg-input border-border focus:border-yellow-400"
+            required
+            autoFocus
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="confirm-username" className="text-sm text-muted-foreground">
+            Username
+          </Label>
+          <Input
+            id="confirm-username"
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s/g, ""))}
+            placeholder="seu_usuario"
+            className="bg-input border-border focus:border-yellow-400"
+            required
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="confirm-cpf" className="text-sm text-muted-foreground">
+            CPF
+          </Label>
+          <Input
+            id="confirm-cpf"
+            type="text"
+            inputMode="numeric"
+            value={cpf}
+            onChange={(e) => setCpf(formatarCPF(e.target.value))}
+            placeholder="000.000.000-00"
+            maxLength={14}
+            className="bg-input border-border focus:border-yellow-400"
+            required
+          />
+        </div>
+
         <div className="space-y-1.5">
           <Label htmlFor="confirm-password" className="text-sm text-muted-foreground">
             Confirme sua senha
@@ -102,7 +180,6 @@ export default function ConfirmarInscricao({ email, titulo, saldoInicial }: Prop
               placeholder="••••••••"
               className="bg-input border-border focus:border-yellow-400 pr-10"
               required
-              autoFocus
             />
             <button
               type="button"
@@ -118,7 +195,7 @@ export default function ConfirmarInscricao({ email, titulo, saldoInicial }: Prop
 
         <Button
           type="submit"
-          disabled={loading || !password}
+          disabled={loading || !password || !fullName || !username || !cpfValido}
           className="w-full bg-yellow-400 text-black font-semibold hover:bg-yellow-300"
         >
           {loading ? <Loader2 size={16} className="animate-spin" /> : "Confirmar participação"}

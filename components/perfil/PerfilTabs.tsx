@@ -3,27 +3,12 @@
 import { useState } from "react";
 import { formatCurrency } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Trophy, TrendingDown, Percent, TrendingUp, Flame, Star, User, BookOpen, LayoutList, ShieldCheck, ShieldAlert, Banknote } from "lucide-react";
+import { Trophy, TrendingDown, Percent, TrendingUp, Flame, Star, User, BookOpen, ShieldCheck, ShieldAlert } from "lucide-react";
 import EditProfileForm from "@/components/perfil/EditProfileForm";
 import CpfForm from "@/components/kyc/CpfForm";
 import TwoFaSettings from "@/components/perfil/TwoFaSettings";
 import ReferralSection from "@/components/perfil/ReferralSection";
-import DadosBancariosForm from "@/components/perfil/DadosBancariosForm";
-import CategoryBadge from "@/components/topicos/CategoryBadge";
-import Link from "next/link";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { mascaraCPF } from "@/lib/cpf";
-
-const SIDE_STATUS: Record<string, { label: string; class: string }> = {
-  won:      { label: "Ganhou",           class: "text-sim" },
-  lost:     { label: "Perdeu",           class: "text-nao" },
-  pending:  { label: "Pendente",         class: "text-yellow-400" },
-  matched:  { label: "Em jogo",          class: "text-primary" },
-  partial:  { label: "Parcial",          class: "text-orange-400" },
-  refunded: { label: "Reembolso",        class: "text-muted-foreground" },
-  exited:   { label: "Saída antecipada", class: "text-yellow-400" },
-};
 
 interface Props {
   profile: any;
@@ -34,7 +19,7 @@ interface Props {
 }
 
 export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl }: Props) {
-  const [tab, setTab] = useState<"conta" | "eventos" | "como-funciona" | "premios">("conta");
+  const [tab, setTab] = useState<"conta" | "como-funciona">("conta");
 
   const betsWon    = bets.filter((b) => b.status === "won").length;
   const betsLost   = bets.filter((b) => b.status === "lost").length;
@@ -76,8 +61,6 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl }:
 
   const tabs = [
     { id: "conta",          label: "Conta",          icon: <User size={14} /> },
-    { id: "eventos",        label: "Eventos",         icon: <LayoutList size={14} /> },
-    { id: "premios",        label: "Prêmios",         icon: <Banknote size={14} /> },
     { id: "como-funciona",  label: "Como funciona",   icon: <BookOpen size={14} /> },
   ] as const;
 
@@ -207,63 +190,6 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl }:
               completedReferrals={completedReferrals}
               appUrl={appUrl}
             />
-          )}
-        </div>
-      )}
-
-      {/* ── PRÊMIOS ── */}
-      {tab === "premios" && (
-        <div className="bg-card border border-border rounded-xl p-4 space-y-4">
-          <div>
-            <h3 className="text-sm font-semibold text-white">Dados bancários para prêmios</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Necessário apenas se você vencer um concurso. O prêmio é pago em R$ via PIX.
-            </p>
-          </div>
-          <DadosBancariosForm />
-        </div>
-      )}
-
-      {/* ── EVENTOS ── */}
-      {tab === "eventos" && (
-        <div className="bg-card border border-border rounded-xl p-4">
-          <h3 className="text-sm font-semibold text-white mb-4">
-            Eventos participados <span className="text-muted-foreground font-normal">({bets.length})</span>
-          </h3>
-          {!bets.length ? (
-            <p className="text-muted-foreground text-sm text-center py-8">Nenhum evento ainda</p>
-          ) : (
-            <div className="space-y-0">
-              {bets.map((bet) => {
-                const status = SIDE_STATUS[bet.status] ?? { label: bet.status, class: "text-muted-foreground" };
-                const isPrivate = bet.topic?.is_private;
-                return (
-                  <div key={bet.id} className="flex items-center justify-between py-3 border-b border-border last:border-0">
-                    <div className="flex-1 min-w-0 mr-3">
-                      <Link href={bet.topic?.category === "economia" ? `/economico/${bet.topic?.id}` : `/liga/${bet.topic?.id}`} className="hover:text-primary transition-colors">
-                        <p className="text-sm text-white truncate">{bet.topic?.title}</p>
-                      </Link>
-                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                        {bet.topic?.category && <CategoryBadge category={bet.topic.category} />}
-                        {isPrivate && (
-                          <span className="text-[10px] px-1 py-0.5 rounded bg-primary/10 text-primary font-medium">Privado</span>
-                        )}
-                        <span className={`text-xs font-semibold ${bet.side === "sim" ? "text-sim" : "text-nao"}`}>
-                          {bet.side.toUpperCase()}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {format(new Date(bet.created_at), "dd/MM/yy", { locale: ptBR })}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-sm font-semibold text-white">{formatCurrency(bet.amount)}</p>
-                      <p className={`text-xs ${status.class}`}>{status.label}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
           )}
         </div>
       )}
