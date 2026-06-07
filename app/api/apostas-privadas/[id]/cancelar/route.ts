@@ -25,20 +25,33 @@ export async function POST(
   if (!topic) return NextResponse.json({ error: "Aposta não encontrada" }, { status: 404 });
   if (topic.creator_id !== user.id) return NextResponse.json({ error: "Apenas o criador pode cancelar" }, { status: 403 });
 
-  // Modelo por fases: só cancelável durante recrutamento/eleição/negociação.
-  // Modelo simples (private_phase nulo): cancelável enquanto ainda pendente.
-  const cancellablePhase = ["recruiting", "leader_election", "judge_negotiation"].includes(topic.private_phase);
-  const cancellableSimple = !topic.private_phase && topic.status === "pending";
-  if (!cancellablePhase && !cancellableSimple) {
-    return NextResponse.json({ error: "Não é possível cancelar nesta fase" }, { status: 400 });
+  if (["resolved", "cancelled"].includes(topic.status)) {
+    return NextResponse.json({ error: "Bolão já encerrado" }, { status: 400 });
   }
 
   // Buscar participantes aceitos para reembolsar
   const { data: accepted } = await admin
     .from("topic_participants")
-    .select("user_id")
+    .select("user_id, side")
     .eq("topic_id", topicId)
     .eq("status", "accepted");
+
+  // Regra: o criador só pode cancelar enquanto NENHUM adversário (lado B) tiver
+  // aceitado. Sem oposição aceita, só o próprio stake do criador está em jogo, então
+  // o cancelamento + reembolso é seguro e conserva Z$. Assim que um adversário aceita,
+  // há dinheiro de terceiro travado e o cancelamento unilateral fica bloqueado.
+  const adversaryAccepted = (accepted ?? []).some((p) => p.side === "B");
+
+  // Modelo por fases: só cancelável durante recrutamento/eleição/negociação.
+  // Modelo simples (private_phase nulo): cancelável enquanto nenhum adversário aceitou.
+  const cancellablePhase = ["recruiting", "leader_election", "judge_negotiation"].includes(topic.private_phase);
+  const cancellableSimple = !topic.private_phase && !adversaryAccepted;
+  if (!cancellablePhase && !cancellableSimple) {
+    return NextResponse.json(
+      { error: "Não é possível cancelar: um adversário já aceitou este bolão." },
+      { status: 400 },
+    );
+  }
 
   // Reembolsar cada participante aceito
   for (const p of accepted ?? []) {
@@ -60,8 +73,8 @@ export async function POST(
     });
   }
 
-  // Cancelar bets e marcar topic como cancelado
-  await admin.from("bets").update({ status: "cancelled" }).eq("topic_id", topicId);
+  // Marcar bets como reembolsadas (bet_status não tem 'cancelled') e cancelar o topic
+  await admin.from("bets").update({ status: "refunded" }).eq("topic_id", topicId);
   await admin.from("topics").update({ private_phase: "cancelled", status: "cancelled" }).eq("id", topicId);
 
   return NextResponse.json({ success: true });

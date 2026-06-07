@@ -138,9 +138,10 @@ export default function PrivateBetRoom({
         </div>
       )}
 
-      {/* Criador pode cancelar (recrutamento/eleição/negociação no fluxo por
-          fases; pendente ou ativo no modelo simples) */}
-      {((isSimpleModel && (topic.status === "pending" || topic.status === "active")) ||
+      {/* Criador pode cancelar enquanto nenhum adversário (lado B) tiver aceitado.
+          Sem oposição aceita, só o stake do criador está em jogo — cancelar é seguro.
+          No fluxo por fases, cancelável durante recrutamento/eleição/negociação. */}
+      {((isSimpleModel && topic.status !== "resolved" && topic.status !== "cancelled" && participantsB.length === 0) ||
         ["recruiting", "leader_election", "judge_negotiation"].includes(phase)) &&
         topic.creator_id === currentUserId && (
         <CancelarAposta topicId={topic.id} onRefresh={() => router.refresh()} />
