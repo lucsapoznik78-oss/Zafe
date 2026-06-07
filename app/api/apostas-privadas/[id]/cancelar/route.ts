@@ -73,9 +73,12 @@ export async function POST(
     });
   }
 
-  // Marcar bets como reembolsadas (bet_status não tem 'cancelled') e cancelar o topic
+  // Marcar bets como reembolsadas (bet_status não tem 'cancelled') e cancelar o topic.
+  // resolved_at marca o encerramento — usado para listar em "Encerrados" por 7 dias.
   await admin.from("bets").update({ status: "refunded" }).eq("topic_id", topicId);
-  await admin.from("topics").update({ private_phase: "cancelled", status: "cancelled" }).eq("id", topicId);
+  await admin.from("topics")
+    .update({ private_phase: "cancelled", status: "cancelled", resolved_at: new Date().toISOString() })
+    .eq("id", topicId);
 
   return NextResponse.json({ success: true });
 }

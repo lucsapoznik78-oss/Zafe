@@ -28,7 +28,23 @@ const PHASE_COLORS: Record<string, string> = {
   cancelled: "text-nao bg-nao/10",
 };
 
-export default async function PrivadasPage() {
+const SETE_DIAS_MS = 7 * 24 * 60 * 60 * 1000;
+
+// Encerrado = resolvido ou cancelado (status ou fase). Encerrados ficam visíveis
+// por 7 dias após o encerramento (resolved_at) e depois somem da lista.
+function estaEncerrado(topic: any): boolean {
+  return ["resolved", "cancelled"].includes(topic.status)
+    || ["resolved", "cancelled"].includes(topic.private_phase ?? "");
+}
+
+export default async function PrivadasPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
+  const { tab } = await searchParams;
+  const aba = tab === "encerrados" ? "encerrados" : "ativos";
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
@@ -49,16 +65,27 @@ export default async function PrivadasPage() {
   const judgeTopicIds = judgeNominations?.map((n) => n.topic_id) ?? [];
   const allTopicIds = [...new Set([...topicIds, ...judgeTopicIds])];
 
-  let topics: any[] = [];
+  let allTopics: any[] = [];
   if (allTopicIds.length > 0) {
     const { data } = await supabase
       .from("topics")
-      .select("id, title, private_phase, recruitment_deadline, closes_at, creator_id, creator:profiles!creator_id(username)")
+      .select("id, title, status, private_phase, recruitment_deadline, closes_at, resolved_at, creator_id, creator:profiles!creator_id(username)")
       .in("id", allTopicIds)
       .eq("is_private", true)
       .order("created_at", { ascending: false });
-    topics = data ?? [];
+    allTopics = data ?? [];
   }
+
+  const agora = Date.now();
+  const ativos = allTopics.filter((t) => !estaEncerrado(t));
+  const encerrados = allTopics.filter((t) => {
+    if (!estaEncerrado(t)) return false;
+    // Mantém só os encerrados há no máximo 7 dias
+    const encerradoEm = new Date(t.resolved_at ?? t.closes_at ?? 0).getTime();
+    return agora - encerradoEm <= SETE_DIAS_MS;
+  });
+
+  const topics = aba === "encerrados" ? encerrados : ativos;
 
   const participantCounts: Record<string, number> = {};
   if (allTopicIds.length > 0) {
@@ -88,20 +115,55 @@ export default async function PrivadasPage() {
         </Link>
       </div>
 
+      {/* Abas Ativos / Encerrados */}
+      <div className="flex items-center gap-2 border-b border-border">
+        <Link
+          href="/privadas"
+          className={`px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+            aba === "ativos"
+              ? "border-primary text-white"
+              : "border-transparent text-muted-foreground hover:text-white"
+          }`}
+        >
+          Ativos ({ativos.length})
+        </Link>
+        <Link
+          href="/privadas?tab=encerrados"
+          className={`px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+            aba === "encerrados"
+              ? "border-primary text-white"
+              : "border-transparent text-muted-foreground hover:text-white"
+          }`}
+        >
+          Encerrados ({encerrados.length})
+        </Link>
+      </div>
+
       {topics.length === 0 ? (
         <div className="bg-card border border-border rounded-xl p-12 text-center space-y-4">
           <Swords size={40} className="text-muted-foreground mx-auto" />
           <div>
-            <p className="text-white font-semibold">Nenhum bolão ainda</p>
-            <p className="text-sm text-muted-foreground mt-1">Crie um bolão e convide seus amigos para competir</p>
+            {aba === "encerrados" ? (
+              <>
+                <p className="text-white font-semibold">Nenhum bolão encerrado</p>
+                <p className="text-sm text-muted-foreground mt-1">Bolões resolvidos ou cancelados aparecem aqui por 7 dias</p>
+              </>
+            ) : (
+              <>
+                <p className="text-white font-semibold">Nenhum bolão ativo</p>
+                <p className="text-sm text-muted-foreground mt-1">Crie um bolão e convide seus amigos para competir</p>
+              </>
+            )}
           </div>
-          <Link
-            href="/privadas/criar"
-            className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-primary text-black text-sm font-bold rounded-xl"
-          >
-            <Plus size={14} />
-            Criar Bolão
-          </Link>
+          {aba === "ativos" && (
+            <Link
+              href="/privadas/criar"
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-primary text-black text-sm font-bold rounded-xl"
+            >
+              <Plus size={14} />
+              Criar Bolão
+            </Link>
+          )}
         </div>
       ) : (
         <div className="space-y-3">
