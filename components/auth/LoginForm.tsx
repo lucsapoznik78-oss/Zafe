@@ -38,16 +38,6 @@ function limparTentativas() {
   if (typeof localStorage !== "undefined") localStorage.removeItem(LOCK_KEY);
 }
 
-function calcularIdade(isoDate: string): number {
-  const nascimento = new Date(isoDate);
-  if (Number.isNaN(nascimento.getTime())) return 0;
-  const hoje = new Date();
-  let idade = hoje.getFullYear() - nascimento.getFullYear();
-  const m = hoje.getMonth() - nascimento.getMonth();
-  if (m < 0 || (m === 0 && hoje.getDate() < nascimento.getDate())) idade--;
-  return idade;
-}
-
 export default function LoginForm({ next, theme }: { next?: string; theme?: "concurso" }) {
   const router = useRouter();
   const supabase = createClient();
@@ -75,7 +65,6 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
   const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
   const [phone, setPhone] = useState("");
-  const [birthDate, setBirthDate] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -138,22 +127,12 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
         setLoading(false);
         return;
       }
-      if (!birthDate) {
-        setError("Informe sua data de nascimento.");
-        setLoading(false);
-        return;
-      }
-      if (calcularIdade(birthDate) < 18) {
-        setError("Você precisa ter 18 anos ou mais para criar uma conta.");
-        setLoading(false);
-        return;
-      }
       const phoneClean = phone.replace(/\D/g, "");
       const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: { full_name: fullName, username, birth_date: birthDate },
+          data: { full_name: fullName, username },
         },
       });
       if (signUpError) {
@@ -372,19 +351,6 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
                 value={username}
                 onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s/g, ""))}
                 placeholder="joaosilva"
-                className={inputFocusClass}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="birthDate" className="text-sm text-muted-foreground">
-                Data de nascimento <span className="text-muted-foreground/50 font-normal">(você precisa ter 18+)</span>
-              </Label>
-              <Input
-                id="birthDate"
-                type="date"
-                value={birthDate}
-                onChange={(e) => setBirthDate(e.target.value)}
-                max={new Date().toISOString().split("T")[0]}
                 className={inputFocusClass}
               />
             </div>

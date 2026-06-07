@@ -9,6 +9,16 @@ import { Label } from "@/components/ui/label";
 import { Trophy, Loader2, Eye, EyeOff, AlertCircle, CheckCircle2 } from "lucide-react";
 import { formatarCPF, validarCPF } from "@/lib/cpf";
 
+function calcularIdade(isoDate: string): number {
+  const nascimento = new Date(isoDate);
+  if (Number.isNaN(nascimento.getTime())) return 0;
+  const hoje = new Date();
+  let idade = hoje.getFullYear() - nascimento.getFullYear();
+  const m = hoje.getMonth() - nascimento.getMonth();
+  if (m < 0 || (m === 0 && hoje.getDate() < nascimento.getDate())) idade--;
+  return idade;
+}
+
 interface Props {
   email: string;
   titulo: string;
@@ -24,6 +34,7 @@ export default function ConfirmarInscricao({ email, titulo, saldoInicial, initia
   const [fullName, setFullName] = useState(initialFullName);
   const [username, setUsername] = useState(initialUsername);
   const [cpf, setCpf] = useState("");
+  const [birthDate, setBirthDate] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -48,6 +59,14 @@ export default function ConfirmarInscricao({ email, titulo, saldoInicial, initia
       setError("CPF inválido.");
       return;
     }
+    if (!birthDate) {
+      setError("Informe sua data de nascimento.");
+      return;
+    }
+    if (calcularIdade(birthDate) < 18) {
+      setError("O concurso é exclusivo para maiores de 18 anos.");
+      return;
+    }
 
     setLoading(true);
 
@@ -67,6 +86,7 @@ export default function ConfirmarInscricao({ email, titulo, saldoInicial, initia
         fullName: fullName.trim(),
         username: username.trim().toLowerCase(),
         cpf: cpf.replace(/\D/g, ""),
+        birthDate,
       }),
     });
     const data = await res.json();
@@ -171,6 +191,24 @@ export default function ConfirmarInscricao({ email, titulo, saldoInicial, initia
         </div>
 
         <div className="space-y-1.5">
+          <Label htmlFor="confirm-birthdate" className="text-sm text-muted-foreground">
+            Data de nascimento <span className="text-muted-foreground/50 font-normal">(o concurso é 18+)</span>
+          </Label>
+          <Input
+            id="confirm-birthdate"
+            type="date"
+            value={birthDate}
+            onChange={(e) => setBirthDate(e.target.value)}
+            max={new Date().toISOString().split("T")[0]}
+            className="bg-input border-border focus:border-yellow-400"
+            required
+          />
+          {birthDate && calcularIdade(birthDate) < 18 && (
+            <p className="text-destructive text-xs">O concurso é exclusivo para maiores de 18 anos.</p>
+          )}
+        </div>
+
+        <div className="space-y-1.5">
           <Label htmlFor="confirm-password" className="text-sm text-muted-foreground">
             Confirme sua senha
           </Label>
@@ -198,7 +236,7 @@ export default function ConfirmarInscricao({ email, titulo, saldoInicial, initia
 
         <Button
           type="submit"
-          disabled={loading || !password || !fullName || !username || !cpf}
+          disabled={loading || !password || !fullName || !username || !cpf || !birthDate}
           className="w-full bg-yellow-400 text-black font-semibold hover:bg-yellow-300"
         >
           {loading ? <Loader2 size={16} className="animate-spin" /> : "Confirmar participação"}

@@ -13,6 +13,7 @@ export async function POST(request: Request) {
   const fullName = String(body?.fullName ?? "").trim();
   const username = String(body?.username ?? "").trim().toLowerCase();
   const cpfLimpo = String(body?.cpf ?? "").replace(/\D/g, "");
+  const birthDate = String(body?.birthDate ?? "").trim();
 
   if (!fullName || fullName.length < 3) {
     return NextResponse.json({ error: "Informe seu nome completo" }, { status: 400 });
@@ -22,6 +23,19 @@ export async function POST(request: Request) {
   }
   if (!validarCPF(cpfLimpo)) {
     return NextResponse.json({ error: "CPF inválido" }, { status: 400 });
+  }
+  // Gate 18+: exclusivo do Concurso (prêmio em R$ via PIX). Menores podem usar
+  // o restante da plataforma (Liga/Econômico/Privadas/Comunidade).
+  const nascimento = new Date(birthDate);
+  if (!birthDate || Number.isNaN(nascimento.getTime())) {
+    return NextResponse.json({ error: "Informe sua data de nascimento" }, { status: 400 });
+  }
+  const hoje = new Date();
+  let idade = hoje.getFullYear() - nascimento.getFullYear();
+  const m = hoje.getMonth() - nascimento.getMonth();
+  if (m < 0 || (m === 0 && hoje.getDate() < nascimento.getDate())) idade--;
+  if (idade < 18) {
+    return NextResponse.json({ error: "O concurso é exclusivo para maiores de 18 anos" }, { status: 403 });
   }
 
   const admin = createAdminClient();
@@ -67,7 +81,7 @@ export async function POST(request: Request) {
   // Persiste a identificação no perfil antes de inscrever
   const { error: eProfile } = await admin
     .from("profiles")
-    .update({ full_name: fullName, username, cpf: cpfLimpo, kyc_verified: true })
+    .update({ full_name: fullName, username, cpf: cpfLimpo, birth_date: birthDate, kyc_verified: true })
     .eq("id", user.id);
 
   if (eProfile) {
