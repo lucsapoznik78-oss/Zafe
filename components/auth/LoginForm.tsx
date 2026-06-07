@@ -8,6 +8,46 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
+// Rate-limit client-side de login: após várias tentativas falhas, impõe um
+// cooldown crescente. Não substitui proteção server-side, mas freia força-bruta
+// trivial direto do browser (o endpoint do Supabase tem o seu próprio limite).
+const LOCK_KEY = "zafe_login_attempts";
+const MAX_ATTEMPTS = 5;
+
+function lerTentativas(): { count: number; lockUntil: number } {
+  if (typeof localStorage === "undefined") return { count: 0, lockUntil: 0 };
+  try {
+    return JSON.parse(localStorage.getItem(LOCK_KEY) ?? "") ?? { count: 0, lockUntil: 0 };
+  } catch {
+    return { count: 0, lockUntil: 0 };
+  }
+}
+
+function registrarFalha() {
+  const atual = lerTentativas();
+  const count = atual.count + 1;
+  // Cooldown cresce: 5 falhas → 30s, depois dobra a cada falha (máx. 15min).
+  const lockUntil =
+    count >= MAX_ATTEMPTS
+      ? Date.now() + Math.min(30_000 * 2 ** (count - MAX_ATTEMPTS), 900_000)
+      : 0;
+  localStorage.setItem(LOCK_KEY, JSON.stringify({ count, lockUntil }));
+}
+
+function limparTentativas() {
+  if (typeof localStorage !== "undefined") localStorage.removeItem(LOCK_KEY);
+}
+
+function calcularIdade(isoDate: string): number {
+  const nascimento = new Date(isoDate);
+  if (Number.isNaN(nascimento.getTime())) return 0;
+  const hoje = new Date();
+  let idade = hoje.getFullYear() - nascimento.getFullYear();
+  const m = hoje.getMonth() - nascimento.getMonth();
+  if (m < 0 || (m === 0 && hoje.getDate() < nascimento.getDate())) idade--;
+  return idade;
+}
+
 export default function LoginForm({ next, theme }: { next?: string; theme?: "concurso" }) {
   const router = useRouter();
   const supabase = createClient();
@@ -35,10 +75,15 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
   const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
   const [phone, setPhone] = useState("");
+  const [birthDate, setBirthDate] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  // Estado do fluxo de recuperação de senha
+  const [showReset, setShowReset] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   // Estado do fluxo 2FA
   const [step, setStep] = useState<"credentials" | "choose-2fa" | "verify-otp">("credentials");
@@ -53,12 +98,22 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
     setSuccess("");
 
     if (mode === "login") {
+      const { lockUntil } = lerTentativas();
+      if (lockUntil > Date.now()) {
+        const segundos = Math.ceil((lockUntil - Date.now()) / 1000);
+        setError(`Muitas tentativas. Tente novamente em ${segundos}s.`);
+        setLoading(false);
+        return;
+      }
+
       const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
       if (signInError || !data.user) {
+        registrarFalha();
         setError("Email ou senha inválidos.");
         setLoading(false);
         return;
       }
+      limparTentativas();
 
       // Verifica se o usuário tem 2FA ativo
       const { data: profile } = await supabase
@@ -83,12 +138,22 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
         setLoading(false);
         return;
       }
+      if (!birthDate) {
+        setError("Informe sua data de nascimento.");
+        setLoading(false);
+        return;
+      }
+      if (calcularIdade(birthDate) < 18) {
+        setError("Você precisa ter 18 anos ou mais para criar uma conta.");
+        setLoading(false);
+        return;
+      }
       const phoneClean = phone.replace(/\D/g, "");
       const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: { full_name: fullName, username },
+          data: { full_name: fullName, username, birth_date: birthDate },
         },
       });
       if (signUpError) {
@@ -145,11 +210,77 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
     setLoading(false);
   }
 
+  async function handleReset(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    if (!email) {
+      setError("Informe seu email para recuperar a senha.");
+      setLoading(false);
+      return;
+    }
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/confirm?next=/redefinir-senha`,
+    });
+    if (resetError) {
+      setError(resetError.message);
+    } else {
+      setResetSent(true);
+    }
+    setLoading(false);
+  }
+
   async function handleGoogle() {
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}` },
     });
+  }
+
+  // ── Tela de recuperação de senha ────────────────────────────────
+  if (showReset) {
+    return (
+      <div className={cardClass}>
+        <div className="text-center space-y-1">
+          <p className="text-lg font-bold text-white">Recuperar senha</p>
+          <p className="text-sm text-muted-foreground">
+            {resetSent
+              ? `Se houver uma conta com ${email}, enviamos um link para redefinir a senha.`
+              : "Informe seu email e enviaremos um link para redefinir sua senha."}
+          </p>
+        </div>
+
+        {!resetSent && (
+          <form onSubmit={handleReset} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="reset-email" className="text-sm text-muted-foreground">Email</Label>
+              <Input
+                id="reset-email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="voce@email.com"
+                className={inputFocusClass}
+                required
+              />
+            </div>
+
+            {error && <p className="text-destructive text-sm">{error}</p>}
+
+            <Button type="submit" disabled={loading} className={btnClass}>
+              {loading ? <Loader2 size={16} className="animate-spin" /> : "Enviar link"}
+            </Button>
+          </form>
+        )}
+
+        <button
+          onClick={() => { setShowReset(false); setResetSent(false); setError(""); }}
+          className="w-full text-xs text-muted-foreground hover:text-white transition-colors"
+        >
+          Voltar ao login
+        </button>
+      </div>
+    );
   }
 
   // ── Tela de verificação OTP ─────────────────────────────────────
@@ -245,6 +376,19 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
               />
             </div>
             <div className="space-y-1.5">
+              <Label htmlFor="birthDate" className="text-sm text-muted-foreground">
+                Data de nascimento <span className="text-muted-foreground/50 font-normal">(você precisa ter 18+)</span>
+              </Label>
+              <Input
+                id="birthDate"
+                type="date"
+                value={birthDate}
+                onChange={(e) => setBirthDate(e.target.value)}
+                max={new Date().toISOString().split("T")[0]}
+                className={inputFocusClass}
+              />
+            </div>
+            <div className="space-y-1.5">
               <Label htmlFor="phone" className="text-sm text-muted-foreground">
                 Celular <span className="text-muted-foreground/50 font-normal">(opcional — para verificação em 2 etapas)</span>
               </Label>
@@ -305,6 +449,16 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
         >
           {loading ? <Loader2 size={16} className="animate-spin" /> : mode === "login" ? "Entrar" : "Criar conta"}
         </Button>
+
+        {mode === "login" && (
+          <button
+            type="button"
+            onClick={() => { setShowReset(true); setError(""); }}
+            className="w-full text-xs text-muted-foreground hover:text-white transition-colors"
+          >
+            Esqueci minha senha
+          </button>
+        )}
       </form>
 
       <div className="relative">

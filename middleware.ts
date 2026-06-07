@@ -34,11 +34,16 @@ export async function middleware(request: NextRequest) {
   const publicRoutes = ["/login", "/auth/callback", "/auth/confirm", "/historico", "/termos", "/api/cron", "/api/push", "/r/", "/sitemap.xml", "/robots.txt", "/google", "/liga", "/ranking", "/u/", "/concurso", "/economico", "/comunidade"];
   const isPublicRoute = pathname === "/" || publicRoutes.some((r) => pathname.startsWith(r));
 
-  if (!user && !isPublicRoute) {
+  // Email não confirmado (signups por senha) conta como não autenticado para
+  // rotas protegidas. Logins via OAuth (Google) já vêm com email_confirmed_at.
+  const emailVerified = !!user?.email_confirmed_at;
+  const authed = !!user && emailVerified;
+
+  if (!authed && !isPublicRoute) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  if (user && pathname === "/login") {
+  if (authed && pathname === "/login") {
     return NextResponse.redirect(new URL("/liga", request.url));
   }
 

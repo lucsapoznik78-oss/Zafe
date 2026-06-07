@@ -308,6 +308,57 @@ export async function reembolsarComunidade(
   }
 }
 
+// ── Estorno de payout (clawback verificado + log) ───────────────
+//
+// debitBalance é CAS e *recusa* deixar o saldo negativo: se o usuário já gastou
+// o valor recebido, o débito do payout inteiro falha silenciosamente e a aposta
+// acabaria sendo re-paga — criando Z$ do nada (quebra a regra 4 de conservação).
+// Aqui debitamos o quanto for possível (clamp ao saldo disponível), verificamos
+// o resultado e SEMPRE registramos uma transação de estorno, expondo qualquer
+// déficit residual para auditoria em vez de escondê-lo.
+async function estornarPayout(
+  supabase: any,
+  userId: string,
+  valor: number,
+  eventId: string,
+) {
+  if (valor <= 0) return;
+
+  const { data: wallet } = await supabase
+    .from("wallets")
+    .select("balance")
+    .eq("user_id", userId)
+    .single();
+
+  const saldo = Number(wallet?.balance ?? 0);
+  const estornavel = Math.min(valor, saldo);
+  const deficit = parseFloat((valor - estornavel).toFixed(2));
+
+  let cobrado = 0;
+  if (estornavel > 0) {
+    const res = await debitBalance(supabase, userId, estornavel);
+    if (res.ok) cobrado = estornavel;
+  }
+
+  await supabase.from("transactions").insert({
+    user_id: userId,
+    type: "reversal",
+    amount: cobrado,
+    net_amount: -cobrado,
+    description:
+      deficit > 0
+        ? `Estorno de resolução revertida (déficit não coberto: ${deficit.toFixed(2)})`
+        : "Estorno de resolução revertida",
+    reference_id: eventId,
+  });
+
+  if (deficit > 0) {
+    console.error(
+      `[reverterResolucao] estorno parcial — user ${userId}, devido ${valor}, cobrado ${cobrado}, déficit ${deficit}`,
+    );
+  }
+}
+
 // ── Reverter resolução (contestação aceita) ─────────────────────
 
 export async function reverterResolucao(supabase: any, eventId: string, novaResolucao: "sim" | "nao") {
@@ -319,8 +370,8 @@ export async function reverterResolucao(supabase: any, eventId: string, novaReso
     .eq("status", "won");
 
   for (const bet of wonBets ?? []) {
-    const payout = bet.potential_payout ?? bet.amount;
-    await debitBalance(supabase, bet.user_id, payout);
+    const payout = Number(bet.potential_payout ?? bet.amount);
+    await estornarPayout(supabase, bet.user_id, payout, eventId);
     await supabase.from("community_bets").update({ status: "matched" }).eq("id", bet.id);
   }
 
@@ -343,7 +394,7 @@ export async function reverterResolucao(supabase: any, eventId: string, novaReso
     .single();
 
   if (event?.creator_id && event.creator_commission > 0) {
-    await debitBalance(supabase, event.creator_id, event.creator_commission);
+    await estornarPayout(supabase, event.creator_id, Number(event.creator_commission), eventId);
   }
 
   // Marcar como reversed e re-pagar com novo resultado
