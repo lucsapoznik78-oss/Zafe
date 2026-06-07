@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Trophy, ArrowLeft } from "lucide-react";
+import { Trophy, ArrowLeft, Clock } from "lucide-react";
 import CategoryBadge from "@/components/topicos/CategoryBadge";
 import CountdownTimer from "@/components/topicos/CountdownTimer";
 import ProbabilityChart from "@/components/topicos/ProbabilityChart";
@@ -110,6 +110,8 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
   const concursoNaoTotal = (allConcursoBets ?? []).filter((b: any) => b.side === "nao").reduce((s: number, b: any) => s + Number(b.amount), 0);
 
   const isClosed = topic.status !== "active" || new Date(topic.closes_at) < new Date();
+  // Só há palpites de um lado: o evento ainda não tem disputa (pari-mutuel).
+  const aguardandoOponente = topic.status === "active" && totalVolume > 0 && !hasBothSides;
   const statusBadge = STATUS_BADGE[topic.status] ?? STATUS_BADGE.pending;
   const probSimPct = (probSim * 100).toFixed(1);
   const probNaoPct = ((1 - probSim) * 100).toFixed(1);
@@ -187,6 +189,18 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
             </div>
           </div>
 
+          {/* Aviso: só há palpites de um lado */}
+          {aguardandoOponente && (
+            <div className="flex items-start gap-2 rounded-xl bg-yellow-400/5 border border-yellow-400/20 px-4 py-3">
+              <Clock size={15} className="text-yellow-400 shrink-0 mt-0.5" />
+              <p className="text-xs text-yellow-300/80 leading-relaxed">
+                <span className="font-bold text-yellow-400">Aguardando o outro lado.</span> Por enquanto só há
+                palpites em <span className="font-semibold">{poolSim > 0 ? "SIM" : "NÃO"}</span>. Este evento só
+                entra em disputa quando alguém palpitar no lado oposto — até lá os palpites ficam reservados.
+              </p>
+            </div>
+          )}
+
           {/* LiveStats */}
           <LiveStats
             topicId={topicId}
@@ -239,7 +253,9 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
                     lost:     { label: "Perdeu",    cls: "text-red-400" },
                     refunded: { label: "Reembolso", cls: "text-muted-foreground" },
                   };
-                  const s = statusMap[bet.status] ?? { label: bet.status, cls: "text-muted-foreground" };
+                  const s = bet.status === "matched" && aguardandoOponente
+                    ? { label: "Aguardando oponente", cls: "text-yellow-400/70" }
+                    : statusMap[bet.status] ?? { label: bet.status, cls: "text-muted-foreground" };
                   return (
                     <div key={bet.id} className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
