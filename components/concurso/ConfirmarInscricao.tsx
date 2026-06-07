@@ -165,6 +165,9 @@ export default function ConfirmarInscricao({ email, titulo, saldoInicial, initia
             className="bg-input border-border focus:border-yellow-400"
             required
           />
+          {cpf.replace(/\D/g, "").length === 11 && !cpfValido && (
+            <p className="text-destructive text-xs">CPF inválido. Confira os números.</p>
+          )}
         </div>
 
         <div className="space-y-1.5">
@@ -195,7 +198,7 @@ export default function ConfirmarInscricao({ email, titulo, saldoInicial, initia
 
         <Button
           type="submit"
-          disabled={loading || !password || !fullName || !username || !cpfValido}
+          disabled={loading || !password || !fullName || !username || !cpf}
           className="w-full bg-yellow-400 text-black font-semibold hover:bg-yellow-300"
         >
           {loading ? <Loader2 size={16} className="animate-spin" /> : "Confirmar participação"}
