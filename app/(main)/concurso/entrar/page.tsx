@@ -5,7 +5,15 @@ import { redirect } from "next/navigation";
 import { Trophy, Users } from "lucide-react";
 import LoginForm from "@/components/auth/LoginForm";
 import ConfirmarInscricao from "@/components/concurso/ConfirmarInscricao";
+import ReentrarButton from "@/components/concurso/ReentrarButton";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import type { Metadata } from "next";
+
+function mesLabel(periodoInicio: string): string {
+  const s = format(new Date(periodoInicio), "MMMM", { locale: ptBR });
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
 
 export const metadata: Metadata = {
   title: "Entrar no Concurso — Zafe",
@@ -56,9 +64,24 @@ export default async function ConcursoEntrar() {
     // Dados já existentes do perfil para pré-preencher o formulário
     const { data: perfil } = await admin
       .from("profiles")
-      .select("full_name, username")
+      .select("full_name, username, kyc_verified, cpf, birth_date")
       .eq("id", user.id)
       .single();
+
+    // Verificado em uma temporada anterior → reentrada com 1 clique (sem refazer KYC).
+    const jaVerificado = !!(perfil?.kyc_verified && perfil.cpf && perfil.birth_date);
+    if (jaVerificado) {
+      return (
+        <div className="min-h-[calc(100vh-56px)] flex flex-col items-center justify-center py-8 px-4">
+          <div className="w-full max-w-sm">
+            <ReentrarButton
+              saldoInicial={concurso.saldo_inicial}
+              mesLabel={mesLabel(concurso.periodo_inicio)}
+            />
+          </div>
+        </div>
+      );
+    }
 
     // Logado mas não inscrito — pede confirmação explícita (re-autenticação + identificação)
     return (

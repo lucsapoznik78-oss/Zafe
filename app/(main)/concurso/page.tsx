@@ -206,11 +206,21 @@ export default async function ConcursoPage({ searchParams }: PageProps) {
       <div className="rounded-xl border border-yellow-400/30 bg-yellow-400/5 p-5 space-y-4">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 mb-2 rounded-full bg-yellow-400 text-black text-xs font-extrabold uppercase tracking-wide">
+              <Calendar size={12} />
+              Concurso de {(() => {
+                const s = format(new Date(concurso.periodo_inicio), "MMMM 'de' yyyy", { locale: ptBR });
+                return s.charAt(0).toUpperCase() + s.slice(1);
+              })()}
+            </span>
             <div className="flex items-center gap-2 mb-1">
               <Trophy size={18} className="text-yellow-400" />
               <h1 className="text-lg font-bold text-yellow-400">{concurso.titulo}</h1>
             </div>
             <p className="text-xs text-yellow-300/60">{concurso.descricao}</p>
+            <p className="text-[11px] text-yellow-300/50 mt-1">
+              Toda virada de mês o concurso recomeça: saldo ZC$ renovado e ranking zerado.
+            </p>
             <div className="flex items-center gap-3 mt-2 text-xs text-yellow-300/50">
               <span className="flex items-center gap-1">
                 <Calendar size={11} />

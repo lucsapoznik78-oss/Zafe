@@ -6,6 +6,7 @@
     { "path": "/api/cron/repor-mercados",            "schedule": "0 10 * * *" },
     { "path": "/api/cron/repor-eventos-expirados",   "schedule": "0 4 * * *" },
     { "path": "/api/cron/bonus-semanal",             "schedule": "0 9 * * 1" },
+    { "path": "/api/cron/criar-concurso-mensal",     "schedule": "5 0 * * *" },
     { "path": "/api/cron/atualizar-ranking-concurso","schedule": "0 5 * * *" },
     { "path": "/api/cron/finalizar-concurso",        "schedule": "0 8 * * *" },
     { "path": "/api/cron/apostas-privadas-timeout",  "schedule": "0 6 * * *" },
