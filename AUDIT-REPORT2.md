@@ -8,6 +8,63 @@ Legend: ✅ RESOLVED · 🟡 PARTIAL · ⛔ STILL OPEN · `[NEW]` = found in thi
 
 ---
 
+## 🔴 EVENT INTEGRITY SWEEP — 2026-06-07 (zafe-dates + zafe-validity + zafe-crosscheck, LIVE DB)
+
+> Re-run of the three event-integrity agents **against the live Supabase DB** (`mhckuhqyyfoapzgrqeco`), whole site, all 86 active events. **Today = 2026-06-07.** Per request, all findings below are classified **CRITICAL** — they are user-facing events that are unresolvable, impossible, expired, or duplicated and can still take real palpites. No DELETEs proposed; cancel via `status='cancelled'` only after confirming 0 bets.
+>
+> **Real-world facts verified by web search (sources at end):**
+> - **World Cup 2026:** opener **June 11** (Mexico × South Africa); **Brazil estreia June 13** vs Morocco (Group C: Morocco/Scotland/Haiti); **group stage ends June 27**; Round of 32 **June 28–July 3**; oitavas/R16 **July 4–7**.
+> - **Brasileirão:** paused after round 18 (May 30/31) for the World Cup, resumes **~July 22** → **no club-league games in June**. Table frozen with **Palmeiras** leading (not Flamengo).
+> - **Palmeiras × Corinthians (Dérbi):** already played **April 12, 2026** (0×0) — no June rematch.
+> - **Libertadores:** **Botafogo is NOT** among the 6 Brazilian clubs in the R16 (Corinthians, Cruzeiro, Flamengo, Fluminense, Mirassol, Palmeiras); oitavas games **Aug 11–20**.
+> - **Neymar:** convocated for World Cup 2026 (outcome effectively known).
+
+### 🔴 zafe-dates — market closes AFTER / too close to the real event (unresolvable or exploitable)
+
+| ID | Title | closes_at | Event | Problem |
+|----|-------|-----------|-------|---------|
+| `3fd41760` | O jogo de abertura da Copa terá mais de 2 gols? | **2026-06-12** | match **June 11** | **CRITICAL** — closes the day AFTER the match → result already known while still open. |
+| `efdf8015` | O Brasil vai vencer o jogo de estreia na Copa? | **2026-06-14** | Brazil estreia **June 13** | **CRITICAL** — closes the day AFTER the match → exploitable. |
+| `b676b1ed` | O Brasil vai terminar a fase de grupos em primeiro lugar? | **2026-06-28** | group stage ends **June 27** | **CRITICAL** — closes after the standings are final. |
+| `1bc9a369` | O Brasil vai se classificar para as oitavas? | **2026-06-28** | R16 is **July 4–7** (after R32 June 28–Jul 3) | **CRITICAL** — close date predates the "oitavas" round in the 2026 (48-team) format; cannot be resolved at close. |
+
+### 🔴 zafe-validity — events that are impossible / reference matches that do not exist
+
+| ID | Module | Title | closes_at | Why impossible |
+|----|--------|-------|-----------|----------------|
+| `eed2c06a` | concurso/liga | O Palmeiras vai vencer o Dérbi contra o Corinthians? | 2026-06-15 | **No June Dérbi** — Brasileirão paused for WC; Derby was April 12 (0×0). Unresolvable. |
+| `c7f57907` | liga | O Corinthians vai se classificar no dia 15/06? | (vague) | **No fixture** on 15/06 (league paused); title is vague/unresolvable. |
+| `dbc19f36` | liga | O Flamengo vai vencer o próximo clássico contra o Fluminense? | 2026-06-30 | **No Fla-Flu in June** (league paused). Unresolvable. |
+| `2eb94b7c` | liga | O Botafogo vai se classificar nas oitavas da Libertadores? | 2026-06-25 | **Botafogo not in R16**; oitavas only Aug 11–20. Impossible / already settled NÃO. |
+| `7dd0da5c` | concurso | O Flamengo vai liderar o Brasileirão ao fim de junho? | 2026-06-30 | Table **frozen at round 18 with Palmeiras leading** → answer is effectively NÃO; misleading. |
+| `175dd801` | liga | Neymar vai estar na Copa do Mundo 2026? | 2026-07-01 | **Known YES** (convocated) — degenerate market, no uncertainty. |
+| `9bc72a4e` | privada | Volpato vai fail 3 ou mais provas? | **2026-05-28** | **Expired 10 days ago**, still `active`. Broken title + overdue. |
+
+### 🔴 zafe-crosscheck — duplicate / overlapping / contradictory events (live DB)
+
+- **Bitcoin cluster (cross-module):** concurso `ba600b40` (BTC > US$120k, Jun 30) ≈ economico `5ac49b90` (same, semantic dup) + BRL variant `e479fa07` ("R$600.000") + `145ac793` ("US$100.000 este mês"). Multiple near-identical BTC markets resolving on the same window.
+- **Ethereum near-dup:** concurso `66c54f4b` (ETH > US$4.000, June) vs economico `95a3daff` (same threshold, July) — overlapping.
+- **Selic / COPOM June (contradictory, should be one binary):** concurso `f90cd56c` ("manter") vs economico `f75a6e0e` ("reduzida") vs economico `9f45f274` ("cortar > 0,25%") — three overlapping/contradictory markets on the same COPOM decision.
+- **Dólar / Real June-close cluster (overlapping bands):** `dba2d25c` (dólar < R$5,50), `c4618477` (real valoriza), `cdac9fe7` (dólar PTAX > R$5,90), `53bc9ebe` (real < R$5,80) — overlapping/contradictory ranges.
+- **Reforma tributária (cross-module overlap):** concurso `87060824` ("regulamentação… sair") vs liga `5cd40629` ("aprovar no Congresso") — same underlying event, two markets.
+
+### Action (report-only — confirm bet/volume before any change)
+1. **zafe-dates (4):** extend `closes_at` to **before** the real event start (e.g. opener → 2026-06-10 23:59; Brazil estreia → 2026-06-12 23:59; group-stage/first-place → 2026-06-26 23:59; classificação oitavas → after R32, ~2026-07-03) **or** cancel if 0 bets.
+2. **zafe-validity (7):** cancel the impossible matchups (`eed2c06a`, `c7f57907`, `dbc19f36`, `2eb94b7c`) and the expired `9bc72a4e`; review degenerate/misleading (`175dd801`, `7dd0da5c`) — owner decision if they carry bets.
+3. **zafe-crosscheck:** consolidate the BTC/ETH/Selic/Dólar/Reforma clusters into single binaries; model COPOM as one decision.
+4. **Root cause (still open):** no creation/replication-time validation (close_date < event start, matchup exists, dedup) — `replicar-topics` keeps re-publishing template events that reference non-existent fixtures. This is the recurring source.
+
+### ✅ RESOLUÇÃO — 2026-06-07 (LIVE DB, todos os alvos tinham 0 palpites e 0 ordens, exceto Volpato)
+- **zafe-dates — corrigidos (extend `closes_at`):** `3fd41760` → 11/06 02:59Z (10/06 23:59 BRT, antes da abertura), `efdf8015` → 13/06 02:59Z (12/06 BRT, antes da estreia), `b676b1ed` → 27/06 02:59Z (26/06 BRT, antes do fim dos grupos). `1bc9a369` ("classificar oitavas") **cancelado** — irresolvível no formato 48 (grupo→R32→R16), o fechamento não casa com a rodada.
+- **zafe-validity — cancelados (`status='cancelled'`):** `eed2c06a` (Dérbi junho), `c7f57907` (Corinthians 15/06), `dbc19f36` (Fla×Flu junho), `2eb94b7c` (Botafogo Libertadores), `7dd0da5c` (Flamengo líder — enganoso), `175dd801` (Neymar — YES conhecido/degenerado). Total cancelado nesta passada: **7** (inclui `1bc9a369`).
+- ⛔ **`9bc72a4e` (Volpato, privada, EXPIRADO 28/05, 1 palpite)** — NÃO cancelado: carrega aposta real; cancelar exige reembolso pelo fluxo correto (conservação Z$, regra 4). **Decisão do dono.**
+- 🟡 **zafe-crosscheck (BTC/ETH/Selic/Dólar/Reforma):** NÃO consolidados — são clusters cross-module/contraditórios que resolvem normalmente cada um por si; consolidar é decisão de produto (qual manter). Todos com 0 palpites. **Flagged p/ dono.**
+- ✅ **Root cause documentado:** novo `docs/CRIAR-EVENTO.md` (checklist obrigatório: data antes do desfecho, evento existe/possível, dedup cross-module, nunca DELETE em prod) + regra 7 no CLAUDE.md. Validação automática na criação/replicação **ainda aberta no código**.
+
+**Sources:** FIFA / Wikipédia (WC 2026 schedule & Brazil Group C), ge.globo / CBF (Brasileirão WC pause, table at round 18), CONMEBOL / Olympics.com (Libertadores R16 clubs & Aug dates), CNN/ge (Palmeiras×Corinthians Apr 12), ge/CBF (Neymar convocation).
+
+---
+
 ## Cross-check summary
 
 - **Original items: 96.** Resolved: **17** · Partially resolved: **6** · Still open: **73**.
