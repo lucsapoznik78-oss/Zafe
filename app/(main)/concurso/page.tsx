@@ -80,8 +80,17 @@ async function EventosConcurso({ category, search, tab, concurso, now }: { categ
   }
 
   const topicIds = topics.map((t) => t.id);
-  const [{ data: statsData }, { data: snapshotsData }] = await Promise.all([
-    supabase.from("v_topic_stats").select("*").in("topic_id", topicIds),
+  const admin = createAdminClient();
+  // Volume/odds dos cards vêm de concurso_bets (ZC$), não de v_topic_stats
+  // (que só conta a tabela `bets` da Liga, em Z$). Sem isso, evento com
+  // palpite no concurso aparece zerado no card.
+  const [{ data: betRows }, { data: snapshotsData }] = await Promise.all([
+    admin
+      .from("concurso_bets")
+      .select("topic_id, side, amount")
+      .eq("concurso_id", concurso.id)
+      .in("topic_id", topicIds)
+      .eq("status", "matched"),
     supabase
       .from("topic_snapshots")
       .select("topic_id, prob_sim, recorded_at")
@@ -90,7 +99,23 @@ async function EventosConcurso({ category, search, tab, concurso, now }: { categ
       .limit(topicIds.length * 2),
   ]);
 
-  const statsMap = new Map((statsData ?? []).map((s: any) => [s.topic_id, s]));
+  const statsMap = new Map<string, any>();
+  for (const id of topicIds) {
+    statsMap.set(id, { topic_id: id, volume_sim: 0, volume_nao: 0, total_volume: 0, prob_sim: 0.5, bet_count: 0 });
+  }
+  for (const b of betRows ?? []) {
+    const s = statsMap.get(b.topic_id);
+    if (!s) continue;
+    const amt = Number(b.amount);
+    s.total_volume += amt;
+    s.bet_count += 1;
+    if (b.side === "sim") s.volume_sim += amt;
+    else if (b.side === "nao") s.volume_nao += amt;
+  }
+  for (const s of statsMap.values()) {
+    s.prob_sim = s.total_volume > 0 ? s.volume_sim / s.total_volume : 0.5;
+  }
+
   const snapMap = new Map<string, number>();
   for (const snap of snapshotsData ?? []) {
     if (!snapMap.has(snap.topic_id)) snapMap.set(snap.topic_id, snap.prob_sim);
