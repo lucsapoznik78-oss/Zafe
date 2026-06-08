@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
-import { calcOdds } from "@/lib/odds";
 import { Loader2, Wallet } from "lucide-react";
 
 interface CommunityBetFormProps {
@@ -22,10 +21,16 @@ export default function CommunityBetForm({ eventId, totalSim, totalNao, isClosed
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const { simOdds, naoOdds } = calcOdds(totalSim, totalNao);
   const amountNum = parseFloat(amount) || 0;
-  const currentOdds = side === "sim" ? simOdds : naoOdds;
-  const expectedReturn = amountNum * Math.min(currentOdds, 999);
+  const totalPool = totalSim + totalNao;
+  const sidePool = side === "sim" ? totalSim : totalNao;
+  // Payout parimutuel real: o próprio palpite entra no pool antes do rateio,
+  // então o denominador é (pool do lado + valor), não o pool atual. Sem isso,
+  // ser o primeiro de um lado (sidePool=0) estourava a cotação para 999x.
+  const currentOdds = amountNum > 0 && sidePool + amountNum > 0
+    ? (totalPool + amountNum) / (sidePool + amountNum)
+    : 0;
+  const expectedReturn = amountNum * currentOdds;
 
   async function handleBet() {
     setError("");
@@ -96,7 +101,7 @@ export default function CommunityBetForm({ eventId, totalSim, totalNao, isClosed
         <div className="text-xs text-muted-foreground space-y-1">
           <div className="flex justify-between">
             <span>Cotação estimada</span>
-            <span className="text-white">{Math.min(currentOdds, 999).toFixed(2)}x</span>
+            <span className="text-white">{currentOdds.toFixed(2)}x</span>
           </div>
           <div className="flex justify-between">
             <span>Retorno estimado</span>

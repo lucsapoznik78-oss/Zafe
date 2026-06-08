@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { calcOdds } from "@/lib/odds";
 import { Loader2, Trophy } from "lucide-react";
 import type { BetSide } from "@/types/database";
 
@@ -39,13 +38,18 @@ export default function ConcursoBetForm({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const { simOdds, naoOdds } = calcOdds(poolSim, poolNao);
   const amountNum = parseFloat(amount) || 0;
-  const currentOdds = side === "sim" ? simOdds : naoOdds;
   const totalPool = poolSim + poolNao;
+  const sidePool = side === "sim" ? poolSim : poolNao;
   const probSimPct = totalPool > 0 ? (poolSim / totalPool * 100).toFixed(1) : null;
   const probNaoPct = totalPool > 0 ? (poolNao / totalPool * 100).toFixed(1) : null;
-  const currentProbPct = currentOdds > 0 ? (1 / currentOdds * 100).toFixed(1) : null;
+  const currentProbPct = totalPool > 0 ? (sidePool / totalPool * 100).toFixed(1) : null;
+  // Payout parimutuel real: o palpite entra no pool antes do rateio, então o
+  // denominador é (pool do lado + valor). Usar odds de mercado puras inflava o
+  // retorno e, ao ser o primeiro de um lado (sidePool=0), estourava para 999x.
+  const currentOdds = amountNum > 0 && sidePool + amountNum > 0
+    ? (totalPool + amountNum) / (sidePool + amountNum)
+    : 0;
   const expectedReturn = amountNum * currentOdds;
   const expectedProfit = expectedReturn - amountNum;
   const insufficientBalance = amountNum > zcBalance;
