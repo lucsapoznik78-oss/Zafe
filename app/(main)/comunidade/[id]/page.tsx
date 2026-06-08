@@ -7,6 +7,7 @@ import ProbabilityBar from "@/components/topicos/ProbabilityBar";
 import CommunityBetForm from "@/components/comunidade/CommunityBetForm";
 import ResolveForm from "@/components/comunidade/ResolveForm";
 import ContestButton from "@/components/comunidade/ContestButton";
+import DeleteEventButton from "@/components/comunidade/DeleteEventButton";
 import { formatCurrency, timeUntil } from "@/lib/utils";
 import { Clock, Star, User, AlertTriangle } from "lucide-react";
 import Link from "next/link";
@@ -75,6 +76,7 @@ export default async function CommunityDetailPage({ params }: PageProps) {
     under_review:        { label: "Em revisão pela Zafe", cls: "bg-purple-500/20 text-purple-300" },
     auto_cancelled:      { label: "Cancelado (sem resolução)", cls: "bg-nao/20 text-nao" },
     mod_cancelled:       { label: "Removido pela moderação", cls: "bg-nao/20 text-nao" },
+    creator_cancelled:   { label: "Apagado pelo criador", cls: "bg-nao/20 text-nao" },
     reversed:            { label: "Resultado revertido", cls: "bg-orange-500/20 text-orange-300" },
   };
 
@@ -246,6 +248,11 @@ export default async function CommunityDetailPage({ params }: PageProps) {
             <div className="bg-card border border-border rounded-xl p-4 text-center text-muted-foreground text-sm">
               Este evento não aceita mais palpites
             </div>
+          )}
+
+          {/* Apagar evento — só o criador, e só enquanto não confirmado (sem palpites nos dois lados) */}
+          {isCreator && event.status === "active" && !hasBothSides && (
+            <DeleteEventButton eventId={id} hasBets={totalVolume > 0} />
           )}
         </div>
       </div>
