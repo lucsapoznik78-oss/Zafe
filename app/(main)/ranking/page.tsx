@@ -40,11 +40,14 @@ export default async function RankingPage({ searchParams }: PageProps) {
       ? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
       : null;
 
-  // Buscar apostas resolvidas
+  // Conta apostas resolvidas (won/lost) E posições em aberto (matched/pending).
+  // Sem incluir as abertas, quem acabou de palpitar some do ranking até um evento
+  // resolver — fazendo a lista parecer "fixa" e ignorando novos usuários ativos.
+  // 'refunded' fica de fora (não é participação real).
   let query = supabase
     .from("bets")
     .select("user_id, amount, potential_payout, status")
-    .in("status", ["won", "lost"]);
+    .in("status", ["won", "lost", "matched", "pending"]);
 
   if (desde) {
     query = query.gte("created_at", desde);
@@ -54,27 +57,31 @@ export default async function RankingPage({ searchParams }: PageProps) {
 
   // Agregar por usuário
   const statsMap = new Map<string, {
-    wins: number; losses: number;
+    wins: number; losses: number; pendentes: number;
     lucro: number; volume: number;
   }>();
 
   for (const bet of bets ?? []) {
-    const s = statsMap.get(bet.user_id) ?? { wins: 0, losses: 0, lucro: 0, volume: 0 };
+    const s = statsMap.get(bet.user_id) ?? { wins: 0, losses: 0, pendentes: 0, lucro: 0, volume: 0 };
     s.volume += bet.amount;
     if (bet.status === "won") {
       s.wins++;
       s.lucro += (bet.potential_payout ?? 0) - bet.amount;
-    } else {
+    } else if (bet.status === "lost") {
       s.losses++;
       s.lucro -= bet.amount;
+    } else {
+      // matched/pending: posição em aberto — entra no volume, ainda sem lucro realizado
+      s.pendentes++;
     }
     statsMap.set(bet.user_id, s);
   }
 
-  // Filtrar mínimo de apostas e ordenar por lucro líquido em Z$ (quem mais ganhou)
+  // Inclui quem tem qualquer palpite (resolvido ou em aberto). Ordena por lucro
+  // realizado e, em empate (ex.: novatos só com posições abertas), por volume.
   const userIds = Array.from(statsMap.entries())
-    .filter(([, s]) => s.wins + s.losses >= MIN_BETS)
-    .sort((a, b) => b[1].lucro - a[1].lucro)
+    .filter(([, s]) => s.wins + s.losses + s.pendentes >= MIN_BETS)
+    .sort((a, b) => b[1].lucro - a[1].lucro || b[1].volume - a[1].volume)
     .map(([id]) => id);
 
   // Buscar perfis
@@ -100,6 +107,7 @@ export default async function RankingPage({ searchParams }: PageProps) {
         wins: s.wins,
         losses: s.losses,
         total,
+        pendentes: s.pendentes,
         winRate: total > 0 ? (s.wins / total) * 100 : 0,
         lucro: s.lucro,
         volume: s.volume,
@@ -125,7 +133,7 @@ export default async function RankingPage({ searchParams }: PageProps) {
           <Trophy size={32} className="text-muted-foreground mx-auto" />
           <p className="text-white font-semibold">Nenhum preditor ainda</p>
           <p className="text-sm text-muted-foreground">
-            Tenha pelo menos um palpite resolvido para entrar no ranking.
+            Faça pelo menos um palpite para entrar no ranking.
           </p>
         </div>
       ) : (
@@ -159,10 +167,16 @@ export default async function RankingPage({ searchParams }: PageProps) {
               <div className="hidden sm:flex items-center gap-6 text-right shrink-0">
                 <div>
                   <p className="text-xs text-muted-foreground">Acertos</p>
-                  <p className="text-sm font-semibold text-white">
-                    {r.winRate.toFixed(0)}%
-                    <span className="text-xs text-muted-foreground ml-1">({r.wins}/{r.total})</span>
-                  </p>
+                  {r.total > 0 ? (
+                    <p className="text-sm font-semibold text-white">
+                      {r.winRate.toFixed(0)}%
+                      <span className="text-xs text-muted-foreground ml-1">({r.wins}/{r.total})</span>
+                    </p>
+                  ) : (
+                    <p className="text-sm font-semibold text-muted-foreground">
+                      {r.pendentes} em aberto
+                    </p>
+                  )}
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Volume</p>
@@ -178,7 +192,9 @@ export default async function RankingPage({ searchParams }: PageProps) {
 
               {/* Mobile: só lucro */}
               <div className="sm:hidden shrink-0 text-right">
-                <p className="text-xs text-muted-foreground">{r.winRate.toFixed(0)}% acerto</p>
+                <p className="text-xs text-muted-foreground">
+                  {r.total > 0 ? `${r.winRate.toFixed(0)}% acerto` : `${r.pendentes} em aberto`}
+                </p>
                 <p className={`text-sm font-bold ${r.lucro >= 0 ? "text-sim" : "text-nao"}`}>
                   {r.lucro >= 0 ? "+" : ""}{formatCurrency(r.lucro)}
                 </p>
