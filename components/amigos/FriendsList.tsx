@@ -3,9 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Check, X, Swords, Users, UserMinus, ShieldOff } from "lucide-react";
+import { Check, X, Users, UserMinus, ShieldOff } from "lucide-react";
 import Link from "next/link";
-import PrivateBetModal from "./PrivateBetModal";
 
 interface FriendData {
   id: string;
@@ -22,7 +21,6 @@ interface Props {
 
 export default function FriendsList({ sent, received, currentUserId }: Props) {
   const router = useRouter();
-  const [betTarget, setBetTarget] = useState<{ id: string; name: string } | null>(null);
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
   const [blockingId, setBlockingId] = useState<string | null>(null);
@@ -88,14 +86,6 @@ export default function FriendsList({ sent, received, currentUserId }: Props) {
 
   return (
     <>
-      {betTarget && (
-        <PrivateBetModal
-          friendId={betTarget.id}
-          friendName={betTarget.name}
-          onClose={() => setBetTarget(null)}
-        />
-      )}
-
       {pendingReceived.length > 0 && (
         <div className="bg-card border border-border rounded-xl p-4 space-y-3">
           <h3 className="text-sm font-semibold text-white flex items-center gap-2">
@@ -198,13 +188,6 @@ export default function FriendsList({ sent, received, currentUserId }: Props) {
                     </div>
                   ) : (
                     <>
-                      <button
-                        onClick={() => setBetTarget({ id: friend.id, name: friend.full_name })}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
-                      >
-                        <Swords size={12} />
-                        Bolão
-                      </button>
                       <button
                         onClick={() => { setConfirmRemoveId(friend.friendshipId); setConfirmBlockId(null); }}
                         title="Desfazer amizade"
