@@ -160,38 +160,59 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
 
       <div className="bg-card border border-border rounded-xl overflow-hidden transition-all">
         {/* Header */}
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="w-full flex items-center gap-3 p-4 hover:bg-white/5 transition-colors text-left"
-        >
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-            style={{ backgroundColor: `${liga.color}20`, border: `1.5px solid ${liga.color}40` }}
+        <div className="w-full flex items-center gap-3 p-4">
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity text-left"
           >
-            <Trophy size={18} style={{ color: liga.color }} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5">
-              <p className="text-sm font-semibold text-white truncate">{liga.name}</p>
-              {isCreator && <Crown size={11} style={{ color: liga.color }} className="shrink-0" />}
-              {liga.is_public ? (
-                <Globe size={11} className="text-sim shrink-0" aria-label="Grupo público" />
-              ) : (
-                <Lock size={11} className="text-muted-foreground shrink-0" aria-label="Grupo privado" />
-              )}
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+              style={{ backgroundColor: `${liga.color}20`, border: `1.5px solid ${liga.color}40` }}
+            >
+              <Trophy size={18} style={{ color: liga.color }} />
             </div>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-              <Users size={11} />
-              <span>{activeMembers.length} membros</span>
-              {liga.is_public && <span className="text-sim text-[10px] font-medium">Pública</span>}
-              {liga.description && <span className="truncate">· {liga.description}</span>}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5">
+                <p className="text-sm font-semibold text-white truncate">{liga.name}</p>
+                {isCreator && <Crown size={11} style={{ color: liga.color }} className="shrink-0" />}
+                {liga.is_public ? (
+                  <Globe size={11} className="text-sim shrink-0" aria-label="Grupo público" />
+                ) : (
+                  <Lock size={11} className="text-muted-foreground shrink-0" aria-label="Grupo privado" />
+                )}
+              </div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                <Users size={11} />
+                <span>{activeMembers.length} membros</span>
+                {liga.is_public && <span className="text-sim text-[10px] font-medium">Pública</span>}
+                {liga.description && <span className="truncate">· {liga.description}</span>}
+              </div>
             </div>
-          </div>
-          <ChevronRight
-            size={16}
-            className={`text-muted-foreground transition-transform shrink-0 ${expanded ? "rotate-90" : ""}`}
-          />
-        </button>
+          </button>
+
+          {/* Convidar — sempre visível em grupo privado para membros */}
+          {!liga.is_public && isMember && (
+            <button
+              onClick={() => { setExpanded(true); setTab("members"); setShowInvite(true); }}
+              className="flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg shrink-0 transition-colors"
+              style={{ backgroundColor: `${liga.color}15`, color: liga.color }}
+            >
+              <UserPlus size={13} />
+              Convidar
+            </button>
+          )}
+
+          <button
+            onClick={() => setExpanded(!expanded)}
+            aria-label={expanded ? "Recolher" : "Expandir"}
+            className="shrink-0 p-0.5"
+          >
+            <ChevronRight
+              size={16}
+              className={`text-muted-foreground transition-transform ${expanded ? "rotate-90" : ""}`}
+            />
+          </button>
+        </div>
 
         {/* Expanded */}
         {expanded && (
