@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Trophy, Users, ChevronRight, UserPlus, X, Check, Loader2, LogOut, Crown, TrendingUp, TrendingDown, Globe, Lock, Plus, Search } from "lucide-react";
+import { Trophy, Users, ChevronRight, UserPlus, X, Check, Loader2, LogOut, Crown, TrendingUp, TrendingDown, Globe, Lock, Plus, Search, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
@@ -61,6 +61,7 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
   const [showInvite, setShowInvite] = useState(false);
   const [inviting, setInviting] = useState<string | null>(null);
   const [leaving, setLeaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [transferTarget, setTransferTarget] = useState<string | null>(null);
   const [transferring, setTransferring] = useState(false);
   const [ranking, setRanking] = useState<RankingEntry[] | null>(null);
@@ -133,6 +134,18 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
     });
     setLeaving(false);
     router.refresh();
+  }
+
+  async function deleteLeague() {
+    if (!confirm(`Apagar o grupo "${liga.name}"? Esta ação é permanente e remove todos os membros e subgrupos.`)) return;
+    setDeleting(true);
+    const res = await fetch("/api/ligas/apagar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ liga_id: liga.id }),
+    });
+    setDeleting(false);
+    if (res.ok) router.refresh();
   }
 
   async function transferAdmin() {
@@ -380,6 +393,18 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
                     >
                       {leaving ? <Loader2 size={13} className="animate-spin" /> : <LogOut size={13} />}
                       Sair do grupo
+                    </button>
+                  )}
+
+                  {/* Apagar grupo — só o criador */}
+                  {isCreator && (
+                    <button
+                      onClick={deleteLeague}
+                      disabled={deleting}
+                      className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors disabled:opacity-50"
+                    >
+                      {deleting ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
+                      Apagar grupo
                     </button>
                   )}
 
