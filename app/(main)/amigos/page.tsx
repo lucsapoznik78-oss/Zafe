@@ -47,7 +47,7 @@ export default async function AmigosPage({ searchParams }: PageProps) {
       .eq("status", "pending"),
     supabase
       .from("liga_members")
-      .select("liga_id, ligas(id, name, description, color, creator_id, is_public, parent_liga_id, liga_members(id, user_id, status, profiles(username, full_name)))")
+      .select("liga_id, ligas(id, name, description, color, creator_id, is_public, parent_liga_id, liga_members(id, user_id, status, profiles!user_id(username, full_name)))")
       .eq("user_id", user.id)
       .eq("status", "active"),
     supabase

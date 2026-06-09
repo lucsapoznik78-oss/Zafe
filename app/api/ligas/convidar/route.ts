@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -29,7 +29,9 @@ export async function POST(request: Request) {
 
   if (error) return NextResponse.json({ error: "Amigo já foi convidado" }, { status: 400 });
 
-  await supabase.from("notifications").insert({
+  // Notificação é para outro usuário (friend_id), então usa client admin —
+  // a RLS de notifications só permite inserir a própria linha.
+  await createAdminClient().from("notifications").insert({
     user_id: friend_id,
     type: "bet_invite",
     payload: { liga_id, inviter_id: user.id, type: "liga_invite" },

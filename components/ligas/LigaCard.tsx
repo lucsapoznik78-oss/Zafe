@@ -74,8 +74,31 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
   const [searching, setSearching] = useState(false);
 
   const activeMembers = liga.members.filter((m) => m.status === "active");
+  const pendingMembers = liga.members.filter((m) => m.status === "pending");
+  const declinedMembers = liga.members.filter((m) => m.status === "declined");
   const isCreator = liga.creator_id === currentUserId;
   const isMember = liga.members.some((m) => m.user_id === currentUserId && m.status === "active");
+
+  // Ciclo de vida do grupo privado: ativo (≥2 membros), pendente (aguardando aceite),
+  // cancelado (todos os convidados recusaram e sobrou só o criador).
+  const groupStatus: "active" | "pending" | "cancelled" | null = liga.is_public
+    ? null
+    : activeMembers.length >= 2
+      ? "active"
+      : pendingMembers.length > 0
+        ? "pending"
+        : declinedMembers.length > 0
+          ? "cancelled"
+          : "pending";
+
+  const statusBadge =
+    groupStatus === "active"
+      ? { label: "Ativo", cls: "bg-sim/15 text-sim" }
+      : groupStatus === "pending"
+        ? { label: "Pendente", cls: "bg-yellow-500/15 text-yellow-500" }
+        : groupStatus === "cancelled"
+          ? { label: "Cancelado", cls: "bg-red-500/15 text-red-400" }
+          : null;
 
   const tabs: Tab[] = ["members", "ranking", ...((!liga.is_public && (subLigas.length > 0 || isCreator)) ? ["subligas" as Tab] : [])];
 
@@ -180,6 +203,11 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
                   <Globe size={11} className="text-sim shrink-0" aria-label="Grupo público" />
                 ) : (
                   <Lock size={11} className="text-muted-foreground shrink-0" aria-label="Grupo privado" />
+                )}
+                {statusBadge && (
+                  <span className={`px-1.5 py-0.5 rounded text-[9px] font-semibold leading-none shrink-0 ${statusBadge.cls}`}>
+                    {statusBadge.label}
+                  </span>
                 )}
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
