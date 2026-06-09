@@ -101,7 +101,7 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
   }
 
   async function leaveLeague() {
-    if (!confirm("Tem certeza que deseja sair desta liga?")) return;
+    if (!confirm("Tem certeza que deseja sair deste grupo?")) return;
     setLeaving(true);
     await fetch("/api/ligas/sair", {
       method: "POST",
@@ -145,7 +145,7 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
   const tabLabels: Record<Tab, string> = {
     members: "Membros",
     ranking: "Ranking",
-    subligas: `Sub-ligas${subLigas.length > 0 ? ` (${subLigas.length})` : ""}`,
+    subligas: `Subgrupos${subLigas.length > 0 ? ` (${subLigas.length})` : ""}`,
   };
 
   return (
@@ -175,9 +175,9 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
               <p className="text-sm font-semibold text-white truncate">{liga.name}</p>
               {isCreator && <Crown size={11} style={{ color: liga.color }} className="shrink-0" />}
               {liga.is_public ? (
-                <Globe size={11} className="text-sim shrink-0" aria-label="Liga pública" />
+                <Globe size={11} className="text-sim shrink-0" aria-label="Grupo público" />
               ) : (
-                <Lock size={11} className="text-muted-foreground shrink-0" aria-label="Liga privada" />
+                <Lock size={11} className="text-muted-foreground shrink-0" aria-label="Grupo privado" />
               )}
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
@@ -315,7 +315,7 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
                           className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors disabled:opacity-50"
                         >
                           {leaving ? <Loader2 size={13} className="animate-spin" /> : <LogOut size={13} />}
-                          Sair da liga
+                          Sair do grupo
                         </button>
                       )}
                     </div>
@@ -329,7 +329,7 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
                       className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors disabled:opacity-50"
                     >
                       {leaving ? <Loader2 size={13} className="animate-spin" /> : <LogOut size={13} />}
-                      Sair da liga
+                      Sair do grupo
                     </button>
                   )}
 
@@ -417,7 +417,7 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
                     </div>
                   ) : !ranking || ranking.length === 0 ? (
                     <p className="text-xs text-muted-foreground text-center py-4">
-                      Nenhum palpite resolvido nesta liga ainda
+                      Nenhum palpite resolvido neste grupo ainda
                     </p>
                   ) : (
                     <div className="space-y-2">
@@ -460,7 +460,7 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
               {tab === "subligas" && (
                 <div className="pt-3 space-y-3">
                   {subLigas.length === 0 ? (
-                    <p className="text-xs text-muted-foreground text-center py-2">Nenhuma sub-liga ainda</p>
+                    <p className="text-xs text-muted-foreground text-center py-2">Nenhum subgrupo ainda</p>
                   ) : (
                     subLigas.map((sub) => (
                       <div
@@ -489,7 +489,7 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
                       className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-dashed border-border text-xs text-muted-foreground hover:text-white hover:border-border/80 transition-colors"
                     >
                       <Plus size={13} />
-                      Nova sub-liga
+                      Novo subgrupo
                     </button>
                   )}
                 </div>

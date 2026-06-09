@@ -78,7 +78,7 @@ export default function LigasSection({ ligas, currentUserId, friends }: Props) {
     setJoining(null);
     if (res.ok) {
       router.refresh();
-      setActiveSection("privadas"); // go back to show new member
+      setActiveSection("publicas"); // grupo público entra fica visível em "Seus grupos públicos"
     }
   }
 
@@ -101,7 +101,7 @@ export default function LigasSection({ ligas, currentUserId, friends }: Props) {
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-white flex items-center gap-2">
             <Trophy size={16} className="text-primary" />
-            Ligas
+            Grupos
             {ligas.length > 0 && (
               <span className="px-1.5 py-0.5 bg-primary/20 text-primary rounded text-xs">{ligas.length}</span>
             )}
@@ -111,7 +111,7 @@ export default function LigasSection({ ligas, currentUserId, friends }: Props) {
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors font-medium"
           >
             <Plus size={13} />
-            Nova Liga
+            Novo Grupo
           </button>
         </div>
 
@@ -157,13 +157,13 @@ export default function LigasSection({ ligas, currentUserId, friends }: Props) {
             {privateUserLigas.length === 0 ? (
               <div className="text-center py-5 space-y-2">
                 <Lock size={28} className="mx-auto text-muted-foreground/40" />
-                <p className="text-sm text-muted-foreground">Nenhuma liga privada</p>
-                <p className="text-xs text-muted-foreground">Crie uma liga e convide seus amigos para palpitar juntos</p>
+                <p className="text-sm text-muted-foreground">Nenhum grupo privado</p>
+                <p className="text-xs text-muted-foreground">Crie um grupo e convide seus amigos para palpitar juntos</p>
                 <button
                   onClick={() => setShowCreate(true)}
                   className="mt-2 px-4 py-2 bg-primary text-black text-sm font-bold rounded-lg hover:bg-primary/90 transition-colors"
                 >
-                  Criar liga privada
+                  Criar grupo privado
                 </button>
               </div>
             ) : (
@@ -188,7 +188,7 @@ export default function LigasSection({ ligas, currentUserId, friends }: Props) {
             {/* User's public leagues */}
             {publicUserLigas.length > 0 && (
               <div className="space-y-2">
-                <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide">Suas ligas públicas</p>
+                <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide">Seus grupos públicos</p>
                 {publicUserLigas.map((liga) => (
                   <LigaCard
                     key={liga.id}
@@ -202,14 +202,14 @@ export default function LigasSection({ ligas, currentUserId, friends }: Props) {
 
             {/* Discovery */}
             <div className="space-y-3">
-              <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide">Descobrir ligas</p>
+              <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide">Descobrir grupos</p>
               <form onSubmit={handleSearch} className="flex gap-2">
                 <div className="flex-1 relative">
                   <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
                   <input
                     value={searchQ}
                     onChange={(e) => setSearchQ(e.target.value)}
-                    placeholder="Buscar ligas públicas..."
+                    placeholder="Buscar grupos públicos..."
                     className="w-full pl-8 pr-3 py-2 bg-input border border-border rounded-lg text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
                   />
                 </div>
@@ -227,7 +227,7 @@ export default function LigasSection({ ligas, currentUserId, friends }: Props) {
                 </div>
               ) : publicLigas.length === 0 ? (
                 <p className="text-xs text-muted-foreground text-center py-4">
-                  {searchQ ? "Nenhuma liga encontrada" : "Nenhuma liga pública disponível"}
+                  {searchQ ? "Nenhum grupo encontrado" : "Nenhum grupo público disponível"}
                 </p>
               ) : (
                 <div className="space-y-2">
@@ -267,7 +267,7 @@ export default function LigasSection({ ligas, currentUserId, friends }: Props) {
                 className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-dashed border-border text-xs text-muted-foreground hover:text-white hover:border-border/80 transition-colors"
               >
                 <Globe size={13} />
-                Criar liga pública
+                Criar grupo público
               </button>
             </div>
           </div>

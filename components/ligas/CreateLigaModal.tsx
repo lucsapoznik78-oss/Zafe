@@ -44,7 +44,7 @@ export default function CreateLigaModal({ onClose, parentLigaId, parentLigaName,
     });
     const data = await res.json();
     setLoading(false);
-    if (!res.ok) { setError(data.error ?? "Erro ao criar liga"); return; }
+    if (!res.ok) { setError(data.error ?? "Erro ao criar grupo"); return; }
     router.refresh();
     onClose();
   }
@@ -57,7 +57,7 @@ export default function CreateLigaModal({ onClose, parentLigaId, parentLigaName,
           <div className="flex items-center gap-2">
             <Trophy size={18} style={{ color }} />
             <h3 className="text-white font-semibold">
-              {isSubLiga ? "Criar Sub-liga" : "Criar Nova Liga"}
+              {isSubLiga ? "Criar Subgrupo" : "Criar Novo Grupo"}
             </h3>
           </div>
           <button onClick={onClose} className="text-muted-foreground hover:text-white">
@@ -69,7 +69,7 @@ export default function CreateLigaModal({ onClose, parentLigaId, parentLigaName,
           <div className="flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-lg px-3 py-2">
             <Lock size={12} className="text-primary shrink-0" />
             <p className="text-xs text-primary">
-              Sub-liga privada dentro de <strong>{parentLigaName ?? "liga selecionada"}</strong>
+              Subgrupo privado dentro de <strong>{parentLigaName ?? "grupo selecionado"}</strong>
             </p>
           </div>
         )}
@@ -78,7 +78,7 @@ export default function CreateLigaModal({ onClose, parentLigaId, parentLigaName,
           {/* Public/Private toggle — only for root leagues */}
           {!parentLigaId && (
             <div className="space-y-1.5">
-              <label className="text-xs text-muted-foreground">Tipo de liga</label>
+              <label className="text-xs text-muted-foreground">Tipo de grupo</label>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
@@ -117,13 +117,13 @@ export default function CreateLigaModal({ onClose, parentLigaId, parentLigaName,
           {/* Sub-liga selector — for private leagues the user is in */}
           {!parentLigaId && !isPublic && (myPrivateLigas?.length ?? 0) > 0 && (
             <div className="space-y-1.5">
-              <label className="text-xs text-muted-foreground">Criar como sub-liga de (opcional)</label>
+              <label className="text-xs text-muted-foreground">Criar como subgrupo de (opcional)</label>
               <select
                 value={selectedParent}
                 onChange={(e) => setSelectedParent(e.target.value)}
                 className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50"
               >
-                <option value="">— Liga raiz —</option>
+                <option value="">— Grupo raiz —</option>
                 {(myPrivateLigas ?? []).map((l) => (
                   <option key={l.id} value={l.id}>{l.name}</option>
                 ))}
@@ -132,7 +132,7 @@ export default function CreateLigaModal({ onClose, parentLigaId, parentLigaName,
           )}
 
           <div className="space-y-1.5">
-            <label className="text-xs text-muted-foreground">Nome da Liga *</label>
+            <label className="text-xs text-muted-foreground">Nome do Grupo *</label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -149,13 +149,13 @@ export default function CreateLigaModal({ onClose, parentLigaId, parentLigaName,
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               maxLength={200}
-              placeholder="Sobre o que é essa liga..."
+              placeholder="Sobre o que é esse grupo..."
               className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs text-muted-foreground">Cor da liga</label>
+            <label className="text-xs text-muted-foreground">Cor do grupo</label>
             <div className="flex gap-2">
               {COLORS.map((c) => (
                 <button
@@ -181,7 +181,7 @@ export default function CreateLigaModal({ onClose, parentLigaId, parentLigaName,
             className="w-full py-3 rounded-lg font-bold text-sm text-black transition-colors"
             style={{ backgroundColor: color }}
           >
-            {loading ? <Loader2 size={16} className="animate-spin mx-auto" /> : isSubLiga ? "Criar Sub-liga" : "Criar Liga"}
+            {loading ? <Loader2 size={16} className="animate-spin mx-auto" /> : isSubLiga ? "Criar Subgrupo" : "Criar Grupo"}
           </button>
         </form>
       </div>
