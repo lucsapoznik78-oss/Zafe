@@ -318,6 +318,7 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
             <div className="border-t border-border/40 pt-4">
               <ProbabilityChart
                 topicId={topicId}
+                marketType={isMulti ? "multi" : "binary"}
                 initialSnapshots={snapshots ?? []}
                 initialStats={stats}
               />

@@ -211,10 +211,11 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
           />
 
            {/* Gráfico */}
-          {snapshots && snapshots.length > 0 && (
+          {(isMulti || (snapshots && snapshots.length > 0)) && (
             <ProbabilityChart
               topicId={topicId}
-              initialSnapshots={snapshots}
+              marketType={isMulti ? "multi" : "binary"}
+              initialSnapshots={snapshots ?? []}
               initialStats={{
                 prob_sim: probSim,
                 volume_sim: poolSim,
