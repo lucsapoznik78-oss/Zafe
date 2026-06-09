@@ -35,12 +35,20 @@ export default async function AdminPage() {
 
   let concursoParticipantes: any[] = [];
   if (concursoAtivo) {
-    const { data: inscricoes } = await admin
-      .from("inscricoes_concurso")
-      .select("created_at, saldo_atual, posicao_atual, profile:profiles!user_id(username, full_name, cpf)")
-      .eq("concurso_id", concursoAtivo.id)
-      .order("created_at", { ascending: false });
-    concursoParticipantes = inscricoes ?? [];
+    const [{ data: inscricoes }, { data: concursoWallets }] = await Promise.all([
+      admin.from("inscricoes_concurso")
+        .select("created_at, user_id, profile:profiles!user_id(username, full_name, cpf)")
+        .eq("concurso_id", concursoAtivo.id)
+        .order("created_at", { ascending: false }),
+      admin.from("concurso_wallets")
+        .select("user_id, balance")
+        .eq("concurso_id", concursoAtivo.id),
+    ]);
+    const balanceMap = new Map((concursoWallets ?? []).map((w: any) => [w.user_id, w.balance]));
+    concursoParticipantes = (inscricoes ?? []).map((i: any) => ({
+      ...i,
+      saldo_atual: balanceMap.get(i.user_id) ?? null,
+    }));
   }
 
   // SEPARAR: Econômico vs Liga vs Concurso (separar em JS após buscar todos os ativos)
@@ -181,7 +189,6 @@ export default async function AdminPage() {
                     <p className="text-xs text-muted-foreground font-mono">{p.profile?.cpf ?? "sem CPF"}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    {p.posicao_atual != null ? <p className="text-xs text-primary font-semibold">#{p.posicao_atual}</p> : null}
                     {p.saldo_atual != null ? <p className="text-xs text-white">{Number(p.saldo_atual).toFixed(2)} ZC$</p> : null}
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {new Date(p.created_at).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
