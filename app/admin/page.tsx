@@ -35,18 +35,26 @@ export default async function AdminPage() {
 
   let concursoParticipantes: any[] = [];
   if (concursoAtivo) {
+    // Em produção a FK inscricoes_concurso.user_id aponta para auth.users (não
+    // profiles), então não dá pra usar embed PostgREST — buscamos profiles à parte.
     const [{ data: inscricoes }, { data: concursoWallets }] = await Promise.all([
       admin.from("inscricoes_concurso")
-        .select("created_at, user_id, profile:profiles!user_id(username, full_name, cpf)")
+        .select("created_at, user_id")
         .eq("concurso_id", concursoAtivo.id)
         .order("created_at", { ascending: false }),
       admin.from("concurso_wallets")
         .select("user_id, balance")
         .eq("concurso_id", concursoAtivo.id),
     ]);
+    const userIds = (inscricoes ?? []).map((i: any) => i.user_id);
+    const { data: profs } = userIds.length
+      ? await admin.from("profiles").select("id, username, full_name, cpf").in("id", userIds)
+      : { data: [] as any[] };
+    const profMap = new Map((profs ?? []).map((p: any) => [p.id, p]));
     const balanceMap = new Map((concursoWallets ?? []).map((w: any) => [w.user_id, w.balance]));
     concursoParticipantes = (inscricoes ?? []).map((i: any) => ({
       ...i,
+      profile: profMap.get(i.user_id) ?? null,
       saldo_atual: balanceMap.get(i.user_id) ?? null,
     }));
   }
