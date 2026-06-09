@@ -93,6 +93,7 @@ export default function LigasSection({ ligas, currentUserId, friends }: Props) {
         <CreateLigaModal
           onClose={() => setShowCreate(false)}
           myPrivateLigas={myPrivateLigas.map((l) => ({ id: l.id, name: l.name }))}
+          friends={friends}
         />
       )}
 

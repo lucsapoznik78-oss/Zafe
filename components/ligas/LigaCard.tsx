@@ -155,6 +155,7 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
           onClose={() => setShowCreateSub(false)}
           parentLigaId={liga.id}
           parentLigaName={liga.name}
+          friends={friends}
         />
       )}
 

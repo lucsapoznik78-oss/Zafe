@@ -2,30 +2,46 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { X, Loader2, Trophy, Globe, Lock } from "lucide-react";
+import { X, Loader2, Trophy, Globe, Lock, Check, Plus, UserPlus } from "lucide-react";
 
 const COLORS = [
   "#86efac", "#60a5fa", "#f472b6", "#fb923c", "#a78bfa", "#34d399", "#fbbf24",
 ];
+
+interface Friend {
+  id: string;
+  username: string;
+  full_name: string;
+}
 
 interface Props {
   onClose: () => void;
   parentLigaId?: string;
   parentLigaName?: string;
   myPrivateLigas?: { id: string; name: string }[];
+  friends?: Friend[];
 }
 
-export default function CreateLigaModal({ onClose, parentLigaId, parentLigaName, myPrivateLigas }: Props) {
+export default function CreateLigaModal({ onClose, parentLigaId, parentLigaName, myPrivateLigas, friends = [] }: Props) {
   const router = useRouter();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [color, setColor] = useState(COLORS[0]);
   const [isPublic, setIsPublic] = useState(false);
   const [selectedParent, setSelectedParent] = useState(parentLigaId ?? "");
+  const [selectedFriends, setSelectedFriends] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const isSubLiga = !!selectedParent;
+
+  function toggleFriend(id: string) {
+    setSelectedFriends((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -43,8 +59,23 @@ export default function CreateLigaModal({ onClose, parentLigaId, parentLigaName,
       }),
     });
     const data = await res.json();
+    if (!res.ok) { setLoading(false); setError(data.error ?? "Erro ao criar grupo"); return; }
+
+    // Convida os amigos selecionados no grupo recém-criado (só grupos privados)
+    const newLigaId = data.liga?.id;
+    if (newLigaId && !isPublic && selectedFriends.size > 0) {
+      await Promise.all(
+        Array.from(selectedFriends).map((fid) =>
+          fetch("/api/ligas/convidar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ liga_id: newLigaId, friend_id: fid }),
+          }),
+        ),
+      );
+    }
+
     setLoading(false);
-    if (!res.ok) { setError(data.error ?? "Erro ao criar grupo"); return; }
     router.refresh();
     onClose();
   }
@@ -153,6 +184,47 @@ export default function CreateLigaModal({ onClose, parentLigaId, parentLigaName,
               className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
             />
           </div>
+
+          {/* Convidar amigos — só grupos privados */}
+          {!isPublic && (
+            <div className="space-y-1.5">
+              <label className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <UserPlus size={12} />
+                Convidar amigos (opcional)
+              </label>
+              {friends.length === 0 ? (
+                <p className="text-[11px] text-muted-foreground">
+                  Você ainda não tem amigos para convidar. Crie o grupo e convide depois pelo botão “Convidar” no card.
+                </p>
+              ) : (
+                <>
+                  <div className="space-y-1 max-h-40 overflow-y-auto">
+                    {friends.map((f) => {
+                      const sel = selectedFriends.has(f.id);
+                      return (
+                        <button
+                          key={f.id}
+                          type="button"
+                          onClick={() => toggleFriend(f.id)}
+                          className={`w-full flex items-center justify-between px-3 py-2 rounded-lg border text-sm transition-colors ${
+                            sel
+                              ? "border-primary bg-primary/10 text-white"
+                              : "border-border text-muted-foreground hover:text-white"
+                          }`}
+                        >
+                          <span className="truncate text-left">{f.full_name}</span>
+                          {sel ? <Check size={14} className="text-primary shrink-0" /> : <Plus size={14} className="shrink-0" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {selectedFriends.size > 0 && (
+                    <p className="text-[11px] text-primary">{selectedFriends.size} amigo(s) serão convidados</p>
+                  )}
+                </>
+              )}
+            </div>
+          )}
 
           <div className="space-y-1.5">
             <label className="text-xs text-muted-foreground">Cor do grupo</label>
