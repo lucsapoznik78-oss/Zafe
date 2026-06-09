@@ -24,6 +24,25 @@ export default async function AdminPage() {
   const profileIdSet = new Set((profileIds ?? []).map((p: any) => p.id));
   const orphanedUsers = authUsers.filter((u) => !profileIdSet.has(u.id));
 
+  // Concurso ativo + participantes inscritos
+  const { data: concursoAtivo } = await admin
+    .from("concursos")
+    .select("id, titulo, periodo_inicio, periodo_fim")
+    .eq("status", "ativo")
+    .order("periodo_inicio", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  let concursoParticipantes: any[] = [];
+  if (concursoAtivo) {
+    const { data: inscricoes } = await admin
+      .from("inscricoes_concurso")
+      .select("created_at, saldo_atual, posicao_atual, profile:profiles!user_id(username, full_name, cpf)")
+      .eq("concurso_id", concursoAtivo.id)
+      .order("created_at", { ascending: false });
+    concursoParticipantes = inscricoes ?? [];
+  }
+
   // SEPARAR: Econômico vs Liga vs Concurso (separar em JS após buscar todos os ativos)
   const [
     { data: pending },
@@ -129,6 +148,50 @@ export default async function AdminPage() {
         <h2 className="text-lg font-bold text-white mb-1">Concurso (Eventos com Inscrição)</h2>
         <p className="text-xs text-muted-foreground mb-3">Eventos que fazem parte do concurso ativo (min_bet = 20 Z$)</p>
         <AdminActiveTopics topics={concursoTopics ?? []} showCategory showConcurso />
+      </div>
+
+      {/* Participantes do Concurso */}
+      <div>
+        <h2 className="text-lg font-bold text-white mb-1">Participantes do Concurso</h2>
+        <p className="text-xs text-muted-foreground mb-3">
+          {concursoAtivo
+            ? `Inscritos no concurso ativo "${concursoAtivo.titulo}"`
+            : "Nenhum concurso ativo no momento"}
+        </p>
+        {!concursoAtivo ? null : concursoParticipantes.length === 0 ? (
+          <div className="bg-card border border-border rounded-xl p-4 text-sm text-muted-foreground">
+            Nenhum usuário inscrito neste concurso ainda.
+          </div>
+        ) : (
+          <div className="bg-card border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 bg-primary/10 border-b border-border flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-primary inline-block" />
+              <span className="text-sm font-semibold text-primary">
+                {concursoParticipantes.length} participante(s)
+              </span>
+            </div>
+            <div className="divide-y divide-border">
+              {concursoParticipantes.map((p: any, i: number) => (
+                <div key={i} className="px-4 py-3 flex items-center justify-between gap-4 text-sm">
+                  <div className="min-w-0">
+                    <p className="text-white font-medium truncate">
+                      {p.profile?.full_name ?? "—"}
+                      {p.profile?.username ? <span className="text-muted-foreground font-normal"> @{p.profile.username}</span> : null}
+                    </p>
+                    <p className="text-xs text-muted-foreground font-mono">{p.profile?.cpf ?? "sem CPF"}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    {p.posicao_atual != null ? <p className="text-xs text-primary font-semibold">#{p.posicao_atual}</p> : null}
+                    {p.saldo_atual != null ? <p className="text-xs text-white">{Number(p.saldo_atual).toFixed(2)} ZC$</p> : null}
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {new Date(p.created_at).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Saúde do Sistema */}
