@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Users, User, Trophy, TrendingUp, FlaskConical } from "lucide-react";
+import { Home, Users, User, Trophy, TrendingUp, FlaskConical, Flag } from "lucide-react";
 
 const navItems = [
   { href: "/liga",        label: "Liga",       icon: Home },
   { href: "/economico",  label: "Econômico",  icon: TrendingUp },
+  { href: "/copa",       label: "Copa",       icon: Flag },
   { href: "/comunidade", label: "Comunidade", icon: FlaskConical },
   { href: "/ranking",    label: "Ranking",    icon: Trophy },
   { href: "/perfil",     label: "Perfil",     icon: User },

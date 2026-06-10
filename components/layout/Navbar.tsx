@@ -77,6 +77,7 @@ export default function Navbar() {
           {[
             { href: "/liga", label: "Liga" },
             { href: "/economico", label: "Econômico" },
+            { href: "/copa", label: "Copa" },
             { href: "/ranking", label: "Ranking" },
             { href: "/amigos", label: "Amigos" },
             { href: "/privadas", label: "Privadas" },
