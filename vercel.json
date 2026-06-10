@@ -14,6 +14,7 @@
     { "path": "/api/cron/comunidade-fechar",        "schedule": "0 3 * * *" },
     { "path": "/api/cron/comunidade-abandonados",   "schedule": "0 7 * * *" },
     { "path": "/api/cron/comunidade-contestacoes",  "schedule": "0 2 * * *" },
-    { "path": "/api/cron/comunidade-snapshots",     "schedule": "0 1 * * *" }
+    { "path": "/api/cron/comunidade-snapshots",     "schedule": "0 1 * * *" },
+    { "path": "/api/cron/copa-resolver",            "schedule": "30 8 * * *" }
   ]
 }

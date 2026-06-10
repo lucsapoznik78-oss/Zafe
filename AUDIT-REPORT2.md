@@ -1,10 +1,57 @@
-# Zafe Audit Report 2 — Re-audited 2026-06-03
+# Zafe Audit Report 2 — Re-audited 2026-06-03 · **+ code sweep 2026-06-10 (`N1–N24`, see first section)**
 
 Original supplementary audit: 2026-05-31 (14 agents). **Re-run 2026-06-03 with all 25 agents** in `agents/` (incl. new `zafe-crosscheck` and `zafe-validity`). Each agent cross-checked its domain's original items against the **current code** (post commits `c5846d1` "resolve all critical" and `842f246` "resolve all HIGH") and added new findings.
 
 Legend: ✅ RESOLVED · 🟡 PARTIAL · ⛔ STILL OPEN · `[NEW]` = found in this re-audit.
 
 > **CRITICAL fix pass — 2026-06-03:** All CRITICAL items are now resolved **except #7** (key rotation — user declined this session). Done: **C1–C8** + originals **#4, #5, #6**. See each item below for the fix. Two follow-ups required by you: **(1)** apply migrations `005`, `020`, `021` to the live DB (all additive/idempotent); **(2)** rotate the leaked keys for #7. Residual schema gap: the `desafios` parent table (flagged in `021`).
+
+---
+
+## 🆕 RE-AUDIT 2026-06-10 — 10 agents, code-only sweep (NEW findings `N1–N24`)
+
+> Agents run: qa, security, db, compliance, wallet, liga(+grupos), economico(+odds), privadas, concurso, api+resolver. Each cross-checked against this report; only NEW items listed. **Confirmed still open, no regression:** H3 (executeTrade non-atomic), H4 (SELL over-sell), H1 residuals, #47, #85, payload-vs-data drift, validacaoAI fail-open, salvarResolucao swallow. **Confirmed fixed & holding:** C1–C8, H2/H6/H8/H9, #23 (recusar now validates), 18+ gate, admin-concurso queries (5084925/2d0e182), multi-outcome chart (be0a2c1).
+
+### 🔴 CRITICAL
+- **N1 — `bet_status` enum missing `'exited'`.** `lib/order-matching.ts:228` updates bets to `status='exited'`, but the enum (`001_initial.sql`) only has `pending/matched/partial/won/lost/refunded`; migrations 020/023 added `bet_exited` to `transaction_type` only. Every trade that fully consumes a seller's position throws a constraint violation → blocks the secondary market. Fix: `ALTER TYPE bet_status ADD VALUE IF NOT EXISTS 'exited';` (also confirmed by zafe-liga). (db, economico.)
+- **N2 — RLS absent on 11 tables.** `005_concurso_core.sql` (`concursos`-adjacent: `concurso_wallets`, `concurso_bets`, `inscricoes_concurso`) and `021_missing_tables.sql` (`community_events`, `community_bets`, `community_contestations`, `community_snapshots`, `creator_reputation`, `push_subscriptions`, `referrals`, `desafio_bets`) never run `ENABLE ROW LEVEL SECURITY` nor create policies. Currently mitigated because writes go through `createAdminClient()` server-side, but any anon/user-client query reaches these tables unrestricted (wallet balances, bank-adjacent contest data, push endpoints). Fix: enable RLS + owner-scoped policies in a new migration. (db, security, concurso.)
+
+### ⛔🟠 HIGH
+- **N3 — `notification_type` enum missing `'trade_executed'`.** `lib/order-matching.ts:162,169` inserts notifications with that type; enum (001 + additions in 020) doesn't have it. The `Promise.allSettled` wrapper masks the error → trade notifications silently never insert. Fix: `ADD VALUE IF NOT EXISTS 'trade_executed'`. (db.)
+- **N4 — Duplicate migration numbers `020_*` and `021_*` (×2 each).** `020_fix_enums_and_notifications.sql` vs `020_eventos_simples_copa_junho_2026.sql`; `021_missing_tables.sql` vs `021_remove_duplicatas_novos_eventos.sql`. Alphabetical apply order is ambiguous (`020_eventos…` sorts before `020_fix…`) — a fresh-DB replay can seed events before the enum fixes exist. Fix: renumber the seed files (e.g. `020b`/`021b`) — applied manually, so renaming is safe. (db, migration.)
+- **N5 — `concurso_wallets.balance` has no `CHECK (balance >= 0)`.** `005_concurso_core.sql` — unlike `wallets` (001). A CAS bug or manual write can drive ZC$ negative undetected, breaking conservation audits. Fix: add the constraint. (db, wallet.)
+- **N6 — `inscrever`/`reentrar` non-atomic + CPF TOCTOU.** `app/api/concurso/inscrever/route.ts:92-108` and `reentrar/route.ts:65-83` insert `inscricoes_concurso` then `concurso_wallets` as independent awaits — mid-failure leaves enrollment without wallet (or orphan wallet). CPF/username uniqueness check (inscrever:45-56) races with the later update. Fix: single Postgres RPC doing both inserts atomically. (qa, concurso.)
+- **N7 — `saldo_inicial` not written at inscription.** Both inserts above omit `saldo_inicial`, so the column keeps its DEFAULT 1000 regardless of the contest's actual `concurso.saldo_inicial` → ROI in `v_concurso_ranking` is wrong for any contest with saldo ≠ 1000. Fix: pass `saldo_inicial: concurso.saldo_inicial`. (concurso.)
+- **N8 — `amigos/convidar-aposta` missing amount validation.** `route.ts:11-16` — H8 fixed `apostar`/`palpitar`/community but NOT this route: `amount` of `-100`/`NaN` passes (`wallet.balance < amount` is false for both) and reaches `debitBalance` on accept. Fix: same `Number.isFinite && > 0` guard as H8. (security, social.)
+- **N9 — Privadas double-accept race.** `apostas-privadas/[id]/aceitar/route.ts:17-65` — status checked as `"invited"` on read, but the final UPDATE has no `.eq("status","invited")` guard → two concurrent accepts both pass, double-debit + duplicate bet on one participant row. Fix: guarded update with checked `.select()` row count (same pattern as C7). (privadas, wallet.)
+- **N10 — Privadas vote lands after round closes.** `apostas-privadas/[id]/votar-resultado/route.ts:91-95` — vote upsert doesn't re-check that `private_phase` is still voting / deadline not passed, so a vote racing `fecharVotacao` is counted after tally, corrupting the 67% supermajority. Fix: phase+deadline condition inside the UPDATE's WHERE (or Postgres function). (privadas.)
+- **N11 — Judge can resolve simple-model bolão prematurely.** `votar-resultado/route.ts:36` — condition `status !== "active" && (!closes_at || closes_at > now)` lets a judge resolve a `pending` topic with future `closes_at` before participants accept → `pagarVencedores` on an unfunded pool. Fix: require `status === "active"` AND `closes_at <= now`. (privadas, resolver.)
+- **N12 — Forbidden vocabulary "sacar"/"saque" in user-facing copy.** `components/kyc/CpfForm.tsx:50` ("Para sacar, precisamos verificar seu CPF…") and `components/landing/PorQueConfiar.tsx:17` ("Sem saque pendente. Sem taxa de retirada."). "Saque" is on the never-say list and implies Z$→R$ convertibility, contradicting the golden monetary rule in front of a regulator. Fix: "Para receber prêmios…" / "Prêmios pagos automaticamente, sem taxas…". (compliance.)
+
+### ⛔🟡 MEDIUM
+- **N13 — `min_bet` accepts negatives.** `app/api/criar/route.ts:54` — `parseFloat(min_bet) || 1` lets `-50` through (only NaN falls back). Fix: reject non-finite or ≤ 0. (security, api.)
+- **N14 — `ligas/aceitar` no pending-status guard.** `route.ts:11-15` updates to `active` without `.eq("status","pending")` — accept is replayable; harmless today but fragile if side-effects are added. (liga.)
+- **N15 — Over-permissive `liga_members` INSERT policy still active.** `003_ligas.sql:55` allows any authed user to insert any row (`WITH CHECK auth.uid() IS NOT NULL`); 018's tighter policies OR with it, so it silently carries the whole invite flow. Dropping it without a creator-invite policy breaks `convidar`. Fix: add explicit `is_liga_creator` invite policy, then drop the 003 one. (liga, db.)
+- **N16 — Missing UUID validation on invite ids.** `amigos/convidar-aposta` (`invitee_id`), `ligas/convidar` (`friend_id`), `apostas-privadas/[id]/convidar` (`user_id`) — none validate UUID format/existence before insert (contrast `amigos/bloquear` post-H6). FK errors can leak schema details. Fix: UUID regex + profile existence check. (api, security.)
+- **N17 — Economia oracle number parsing assumes pt-BR.** `lib/oracles/economia.ts:21,152,227` — `.replace(".","").replace(",",".")` mangles English-format targets ("1.5" → 15) extracted from titles → wrong threshold comparison → wrong auto-resolution. Fix: detect separator format before normalizing. (economico, resolver.)
+- **N18 — `reentrar` returns wrong balance.** `app/api/concurso/reentrar/route.ts:62` returns `concurso.saldo_inicial` for an existing enrollment instead of the user's actual `concurso_wallets.balance`. UI shows stale/incorrect ZC$. (qa, concurso.)
+- **N19 — `concurso_wallets` lacks `version` column.** H12 (migration 023) covered only `wallets`; the ZC$ CAS relies on `.eq("balance", current)` alone — sound, but inconsistent with the main-wallet design (ABA edge). Fix: mirror 023 for `concurso_wallets`. (db, wallet.)
+- **N20 — Privadas friendship/block check also absent in `apostas-privadas` convidar/aceitar** (extends the known amigos-route item): anyone can be invited to a "private bet between friends", including users who blocked the inviter. (privadas, social.)
+- **N21 — Metadata brands the product "Fantasy Game".** `app/layout.tsx:12,15,28-36,75` — defensible (Cartola precedent) but inconsistent with preferred "liga de previsões / competição de habilidade"; user-facing via titles/OG. Owner call. (compliance.)
+
+### ⛔🔵 LOW
+- **N22 — `ligas/convidar` re-invite after decline creates a second `liga_members` row** (declined + pending coexist; UNIQUE catch only stops exact dups). Fix: upsert / clean declined rows first. (liga.)
+- **N23 — Privadas refusal/timeout audit trail weak.** `recusar` deletes the participant row with no record; judge-timeout refunds don't record a reason ("juízes não votaram" vs "sem consenso"). UX/auditability only. (privadas.)
+- **N24 — Concurso bookkeeping niggles.** `atualizar-ranking-concurso/route.ts:64-71` maintains denormalized `saldo_atual`/`posicao_atual` nothing reads; `pagarBonusPioneiroConcurso` (`lib/concurso-payout.ts:29`) intentionally credits the **main Z$** wallet — correct but undocumented, add a comment. (concurso.)
+
+### Recommended order
+1. **N1 + N3** — one migration adding both enum values (order book is currently broken).
+2. **N2 + N5 + N19** — RLS + constraints migration for concurso/community tables.
+3. **N6 + N7 + N18** — atomic inscription RPC, correct `saldo_inicial`/balance.
+4. **N8 + N9 + N10 + N11** — money-path validation/races (privadas + amigos).
+5. **N12** — copy fix (two strings, five minutes, real legal exposure).
+6. **N4** — renumber migrations before the next fresh-DB replay.
+7. Rest as convenient.
 
 ---
 
