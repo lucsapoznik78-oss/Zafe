@@ -4,7 +4,7 @@ import { z } from "zod";
 // Zafe Copa — tipos, constantes e schemas de validação
 // ============================================================
 
-export const COPA_BUY_IN = 400;
+export const COPA_BUY_IN = 650;
 export const POINTS_OUTCOME = 10; // vencedor (grupos) / classificado (mata-mata)
 export const POINTS_EXACT = 10; // placar exato
 
