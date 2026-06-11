@@ -60,6 +60,9 @@ export default async function CommunityDetailPage({ params }: PageProps) {
   const isClosed = event.status !== "active" || new Date(event.closes_at) < new Date();
   const isResolved = event.status === "community_resolved";
   const isAwaitingResolution = event.status === "awaiting_resolution";
+  // Criador pode resolver assim que o prazo encerra, mesmo antes do cron mover o status
+  const canResolve = isCreator &&
+    (isAwaitingResolution || (event.status === "active" && new Date(event.closes_at) < new Date()));
   const creatorScore = rep?.score ?? 50;
 
   // Contest window: 48h after resolution
@@ -231,9 +234,7 @@ export default async function CommunityDetailPage({ params }: PageProps) {
 
         {/* Sidebar */}
         <div className="space-y-4">
-          {isAwaitingResolution && isCreator && (
-            <ResolveForm eventId={id} />
-          )}
+          {canResolve && <ResolveForm eventId={id} />}
 
           {event.status === "active" && !isClosed && (
             <CommunityBetForm
@@ -245,7 +246,7 @@ export default async function CommunityDetailPage({ params }: PageProps) {
             />
           )}
 
-          {isClosed && !isResolved && !isAwaitingResolution && (
+          {isClosed && !isResolved && !isAwaitingResolution && !canResolve && (
             <div className="bg-card border border-border rounded-xl p-4 text-center text-muted-foreground text-sm">
               Este evento não aceita mais palpites
             </div>

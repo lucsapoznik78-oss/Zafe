@@ -25,7 +25,9 @@ export async function POST(request: Request, { params }: { params: { id: string 
   if (event.creator_id !== user.id) {
     return NextResponse.json({ error: "Apenas o criador pode resolver este evento" }, { status: 403 });
   }
-  if (event.status !== "awaiting_resolution") {
+  // Permite resolver eventos "active" cujo prazo já passou (cron pode não ter rodado ainda)
+  const isExpiredActive = event.status === "active" && new Date(event.closes_at) < new Date();
+  if (event.status !== "awaiting_resolution" && !isExpiredActive) {
     return NextResponse.json({ error: "Este evento não está aguardando resolução" }, { status: 400 });
   }
 

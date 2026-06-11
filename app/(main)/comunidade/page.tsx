@@ -18,7 +18,27 @@ interface PageProps {
   searchParams: Promise<{ tab?: string; category?: string; search?: string; min_score?: string }>;
 }
 
-async function CommunityList({ tab, category, search, minScore }: { tab: string; category: string; search: string; minScore: number }) {
+async function enrichEvents(admin: ReturnType<typeof createAdminClient>, events: any[]) {
+  if (events.length === 0) return [];
+  const eventIds = events.map((e) => e.id);
+  const creatorIds = [...new Set(events.map((e) => e.creator_id))];
+
+  const [{ data: statsData }, { data: repData }] = await Promise.all([
+    admin.from("v_community_event_stats").select("*").in("event_id", eventIds),
+    admin.from("creator_reputation").select("user_id, score").in("user_id", creatorIds),
+  ]);
+
+  const statsMap = new Map((statsData ?? []).map((s: any) => [s.event_id, s]));
+  const repMap = new Map((repData ?? []).map((r: any) => [r.user_id, r]));
+
+  return events.map((e) => ({
+    ...e,
+    stats: statsMap.get(e.id) ?? null,
+    creator_reputation: repMap.get(e.creator_id) ?? { score: 50 },
+  }));
+}
+
+async function CommunityList({ tab, category, search, minScore, userId }: { tab: string; category: string; search: string; minScore: number; userId: string | null }) {
   const admin = createAdminClient();
   const isEncerrados = tab === "encerrados";
 
@@ -31,6 +51,8 @@ async function CommunityList({ tab, category, search, minScore }: { tab: string;
     query = query.in("status", ["community_resolved", "auto_cancelled", "mod_cancelled"]).gte("resolved_at", oneWeekAgo);
   } else {
     query = query.eq("status", "active").gte("closes_at", new Date().toISOString());
+    // Eventos criados por você ficam na aba "Meus eventos"
+    if (userId) query = query.neq("creator_id", userId);
   }
 
   if (category) query = query.eq("category", category);
@@ -52,23 +74,7 @@ async function CommunityList({ tab, category, search, minScore }: { tab: string;
     );
   }
 
-  // Fetch stats and reputations
-  const eventIds = events.map((e) => e.id);
-  const creatorIds = [...new Set(events.map((e) => e.creator_id))];
-
-  const [{ data: statsData }, { data: repData }] = await Promise.all([
-    admin.from("v_community_event_stats").select("*").in("event_id", eventIds),
-    admin.from("creator_reputation").select("user_id, score").in("user_id", creatorIds),
-  ]);
-
-  const statsMap = new Map((statsData ?? []).map((s: any) => [s.event_id, s]));
-  const repMap = new Map((repData ?? []).map((r: any) => [r.user_id, r]));
-
-  let enriched = events.map((e) => ({
-    ...e,
-    stats: statsMap.get(e.id) ?? null,
-    creator_reputation: repMap.get(e.creator_id) ?? { score: 50 },
-  }));
+  let enriched = await enrichEvents(admin, events);
 
   // Filter by min score
   if (minScore > 0) {
@@ -87,15 +93,79 @@ async function CommunityList({ tab, category, search, minScore }: { tab: string;
   );
 }
 
+async function MyEventsList({ userId }: { userId: string }) {
+  const admin = createAdminClient();
+
+  const { data: events } = await admin
+    .from("community_events")
+    .select("*, creator:profiles!creator_id(id, username, full_name)")
+    .eq("creator_id", userId)
+    .neq("status", "creator_cancelled")
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  if (!events || events.length === 0) {
+    return (
+      <div className="text-center py-20 text-muted-foreground">
+        <p className="text-lg font-medium text-white mb-1">Você ainda não criou nenhum evento</p>
+        <p className="text-sm">Crie um evento e a galera palpita</p>
+      </div>
+    );
+  }
+
+  const enriched = await enrichEvents(admin, events);
+  const now = Date.now();
+
+  const needsResolution = enriched.filter(
+    (e) =>
+      e.status === "awaiting_resolution" ||
+      (e.status === "active" && new Date(e.closes_at).getTime() < now)
+  );
+  const open = enriched.filter(
+    (e) => e.status === "active" && new Date(e.closes_at).getTime() >= now
+  );
+  const finished = enriched.filter(
+    (e) => !needsResolution.includes(e) && !open.includes(e)
+  );
+
+  const Section = ({ title, items, resolveCta }: { title: string; items: any[]; resolveCta?: boolean }) =>
+    items.length === 0 ? null : (
+      <div className="space-y-3">
+        <h2 className={`text-sm font-semibold ${resolveCta ? "text-yellow-400" : "text-white"}`}>
+          {title} ({items.length})
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {items.map((event) => (
+            <CommunityEventCard key={event.id} event={event as any} showResolveCta={resolveCta} />
+          ))}
+        </div>
+      </div>
+    );
+
+  return (
+    <div className="space-y-8">
+      <Section title="Aguardando sua resolução" items={needsResolution} resolveCta />
+      <Section title="Abertos" items={open} />
+      <Section title="Encerrados" items={finished} />
+    </div>
+  );
+}
+
 export default async function ComunidadePage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const tab = params.tab ?? "abertos";
   const category = params.category ?? "";
   const search = params.search ?? "";
   const minScore = parseInt(params.min_score ?? "0") || 0;
 
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  let tab = params.tab ?? "abertos";
+  if (tab === "meus" && !user) tab = "abertos";
+
   const tabs = [
     { key: "abertos", label: "Abertos" },
+    ...(user ? [{ key: "meus", label: "Meus eventos" }] : []),
     { key: "encerrados", label: "Encerrados" },
   ];
 
@@ -148,6 +218,7 @@ export default async function ComunidadePage({ searchParams }: PageProps) {
       </div>
 
       {/* Score filters */}
+      {tab !== "meus" && (
       <div className="flex gap-2 flex-wrap">
         {scoreFilters.map((f) => (
           <Link
@@ -163,6 +234,7 @@ export default async function ComunidadePage({ searchParams }: PageProps) {
           </Link>
         ))}
       </div>
+      )}
 
       <Suspense
         fallback={
@@ -173,7 +245,11 @@ export default async function ComunidadePage({ searchParams }: PageProps) {
           </div>
         }
       >
-        <CommunityList tab={tab} category={category} search={search} minScore={minScore} />
+        {tab === "meus" && user ? (
+          <MyEventsList userId={user.id} />
+        ) : (
+          <CommunityList tab={tab} category={category} search={search} minScore={minScore} userId={user?.id ?? null} />
+        )}
       </Suspense>
 
       <LegalFooter />

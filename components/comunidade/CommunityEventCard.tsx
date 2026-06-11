@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { timeUntil } from "@/lib/utils";
-import { Clock, Star } from "lucide-react";
+import { Clock, Star, CheckCircle } from "lucide-react";
 import CategoryBadge from "@/components/topicos/CategoryBadge";
 import ProbabilityBar from "@/components/topicos/ProbabilityBar";
 
@@ -27,16 +27,22 @@ const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
   under_review:          { label: "Em revisão", cls: "bg-purple-500/15 text-purple-300" },
   auto_cancelled:        { label: "Cancelado",  cls: "bg-nao/15 text-nao" },
   mod_cancelled:         { label: "Removido",   cls: "bg-nao/15 text-nao" },
+  creator_cancelled:     { label: "Apagado",    cls: "bg-nao/15 text-nao" },
+  reversed:              { label: "Revertido",  cls: "bg-orange-500/15 text-orange-300" },
 };
 
-export default function CommunityEventCard({ event }: { event: CommunityEvent }) {
+export default function CommunityEventCard({ event, showResolveCta }: { event: CommunityEvent; showResolveCta?: boolean }) {
   const volumeSim = event.stats?.volume_sim ?? 0;
   const volumeNao = event.stats?.volume_nao ?? 0;
   const totalVolume = event.stats?.total_volume ?? 0;
   const hasBothSides = volumeSim > 0 && volumeNao > 0;
   const probSim = hasBothSides ? (event.stats?.prob_sim ?? 0.5) : 0.5;
 
-  const badge = STATUS_BADGE[event.status] ?? STATUS_BADGE.active;
+  // Evento ativo cujo prazo já passou = aguardando resolução (cron pode não ter rodado ainda)
+  const isExpiredActive = event.status === "active" && new Date(event.closes_at) < new Date();
+  const badge = isExpiredActive
+    ? STATUS_BADGE.awaiting_resolution
+    : STATUS_BADGE[event.status] ?? STATUS_BADGE.active;
   const creatorScore = (event as any).creator_reputation?.score ?? 50;
 
   const fmtZ = (v: number) => "Z$ " + new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 }).format(v);
@@ -54,7 +60,7 @@ export default function CommunityEventCard({ event }: { event: CommunityEvent })
               {badge.label}
             </span>
           </div>
-          {event.status === "active" && (
+          {event.status === "active" && !isExpiredActive && (
             <div className="flex items-center gap-1 text-muted-foreground text-xs shrink-0">
               <Clock size={11} />
               <span>{timeUntil(event.closes_at)}</span>
@@ -95,6 +101,13 @@ export default function CommunityEventCard({ event }: { event: CommunityEvent })
               <span>{event.stats?.bet_count ?? 0} palpites</span>
             </div>
           </>
+        )}
+
+        {showResolveCta && (
+          <div className="mt-3 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-yellow-500/15 text-yellow-400 text-xs font-bold">
+            <CheckCircle size={12} />
+            Resolver agora
+          </div>
         )}
       </div>
     </Link>
