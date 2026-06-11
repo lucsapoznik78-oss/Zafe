@@ -25,6 +25,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: name,
     description: `Veja o histórico e desempenho de ${name} nos liga de previsões do Zafe.`,
+    alternates: { canonical: `/u/${profile.username}` },
     openGraph: {
       title: `${name} — Zafe`,
       description: `Veja o histórico e desempenho de ${name} nos liga de previsões do Zafe.`,

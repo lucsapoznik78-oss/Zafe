@@ -24,6 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return {
     title: `${event.title} — Comunidade Zafe`,
     description: event.description?.slice(0, 160),
+    alternates: { canonical: `/comunidade/${id}` },
   };
 }
 

@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 export const metadata: Metadata = {
   title: "Ranking",
   description: "Veja os melhores previsores do Zafe. Ranking de acertos, lucros e performance na liga de previsões.",
+  alternates: { canonical: "/ranking" },
   openGraph: {
     title: "Ranking — Zafe",
     description: "Veja os melhores previsores do Zafe. Ranking de acertos, lucros e performance.",

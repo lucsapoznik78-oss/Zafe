@@ -15,6 +15,7 @@ const EVENT_LIST_LIMIT = 200;
 export const metadata: Metadata = {
   title: "Liga — Zafe",
   description: "Faça palpites em eventos e compita com outros usuários na liga de previsões do Zafe.",
+  alternates: { canonical: "/liga" },
   openGraph: {
     title: "Liga — Zafe",
     description: "Faça palpites em eventos e compita com outros usuários na liga de previsões do Zafe.",

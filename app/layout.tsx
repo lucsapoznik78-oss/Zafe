@@ -19,7 +19,6 @@ export const metadata: Metadata = {
   publisher: "Zafe",
   verification: { google: "ea75690350d835b5" },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
-  alternates: { canonical: APP_URL },
   openGraph: {
     type: "website",
     url: APP_URL,

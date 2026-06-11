@@ -13,6 +13,7 @@ const EVENT_LIST_LIMIT = 200;
 export const metadata: Metadata = {
   title: "Econômico — Zafe",
   description: "Palpites em indicadores econômicos: IPCA, Selic, PIB e outros eventos do mercado financeiro.",
+  alternates: { canonical: "/economico" },
   openGraph: {
     title: "Econômico — Zafe",
     description: "Palpites em indicadores econômicos: IPCA, Selic, PIB e outros eventos do mercado financeiro.",

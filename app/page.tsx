@@ -19,6 +19,7 @@ export const metadata: Metadata = {
   title: "Zafe — A liga das previsões",
   description:
     "Compete prevendo o que vai acontecer. Receba 1.000 Z$ grátis ao criar conta e dispute o prêmio mensal com os melhores previsores do Brasil.",
+  alternates: { canonical: "/" },
   openGraph: {
     title: "Zafe — A liga das previsões",
     description:

@@ -11,6 +11,7 @@ import { Plus, AlertTriangle } from "lucide-react";
 export const metadata: Metadata = {
   title: "Comunidade — Zafe",
   description: "Eventos criados e resolvidos pela galera. Pura diversão com Z$ virtual.",
+  alternates: { canonical: "/comunidade" },
 };
 
 interface PageProps {

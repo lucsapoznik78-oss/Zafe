@@ -20,6 +20,7 @@ const EVENT_LIST_LIMIT = 200;
 export const metadata: Metadata = {
   title: "Concurso — Zafe Liga",
   description: "Compita com palpites virtuais (ZC$) e ganhe prêmios reais em dinheiro.",
+  alternates: { canonical: "/concurso" },
 };
 
 interface PageProps {

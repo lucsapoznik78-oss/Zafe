@@ -22,6 +22,7 @@ import LegalFooter from "@/components/layout/LegalFooter";
 export const metadata: Metadata = {
   title: "Zafe Copa 2026",
   description: "O bolão da Copa do Mundo 2026 da Zafe: palpites, ranking e premiação em Z$.",
+  alternates: { canonical: "/copa" },
 };
 
 interface PageProps {
