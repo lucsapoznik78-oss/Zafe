@@ -31,7 +31,7 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  const publicRoutes = ["/login", "/auth/callback", "/auth/confirm", "/historico", "/termos", "/api/cron", "/api/push", "/api/_migrate", "/r/", "/sitemap.xml", "/robots.txt", "/google", "/liga", "/ranking", "/u/", "/concurso", "/economico", "/comunidade", "/banido"];
+  const publicRoutes = ["/login", "/auth/callback", "/auth/confirm", "/historico", "/termos", "/api/cron", "/api/push", "/api/run-migration", "/r/", "/sitemap.xml", "/robots.txt", "/google", "/liga", "/ranking", "/u/", "/concurso", "/economico", "/comunidade", "/banido"];
   const isPublicRoute = pathname === "/" || publicRoutes.some((r) => pathname.startsWith(r));
 
   // Email não confirmado (signups por senha) conta como não autenticado para
