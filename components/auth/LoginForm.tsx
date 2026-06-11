@@ -178,7 +178,7 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
       const formatted = phoneNumber.startsWith("+") ? phoneNumber : `+55${phoneNumber}`;
       verifyResult = await supabase.auth.verifyOtp({ phone: formatted, token: otp, type: "sms" });
     } else {
-      verifyResult = await supabase.auth.verifyOtp({ email, token: otp, type: "magiclink" });
+      verifyResult = await supabase.auth.verifyOtp({ email, token: otp, type: "email" });
     }
 
     if (verifyResult.error) {
