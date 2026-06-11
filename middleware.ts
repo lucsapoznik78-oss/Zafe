@@ -31,7 +31,7 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  const publicRoutes = ["/login", "/auth/callback", "/auth/confirm", "/historico", "/termos", "/api/cron", "/api/push", "/r/", "/sitemap.xml", "/robots.txt", "/google", "/liga", "/ranking", "/u/", "/concurso", "/economico", "/comunidade"];
+  const publicRoutes = ["/login", "/auth/callback", "/auth/confirm", "/historico", "/termos", "/api/cron", "/api/push", "/r/", "/sitemap.xml", "/robots.txt", "/google", "/liga", "/ranking", "/u/", "/concurso", "/economico", "/comunidade", "/banido"];
   const isPublicRoute = pathname === "/" || publicRoutes.some((r) => pathname.startsWith(r));
 
   // Email não confirmado (signups por senha) conta como não autenticado para
@@ -47,14 +47,27 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/liga", request.url));
   }
 
-  if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
+  // Rotas protegidas: uma única leitura do perfil cobre o gate de admin e o
+  // bloqueio de contas banidas (audit #21). Rotas públicas (somente leitura)
+  // ficam fora para não custar uma query por navegação.
+  if (authed && !isPublicRoute) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("is_admin")
+      .select("is_admin, banned")
       .eq("id", user?.id)
       .single();
 
-    if (!profile?.is_admin) {
+    if (profile?.banned) {
+      if (pathname.startsWith("/api")) {
+        return NextResponse.json({ error: "Conta suspensa" }, { status: 403 });
+      }
+      return NextResponse.redirect(new URL("/banido", request.url));
+    }
+
+    if (
+      (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) &&
+      !profile?.is_admin
+    ) {
       return NextResponse.redirect(new URL("/liga", request.url));
     }
   }

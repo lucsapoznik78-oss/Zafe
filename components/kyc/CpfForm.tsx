@@ -47,7 +47,7 @@ export default function CpfForm({ onSuccess }: Props) {
       <div className="flex items-start gap-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
         <ShieldCheck size={16} className="text-yellow-400 mt-0.5 shrink-0" />
         <p className="text-xs text-yellow-300">
-          Para sacar, precisamos verificar seu CPF. Seus dados são protegidos e usados apenas para conformidade regulatória.
+          Para receber prêmios, precisamos verificar seu CPF. Seus dados são protegidos e usados apenas para conformidade regulatória.
         </p>
       </div>
 

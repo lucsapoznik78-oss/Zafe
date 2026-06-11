@@ -21,15 +21,25 @@ const MAX_ATTEMPTS = 3;
 
 const ORACLE_SYSTEM = `Você é o oracle do site brasileiro de prediction markets Zafe.
 Determina o resultado de eventos usando busca na web e responde com um array JSON.
-Cada item: {"i":<número do evento>,"resultado":"SIM"|"NAO"|"INCERTO"}.
+Cada item: {"id":"<código do evento entre colchetes>","resultado":"SIM"|"NAO"|"INCERTO"}.
+Copie o código EXATAMENTE como aparece entre colchetes — nunca renumere.
 Prefira SIM ou NAO a INCERTO sempre que houver qualquer evidência.`;
 
 type TopicRow = { id: string; title: string; category: string; closes_at: string; status: string; oracle_retry_count: number | null; concurso_id: string | null };
-type Verdict = { i: number; resultado: "SIM" | "NAO" | "INCERTO" };
+// Vereditos keyed pelo código ecoado (audit H13): mapeamento posicional ("i")
+// não detectava um modelo que renumerasse a lista. Aceita "i" só como fallback.
+type Verdict = { id?: string; i?: number; resultado: "SIM" | "NAO" | "INCERTO" };
+
+function isVerdict(o: any): o is Verdict {
+  return (
+    (typeof o?.id === "string" || typeof o?.i === "number") &&
+    ["SIM", "NAO", "INCERTO"].includes(o?.resultado)
+  );
+}
 
 /**
  * Extrai os vereditos de uma resposta que pode vir como array JSON puro
- * ou com prosa ao redor. Coleta cada objeto {"i":N,"resultado":"X"} válido.
+ * ou com prosa ao redor. Coleta cada objeto {"id":"...","resultado":"X"} válido.
  */
 function extractVerdicts(text: string): Verdict[] {
   const clean = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
@@ -38,7 +48,7 @@ function extractVerdicts(text: string): Verdict[] {
   try {
     const arr = JSON.parse(clean);
     if (Array.isArray(arr)) {
-      const ok = arr.filter((o) => typeof o?.i === "number" && ["SIM", "NAO", "INCERTO"].includes(o?.resultado));
+      const ok = arr.filter(isVerdict);
       if (ok.length) return ok;
     }
   } catch {}
@@ -49,7 +59,7 @@ function extractVerdicts(text: string): Verdict[] {
     try {
       const arr = JSON.parse(arrMatch[0]);
       if (Array.isArray(arr)) {
-        const ok = arr.filter((o) => typeof o?.i === "number" && ["SIM", "NAO", "INCERTO"].includes(o?.resultado));
+        const ok = arr.filter(isVerdict);
         if (ok.length) return ok;
       }
     } catch {}
@@ -61,21 +71,19 @@ function extractVerdicts(text: string): Verdict[] {
   for (const m of objs) {
     try {
       const o = JSON.parse(m);
-      if (typeof o.i === "number" && ["SIM", "NAO", "INCERTO"].includes(o.resultado)) {
-        out.push({ i: o.i, resultado: o.resultado });
-      }
+      if (isVerdict(o)) out.push(o);
     } catch { continue; }
   }
   return out;
 }
 
-/** Manda todos os setores numa só chamada e devolve os vereditos por índice. */
-async function consultarClaude(topics: TopicRow[]): Promise<Map<number, "SIM" | "NAO" | "INCERTO">> {
+/** Manda todos os setores numa só chamada e devolve os vereditos por topic.id. */
+async function consultarClaude(topics: TopicRow[]): Promise<Map<string, "SIM" | "NAO" | "INCERTO">> {
   const agora = new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
   const lista = topics
     .map((t, idx) => {
       const prazo = new Date(t.closes_at).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
-      return `${idx + 1}. "${t.title}" (prazo: ${prazo})`;
+      return `${idx + 1}. [${t.id.slice(0, 8)}] "${t.title}" (prazo: ${prazo})`;
     })
     .join("\n");
 
@@ -84,8 +92,8 @@ Use busca na web para determinar o resultado de CADA evento abaixo (se aconteceu
 
 ${lista}
 
-Responda SOMENTE com um array JSON, um objeto por evento:
-[{"i":1,"resultado":"SIM"},{"i":2,"resultado":"NAO"}]
+Responda SOMENTE com um array JSON, um objeto por evento, copiando o código entre colchetes:
+[{"id":"a1b2c3d4","resultado":"SIM"},{"id":"e5f6a7b8","resultado":"NAO"}]
 Valores permitidos: "SIM", "NAO" ou "INCERTO". Prefira SIM/NAO a INCERTO sempre que houver evidência.`;
 
   let verdicts: Verdict[] = [];
@@ -109,7 +117,7 @@ Valores permitidos: "SIM", "NAO" ou "INCERTO". Prefira SIM/NAO a INCERTO sempre 
         max_tokens: 1024,
         system: 'Converta a análise num array JSON: [{"i":1,"resultado":"SIM"}], valores "SIM"|"NAO"|"INCERTO".',
         messages: [
-          { role: "user", content: `Eventos:\n${lista}\n\nAnálise:\n${prose}\n\nMonte o array JSON com o resultado de cada evento.` },
+          { role: "user", content: `Eventos:\n${lista}\n\nAnálise:\n${prose}\n\nMonte o array JSON com o resultado de cada evento, copiando o código entre colchetes no campo "id".` },
           { role: "assistant", content: "[" },
         ],
       });
@@ -120,8 +128,20 @@ Valores permitidos: "SIM", "NAO" ou "INCERTO". Prefira SIM/NAO a INCERTO sempre 
     console.error("[resolver-direto] consulta falhou:", String(e).slice(0, 200));
   }
 
-  const map = new Map<number, "SIM" | "NAO" | "INCERTO">();
-  for (const v of verdicts) map.set(v.i, v.resultado);
+  // Mapeia por código ecoado; "i" posicional só como fallback quando o
+  // veredito não trouxe id (e nunca sobrescreve um veredito keyed por id).
+  const byShortId = new Map(topics.map((t) => [t.id.slice(0, 8), t.id]));
+  const map = new Map<string, "SIM" | "NAO" | "INCERTO">();
+  for (const v of verdicts) {
+    if (v.id) {
+      const topicId = byShortId.get(v.id.trim());
+      if (topicId) map.set(topicId, v.resultado);
+      else console.warn(`[resolver-direto] veredito com id desconhecido: ${v.id}`);
+    } else if (typeof v.i === "number") {
+      const topic = topics[v.i - 1];
+      if (topic && !map.has(topic.id)) map.set(topic.id, v.resultado);
+    }
+  }
   return map;
 }
 
@@ -161,7 +181,7 @@ export async function POST(req: Request) {
   const results: { title: string; outcome: string }[] = [];
   for (let idx = 0; idx < topics.length; idx++) {
     const topic = topics[idx] as TopicRow;
-    const resultado = veredictos.get(idx + 1);
+    const resultado = veredictos.get(topic.id);
 
     // Um tópico pode ter palpites em `bets` (Liga) E em `concurso_bets`
     // (Concurso). Pagar só uma tabela com base em concurso_id deixava o outro

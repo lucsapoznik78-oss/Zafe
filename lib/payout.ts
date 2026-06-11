@@ -13,6 +13,22 @@ function fmt(v: number) {
 
 const BONUS_PIONEIRO = 10;
 
+/** Executa `fn` sobre os itens em lotes paralelos de `size` (audit #32). */
+async function emLotes<T>(items: T[], size: number, fn: (item: T) => Promise<unknown>) {
+  for (let i = 0; i < items.length; i += size) {
+    await Promise.all(items.slice(i, i + size).map(fn));
+  }
+}
+
+/** Soma valores por usuário para creditar uma única vez por carteira (CAS preservado). */
+function somarPorUsuario(items: { user_id: string; valor: number }[]): [string, number][] {
+  const m = new Map<string, number>();
+  for (const it of items) {
+    m.set(it.user_id, parseFloat(((m.get(it.user_id) ?? 0) + it.valor).toFixed(2)));
+  }
+  return [...m.entries()];
+}
+
 /**
  * Trava atômica de resolução. Marca o topic como `resolved` condicionando em
  * que ele ainda NÃO esteja num estado terminal (`resolved`/`cancelled`) e
@@ -68,13 +84,21 @@ async function pagarBonusPioneiro(supabase: any, topicId: string, topicTitle: st
   }
 }
 
-export async function refundBet(supabase: any, bet: any, topicId: string, reason: string) {
-  await creditBalance(supabase, bet.user_id, bet.amount);
-  await supabase.from("bets").update({ status: "refunded" }).eq("id", bet.id);
-  await supabase.from("transactions").insert({
+/**
+ * Reembolsa um conjunto de bets em lote (audit #32): crédito agregado por
+ * usuário + UPDATE/INSERTs em bulk, em vez de 3 awaits por palpite.
+ */
+async function refundBets(supabase: any, bets: any[], topicId: string, reason: string) {
+  if (bets.length === 0) return;
+
+  const creditos = somarPorUsuario(bets.map((b) => ({ user_id: b.user_id, valor: b.amount })));
+  await emLotes(creditos, 10, ([userId, total]) => creditBalance(supabase, userId, total));
+
+  await supabase.from("bets").update({ status: "refunded" }).in("id", bets.map((b) => b.id));
+  await supabase.from("transactions").insert(bets.map((bet) => ({
     user_id: bet.user_id, type: "bet_refund", amount: bet.amount, net_amount: bet.amount,
     description: `Reembolso — ${reason}`, reference_id: topicId,
-  });
+  })));
 }
 
 export async function reembolsarTodos(
@@ -101,14 +125,15 @@ export async function reembolsarTodos(
   const { data: bets } = await supabase
     .from("bets").select("*").eq("topic_id", topicId).not("status", "in", '("refunded","exited","won","lost")');
 
-  for (const bet of bets ?? []) {
-    await refundBet(supabase, bet, topicId, motivo);
-    await supabase.from("notifications").insert({
+  const betsList = bets ?? [];
+  await refundBets(supabase, betsList, topicId, motivo);
+  if (betsList.length > 0) {
+    await supabase.from("notifications").insert(betsList.map((bet: any) => ({
       user_id: bet.user_id, type: "market_resolved",
       title: "Mercado reembolsado",
       body: `"${title}": ${motivo}. Reembolso de ${fmt(bet.amount)} creditado.`,
       data: { topic_id: topicId },
-    });
+    })));
   }
 
   const { data: topicMeta } = await supabase.from("topics").select("is_private").eq("id", topicId).single();
@@ -173,31 +198,40 @@ export async function pagarVencedoresMulti(
   const totalWinPool  = winnerBets.reduce((s: number, b: any) => s + b.amount, 0);
   const totalLosePool = loserBets.reduce((s: number, b: any) => s + b.amount, 0);
 
-  for (const bet of winnerBets) {
+  // Audit #32: pagamento em lote — crédito agregado por usuário (CAS
+  // preservado), updates de bets em paralelo controlado, INSERTs em bulk.
+  const winners = winnerBets.map((bet: any) => {
     const winnings = parseFloat(((bet.amount / totalWinPool) * totalLosePool).toFixed(2));
-    const payout   = parseFloat((bet.amount + winnings).toFixed(2));
-    await creditBalance(supabase, bet.user_id, payout);
-    await supabase.from("bets").update({ status: "won", potential_payout: payout }).eq("id", bet.id);
-    await supabase.from("transactions").insert({
-      user_id: bet.user_id, type: "bet_won", amount: payout, net_amount: payout,
-      description: `Ganhou — resultado vencedor`, reference_id: topicId,
-    });
-    await supabase.from("notifications").insert({
-      user_id: bet.user_id, type: "bet_won",
-      title: "Você ganhou! 🏆",
-      body: `Seu palpite em "${title}" rendeu ${fmt(payout)}.`,
-      data: { topic_id: topicId, payout },
-    });
-  }
+    return { bet, payout: parseFloat((bet.amount + winnings).toFixed(2)) };
+  });
 
-  for (const bet of loserBets) {
-    await supabase.from("bets").update({ status: "lost" }).eq("id", bet.id);
-    await supabase.from("notifications").insert({
+  const creditos = somarPorUsuario(winners.map((w: any) => ({ user_id: w.bet.user_id, valor: w.payout })));
+  await emLotes(creditos, 10, ([userId, total]) => creditBalance(supabase, userId, total));
+
+  await emLotes(winners, 10, ({ bet, payout }: any) =>
+    supabase.from("bets").update({ status: "won", potential_payout: payout }).eq("id", bet.id)
+  );
+
+  await supabase.from("transactions").insert(winners.map(({ bet, payout }: any) => ({
+    user_id: bet.user_id, type: "bet_won", amount: payout, net_amount: payout,
+    description: `Ganhou — resultado vencedor`, reference_id: topicId,
+  })));
+
+  await supabase.from("notifications").insert(winners.map(({ bet, payout }: any) => ({
+    user_id: bet.user_id, type: "bet_won",
+    title: "Você ganhou! 🏆",
+    body: `Seu palpite em "${title}" rendeu ${fmt(payout)}.`,
+    data: { topic_id: topicId, payout },
+  })));
+
+  if (loserBets.length > 0) {
+    await supabase.from("bets").update({ status: "lost" }).in("id", loserBets.map((b: any) => b.id));
+    await supabase.from("notifications").insert(loserBets.map((bet: any) => ({
       user_id: bet.user_id, type: "market_resolved",
       title: "Mercado resolvido",
       body: `"${title}" foi resolvido. Boa sorte na próxima!`,
       data: { topic_id: topicId },
-    });
+    })));
   }
 
   const { data: topicMeta } = await supabase.from("topics").select("is_private").eq("id", topicId).single();
@@ -257,22 +291,33 @@ export async function pagarVencedores(
   const totalWinPool  = winnerBets.reduce((s: number, b: any) => s + b.amount, 0);
   const totalLosePool = loserBets.reduce((s: number, b: any) => s + b.amount, 0);
 
-  for (const bet of winnerBets) {
+  // Audit #32: pagamento em lote — crédito agregado por usuário (CAS
+  // preservado), updates de bets em paralelo controlado, INSERTs em bulk.
+  const winners = winnerBets.map((bet: any) => {
     const winnings = parseFloat(((bet.amount / totalWinPool) * totalLosePool).toFixed(2));
-    const payout   = parseFloat((bet.amount + winnings).toFixed(2));
+    return { bet, payout: parseFloat((bet.amount + winnings).toFixed(2)) };
+  });
 
-    await creditBalance(supabase, bet.user_id, payout);
-    await supabase.from("bets").update({ status: "won", potential_payout: payout }).eq("id", bet.id);
-    await supabase.from("transactions").insert({
-      user_id: bet.user_id, type: "bet_won", amount: payout, net_amount: payout,
-      description: `Ganhou — ${resolution.toUpperCase()}`, reference_id: topicId,
-    });
-    await supabase.from("notifications").insert({
-      user_id: bet.user_id, type: "bet_won",
-      title: "Você ganhou! 🏆",
-      body: `Seu ${resolution.toUpperCase()} em "${title}" rendeu ${fmt(payout)}.`,
-      data: { topic_id: topicId, payout },
-    });
+  const creditos = somarPorUsuario(winners.map((w: any) => ({ user_id: w.bet.user_id, valor: w.payout })));
+  await emLotes(creditos, 10, ([userId, total]) => creditBalance(supabase, userId, total));
+
+  await emLotes(winners, 10, ({ bet, payout }: any) =>
+    supabase.from("bets").update({ status: "won", potential_payout: payout }).eq("id", bet.id)
+  );
+
+  await supabase.from("transactions").insert(winners.map(({ bet, payout }: any) => ({
+    user_id: bet.user_id, type: "bet_won", amount: payout, net_amount: payout,
+    description: `Ganhou — ${resolution.toUpperCase()}`, reference_id: topicId,
+  })));
+
+  await supabase.from("notifications").insert(winners.map(({ bet, payout }: any) => ({
+    user_id: bet.user_id, type: "bet_won",
+    title: "Você ganhou! 🏆",
+    body: `Seu ${resolution.toUpperCase()} em "${title}" rendeu ${fmt(payout)}.`,
+    data: { topic_id: topicId, payout },
+  })));
+
+  for (const { bet, payout } of winners) {
     sendPushToUser(supabase, bet.user_id, {
       title: "Você ganhou! 🏆",
       body: `Seu ${resolution.toUpperCase()} em "${title}" rendeu ${fmt(payout)}.`,
@@ -280,14 +325,14 @@ export async function pagarVencedores(
     }).catch(() => {});
   }
 
-  for (const bet of loserBets) {
-    await supabase.from("bets").update({ status: "lost" }).eq("id", bet.id);
-    await supabase.from("notifications").insert({
+  if (loserBets.length > 0) {
+    await supabase.from("bets").update({ status: "lost" }).in("id", loserBets.map((b: any) => b.id));
+    await supabase.from("notifications").insert(loserBets.map((bet: any) => ({
       user_id: bet.user_id, type: "market_resolved",
       title: "Mercado resolvido",
       body: `"${title}" foi resolvido como ${resolution.toUpperCase()}. Boa sorte na próxima!`,
       data: { topic_id: topicId },
-    });
+    })));
   }
 
   const { data: topicMeta2 } = await supabase.from("topics").select("is_private").eq("id", topicId).single();

@@ -67,17 +67,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Nenhum concurso ativo no momento" }, { status: 404 });
   }
 
-  const { data: existing } = await admin
-    .from("inscricoes_concurso")
-    .select("id")
-    .eq("user_id", user.id)
-    .eq("concurso_id", concurso.id)
-    .single();
-
-  if (existing) {
-    return NextResponse.json({ error: "Você já está inscrito neste concurso" }, { status: 400 });
-  }
-
   // Persiste a identificação no perfil antes de inscrever
   const { error: eProfile } = await admin
     .from("profiles")
@@ -89,23 +78,24 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Erro ao salvar seus dados" }, { status: 500 });
   }
 
-  const { error: e1 } = await admin
-    .from("inscricoes_concurso")
-    .insert({ user_id: user.id, concurso_id: concurso.id });
+  // Inscrição + carteira ZC$ numa única transação (RPC migration 031) —
+  // grava o saldo_inicial real do concurso e elimina o estado parcial
+  // inscrição-sem-carteira (audit N6/N7).
+  const { data: result, error: eRpc } = await admin.rpc("concurso_inscrever", {
+    p_user: user.id,
+    p_concurso: concurso.id,
+  });
 
-  if (e1) {
-    console.error("[concurso/inscrever]", e1);
+  if (eRpc || !result) {
+    console.error("[concurso/inscrever]", eRpc);
     return NextResponse.json({ error: "Erro ao inscrever no concurso" }, { status: 500 });
   }
-
-  const { error: e2 } = await admin
-    .from("concurso_wallets")
-    .insert({ user_id: user.id, concurso_id: concurso.id, balance: concurso.saldo_inicial });
-
-  if (e2) {
-    console.error("[concurso/inscrever]", e2);
-    return NextResponse.json({ error: "Erro ao criar carteira do concurso" }, { status: 500 });
+  if (result.status === "not_active") {
+    return NextResponse.json({ error: "Nenhum concurso ativo no momento" }, { status: 404 });
+  }
+  if (result.status === "already_enrolled") {
+    return NextResponse.json({ error: "Você já está inscrito neste concurso" }, { status: 400 });
   }
 
-  return NextResponse.json({ success: true, balance: concurso.saldo_inicial });
+  return NextResponse.json({ success: true, balance: Number(result.balance) });
 }

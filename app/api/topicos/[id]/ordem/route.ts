@@ -73,38 +73,48 @@ export async function POST(request: Request, { params }: RouteParams) {
       }, { status: 400 });
   }
 
-  // ── Validação específica por tipo ─────────────────────────────────
+  // ── Criação da ordem por tipo ─────────────────────────────────────
+  let orderId: string;
+
   if (order_type === "sell") {
     if (!source_bet_id)
       return NextResponse.json({ error: "Informe a aposta a ser vendida" }, { status: 400 });
 
-    // Verificar que o usuário possui esta aposta e ela é vendível
-    const { data: bet } = await supabase.from("bets")
-      .select("id, user_id, side, amount, status")
-      .eq("id", source_bet_id).single();
+    // RPC create_sell_order (migration 033, audit H4): tranca a aposta-fonte
+    // (FOR UPDATE) e valida disponibilidade + insere a ordem na MESMA
+    // transação — duas SELLs concorrentes não vendem a posição em dobro.
+    const { data: sellResult, error: sellErr } = await admin.rpc("create_sell_order", {
+      p_topic:      topicId,
+      p_user:       user.id,
+      p_side:       side,
+      p_price:      parseFloat(price.toFixed(4)),
+      p_quantity:   parseFloat(quantity.toFixed(2)),
+      p_source_bet: source_bet_id,
+    });
 
-    if (!bet || bet.user_id !== user.id)
-      return NextResponse.json({ error: "Aposta não encontrada" }, { status: 404 });
-    if (bet.side !== side)
-      return NextResponse.json({ error: "Lado da aposta não corresponde à ordem" }, { status: 400 });
-    if (!["pending", "matched", "partial"].includes(bet.status))
-      return NextResponse.json({ error: "Aposta não está ativa" }, { status: 400 });
+    if (sellErr || !sellResult) {
+      console.error("[ordem] create_sell_order falhou", sellErr);
+      return NextResponse.json({ error: "Erro ao criar ordem" }, { status: 500 });
+    }
 
-    // Verificar quantidade disponível (descontando ordens de venda já abertas)
-    const { data: openSells } = await admin.from("orders")
-      .select("quantity, filled_qty")
-      .eq("source_bet_id", source_bet_id)
-      .in("status", ["open", "partial"]);
+    switch (sellResult.status) {
+      case "ok":
+        break;
+      case "not_found":
+        return NextResponse.json({ error: "Aposta não encontrada" }, { status: 404 });
+      case "side_mismatch":
+        return NextResponse.json({ error: "Lado da aposta não corresponde à ordem" }, { status: 400 });
+      case "not_active":
+        return NextResponse.json({ error: "Aposta não está ativa" }, { status: 400 });
+      case "insufficient":
+        return NextResponse.json({
+          error: `Apenas Z$ ${Number(sellResult.available ?? 0).toFixed(2)} disponíveis para venda nesta aposta`,
+        }, { status: 400 });
+      default:
+        return NextResponse.json({ error: "Erro ao criar ordem" }, { status: 500 });
+    }
 
-    const alreadyListed = (openSells ?? []).reduce(
-      (s: number, o: any) => s + (parseFloat(o.quantity) - parseFloat(o.filled_qty)), 0
-    );
-    const available = parseFloat(bet.amount) - alreadyListed;
-
-    if (quantity > available + 0.01)
-      return NextResponse.json({
-        error: `Apenas Z$ ${available.toFixed(2)} disponíveis para venda nesta aposta`,
-      }, { status: 400 });
+    orderId = sellResult.order_id;
 
   } else {
     // BUY: debita o escrow (preço × quantidade) no momento da colocação.
@@ -131,31 +141,31 @@ export async function POST(request: Request, { params }: RouteParams) {
       description:  `Escrow ordem de compra ${side.toUpperCase()} · ${(price * 100).toFixed(1)}¢`,
       reference_id: topicId,
     });
-  }
 
-  // ── Inserir ordem ─────────────────────────────────────────────────
-  const { data: order, error: orderErr } = await admin.from("orders").insert({
-    topic_id:      topicId,
-    user_id:       user.id,
-    side,
-    order_type,
-    price:         parseFloat(price.toFixed(4)),
-    quantity:      parseFloat(quantity.toFixed(2)),
-    filled_qty:    0,
-    status:        "open",
-    source_bet_id: order_type === "sell" ? source_bet_id : null,
-  }).select().single();
+    // Inserir ordem de compra
+    const { data: order, error: orderErr } = await admin.from("orders").insert({
+      topic_id:      topicId,
+      user_id:       user.id,
+      side,
+      order_type,
+      price:         parseFloat(price.toFixed(4)),
+      quantity:      parseFloat(quantity.toFixed(2)),
+      filled_qty:    0,
+      status:        "open",
+      source_bet_id: null,
+    }).select().single();
 
-  if (orderErr || !order) {
-    // Reverter escrow caso a ordem de compra não tenha sido criada
-    if (order_type === "buy") {
-      await creditBalance(admin, user.id, parseFloat((price * quantity).toFixed(2)));
+    if (orderErr || !order) {
+      // Reverter escrow caso a ordem de compra não tenha sido criada
+      await creditBalance(admin, user.id, needed);
+      return NextResponse.json({ error: "Erro ao criar ordem" }, { status: 500 });
     }
-    return NextResponse.json({ error: "Erro ao criar ordem" }, { status: 500 });
+
+    orderId = order.id;
   }
 
   // ── Tentar casar imediatamente ────────────────────────────────────
-  const matchResult = await tryMatchOrders(admin, order.id);
+  const matchResult = await tryMatchOrders(admin, orderId);
 
   // Também varrer ordens antigas do mesmo tópico que ainda não se casaram.
   // Isso garante que ordens de usuários diferentes que já estavam no livro
@@ -166,7 +176,7 @@ export async function POST(request: Request, { params }: RouteParams) {
       .select("id")
       .eq("topic_id", topicId)
       .in("status", ["open", "partial"])
-      .neq("id", order.id)
+      .neq("id", orderId)
       .limit(50);
     for (const existing of existingOrders ?? []) {
       await tryMatchOrders(admin, existing.id);
@@ -176,7 +186,7 @@ export async function POST(request: Request, { params }: RouteParams) {
   // Ordem a mercado: cancelar o que não foi executado e devolver o escrow
   // correspondente à quantidade não preenchida (apenas BUY tem escrow).
   if (is_market && matchResult.totalFilled < quantity - 0.01) {
-    await admin.from("orders").update({ status: "cancelled" }).eq("id", order.id);
+    await admin.from("orders").update({ status: "cancelled" }).eq("id", orderId);
     if (order_type === "buy") {
       const unfilled = parseFloat((quantity - matchResult.totalFilled).toFixed(2));
       const refund = parseFloat((unfilled * price).toFixed(2));
@@ -195,7 +205,7 @@ export async function POST(request: Request, { params }: RouteParams) {
   }
 
   // Estado final da ordem
-  const { data: finalOrder } = await admin.from("orders").select("*").eq("id", order.id).single();
+  const { data: finalOrder } = await admin.from("orders").select("*").eq("id", orderId).single();
 
   return NextResponse.json({
     success: true,

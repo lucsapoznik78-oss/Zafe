@@ -8,13 +8,22 @@ export async function POST(request: Request) {
 
   const { invitee_id, topic_id, inviter_side, amount } = await request.json();
 
-  if (!invitee_id || !topic_id || !inviter_side || !amount) {
+  // Coerção + validação do valor (audit N8): sem isso, -100/NaN passavam
+  // pelo `balance < amount` e chegavam ao debitBalance no aceite.
+  const valor = Number(amount);
+  if (
+    !invitee_id ||
+    !topic_id ||
+    !["sim", "nao"].includes(inviter_side) ||
+    !Number.isFinite(valor) ||
+    valor <= 0
+  ) {
     return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
   }
 
   // Verificar saldo do inviter
   const { data: wallet } = await supabase.from("wallets").select("balance").eq("user_id", user.id).single();
-  if (!wallet || wallet.balance < amount) {
+  if (!wallet || wallet.balance < valor) {
     return NextResponse.json({ error: "Saldo insuficiente" }, { status: 400 });
   }
 
@@ -27,7 +36,7 @@ export async function POST(request: Request) {
     invitee_id,
     inviter_side,
     invitee_side: inviteesSide,
-    amount,
+    amount: valor,
     status: "pending",
     expires_at: expiresAt,
   });
@@ -37,7 +46,7 @@ export async function POST(request: Request) {
   await supabase.from("notifications").insert({
     user_id: invitee_id,
     type: "bet_invite",
-    payload: { inviter_id: user.id, topic_id, amount },
+    payload: { inviter_id: user.id, topic_id, amount: valor },
     read: false,
   });
 

@@ -14,7 +14,7 @@ const points = [
   {
     icon: Zap,
     title: "O prêmio do concurso vai direto pro seu PIX",
-    body: "Sem saque pendente. Sem taxa de retirada. O valor cai na sua conta assim que o mês fecha.",
+    body: "Prêmios pagos automaticamente, sem taxas. O valor cai na sua conta assim que o mês fecha.",
   },
 ];
 

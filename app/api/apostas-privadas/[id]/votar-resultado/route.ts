@@ -33,8 +33,14 @@ export async function POST(
     if (topic.status === "resolved" || topic.status === "cancelled") {
       return NextResponse.json({ error: "Bolão já encerrado" }, { status: 400 });
     }
-    if (topic.status !== "active" && (!topic.closes_at || new Date(topic.closes_at) > new Date())) {
-      return NextResponse.json({ error: "O bolão ainda não pode ser resolvido" }, { status: 400 });
+    // Audit N11: exigir status ativo E prazo encerrado. Antes, um bolão
+    // `pending` com closes_at futuro podia ser resolvido pelo juiz antes
+    // dos participantes aceitarem → payout sobre pool não financiado.
+    if (topic.status !== "active") {
+      return NextResponse.json({ error: "O bolão ainda não está ativo" }, { status: 400 });
+    }
+    if (topic.closes_at && new Date(topic.closes_at) > new Date()) {
+      return NextResponse.json({ error: "O bolão só pode ser resolvido após o encerramento" }, { status: 400 });
     }
 
     const admin = createAdminClient();
@@ -88,11 +94,24 @@ export async function POST(
   if (!myVoteRow) return NextResponse.json({ error: "Você não é juiz desta aposta" }, { status: 403 });
   if (myVoteRow.voted_at) return NextResponse.json({ error: "Você já votou nesta rodada" }, { status: 400 });
 
-  // Registrar voto
-  await supabase.from("judge_outcome_votes").update({
-    vote,
-    voted_at: new Date().toISOString(),
-  }).eq("topic_id", topicId).eq("judge_id", user.id).eq("round", round);
+  // Registrar voto num único UPDATE com fase + prazo no WHERE (RPC migration
+  // 032, audit N10) — um voto correndo contra fecharVotacao não é gravado
+  // depois da apuração.
+  const adminVote = createAdminClient();
+  const { data: voteResult, error: voteErr } = await adminVote.rpc("registrar_voto_juiz", {
+    p_topic: topicId,
+    p_judge: user.id,
+    p_round: round,
+    p_vote: vote,
+  });
+
+  if (voteErr || !voteResult) {
+    console.error("[votar-resultado]", voteErr);
+    return NextResponse.json({ error: "Erro ao registrar voto" }, { status: 500 });
+  }
+  if (voteResult.status !== "ok") {
+    return NextResponse.json({ error: "Votação encerrada ou voto já registrado" }, { status: 400 });
+  }
 
   // Verificar se todos os juízes já votaram → fechar imediatamente
   const { data: allVotes } = await supabase

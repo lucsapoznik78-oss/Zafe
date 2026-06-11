@@ -14,14 +14,6 @@ import { creditBalance } from "@/lib/wallet";
 
 export const COMMISSION_RATE = 0; // sem comissão de plataforma
 
-/** Calcula as odds parimutuel inline (sem import circular) */
-function impliedOdds(volSim: number, volNao: number, side: "sim" | "nao") {
-  const total = volSim + volNao;
-  if (total === 0) return 2.0;
-  const vol = side === "sim" ? volSim : volNao;
-  return vol > 0 ? Math.min(total / vol, 999) : 999;
-}
-
 export interface MatchResult {
   tradesExecuted: number;
   totalFilled: number;
@@ -93,7 +85,7 @@ export async function tryMatchOrders(
     const buyOrder  = isSell ? counter : newOrder;
     const sellOrder = isSell ? newOrder : counter;
 
-    await executeTrade(admin, {
+    const ok = await executeTrade(admin, {
       topicId:          desafioId ? undefined : newOrder.topic_id,
       desafioId,
       side:             newOrder.side as "sim" | "nao",
@@ -106,6 +98,9 @@ export async function tryMatchOrders(
       buyLimitPrice:    buyOrder.price,
       sourceBetId:      sellOrder.source_bet_id ?? undefined,
     });
+
+    // Trade não aconteceu (transação revertida): não atualizar fills.
+    if (!ok) continue;
 
     // Atualiza counter order
     const counterFilled = parseFloat((counter.filled_qty + matchQty).toFixed(2));
@@ -134,7 +129,13 @@ export async function tryMatchOrders(
   return { tradesExecuted, totalFilled };
 }
 
-/** Executa um trade individualmente (atômica o quanto possível) */
+/**
+ * Executa um trade via RPC `execute_trade` (migration 033, audit H3):
+ * registro do trade, crédito do vendedor, reembolso de escrow, baixa da
+ * posição vendida e criação da posição do comprador numa ÚNICA transação
+ * Postgres — uma falha no meio reverte tudo (conservação de Z$).
+ * Retorna false se o trade não aconteceu (caller não deve atualizar fills).
+ */
 async function executeTrade(admin: any, p: {
   topicId?: string;
   desafioId?: string;
@@ -147,15 +148,28 @@ async function executeTrade(admin: any, p: {
   quantity: number;
   buyLimitPrice: number;
   sourceBetId?: string;
-}) {
-  const isDesafio  = !!p.desafioId;
-  const refId      = p.desafioId ?? p.topicId ?? "";
-  const tradeValue  = parseFloat((p.price * p.quantity).toFixed(2));
-  const commission  = parseFloat((tradeValue * COMMISSION_RATE).toFixed(2));
-  const netSeller   = parseFloat((tradeValue - commission).toFixed(2));
+}): Promise<boolean> {
+  const { data, error } = await admin.rpc("execute_trade", {
+    p_topic:      p.topicId ?? null,
+    p_desafio:    p.desafioId ?? null,
+    p_side:       p.side,
+    p_buy_order:  p.buyOrderId,
+    p_sell_order: p.sellOrderId,
+    p_buyer:      p.buyerId,
+    p_seller:     p.sellerId,
+    p_price:      p.price,
+    p_quantity:   p.quantity,
+    p_buy_limit:  p.buyLimitPrice,
+    p_source_bet: p.sourceBetId ?? null,
+  });
 
-  // ── 1. Gravar trade + notificar partes ───────────────────────────
-  const notifData = isDesafio ? { desafio_id: p.desafioId } : { topic_id: p.topicId };
+  if (error || data?.status !== "ok") {
+    console.error("[order-matching] execute_trade falhou", error ?? data);
+    return false;
+  }
+
+  // Notificações só após o trade confirmado (não-bloqueantes).
+  const notifData = p.desafioId ? { desafio_id: p.desafioId } : { topic_id: p.topicId };
   await Promise.allSettled([
     admin.from("notifications").insert({
       user_id: p.buyerId,
@@ -173,97 +187,7 @@ async function executeTrade(admin: any, p: {
     }),
   ]);
 
-  const tradeInsert: Record<string, unknown> = {
-    buy_order_id:  p.buyOrderId,
-    sell_order_id: p.sellOrderId,
-    side:          p.side,
-    price:         p.price,
-    quantity:      p.quantity,
-    buyer_id:      p.buyerId,
-    seller_id:     p.sellerId,
-  };
-  if (isDesafio) {
-    tradeInsert.desafio_id = p.desafioId;
-  } else {
-    tradeInsert.topic_id = p.topicId;
-  }
-  await admin.from("trades").insert(tradeInsert);
-
-  // ── 2. Creditar vendedor (trava otimista) ───────────────────────
-  await creditBalance(admin, p.sellerId, netSeller);
-
-  await admin.from("transactions").insert({
-    user_id:      p.sellerId,
-    type:         "bet_exited",
-    amount:       tradeValue,
-    net_amount:   netSeller,
-    description:  `Venda mercado secundário ${p.side.toUpperCase()} · ${(p.price * 100).toFixed(1)}¢`,
-    reference_id: refId,
-  });
-
-  // ── 3. Comprador: escrow já debitado na criação da ordem ────────
-  // O comprador depositou buyLimitPrice × quantidade ao colocar a ordem.
-  // Como a execução ocorre ao preço do maker (≤ limite), devolvemos o
-  // excesso de escrow correspondente a esta fração executada.
-  const escrowExcess = parseFloat(((p.buyLimitPrice - p.price) * p.quantity).toFixed(2));
-  if (escrowExcess > 0.01) {
-    await creditBalance(admin, p.buyerId, escrowExcess);
-    await admin.from("transactions").insert({
-      user_id:      p.buyerId,
-      type:         "bet_refund",
-      amount:       escrowExcess,
-      net_amount:   escrowExcess,
-      description:  `Reembolso de escrow ${p.side.toUpperCase()} — execução a ${(p.price * 100).toFixed(1)}¢`,
-      reference_id: refId,
-    });
-  }
-
-  // ── 4. Encerrar aposta do vendedor ───────────────────────────────
-  const betTable = isDesafio ? "desafio_bets" : "bets";
-  if (p.sourceBetId) {
-    const { data: src } = await admin.from(betTable).select("amount").eq("id", p.sourceBetId).single();
-    if (src) {
-      const soldQty = p.quantity;
-      if (src.amount - soldQty <= 0.01) {
-        await admin.from(betTable).update({ status: "exited" }).eq("id", p.sourceBetId);
-      } else {
-        const newAmt = parseFloat((src.amount - soldQty).toFixed(2));
-        if (isDesafio) {
-          await admin.from(betTable).update({ amount: newAmt }).eq("id", p.sourceBetId);
-        } else {
-          await admin.from(betTable).update({ amount: newAmt, gross_amount: newAmt }).eq("id", p.sourceBetId);
-        }
-      }
-    }
-  }
-
-  // ── 5. Criar aposta/posição para o comprador ────────────────────
-  const entryOdds = parseFloat((1 / p.price).toFixed(4));
-
-  if (isDesafio) {
-    await admin.from("desafio_bets").insert({
-      desafio_id:  p.desafioId,
-      user_id:     p.buyerId,
-      side:        p.side,
-      amount:      p.quantity,
-      locked_odds: entryOdds,
-      status:      "matched",
-    });
-  } else {
-    await admin.from("bets").insert({
-      topic_id:         p.topicId,
-      user_id:          p.buyerId,
-      side:             p.side,
-      amount:           p.quantity,
-      gross_amount:     p.quantity,
-      locked_odds:      entryOdds,
-      status:           "matched",
-      matched_amount:   p.quantity,
-      unmatched_amount: 0,
-      potential_payout: parseFloat((p.quantity * entryOdds).toFixed(2)),
-      is_private:       false,
-    });
-  }
+  return true;
 }
 
 /**
