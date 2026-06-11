@@ -78,13 +78,41 @@ function autoDomain(values: number[]): [number, number] {
   return [Math.max(0, Math.floor(min - pad)), Math.min(100, Math.ceil(max + pad))];
 }
 
+// Corta o trecho inicial plano: se a série fica constante na maior parte do
+// gráfico e só se move no final, mostra apenas a partir da mudança (mantendo
+// 1 ponto plano como âncora), em vez de meses de linha reta.
+function trimFlatStart<T>(points: T[], values: (p: T) => number[]): T[] {
+  if (points.length < 3) return points;
+  const first = values(points[0]);
+  const EPS = 0.5; // pontos percentuais
+  let firstMove = -1;
+  for (let i = 1; i < points.length; i++) {
+    const v = values(points[i]);
+    if (v.some((x, j) => Math.abs(x - (first[j] ?? 0)) > EPS)) {
+      firstMove = i;
+      break;
+    }
+  }
+  if (firstMove === -1) return points; // tudo plano → mantém como está
+  if (firstMove / points.length < 0.6) return points; // parte plana não domina
+  return points.slice(firstMove - 1);
+}
+
+// Após o trim, a janela visível pode cobrir pouco tempo — usa rótulos mais
+// granulares (horário) quando o recorte cabe em ~1 dia e meio.
+function effectiveFilter(times: string[], filter: Filter): Filter {
+  if (times.length < 2) return filter;
+  const span = parseISO(times[times.length - 1]).getTime() - parseISO(times[0]).getTime();
+  return span <= 36 * 60 * 60 * 1000 ? "1D" : filter;
+}
+
 function buildBinaryData(snapshots: Snapshot[], stats: Stats | null, filter: Filter) {
   const cutoff = cutoffFor(filter);
   const filtered = snapshots.filter((s) => parseISO(s.recorded_at) >= cutoff);
 
   const points = filtered.map((s) => ({
     time: s.recorded_at,
-    label: formatXLabel(s.recorded_at, filter),
+    label: "",
     sim: parseFloat((s.prob_sim * 100).toFixed(1)),
     nao: parseFloat(((1 - s.prob_sim) * 100).toFixed(1)),
   }));
@@ -98,15 +126,22 @@ function buildBinaryData(snapshots: Snapshot[], stats: Stats | null, filter: Fil
       nao: parseFloat(((1 - liveProb) * 100).toFixed(1)),
     });
   }
-  return points;
+
+  const trimmed = trimFlatStart(points, (p) => [p.sim]);
+  const eff = effectiveFilter(trimmed.map((p) => p.time), filter);
+  return trimmed.map((p) =>
+    p.label === "Agora" ? p : { ...p, label: formatXLabel(p.time, eff) }
+  );
 }
 
 function buildMultiData(points: MultiPoint[], outcomes: OutcomeMeta[], filter: Filter) {
   const cutoff = cutoffFor(filter);
   // Mantém o primeiro ponto (semente) como âncora mesmo fora da janela.
   const filtered = points.filter((p, i) => i === 0 || parseISO(p.time) >= cutoff);
-  return filtered.map((p) => {
-    const row: Record<string, number | string> = { label: formatXLabel(p.time, filter) };
+  const trimmed = trimFlatStart(filtered, (p) => outcomes.map((o) => (p[o.id] as number) ?? 0));
+  const eff = effectiveFilter(trimmed.map((p) => p.time), filter);
+  return trimmed.map((p) => {
+    const row: Record<string, number | string> = { label: formatXLabel(p.time, eff) };
     for (const o of outcomes) row[o.id] = p[o.id] as number;
     return row;
   });
