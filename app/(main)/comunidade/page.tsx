@@ -51,8 +51,6 @@ async function CommunityList({ tab, category, search, minScore, userId }: { tab:
     query = query.in("status", ["community_resolved", "auto_cancelled", "mod_cancelled"]).gte("resolved_at", oneWeekAgo);
   } else {
     query = query.eq("status", "active").gte("closes_at", new Date().toISOString());
-    // Eventos criados por você ficam na aba "Meus eventos"
-    if (userId) query = query.neq("creator_id", userId);
   }
 
   if (category) query = query.eq("category", category);
@@ -84,11 +82,40 @@ async function CommunityList({ tab, category, search, minScore, userId }: { tab:
   // Sort by volume desc
   enriched.sort((a, b) => (b.stats?.total_volume ?? 0) - (a.stats?.total_volume ?? 0));
 
+  // Seus eventos primeiro, depois os da galera
+  const mine = userId ? enriched.filter((e) => e.creator_id === userId) : [];
+  const others = userId ? enriched.filter((e) => e.creator_id !== userId) : enriched;
+
+  if (mine.length === 0) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {others.map((event) => (
+          <CommunityEventCard key={event.id} event={event as any} />
+        ))}
+      </div>
+    );
+  }
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {enriched.map((event) => (
-        <CommunityEventCard key={event.id} event={event as any} />
-      ))}
+    <div className="space-y-8">
+      <div className="space-y-3">
+        <h2 className="text-sm font-semibold text-primary">Seus eventos ({mine.length})</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {mine.map((event) => (
+            <CommunityEventCard key={event.id} event={event as any} />
+          ))}
+        </div>
+      </div>
+      {others.length > 0 && (
+        <div className="space-y-3">
+          <h2 className="text-sm font-semibold text-white">Eventos da galera ({others.length})</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {others.map((event) => (
+              <CommunityEventCard key={event.id} event={event as any} />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
