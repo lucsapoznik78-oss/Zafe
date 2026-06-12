@@ -49,8 +49,16 @@ export default function Navbar() {
     }
 
     load();
+    // Re-carrega quando a sessão muda (login, refresh de token) — sem isso,
+    // se o Navbar montar antes da sessão estar pronta o saldo fica "0" até um hard refresh.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") load();
+    });
     const interval = setInterval(refreshBalance, 30000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      subscription.unsubscribe();
+    };
   }, []);
 
   async function handleLogout() {
@@ -101,7 +109,7 @@ export default function Navbar() {
           <div className="relative hidden sm:block group">
             <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary/10 text-primary text-sm font-medium cursor-default">
               <Wallet size={14} />
-              {wallet ? formatCurrency(wallet.balance) : "Z$ 0,00"}
+              {wallet ? formatCurrency(wallet.balance) : "Z$ —"}
               <Info size={11} className="text-primary/50" />
             </span>
             {/* Tooltip */}

@@ -9,6 +9,11 @@ export async function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      global: {
+        // Mesmo fix do admin client (ec5aef1): impede o Data Cache do Next
+        // de servir respostas velhas/vazias (ex.: saldo "0" na carteira)
+        fetch: (url, options) => fetch(url, { ...options, cache: "no-store" }),
+      },
       cookies: {
         getAll() {
           return cookieStore.getAll();
