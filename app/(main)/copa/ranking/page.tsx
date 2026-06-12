@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft, Trophy } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { getCompetition, getLeaderboard } from "@/lib/copa/queries";
 import Leaderboard from "@/components/copa/Leaderboard";
 import LegalFooter from "@/components/layout/LegalFooter";
@@ -16,12 +16,12 @@ export const metadata: Metadata = {
 export default async function CopaRankingPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
 
-  const competition = await getCompetition(supabase);
+  const admin = createAdminClient();
+  const competition = await getCompetition(admin);
   if (!competition) redirect("/copa");
 
-  const rows = await getLeaderboard(supabase, competition.id);
+  const rows = await getLeaderboard(admin, competition.id);
 
   return (
     <div className="py-6 space-y-5">
@@ -41,7 +41,7 @@ export default async function CopaRankingPage() {
         </p>
       </div>
 
-      <Leaderboard rows={rows} meUserId={user.id} />
+      <Leaderboard rows={rows} meUserId={user?.id ?? null} />
 
       <LegalFooter />
     </div>
