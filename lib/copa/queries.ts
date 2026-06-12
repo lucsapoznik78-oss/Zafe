@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type {
   CopaCompetition,
+  CopaGroupPick,
   CopaLeaderboardRow,
   CopaMatch,
   CopaParticipant,
@@ -75,6 +76,19 @@ export async function getUserPredictions(
 ): Promise<CopaPrediction[]> {
   const { data } = await supabase
     .from("copa_predictions")
+    .select("*")
+    .eq("competition_id", competitionId)
+    .eq("user_id", userId);
+  return data ?? [];
+}
+
+export async function getUserGroupPicks(
+  supabase: SupabaseClient,
+  competitionId: string,
+  userId: string
+): Promise<CopaGroupPick[]> {
+  const { data } = await supabase
+    .from("copa_group_picks")
     .select("*")
     .eq("competition_id", competitionId)
     .eq("user_id", userId);

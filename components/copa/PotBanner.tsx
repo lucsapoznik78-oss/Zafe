@@ -12,13 +12,13 @@ export default function PotBanner({ competition, participants }: Props) {
     new Date(iso).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit" });
 
   return (
-    <div className="rounded-xl border border-primary/30 bg-primary/5 p-5">
+    <div className="rounded-xl border border-yellow-400/30 bg-yellow-400/5 p-5">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="text-xs text-muted-foreground flex items-center gap-1.5 mb-1">
-            <Trophy size={12} className="text-primary" /> Premiação acumulada
+            <Trophy size={12} className="text-yellow-400" /> Premiação acumulada
           </p>
-          <p className="text-3xl font-bold text-primary">
+          <p className="text-3xl font-bold text-yellow-400">
             Z$ {Number(competition.pot_total).toLocaleString("pt-BR")}
           </p>
           <p className="text-[11px] text-muted-foreground mt-1">
@@ -33,7 +33,7 @@ export default function PotBanner({ competition, participants }: Props) {
             <Calendar size={12} /> {fmtDate(competition.starts_at)} – {fmtDate(competition.ends_at)}
           </p>
           {competition.status === "paid" && (
-            <p className="text-xs text-primary font-semibold">Premiação paga ao campeão</p>
+            <p className="text-xs text-yellow-400 font-semibold">Premiação paga ao campeão</p>
           )}
         </div>
       </div>

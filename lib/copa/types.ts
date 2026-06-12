@@ -7,6 +7,7 @@ import { z } from "zod";
 export const COPA_BUY_IN = 650;
 export const POINTS_OUTCOME = 10; // vencedor (grupos) / classificado (mata-mata)
 export const POINTS_EXACT = 10; // placar exato
+export const POINTS_GROUP_POSITION = 10; // posição exata (1º/2º/3º) na classificação do grupo
 
 export type CopaStage = "group" | "r32" | "r16" | "qf" | "sf" | "third" | "final";
 export type CopaMatchStatus = "scheduled" | "postponed" | "under_review" | "finished" | "void";
@@ -75,6 +76,19 @@ export interface CopaPrediction {
   qualifier_pick: CopaSide | null; // mata-mata
   pred_home_goals: number | null;
   pred_away_goals: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CopaGroupPick {
+  id: string;
+  competition_id: string;
+  participant_id: string;
+  user_id: string;
+  group_name: string;
+  first_team: string;
+  second_team: string;
+  third_team: string;
   created_at: string;
   updated_at: string;
 }
@@ -153,3 +167,20 @@ export const predictionInputSchema = z
   );
 
 export type PredictionInput = z.infer<typeof predictionInputSchema>;
+
+// ------------------------------------------------------------
+// Input do palpite de classificação por grupo (1º/2º/3º)
+// ------------------------------------------------------------
+export const groupPickInputSchema = z
+  .object({
+    group_name: z.string().regex(/^[A-L]$/),
+    first_team: z.string().min(1),
+    second_team: z.string().min(1),
+    third_team: z.string().min(1),
+  })
+  .refine(
+    (p) => new Set([p.first_team, p.second_team, p.third_team]).size === 3,
+    { message: "Escolha três seleções diferentes" }
+  );
+
+export type GroupPickInput = z.infer<typeof groupPickInputSchema>;

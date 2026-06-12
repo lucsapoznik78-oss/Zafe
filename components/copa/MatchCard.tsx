@@ -80,7 +80,7 @@ export default function MatchCard({ match: m, prediction, isParticipant }: Props
             <p className="text-[10px] text-muted-foreground">
               {m.went_to_pens ? "nos pênaltis" : m.went_to_et ? "na prorrogação" : "tempo normal"}
               {ko && m.advanced_side && (
-                <span className="text-primary">
+                <span className="text-yellow-400">
                   {" "}· {m.advanced_side === "home" ? m.home_team : m.away_team} avançou
                 </span>
               )}
@@ -104,7 +104,7 @@ export default function MatchCard({ match: m, prediction, isParticipant }: Props
                 )}
               </span>
               {m.status === "finished" && (
-                <span className={`ml-auto font-bold ${earned > 0 ? "text-primary" : "text-muted-foreground"}`}>
+                <span className={`ml-auto font-bold ${earned > 0 ? "text-yellow-400" : "text-muted-foreground"}`}>
                   {earned > 0 ? `+${earned} pts` : "0 pts"}
                 </span>
               )}

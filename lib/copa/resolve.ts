@@ -15,6 +15,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { fetchMatchResult, OracleCheck } from "./oracle";
+import { scoreGroupPicks } from "./group-picks";
 import { computeMatchEvents } from "./scoring";
 import type { CopaMatch, CopaPrediction } from "./types";
 
@@ -102,6 +103,17 @@ export async function applyMatchResult(
     p_events: events,
   });
   if (eScore) return { ok: false, events: 0, error: eScore.message };
+
+  // Grupo completo? Pontua os palpites de classificação (1º/2º/3º).
+  // Roda DEPOIS do rescore: re-resolver o último jogo do grupo apaga os
+  // eventos 'group_pick' ancorados nele, e este passo os recomputa.
+  if (match.stage === "group" && match.group_name) {
+    try {
+      await scoreGroupPicks(admin, match.competition_id, match.group_name);
+    } catch (e) {
+      console.error("[copa/resolve] group picks", match.group_name, e);
+    }
+  }
 
   return { ok: true, events: events.length };
 }

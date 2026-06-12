@@ -10,13 +10,16 @@ import {
   getMatches,
   getParticipant,
   getParticipantCount,
+  getUserGroupPicks,
   getUserPredictions,
 } from "@/lib/copa/queries";
+import { groupLockAt, groupTeams } from "@/lib/copa/group-picks";
 import type { CopaMatch } from "@/lib/copa/types";
 import PotBanner from "@/components/copa/PotBanner";
 import JoinCard from "@/components/copa/JoinCard";
 import StageTabs from "@/components/copa/StageTabs";
 import MatchCard from "@/components/copa/MatchCard";
+import GroupPicksBoard from "@/components/copa/GroupPicksBoard";
 import LegalFooter from "@/components/layout/LegalFooter";
 
 export const metadata: Metadata = {
@@ -60,19 +63,20 @@ export default async function CopaPage({ searchParams }: PageProps) {
   if (!competition) {
     return (
       <div className="py-20 text-center text-muted-foreground">
-        <Trophy size={40} className="mx-auto mb-3 text-primary/40" />
+        <Trophy size={40} className="mx-auto mb-3 text-yellow-400/40" />
         <p className="text-white font-semibold mb-1">Zafe Copa ainda não está no ar</p>
         <p className="text-sm">A competição será aberta em breve.</p>
       </div>
     );
   }
 
-  const [participant, participants, matches, predictions, leaderboard] = await Promise.all([
+  const [participant, participants, matches, predictions, leaderboard, groupPicks] = await Promise.all([
     getParticipant(supabase, competition.id, user.id),
     getParticipantCount(supabase, competition.id),
     getMatches(supabase, competition.id, stage ? { stage } : undefined),
     getUserPredictions(supabase, competition.id, user.id),
     getLeaderboard(supabase, competition.id),
+    getUserGroupPicks(supabase, competition.id, user.id),
   ]);
 
   const predByMatch = new Map(predictions.map((p) => [p.match_id, p]));
@@ -80,13 +84,32 @@ export default async function CopaPage({ searchParams }: PageProps) {
   const canJoin = !participant && ["open", "running"].includes(competition.status);
   const days = groupByDay(matches);
 
+  // Cartela de classificação por grupo (só na aba Grupos)
+  const groupsMap = new Map<string, CopaMatch[]>();
+  for (const m of matches) {
+    if (m.stage !== "group" || !m.group_name) continue;
+    if (!groupsMap.has(m.group_name)) groupsMap.set(m.group_name, []);
+    groupsMap.get(m.group_name)!.push(m);
+  }
+  const groups = Array.from(groupsMap.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([name, ms]) => ({
+      name,
+      teams: groupTeams(ms),
+      lockAt: groupLockAt(ms)!,
+    }))
+    .filter((g) => g.teams.length >= 4);
+  const picksByGroup = Object.fromEntries(
+    groupPicks.map((p) => [p.group_name, p])
+  );
+
   return (
     <div className="py-6 space-y-5">
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-white flex items-center gap-2">
-            <Trophy size={20} className="text-primary" /> {competition.name}
+            <Trophy size={20} className="text-yellow-400" /> {competition.name}
           </h1>
           <p className="text-xs text-muted-foreground mt-1">
             Acerte o vencedor (+10) e o placar exato (+10) de cada partida. Quem somar mais pontos leva o pote.
@@ -94,13 +117,13 @@ export default async function CopaPage({ searchParams }: PageProps) {
         </div>
         {participant ? (
           <div className="text-right shrink-0">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/20 border border-primary/30 text-[10px] font-bold text-primary">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-yellow-400/20 border border-yellow-400/30 text-[10px] font-bold text-yellow-400">
               <CheckCircle2 size={11} /> Inscrito
             </span>
-            <p className="text-2xl font-bold text-primary mt-1">{myRow?.points ?? 0} pts</p>
+            <p className="text-2xl font-bold text-yellow-400 mt-1">{myRow?.points ?? 0} pts</p>
             <p className="text-[11px] text-muted-foreground">
               {myRow ? `${myRow.posicao}º lugar` : "Sem pontuação ainda"} ·{" "}
-              <Link href="/copa/ranking" className="text-primary hover:underline">
+              <Link href="/copa/ranking" className="text-yellow-400 hover:underline">
                 ver ranking
               </Link>
             </p>
@@ -117,11 +140,20 @@ export default async function CopaPage({ searchParams }: PageProps) {
         <StageTabs current={stage} />
         <Link
           href="/copa/ranking"
-          className="px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-white border border-border hover:border-primary/40 transition-all flex items-center gap-1.5"
+          className="px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-white border border-border hover:border-yellow-400/40 transition-all flex items-center gap-1.5"
         >
           <Medal size={13} /> Ranking
         </Link>
       </div>
+
+      {/* Cartela: quem passa em cada grupo */}
+      {stage === "group" && groups.length > 0 && (
+        <GroupPicksBoard
+          groups={groups}
+          initialPicks={picksByGroup}
+          isParticipant={!!participant}
+        />
+      )}
 
       {/* Fixture por dia */}
       {days.length === 0 ? (
