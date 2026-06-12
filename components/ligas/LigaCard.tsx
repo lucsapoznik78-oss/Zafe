@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Trophy, Users, ChevronRight, UserPlus, X, Check, Loader2, LogOut, Crown, TrendingUp, TrendingDown, Globe, Lock, Plus, Search, Trash2 } from "lucide-react";
+import { Trophy, Users, ChevronRight, UserPlus, X, Check, Loader2, LogOut, Crown, TrendingUp, TrendingDown, Globe, Lock, Plus, Search, Trash2, Swords } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
@@ -337,6 +337,18 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
                       </div>
                     ))}
                   </div>
+
+                  {/* Bolão do grupo: leva pra criação de privada com os membros pré-carregados */}
+                  {isMember && activeMembers.length >= 2 && (
+                    <button
+                      onClick={() => router.push(`/privadas/criar?liga=${liga.id}`)}
+                      className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+                      style={{ backgroundColor: `${liga.color}15`, color: liga.color }}
+                    >
+                      <Swords size={13} />
+                      Criar bolão do grupo
+                    </button>
+                  )}
 
                   {/* Confirmar transferência */}
                   {transferTarget && (
