@@ -26,26 +26,17 @@ export default function Navbar() {
   const [wallet, setWallet] = useState<WalletType | null>(null);
 
   useEffect(() => {
-    let userId: string | null = null;
-
+    // Busca via API (auth por cookie, leitura server-side): a query direta
+    // de `wallets` pelo browser falhava em algumas sessões e o saldo ficava
+    // vazio mesmo com Z$ na carteira.
     async function load() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      userId = user.id;
-
-      const [{ data: prof }, { data: wal }] = await Promise.all([
-        supabase.from("profiles").select("*").eq("id", user.id).single(),
-        supabase.from("wallets").select("*").eq("user_id", user.id).single(),
-      ]);
-
-      setProfile(prof);
-      setWallet(wal);
-    }
-
-    async function refreshBalance() {
-      if (!userId) return;
-      const { data: wal } = await supabase.from("wallets").select("*").eq("user_id", userId).single();
-      if (wal) setWallet(wal);
+      try {
+        const res = await fetch("/api/carteira", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.profile) setProfile(data.profile);
+        if (data.wallet) setWallet(data.wallet);
+      } catch {}
     }
 
     load();
@@ -54,7 +45,7 @@ export default function Navbar() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") load();
     });
-    const interval = setInterval(refreshBalance, 30000);
+    const interval = setInterval(load, 30000);
     return () => {
       clearInterval(interval);
       subscription.unsubscribe();
