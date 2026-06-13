@@ -145,12 +145,18 @@ export default function CreatePrivateBetForm({
   const [aliados, setAliados] = useState<UserRow[]>([]);
   const [adversarios, setAdversarios] = useState<UserRow[]>([]);
   const [juiz, setJuiz] = useState<UserRow[]>([]);
-  const [allUsers, setAllUsers] = useState<UserRow[]>([]);
-  const [loadingUsers, setLoadingUsers] = useState(true);
+  // Bolão de grupo: só os membros entram nos seletores. Fora de um grupo,
+  // busca todos os usuários como antes.
+  const fromLiga = ligaMembers.length > 0;
+  const [allUsers, setAllUsers] = useState<UserRow[]>(
+    fromLiga ? ligaMembers.filter((m) => m.id !== userId) : []
+  );
+  const [loadingUsers, setLoadingUsers] = useState(!fromLiga);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (fromLiga) return;
     createClient()
       .from("profiles")
       .select("id, username, full_name")
@@ -162,7 +168,7 @@ export default function CreatePrivateBetForm({
         setAllUsers(data ?? []);
         setLoadingUsers(false);
       });
-  }, [userId]);
+  }, [userId, fromLiga]);
 
   function addAliado(u: UserRow) {
     if ([...aliados, ...adversarios, ...juiz].find((x) => x.id === u.id)) {
@@ -188,27 +194,6 @@ export default function CreatePrivateBetForm({
       return;
     }
     setJuiz([u]);
-    setError("");
-  }
-
-  // Papel de um membro do grupo nas listas atuais
-  type Role = "sim" | "nao" | "juiz" | null;
-  function roleOf(id: string): Role {
-    if (aliados.some((x) => x.id === id)) return "sim";
-    if (adversarios.some((x) => x.id === id)) return "nao";
-    if (juiz.some((x) => x.id === id)) return "juiz";
-    return null;
-  }
-
-  // Atribui juiz/SIM/NÃO a um membro do grupo (clicar de novo desmarca).
-  // Juiz é único: escolher outro substitui o atual.
-  function assign(u: UserRow, role: Role) {
-    setAliados((p) => p.filter((x) => x.id !== u.id));
-    setAdversarios((p) => p.filter((x) => x.id !== u.id));
-    setJuiz((p) => p.filter((x) => x.id !== u.id));
-    if (role === "sim") setAliados((p) => [...p, u]);
-    if (role === "nao") setAdversarios((p) => [...p, u]);
-    if (role === "juiz") setJuiz([u]);
     setError("");
   }
 
@@ -297,49 +282,11 @@ export default function CreatePrivateBetForm({
         </div>
       </div>
 
-      {/* Vindo de um grupo: distribui os membros entre juiz / SIM / NÃO */}
-      {ligaMembers.length > 0 && (
-        <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-          <div>
-            <p className="text-sm font-semibold text-white">
-              Membros{ligaName ? ` de ${ligaName}` : " do grupo"}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Marque o papel de cada um. Você entra automaticamente no SIM (Lado A).
-            </p>
-          </div>
-          <div className="space-y-1.5">
-            {ligaMembers
-              .filter((m) => m.id !== userId)
-              .map((m) => {
-                const role = roleOf(m.id);
-                const btn = (r: Exclude<Role, null>, label: string, activeCls: string) => (
-                  <button
-                    type="button"
-                    onClick={() => assign(m, role === r ? null : r)}
-                    className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-colors ${
-                      role === r ? activeCls : "bg-white/5 text-muted-foreground hover:text-white"
-                    }`}
-                  >
-                    {label}
-                  </button>
-                );
-                return (
-                  <div key={m.id} className="flex items-center justify-between gap-2 rounded-lg bg-background px-3 py-2">
-                    <div className="min-w-0">
-                      <p className="text-sm text-white font-medium truncate">{m.full_name || m.username}</p>
-                      <p className="text-[10px] text-muted-foreground">@{m.username}</p>
-                    </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      {btn("juiz", "Juiz", "bg-yellow-400 text-black")}
-                      {btn("sim", "SIM", "bg-sim text-black")}
-                      {btn("nao", "NÃO", "bg-nao text-white")}
-                    </div>
-                  </div>
-                );
-              })}
-          </div>
-        </div>
+      {fromLiga && (
+        <p className="text-xs text-muted-foreground -mb-1">
+          Bolão de <span className="text-white font-medium">{ligaName ?? "grupo"}</span> — só
+          os membros do grupo aparecem nas listas abaixo.
+        </p>
       )}
 
       <UserPicker
