@@ -11,7 +11,7 @@ import { Suspense } from "react";
 const EVENT_LIST_LIMIT = 200;
 
 export const metadata: Metadata = {
-  title: "Econômico — Zafe",
+  title: "Econômico",
   description: "Palpites em indicadores econômicos: IPCA, Selic, PIB e outros eventos do mercado financeiro.",
   alternates: { canonical: "/economico" },
   openGraph: {

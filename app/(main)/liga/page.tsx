@@ -13,7 +13,7 @@ import ConcursoBanner from "@/components/liga/ConcursoBanner";
 const EVENT_LIST_LIMIT = 200;
 
 export const metadata: Metadata = {
-  title: "Liga — Zafe",
+  title: "Liga",
   description: "Faça palpites em eventos e compita com outros usuários na liga de previsões do Zafe.",
   alternates: { canonical: "/liga" },
   openGraph: {
