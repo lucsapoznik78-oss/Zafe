@@ -48,7 +48,7 @@ export default function LiveStats({ topicId, chartUrl, initialSim, initialNao, i
         setNao(newNao);
         setBetCount(newCount);
       } catch {}
-    }, 15_000);
+    }, 30_000);
     return () => clearInterval(interval);
   }, [resolvedChartUrl, isResolved]);
 

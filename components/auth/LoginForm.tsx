@@ -74,6 +74,9 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
   const [showReset, setShowReset] = useState(false);
   const [resetSent, setResetSent] = useState(false);
 
+  // Reenvio do email de confirmação (signup não confirmado)
+  const [showResend, setShowResend] = useState(false);
+
   // Estado do fluxo 2FA
   const [step, setStep] = useState<"credentials" | "choose-2fa" | "verify-otp">("credentials");
   const [twoFaMethod, setTwoFaMethod] = useState<"email" | "sms">("email");
@@ -97,12 +100,22 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
 
       const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
       if (signInError || !data.user) {
-        registrarFalha();
-        setError("Email ou senha inválidos.");
+        const naoConfirmado =
+          (signInError as any)?.code === "email_not_confirmed" ||
+          signInError?.message?.toLowerCase().includes("not confirmed");
+        if (naoConfirmado) {
+          // Senha certa, mas o email nunca foi confirmado — não é "senha inválida"
+          setError("Seu email ainda não foi confirmado. Procure o link na caixa de entrada (e no spam) ou reenvie abaixo.");
+          setShowResend(true);
+        } else {
+          registrarFalha();
+          setError("Email ou senha inválidos.");
+        }
         setLoading(false);
         return;
       }
       limparTentativas();
+      setShowResend(false);
 
       // Verifica se o usuário tem 2FA ativo
       const { data: profile } = await supabase
@@ -148,7 +161,21 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
           await supabase.from("profiles").update({ phone: phoneClean }).eq("id", newUser.id);
         }
       }
-      setSuccess("Conta criada! Verifique seu email para confirmar.");
+      setSuccess("Conta criada! Enviamos um link de confirmação para seu email — confira também a caixa de spam.");
+    }
+    setLoading(false);
+  }
+
+  async function handleResendConfirmation() {
+    setLoading(true);
+    setError("");
+    setSuccess("");
+    const { error: resendError } = await supabase.auth.resend({ type: "signup", email });
+    if (resendError) {
+      setError("Não foi possível reenviar agora. Aguarde alguns minutos e tente de novo.");
+    } else {
+      setSuccess("Email de confirmação reenviado! Confira sua caixa de entrada e o spam.");
+      setShowResend(false);
     }
     setLoading(false);
   }
@@ -407,6 +434,17 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
 
         {error && <p className="text-destructive text-sm">{error}</p>}
         {success && <p className={successClass}>{success}</p>}
+
+        {showResend && (
+          <button
+            type="button"
+            onClick={handleResendConfirmation}
+            disabled={loading}
+            className="w-full py-2 px-4 border border-border rounded-lg text-sm font-medium text-white hover:bg-white/5 transition-colors"
+          >
+            Reenviar email de confirmação
+          </button>
+        )}
 
         <Button
           type="submit"

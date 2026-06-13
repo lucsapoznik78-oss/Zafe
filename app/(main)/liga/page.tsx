@@ -77,11 +77,9 @@ async function LigaList({
   const [{ data: statsData }, { data: snapshotsData }] = await Promise.all([
     supabase.from("v_topic_stats").select("*").in("topic_id", topicIds),
     supabase
-      .from("topic_snapshots")
-      .select("topic_id, prob_sim, recorded_at")
-      .in("topic_id", topicIds)
-      .order("recorded_at", { ascending: false })
-      .limit(topicIds.length * 2),
+      .from("v_latest_topic_snapshots")
+      .select("topic_id, prob_sim")
+      .in("topic_id", topicIds),
   ]);
 
   const statsMap = new Map((statsData ?? []).map((s: any) => [s.topic_id, s]));

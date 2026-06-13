@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { calcOdds } from "@/lib/odds";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { debitBalance, creditBalance } from "@/lib/wallet";
+import { createAdminClient } from "@/lib/supabase/server";
 
 /** Core palpitar logic shared by /api/apostar and /api/liga|economico/[id]/palpitar */
 export async function executePalpitar(
@@ -128,13 +129,16 @@ export async function executePalpitar(
     .not("status", "in", '("refunded","exited","lost","won")');
 
   if ((oppCount ?? 0) > 0) {
-    await supabase
+    // Admin client: o RLS barra o update de bets de outros usuários e o
+    // insert em notifications quando feitos com o client do usuário.
+    const admin = createAdminClient();
+    await admin
       .from("bets")
       .update({ status: "matched" })
       .eq("topic_id", topic_id)
       .eq("status", "pending");
 
-    await supabase.from("notifications").insert({
+    await admin.from("notifications").insert({
       user_id: userId,
       type: "bet_matched",
       title: "Palpite confirmado!",

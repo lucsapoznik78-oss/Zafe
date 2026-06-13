@@ -61,11 +61,14 @@ export async function GET(
     // Ponto ao vivo refletindo os pools atuais.
     points.push(snapshot(new Date().toISOString()));
 
-    return NextResponse.json({
-      marketType: "multi",
-      outcomes: outs.map((o: any) => ({ id: o.id, label: o.label })),
-      points,
-    });
+    return NextResponse.json(
+      {
+        marketType: "multi",
+        outcomes: outs.map((o: any) => ({ id: o.id, label: o.label })),
+        points,
+      },
+      { headers: { "Cache-Control": "public, s-maxage=15, stale-while-revalidate=60" } }
+    );
   }
 
   // ── Mercados binários: snapshots SIM/NÃO existentes ──────────────────────────
@@ -79,5 +82,8 @@ export async function GET(
     supabase.from("v_topic_stats").select("*").eq("topic_id", id).single(),
   ]);
 
-  return NextResponse.json({ marketType: "binary", snapshots: snapshots ?? [], stats });
+  return NextResponse.json(
+    { marketType: "binary", snapshots: snapshots ?? [], stats },
+    { headers: { "Cache-Control": "public, s-maxage=15, stale-while-revalidate=60" } }
+  );
 }

@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { calcOdds } from "@/lib/odds";
 import { debitBalance, creditBalance } from "@/lib/wallet";
@@ -164,13 +164,16 @@ export async function POST(request: Request) {
   });
 
   // ── Matching automático parimutuel ──────────────────────────────
+  // Admin client: o RLS barra updates em bets de outros usuários, em
+  // topic_outcomes e o insert em notifications com o client do usuário.
+  const admin = createAdminClient();
   if (isMulti) {
     // Multi: matched imediatamente (pool parimutuel com N lados)
-    await supabase.from("bets").update({ status: "matched" }).eq("id", bet.id);
+    await admin.from("bets").update({ status: "matched" }).eq("id", bet.id);
     // Atualizar pool do outcome
     const { data: curOutcome } = await supabase
       .from("topic_outcomes").select("pool").eq("id", outcome_id).single();
-    await supabase.from("topic_outcomes")
+    await admin.from("topic_outcomes")
       .update({ pool: (Number(curOutcome?.pool ?? 0) + amount) })
       .eq("id", outcome_id);
   } else {
@@ -184,9 +187,9 @@ export async function POST(request: Request) {
       .not("status", "in", '("refunded","exited","lost","won")');
 
     if ((oppCount ?? 0) > 0) {
-      await supabase.from("bets").update({ status: "matched" })
+      await admin.from("bets").update({ status: "matched" })
         .eq("topic_id", topic_id).eq("status", "pending");
-      await supabase.from("notifications").insert({
+      await admin.from("notifications").insert({
         user_id: user.id,
         type: "bet_matched",
         title: "Palpite confirmado! 🎯",

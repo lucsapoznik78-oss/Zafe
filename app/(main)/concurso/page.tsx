@@ -93,11 +93,9 @@ async function EventosConcurso({ category, search, tab, concurso, now }: { categ
       .in("topic_id", topicIds)
       .eq("status", "matched"),
     supabase
-      .from("topic_snapshots")
-      .select("topic_id, prob_sim, recorded_at")
-      .in("topic_id", topicIds)
-      .order("recorded_at", { ascending: false })
-      .limit(topicIds.length * 2),
+      .from("v_latest_topic_snapshots")
+      .select("topic_id, prob_sim")
+      .in("topic_id", topicIds),
   ]);
 
   const statsMap = new Map<string, any>();
