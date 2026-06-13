@@ -25,6 +25,9 @@ export const metadata: Metadata = {
     description:
       "Compete prevendo o que vai acontecer. Prêmio mensal em PIX pros melhores. Sem depósito, sem cartão.",
     type: "website",
+    siteName: "Zafe",
+    url: "https://www.zafe.app.br",
+    locale: "pt_BR",
   },
   twitter: {
     card: "summary_large_image",
