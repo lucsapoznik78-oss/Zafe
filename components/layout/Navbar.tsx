@@ -8,6 +8,7 @@ import PushSetup from "@/components/layout/PushSetup";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
 import { formatCurrency } from "@/lib/utils";
+import { isPremium } from "@/lib/premium";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -64,6 +65,8 @@ export default function Navbar() {
     .join("")
     .toUpperCase() ?? "?";
 
+  const premium = isPremium(profile);
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-14 border-b border-border bg-black/90 backdrop-blur-sm">
       <div className="flex items-center justify-between h-full px-4 max-w-7xl mx-auto">
@@ -117,11 +120,22 @@ export default function Navbar() {
 
           <DropdownMenu>
             <DropdownMenuTrigger>
-              <Avatar className="h-8 w-8 border border-border cursor-pointer">
-                <AvatarFallback className="bg-primary/20 text-primary text-xs font-semibold">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
+              <div className="relative">
+                <Avatar
+                  className={`h-8 w-8 cursor-pointer ${
+                    premium ? "ring-2 ring-yellow-400 ring-offset-1 ring-offset-black" : "border border-border"
+                  }`}
+                >
+                  <AvatarFallback className="bg-primary/20 text-primary text-xs font-semibold">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                {premium && (
+                  <span className="absolute -bottom-0.5 -right-0.5 flex items-center justify-center rounded-full bg-black">
+                    <Star size={11} className="text-yellow-400" fill="currentColor" />
+                  </span>
+                )}
+              </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48 bg-card border-border">
               <DropdownMenuItem onClick={() => window.location.href = "/perfil"}>
