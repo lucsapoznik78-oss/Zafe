@@ -29,8 +29,6 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    site: "@zafe_app",
-    creator: "@zafe_app",
     title: "Zafe — Fantasy Game de Previsões",
     description: "O fantasy game de previsões do Brasil. Compete, ganhe Z$ grátis e dispute o prêmio mensal.",
   },
@@ -72,8 +70,7 @@ const jsonLd = {
       knowsLanguage: "pt-BR",
       sameAs: [
         "https://www.wikidata.org/wiki/Q140214517",
-        "https://instagram.com/zafe_app",
-        "https://twitter.com/zafe_app",
+        "https://www.instagram.com/zafe.app.br",
       ],
     },
     {
