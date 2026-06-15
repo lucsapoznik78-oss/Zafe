@@ -56,11 +56,20 @@ const jsonLd = {
       "@type": "Organization",
       "@id": `${APP_URL}/#organization`,
       name: "Zafe",
+      alternateName: ["Zafe Liga", "Zafe App", "Zafe Previsões"],
       url: APP_URL,
       logo: {
         "@type": "ImageObject",
         url: `${APP_URL}/icon-512.png`,
+        width: 512,
+        height: 512,
       },
+      image: `${APP_URL}/icon-512.png`,
+      description:
+        "Zafe é a liga de previsões do Brasil: uma competição de habilidade onde você compete prevendo o que vai acontecer, recebe Z$ grátis e dispute o prêmio mensal com os melhores previsores.",
+      foundingDate: "2026",
+      areaServed: { "@type": "Country", name: "Brasil" },
+      knowsLanguage: "pt-BR",
       sameAs: [
         "https://instagram.com/zafe_app",
         "https://twitter.com/zafe_app",
@@ -71,7 +80,9 @@ const jsonLd = {
       "@id": `${APP_URL}/#website`,
       url: APP_URL,
       name: "Zafe",
-      description: "O fantasy game de previsões do Brasil",
+      alternateName: "Zafe Liga",
+      description: "A liga de previsões do Brasil",
+      inLanguage: "pt-BR",
       publisher: { "@id": `${APP_URL}/#organization` },
       potentialAction: {
         "@type": "SearchAction",
