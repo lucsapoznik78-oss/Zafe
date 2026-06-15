@@ -71,6 +71,7 @@ const jsonLd = {
       areaServed: { "@type": "Country", name: "Brasil" },
       knowsLanguage: "pt-BR",
       sameAs: [
+        "https://www.wikidata.org/wiki/Q140214517",
         "https://instagram.com/zafe_app",
         "https://twitter.com/zafe_app",
       ],
