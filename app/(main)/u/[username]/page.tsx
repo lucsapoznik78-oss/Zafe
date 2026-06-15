@@ -6,6 +6,8 @@ import { formatCurrency } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Trophy, TrendingDown, Percent, TrendingUp, Flame, Star } from "lucide-react";
 import CategoryBadge from "@/components/topicos/CategoryBadge";
+import PremiumBadge from "@/components/ui/PremiumBadge";
+import { isPremium } from "@/lib/premium";
 import Link from "next/link";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -46,11 +48,13 @@ export default async function PublicProfilePage({ params }: PageProps) {
 
   const { data: profile } = await adminSupabase
     .from("profiles")
-    .select("id, full_name, username, created_at")
+    .select("id, full_name, username, created_at, is_premium, premium_until")
     .eq("username", username)
     .single();
 
   if (!profile) notFound();
+
+  const premiumActive = isPremium(profile);
 
   const [{ data: bets }, { data: communityBets }] = await Promise.all([
     adminSupabase
@@ -136,7 +140,10 @@ export default async function PublicProfilePage({ params }: PageProps) {
           <AvatarFallback className="bg-primary/20 text-primary text-xl font-bold">{initials}</AvatarFallback>
         </Avatar>
         <div>
-          <h1 className="text-xl font-bold text-white">{profile.full_name}</h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-xl font-bold text-white">{profile.full_name}</h1>
+            {premiumActive && <PremiumBadge />}
+          </div>
           <p className="text-muted-foreground text-sm">@{profile.username}</p>
           <p className="text-xs text-muted-foreground mt-1">
             Membro desde {format(new Date(profile.created_at), "MMMM yyyy", { locale: ptBR })}

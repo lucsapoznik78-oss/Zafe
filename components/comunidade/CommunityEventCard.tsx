@@ -3,6 +3,8 @@ import { timeUntil } from "@/lib/utils";
 import { Clock, Star, CheckCircle } from "lucide-react";
 import CategoryBadge from "@/components/topicos/CategoryBadge";
 import ProbabilityBar from "@/components/topicos/ProbabilityBar";
+import PremiumStar from "@/components/ui/PremiumStar";
+import { isPremium } from "@/lib/premium";
 
 interface CommunityEvent {
   id: string;
@@ -14,7 +16,7 @@ interface CommunityEvent {
   closes_at: string;
   total_volume: number;
   participant_count: number;
-  creator?: { username: string; full_name: string };
+  creator?: { username: string; full_name: string; is_premium?: boolean; premium_until?: string | null };
   creator_reputation?: { score: number };
   stats?: { volume_sim: number; volume_nao: number; total_volume: number; prob_sim: number; bet_count: number };
 }
@@ -75,6 +77,7 @@ export default function CommunityEventCard({ event, showResolveCta }: { event: C
         {/* Creator info */}
         <div className="flex items-center gap-1.5 mb-3 text-xs text-muted-foreground">
           <span>por @{event.creator?.username ?? "?"}</span>
+          {isPremium(event.creator) && <PremiumStar size={11} />}
           <span className="flex items-center gap-0.5">
             <Star size={10} className={creatorScore >= 90 ? "text-yellow-400" : "text-muted-foreground"} />
             {creatorScore}

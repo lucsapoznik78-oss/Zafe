@@ -44,7 +44,7 @@ async function CommunityList({ tab, category, search, minScore, userId }: { tab:
 
   let query = admin
     .from("community_events")
-    .select("*, creator:profiles!creator_id(id, username, full_name)");
+    .select("*, creator:profiles!creator_id(id, username, full_name, is_premium, premium_until)");
 
   if (isEncerrados) {
     const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -125,7 +125,7 @@ async function MyEventsList({ userId }: { userId: string }) {
 
   const { data: events } = await admin
     .from("community_events")
-    .select("*, creator:profiles!creator_id(id, username, full_name)")
+    .select("*, creator:profiles!creator_id(id, username, full_name, is_premium, premium_until)")
     .eq("creator_id", userId)
     .neq("status", "creator_cancelled")
     .order("created_at", { ascending: false })
