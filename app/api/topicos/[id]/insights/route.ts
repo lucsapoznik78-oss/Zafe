@@ -14,6 +14,11 @@ import { NextResponse } from "next/server";
 import { isPremium } from "@/lib/premium";
 import { getOrGenerateInsights } from "@/lib/premium/insights";
 
+// Geração on-demand faz web search + 2 chamadas Claude em sequência, o que passa
+// do default (~10s) da Vercel. Sem isto a função é morta por timeout e o insight
+// nunca é gerado/cacheado. Mesmo padrão de resolver-oracle/resolver-direto.
+export const maxDuration = 60;
+
 interface RouteParams {
   params: Promise<{ id: string }>;
 }
