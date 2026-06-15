@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, Wallet, Info } from "lucide-react";
+import { LogOut, Wallet, Info, Star } from "lucide-react";
 import NotificationBell from "@/components/layout/NotificationBell";
 import PushSetup from "@/components/layout/PushSetup";
 import { createClient } from "@/lib/supabase/client";
@@ -129,6 +129,10 @@ export default function Navbar() {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => window.location.href = "/meus-topicos"}>
                 <span className="text-sm">Minhas Posições</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => window.location.href = "/premium"}>
+                <Star size={14} className="mr-2 text-yellow-400" />
+                <span className="text-sm">Premium</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-border" />
               <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive">
