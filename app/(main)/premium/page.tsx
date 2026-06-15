@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { Check, Star, Zap, TrendingUp, Users, Bell } from "lucide-react";
+import { Check, Star, Sparkles, Gift } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { isPremium } from "@/lib/premium";
 
 export const metadata = { title: "Premium — Zafe" };
 
@@ -13,18 +14,26 @@ const FEATURES_FREE = [
 
 const FEATURES_PREMIUM = [
   "Tudo do plano gratuito",
-  "Criação ilimitada de bolões privados",
-  "Analytics avançado das suas posições",
-  "Alertas em tempo real por push e e-mail",
-  "Acesso antecipado a novos setores",
-  "Badge exclusivo no perfil",
-  "Participação em concursos com prêmios em dinheiro (PIX)",
-  "Suporte prioritário",
+  "Insights exclusivos em cada evento (pesquisas, histórico e contexto)",
+  "Bônus semanal turbinado em Z$",
+  "Badge Premium no perfil",
 ];
 
 export default async function PremiumPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+
+  let userIsPremium = false;
+  let premiumUntil: string | null = null;
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_premium, premium_until")
+      .eq("id", user.id)
+      .maybeSingle();
+    userIsPremium = isPremium(profile);
+    premiumUntil = profile?.premium_until ?? null;
+  }
 
   return (
     <div className="py-6 space-y-8 max-w-lg mx-auto">
@@ -92,39 +101,48 @@ export default async function PremiumPage() {
               </li>
             ))}
           </ul>
-          <button className="w-full py-3 rounded-lg bg-primary text-black font-bold text-sm hover:bg-primary/90 transition-colors">
-            Assinar Premium
-          </button>
-          <p className="text-[10px] text-muted-foreground text-center">
-            Cancele quando quiser. Sem multa.
-          </p>
+          {userIsPremium ? (
+            <div className="w-full py-3 rounded-lg bg-primary/15 border border-primary/40 text-center text-sm text-primary font-bold flex items-center justify-center gap-1.5">
+              <Sparkles size={14} />
+              Você é Premium
+              {premiumUntil && (
+                <span className="font-normal text-xs text-muted-foreground">
+                  (até {new Date(premiumUntil).toLocaleDateString("pt-BR")})
+                </span>
+              )}
+            </div>
+          ) : (
+            <>
+              <div className="w-full py-3 rounded-lg bg-muted/40 border border-border text-center text-sm text-muted-foreground font-bold cursor-not-allowed">
+                Em breve
+              </div>
+              <p className="text-[10px] text-muted-foreground text-center">
+                Disponível em breve — fique de olho.
+              </p>
+            </>
+          )}
         </div>
       </div>
 
       {/* Feature highlights */}
       <div className="space-y-3">
-        <p className="text-sm font-semibold text-white">Por que assinar?</p>
+        <p className="text-sm font-semibold text-white">O que você ganha?</p>
         <div className="grid grid-cols-1 gap-3">
           {[
             {
-              icon: <TrendingUp size={18} className="text-primary" />,
-              title: "Analytics de posições",
-              desc: "Visualize P&L, taxa de acerto, e calibração das suas previsões ao longo do tempo.",
+              icon: <Sparkles size={18} className="text-primary" />,
+              title: "Insights exclusivos em cada evento",
+              desc: "Resumo, dados de pesquisas, histórico e contexto de cada evento — informação para você formar sua própria opinião.",
             },
             {
-              icon: <Bell size={18} className="text-primary" />,
-              title: "Alertas em tempo real",
-              desc: "Receba notificações quando a probabilidade de um setor que você acompanha muda significativamente.",
+              icon: <Gift size={18} className="text-primary" />,
+              title: "Bônus semanal turbinado",
+              desc: "Receba mais Z$ no bônus semanal do que os previsores do plano gratuito.",
             },
             {
-              icon: <Users size={18} className="text-primary" />,
-              title: "Bolões privados ilimitados",
-              desc: "Crie quantos bolões quiser com amigos, grupos e colegas.",
-            },
-            {
-              icon: <Zap size={18} className="text-primary" />,
-              title: "Concursos com prêmio em dinheiro",
-              desc: "É aqui que vale de verdade — concorra a prêmios em dinheiro via PIX.",
+              icon: <Star size={18} className="text-primary" />,
+              title: "Badge Premium no perfil",
+              desc: "Mostre que você leva seus palpites a sério com o selo Premium ao lado do seu nome.",
             },
           ].map((item) => (
             <div key={item.title} className="flex items-start gap-3 bg-card border border-border rounded-xl p-4">
@@ -140,7 +158,7 @@ export default async function PremiumPage() {
 
       {/* Legal note */}
       <p className="text-[11px] text-muted-foreground text-center px-4">
-        A assinatura Premium é um serviço de software. Z$ é moeda virtual sem valor monetário real. Prêmios em concursos são pagos com recursos próprios da Zafe, não de outros usuários.
+        A assinatura Premium é um serviço de software. Os insights são informativos e não constituem recomendação de palpite. Z$ é moeda virtual sem valor monetário real.
       </p>
     </div>
   );

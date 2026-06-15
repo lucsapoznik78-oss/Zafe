@@ -18,6 +18,7 @@ import ResolutionBreakdown from "@/components/topicos/ResolutionBreakdown";
 import RulesAccordion from "@/components/topicos/RulesAccordion";
 import ResolvingBanner from "@/components/topicos/ResolvingBanner";
 import ParticipantsList from "@/components/topicos/ParticipantsList";
+import TopicInsights from "@/components/topicos/TopicInsights";
 import { formatCurrency } from "@/lib/utils";
 import { calcOdds, formatOdds } from "@/lib/odds";
 
@@ -332,6 +333,9 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
               </div>
             )}
           </div>
+
+          {/* Insights Premium (perk exclusivo; free vê prévia borrada) */}
+          <TopicInsights topicId={topicId} />
 
           {/* Distribuição final (só quando resolvido) */}
           {topic.status === "resolved" && topic.resolution && (

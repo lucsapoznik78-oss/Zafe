@@ -56,7 +56,26 @@ export interface Profile {
   full_name: string;
   avatar_url: string | null;
   is_admin: boolean;
+  is_premium: boolean;
+  premium_until: string | null;
   created_at: string;
+}
+
+export interface TopicInsightContent {
+  resumo: string;
+  pontos_chave: string[];
+  pesquisas: string;
+  historico: string;
+  contexto: string;
+  fontes: string[];
+}
+
+export interface TopicInsight {
+  topic_id: string;
+  content: TopicInsightContent;
+  model: string | null;
+  status: string;
+  generated_at: string;
 }
 
 export interface Wallet {

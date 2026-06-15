@@ -5,7 +5,8 @@
  * banir/reativar e ajuste manual de Z$ (com motivo obrigatório).
  */
 import { useEffect, useState, useCallback } from "react";
-import { Search, Loader2, Ban, RotateCcw, Coins } from "lucide-react";
+import { Search, Loader2, Ban, RotateCcw, Coins, Star } from "lucide-react";
+import { isPremium } from "@/lib/premium";
 
 interface AdminUser {
   id: string;
@@ -13,6 +14,8 @@ interface AdminUser {
   full_name: string | null;
   is_admin: boolean;
   banned: boolean;
+  is_premium: boolean;
+  premium_until: string | null;
   created_at: string;
   balance: number | null;
 }
@@ -58,6 +61,47 @@ export default function AdminUsuarios() {
     const data = await res.json();
     if (!res.ok) setMsg(data.error ?? "Erro ao atualizar usuário");
     else setUsers((prev) => prev.map((x) => (x.id === u.id ? { ...x, banned: !u.banned } : x)));
+    setBusyId(null);
+  }
+
+  async function togglePremium(u: AdminUser) {
+    const ativo = isPremium(u);
+    let premium_days: number | undefined;
+    if (!ativo) {
+      const resp = prompt(
+        `Ativar Premium para @${u.username ?? u.id.slice(0, 8)}.\n` +
+          `Dias de validade (vazio = vitalício):`,
+        "30"
+      );
+      if (resp === null) return; // cancelado
+      const n = Number(resp.trim());
+      if (resp.trim() !== "" && (!Number.isFinite(n) || n <= 0)) {
+        setMsg("Dias inválidos.");
+        return;
+      }
+      if (resp.trim() !== "") premium_days = n;
+    } else {
+      if (!confirm(`Desativar Premium de @${u.username ?? u.id.slice(0, 8)}?`)) return;
+    }
+    setBusyId(u.id);
+    setMsg("");
+    const res = await fetch(`/api/admin/usuarios/${u.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ is_premium: !ativo, premium_days }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setMsg(data.error ?? "Erro ao atualizar Premium");
+    } else {
+      setUsers((prev) =>
+        prev.map((x) =>
+          x.id === u.id
+            ? { ...x, is_premium: data.is_premium, premium_until: data.premium_until }
+            : x
+        )
+      );
+    }
     setBusyId(null);
   }
 
@@ -117,12 +161,25 @@ export default function AdminUsuarios() {
                   <p className="text-sm font-bold text-white truncate">
                     @{u.username ?? u.id.slice(0, 8)}
                     {u.is_admin && <span className="ml-2 text-[10px] text-primary font-semibold">ADMIN</span>}
+                    {isPremium(u) && <span className="ml-2 text-[10px] text-yellow-400 font-semibold">PREMIUM</span>}
                     {u.banned && <span className="ml-2 text-[10px] text-destructive font-semibold">BANIDO</span>}
                   </p>
                   <p className="text-xs text-muted-foreground truncate">{u.full_name ?? "—"}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-bold text-primary tabular-nums">{fmtZ(u.balance)}</span>
+                  <button
+                    onClick={() => togglePremium(u)}
+                    disabled={busyId === u.id}
+                    className={`p-2 rounded-lg border transition-colors disabled:opacity-40 ${
+                      isPremium(u)
+                        ? "border-yellow-400/50 text-yellow-400 hover:bg-yellow-400/10"
+                        : "border-border text-muted-foreground hover:text-yellow-400 hover:border-yellow-400/50"
+                    }`}
+                    title={isPremium(u) ? "Desativar Premium" : "Ativar Premium"}
+                  >
+                    {busyId === u.id ? <Loader2 size={14} className="animate-spin" /> : <Star size={14} fill={isPremium(u) ? "currentColor" : "none"} />}
+                  </button>
                   <button
                     onClick={() => { setAdjustId(adjustId === u.id ? null : u.id); setMsg(""); }}
                     className="p-2 rounded-lg border border-border text-muted-foreground hover:text-white hover:border-primary/50 transition-colors"

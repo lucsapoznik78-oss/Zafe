@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { formatCurrency } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Trophy, TrendingDown, Percent, TrendingUp, Flame, Star, User, BookOpen, ShieldCheck, ShieldAlert } from "lucide-react";
@@ -8,6 +9,8 @@ import EditProfileForm from "@/components/perfil/EditProfileForm";
 import CpfForm from "@/components/kyc/CpfForm";
 import TwoFaSettings from "@/components/perfil/TwoFaSettings";
 import ReferralSection from "@/components/perfil/ReferralSection";
+import PremiumBadge from "@/components/ui/PremiumBadge";
+import { isPremium } from "@/lib/premium";
 import { mascaraCPF } from "@/lib/cpf";
 
 interface Props {
@@ -58,6 +61,7 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl }:
   }
   const totalReferrals    = referrals.length;
   const completedReferrals = referrals.filter((r) => r.status === "completed").length;
+  const premiumActive = isPremium(profile);
 
   const tabs = [
     { id: "conta",          label: "Conta",          icon: <User size={14} /> },
@@ -72,7 +76,10 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl }:
           <AvatarFallback className="bg-primary/20 text-primary text-xl font-bold">{initials}</AvatarFallback>
         </Avatar>
         <div className="flex-1">
-          <h1 className="text-xl font-bold text-white">{profile?.full_name}</h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-xl font-bold text-white">{profile?.full_name}</h1>
+            {premiumActive && <PremiumBadge />}
+          </div>
           <p className="text-muted-foreground text-sm">@{profile?.username}</p>
           <p className="text-primary font-semibold mt-1">{formatCurrency(wallet?.balance ?? 0)}</p>
         </div>
@@ -150,6 +157,33 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl }:
               </div>
             </div>
             <EditProfileForm fullName={profile?.full_name ?? ""} username={profile?.username ?? ""} />
+          </div>
+
+          {/* Plano */}
+          <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <Star size={15} className={premiumActive ? "text-yellow-400" : "text-muted-foreground"} />
+              <h3 className="text-sm font-semibold text-white">Plano</h3>
+              {premiumActive && <PremiumBadge className="ml-auto" />}
+            </div>
+            {premiumActive ? (
+              <p className="text-xs text-muted-foreground">
+                Você é Premium
+                {profile?.premium_until
+                  ? ` até ${new Date(profile.premium_until).toLocaleDateString("pt-BR")}.`
+                  : " (vitalício)."}
+              </p>
+            ) : (
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <p className="text-xs text-muted-foreground">Você está no plano Gratuito.</p>
+                <Link
+                  href="/premium"
+                  className="text-xs font-bold text-primary hover:underline shrink-0"
+                >
+                  Conhecer o Premium →
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* KYC */}

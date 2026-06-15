@@ -1,9 +1,13 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { creditBalance } from "@/lib/wallet";
+import { isPremium } from "@/lib/premium";
 
 const BONUS = 100;
 const TETO = 1000;
+// Premium recebe bônus turbinado e teto maior.
+const BONUS_PREMIUM = 250;
+const TETO_PREMIUM = 2000;
 
 // Vercel cron dispatch é GET; reaproveita o mesmo handler (declaração hoisted).
 export const GET = POST;
@@ -34,15 +38,28 @@ export async function POST(request: Request) {
   const { data: wallets } = await supabase.from("wallets").select("user_id, balance");
   if (!wallets) return NextResponse.json({ error: "Falha ao buscar carteiras" }, { status: 500 });
 
+  // Conjunto de Premium ativos → bônus turbinado.
+  const { data: premiumProfiles } = await supabase
+    .from("profiles")
+    .select("id, is_premium, premium_until")
+    .eq("is_premium", true);
+  const premiumIds = new Set(
+    (premiumProfiles ?? []).filter((p: any) => isPremium(p)).map((p: any) => p.id)
+  );
+
   let credited = 0;
   let skipped = 0;
 
   for (const wallet of wallets) {
-    if (wallet.balance >= TETO) {
+    const premium = premiumIds.has(wallet.user_id);
+    const bonus = premium ? BONUS_PREMIUM : BONUS;
+    const teto = premium ? TETO_PREMIUM : TETO;
+
+    if (wallet.balance >= teto) {
       skipped++;
       continue;
     }
-    const actualBonus = Math.min(BONUS, TETO - wallet.balance);
+    const actualBonus = Math.min(bonus, teto - wallet.balance);
 
     await creditBalance(supabase, wallet.user_id, actualBonus);
     await supabase.from("transactions").insert({
@@ -50,12 +67,14 @@ export async function POST(request: Request) {
       type: "weekly_bonus",
       amount: actualBonus,
       net_amount: actualBonus,
-      description: `Bônus semanal Zafe — Z$ ${actualBonus.toFixed(2).replace(".", ",")}`,
+      description: premium
+        ? `Bônus semanal Premium — Z$ ${actualBonus.toFixed(2).replace(".", ",")}`
+        : `Bônus semanal Zafe — Z$ ${actualBonus.toFixed(2).replace(".", ",")}`,
     });
     await supabase.from("notifications").insert({
       user_id: wallet.user_id,
       type: "market_resolved",
-      title: "Bônus semanal! 🎁",
+      title: premium ? "Bônus semanal Premium! ✨" : "Bônus semanal! 🎁",
       body: `Z$ ${actualBonus.toFixed(2).replace(".", ",")} creditados no seu saldo.`,
     });
 
