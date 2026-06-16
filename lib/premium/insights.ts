@@ -120,6 +120,27 @@ export async function generateTopicInsights(topic: TopicLike): Promise<TopicInsi
 }
 
 /**
+ * Lê SOMENTE o cache de `topic_insights` (nunca gera). Usado para chamadas
+ * free/anon — gerar custa 2 chamadas Claude pagas, então o gerador só roda
+ * para premium autenticado (audit G6: cost-amplification DoS). Requer
+ * service_role (createAdminClient) pois a tabela tem RLS sem policy de SELECT.
+ */
+export async function readCachedInsights(
+  admin: any,
+  topicId: string
+): Promise<TopicInsightContent | null> {
+  const { data: cached } = await admin
+    .from("topic_insights")
+    .select("content, status")
+    .eq("topic_id", topicId)
+    .maybeSingle();
+  if (cached?.status === "ok" && cached.content) {
+    return cached.content as TopicInsightContent;
+  }
+  return null;
+}
+
+/**
  * Lê o cache de `topic_insights`; gera (e faz upsert) se não existir ou estiver
  * velho. Requer um client com service_role (createAdminClient).
  */

@@ -170,29 +170,44 @@ export interface TripleCheckResult {
   check3: CheckResult;
 }
 
+// Camada 2 exige DUAS verificações independentes que CONCORDAM, cada uma com
+// confiança >= 85% (CLAUDE.md / spec do oracle). Pagar com base numa fonte só
+// — como fazia antes (G9) — pode liquidar um mercado com prêmio com base num
+// único palpite do modelo, sem o cross-check exigido.
+const CONFIDENCE_THRESHOLD = 85;
+
+function agreeHigh(a: CheckResult, b: CheckResult): boolean {
+  return (
+    a.resultado !== "INCERTO" &&
+    a.resultado === b.resultado &&
+    a.confianca >= CONFIDENCE_THRESHOLD &&
+    b.confianca >= CONFIDENCE_THRESHOLD
+  );
+}
+
 export async function oracleAITripleCheck(
   question: string,
   closesAt: string,
   outcomes?: string[]
 ): Promise<TripleCheckResult> {
-  // Check1: web search primeiro — eventos recentes (pós training cutoff ago/2025) precisam disso
+  // Check1 + Check2: duas buscas independentes com web search.
   const check1 = await verificacaoComSearch(question, closesAt, 1, outcomes);
-
-  if (check1.resultado !== "INCERTO") {
-    return { resultado: check1.resultado, confianca: "alta", check1, check2: { resultado: "INCERTO", confianca: 0, fonte: "" }, check3: { resultado: "INCERTO", confianca: 0, fonte: "" } };
-  }
-
-  // Check2: segunda busca com web search (abordagem diferente)
   const check2 = await verificacaoComSearch(question, closesAt, 2, outcomes);
 
-  if (check2.resultado !== "INCERTO") {
-    return { resultado: check2.resultado, confianca: "alta", check1, check2, check3: { resultado: "INCERTO", confianca: 0, fonte: "" } };
+  // Resolve só se as duas buscas concordam, ambas com confiança >= 85% (G9).
+  if (agreeHigh(check1, check2)) {
+    return { resultado: check1.resultado, confianca: "alta", check1, check2, check3: { resultado: "INCERTO", confianca: 0, fonte: "" } };
   }
 
-  // Fallback: sem search (só resolve eventos dentro do training cutoff)
+  // Desempate: terceira verificação (sem search, conhecimento de treinamento).
+  // Só resolve se concordar com uma das buscas, ambas >= 85% — mantém o
+  // requisito de DUAS fontes independentes concordantes.
   const check3 = await verificacaoSemSearch(question, closesAt, outcomes);
-  if (check3.resultado !== "INCERTO") {
-    return { resultado: check3.resultado, confianca: "baixa", check1, check2, check3 };
+  if (agreeHigh(check1, check3)) {
+    return { resultado: check1.resultado, confianca: "alta", check1, check2, check3 };
+  }
+  if (agreeHigh(check2, check3)) {
+    return { resultado: check2.resultado, confianca: "alta", check1, check2, check3 };
   }
 
   return { resultado: "INCERTO", confianca: "baixa", check1, check2, check3 };

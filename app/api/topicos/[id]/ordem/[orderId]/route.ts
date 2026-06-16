@@ -24,21 +24,26 @@ export async function DELETE(_req: Request, { params }: RouteParams) {
   if (!["open", "partial"].includes(order.status))
     return NextResponse.json({ error: "Ordem não pode ser cancelada" }, { status: 400 });
 
-  // Cancelar primeiro para evitar race condition (somente 1 request consegue cancelar)
+  // Cancelar primeiro para evitar race condition (somente 1 request consegue cancelar).
+  // Retorna a linha cancelada para calcular o reembolso a partir do filled_qty
+  // ATUAL (G11): um fill parcial concorrente entre a leitura acima e este UPDATE
+  // mudaria o filled_qty e, sobre o valor antigo, devolveria escrow a mais.
   const { data: cancelledRows } = await admin.from("orders")
     .update({ status: "cancelled" })
     .eq("id", orderId)
     .in("status", ["open", "partial"])
-    .select("id");
+    .select("quantity, filled_qty, price, order_type, topic_id");
 
   if (!cancelledRows || cancelledRows.length === 0) {
     return NextResponse.json({ error: "Ordem já foi cancelada ou executada" }, { status: 409 });
   }
 
+  const cancelled = cancelledRows[0];
+
   // Devolver escrow de ordens BUY não executadas
-  if (order.order_type === "buy") {
-    const unfilledQty = parseFloat((order.quantity - order.filled_qty).toFixed(2));
-    const refund = parseFloat((unfilledQty * order.price).toFixed(2));
+  if (cancelled.order_type === "buy") {
+    const unfilledQty = parseFloat((cancelled.quantity - cancelled.filled_qty).toFixed(2));
+    const refund = parseFloat((unfilledQty * cancelled.price).toFixed(2));
 
     if (refund > 0.01) {
       await creditBalance(admin, user.id, refund);
@@ -49,7 +54,7 @@ export async function DELETE(_req: Request, { params }: RouteParams) {
         amount:       refund,
         net_amount:   refund,
         description:  "Ordem de compra cancelada — escrow devolvido",
-        reference_id: order.topic_id,
+        reference_id: cancelled.topic_id,
       });
     }
   }

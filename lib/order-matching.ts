@@ -99,32 +99,16 @@ export async function tryMatchOrders(
       sourceBetId:      sellOrder.source_bet_id ?? undefined,
     });
 
-    // Trade não aconteceu (transação revertida): não atualizar fills.
+    // Trade não aconteceu (revertido ou fill_conflict por corrida): a RPC não
+    // atualizou nenhum fill, então só seguimos para a próxima contra-ordem.
     if (!ok) continue;
 
-    // Atualiza counter order
-    const counterFilled = parseFloat((counter.filled_qty + matchQty).toFixed(2));
-    await admin.from("orders").update({
-      filled_qty: counterFilled,
-      status: counterFilled >= counter.quantity - 0.01 ? "filled" : "partial",
-    }).eq("id", counter.id);
-
+    // Os fills das DUAS ordens já foram gravados atomicamente dentro de
+    // execute_trade (migration 043, audit G10) — nada a atualizar aqui.
     remaining = parseFloat((remaining - matchQty).toFixed(2));
     totalFilled = parseFloat((totalFilled + matchQty).toFixed(2));
     tradesExecuted++;
   }
-
-  // Atualiza nova ordem
-  const newFilled = parseFloat((newOrder.filled_qty + totalFilled).toFixed(2));
-  await admin.from("orders").update({
-    filled_qty: newFilled,
-    status:
-      newFilled >= newOrder.quantity - 0.01
-        ? "filled"
-        : newFilled > 0
-          ? "partial"
-          : "open",
-  }).eq("id", newOrderId);
 
   return { tradesExecuted, totalFilled };
 }

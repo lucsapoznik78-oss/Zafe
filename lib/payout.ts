@@ -13,6 +13,16 @@ function fmt(v: number) {
 
 const BONUS_PIONEIRO = 10;
 
+/**
+ * Z$ efetivamente debitado por uma posição (audit G3/G4). Posições compradas
+ * no mercado secundário gravam cost_basis = price*quantity (o que o comprador
+ * pagou); palpites primários têm cost_basis nulo e usam amount (o stake cheio).
+ * Reembolsar/ponderar pelo face value cunhava Z$ e desbalanceava o pool.
+ */
+function stakeOf(b: { cost_basis?: number | null; amount: number }): number {
+  return b.cost_basis != null ? Number(b.cost_basis) : Number(b.amount);
+}
+
 /** Executa `fn` sobre os itens em lotes paralelos de `size` (audit #32). */
 async function emLotes<T>(items: T[], size: number, fn: (item: T) => Promise<unknown>) {
   for (let i = 0; i < items.length; i += size) {
@@ -91,12 +101,12 @@ async function pagarBonusPioneiro(supabase: any, topicId: string, topicTitle: st
 async function refundBets(supabase: any, bets: any[], topicId: string, reason: string) {
   if (bets.length === 0) return;
 
-  const creditos = somarPorUsuario(bets.map((b) => ({ user_id: b.user_id, valor: b.amount })));
+  const creditos = somarPorUsuario(bets.map((b) => ({ user_id: b.user_id, valor: stakeOf(b) })));
   await emLotes(creditos, 10, ([userId, total]) => creditBalance(supabase, userId, total));
 
   await supabase.from("bets").update({ status: "refunded" }).in("id", bets.map((b) => b.id));
   await supabase.from("transactions").insert(bets.map((bet) => ({
-    user_id: bet.user_id, type: "bet_refund", amount: bet.amount, net_amount: bet.amount,
+    user_id: bet.user_id, type: "bet_refund", amount: stakeOf(bet), net_amount: stakeOf(bet),
     description: `Reembolso — ${reason}`, reference_id: topicId,
   })));
 }
@@ -131,7 +141,7 @@ export async function reembolsarTodos(
     await supabase.from("notifications").insert(betsList.map((bet: any) => ({
       user_id: bet.user_id, type: "market_resolved",
       title: "Mercado reembolsado",
-      body: `"${title}": ${motivo}. Reembolso de ${fmt(bet.amount)} creditado.`,
+      body: `"${title}": ${motivo}. Reembolso de ${fmt(stakeOf(bet))} creditado.`,
       data: { topic_id: topicId },
     })));
   }
@@ -195,14 +205,16 @@ export async function pagarVencedoresMulti(
     return { note: "no_coverage_refund" };
   }
 
-  const totalWinPool  = winnerBets.reduce((s: number, b: any) => s + b.amount, 0);
-  const totalLosePool = loserBets.reduce((s: number, b: any) => s + b.amount, 0);
+  const totalWinPool  = winnerBets.reduce((s: number, b: any) => s + stakeOf(b), 0);
+  const totalLosePool = loserBets.reduce((s: number, b: any) => s + stakeOf(b), 0);
 
   // Audit #32: pagamento em lote — crédito agregado por usuário (CAS
   // preservado), updates de bets em paralelo controlado, INSERTs em bulk.
+  // Audit G4: pondera pelo cost_basis (stake real), não pelo face value.
   const winners = winnerBets.map((bet: any) => {
-    const winnings = parseFloat(((bet.amount / totalWinPool) * totalLosePool).toFixed(2));
-    return { bet, payout: parseFloat((bet.amount + winnings).toFixed(2)) };
+    const stake = stakeOf(bet);
+    const winnings = parseFloat(((stake / totalWinPool) * totalLosePool).toFixed(2));
+    return { bet, payout: parseFloat((stake + winnings).toFixed(2)) };
   });
 
   const creditos = somarPorUsuario(winners.map((w: any) => ({ user_id: w.bet.user_id, valor: w.payout })));
@@ -288,14 +300,16 @@ export async function pagarVencedores(
     return { note: "no_coverage_refund" };
   }
 
-  const totalWinPool  = winnerBets.reduce((s: number, b: any) => s + b.amount, 0);
-  const totalLosePool = loserBets.reduce((s: number, b: any) => s + b.amount, 0);
+  const totalWinPool  = winnerBets.reduce((s: number, b: any) => s + stakeOf(b), 0);
+  const totalLosePool = loserBets.reduce((s: number, b: any) => s + stakeOf(b), 0);
 
   // Audit #32: pagamento em lote — crédito agregado por usuário (CAS
   // preservado), updates de bets em paralelo controlado, INSERTs em bulk.
+  // Audit G4: pondera pelo cost_basis (stake real), não pelo face value.
   const winners = winnerBets.map((bet: any) => {
-    const winnings = parseFloat(((bet.amount / totalWinPool) * totalLosePool).toFixed(2));
-    return { bet, payout: parseFloat((bet.amount + winnings).toFixed(2)) };
+    const stake = stakeOf(bet);
+    const winnings = parseFloat(((stake / totalWinPool) * totalLosePool).toFixed(2));
+    return { bet, payout: parseFloat((stake + winnings).toFixed(2)) };
   });
 
   const creditos = somarPorUsuario(winners.map((w: any) => ({ user_id: w.bet.user_id, valor: w.payout })));

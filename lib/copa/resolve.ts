@@ -61,10 +61,12 @@ export async function applyMatchResult(
     source_url: string | null;
   }
 ): Promise<{ ok: boolean; events: number; error?: string }> {
+  // G8: grava o resultado MAS NÃO marca 'finished' ainda. Se o rescore falhar,
+  // a partida fica 'scheduled' e resolveDueMatches a re-pega no próximo run
+  // (antes ela ficava 'finished' com zero score events e nunca era retentada).
   const { error: eMatch } = await admin
     .from("copa_matches")
     .update({
-      status: "finished",
       home_goals: result.home_goals,
       away_goals: result.away_goals,
       went_to_et: result.went_to_et,
@@ -103,6 +105,13 @@ export async function applyMatchResult(
     p_events: events,
   });
   if (eScore) return { ok: false, events: 0, error: eScore.message };
+
+  // Rescore OK → agora sim marca 'finished'.
+  const { error: eFinish } = await admin
+    .from("copa_matches")
+    .update({ status: "finished" })
+    .eq("id", match.id);
+  if (eFinish) return { ok: false, events: 0, error: eFinish.message };
 
   // Grupo completo? Pontua os palpites de classificação (1º/2º/3º).
   // Roda DEPOIS do rescore: re-resolver o último jogo do grupo apaga os

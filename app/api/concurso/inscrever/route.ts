@@ -74,6 +74,10 @@ export async function POST(request: Request) {
     .eq("id", user.id);
 
   if (eProfile) {
+    // 23505 = corrida no índice UNIQUE de cpf/username (migration 042).
+    if ((eProfile as { code?: string }).code === "23505") {
+      return NextResponse.json({ error: "CPF ou username já cadastrado" }, { status: 409 });
+    }
     console.error("[concurso/inscrever] perfil", eProfile);
     return NextResponse.json({ error: "Erro ao salvar seus dados" }, { status: 500 });
   }

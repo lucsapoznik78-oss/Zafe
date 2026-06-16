@@ -12,7 +12,7 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { isPremium } from "@/lib/premium";
-import { getOrGenerateInsights } from "@/lib/premium/insights";
+import { getOrGenerateInsights, readCachedInsights } from "@/lib/premium/insights";
 
 // Geração on-demand faz web search + 2 chamadas Claude em sequência, o que passa
 // do default (~10s) da Vercel. Sem isto a função é morta por timeout e o insight
@@ -52,7 +52,12 @@ export async function GET(_req: Request, { params }: RouteParams) {
     premium = isPremium(profile);
   }
 
-  const content = await getOrGenerateInsights(admin, topic);
+  // G6: a geração (2 chamadas Claude pagas + web search) só roda para premium
+  // autenticado. Free/anon leem APENAS o cache — sem isso qualquer um itera
+  // topic ids e força gerações ilimitadas custeadas pela plataforma (DoS de custo).
+  const content = premium
+    ? await getOrGenerateInsights(admin, topic)
+    : await readCachedInsights(admin, topic.id);
   if (!content) {
     return NextResponse.json(
       { locked: !premium, content: null, teaser: "" },

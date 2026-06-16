@@ -63,8 +63,18 @@ export async function pagarConcursoBets(
 
     if (resolution === "cancelled") {
       for (const bet of bets) {
-        await creditConcursoBalance(adminClient, bet.user_id, bet.concurso_id, Number(bet.amount));
-        await adminClient.from("concurso_bets").update({ status: "refunded" }).eq("id", bet.id);
+        // Claim atômico matched→refunded: só credita o resolver que de fato
+        // virou a linha. Dois resolvers concorrentes (cron + Layer-4) não
+        // reembolsam o mesmo bet duas vezes (G2/G14 — conservação ZC$).
+        const { data: claimed } = await adminClient
+          .from("concurso_bets")
+          .update({ status: "refunded" })
+          .eq("id", bet.id)
+          .eq("status", "matched")
+          .select("id");
+        if (claimed && claimed.length > 0) {
+          await creditConcursoBalance(adminClient, bet.user_id, bet.concurso_id, Number(bet.amount));
+        }
       }
       await adminClient.from("topics").update({
         status: "resolved",
@@ -79,22 +89,27 @@ export async function pagarConcursoBets(
     const totalWinning = winners.reduce((s, b) => s + Number(b.amount), 0);
     const totalLosing  = losers.reduce((s, b) => s + Number(b.amount), 0);
 
-    // Mark losers
+    // Mark losers (claim matched→lost; não credita, mas mantém o estado consistente)
     for (const bet of losers) {
-      await adminClient.from("concurso_bets").update({ status: "lost" }).eq("id", bet.id);
+      await adminClient.from("concurso_bets").update({ status: "lost" }).eq("id", bet.id).eq("status", "matched");
     }
 
-    // Pay winners — 100% parimutuel, sem comissão
+    // Pay winners — 100% parimutuel, sem comissão.
+    // Claim atômico matched→won: só credita quem virou a linha (G2).
     for (const bet of winners) {
       const winnerShare = totalWinning > 0 ? (Number(bet.amount) / totalWinning) * totalLosing : 0;
       const payout = Number(bet.amount) + winnerShare;
 
-      await adminClient
+      const { data: claimed } = await adminClient
         .from("concurso_bets")
         .update({ status: "won", potential_payout: payout })
-        .eq("id", bet.id);
+        .eq("id", bet.id)
+        .eq("status", "matched")
+        .select("id");
 
-      await creditConcursoBalance(adminClient, bet.user_id, bet.concurso_id, payout);
+      if (claimed && claimed.length > 0) {
+        await creditConcursoBalance(adminClient, bet.user_id, bet.concurso_id, payout);
+      }
     }
 
     // Atualiza status do topic
@@ -136,14 +151,22 @@ export async function pagarConcursoBetsMulti(
     const totalLosing  = losers.reduce((s, b) => s + Number(b.amount), 0);
 
     for (const bet of losers) {
-      await adminClient.from("concurso_bets").update({ status: "lost" }).eq("id", bet.id);
+      await adminClient.from("concurso_bets").update({ status: "lost" }).eq("id", bet.id).eq("status", "matched");
     }
 
+    // Claim atômico matched→won: só credita quem virou a linha (G2).
     for (const bet of winners) {
       const winnerShare = totalWinning > 0 ? (Number(bet.amount) / totalWinning) * totalLosing : 0;
       const payout = Number(bet.amount) + winnerShare;
-      await adminClient.from("concurso_bets").update({ status: "won", potential_payout: payout }).eq("id", bet.id);
-      await creditConcursoBalance(adminClient, bet.user_id, bet.concurso_id, payout);
+      const { data: claimed } = await adminClient
+        .from("concurso_bets")
+        .update({ status: "won", potential_payout: payout })
+        .eq("id", bet.id)
+        .eq("status", "matched")
+        .select("id");
+      if (claimed && claimed.length > 0) {
+        await creditConcursoBalance(adminClient, bet.user_id, bet.concurso_id, payout);
+      }
     }
 
     await adminClient.from("topics").update({

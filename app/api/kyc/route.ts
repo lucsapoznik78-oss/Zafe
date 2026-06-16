@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { validarCPF } from "@/lib/cpf";
 
@@ -16,8 +16,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "CPF inválido" }, { status: 400 });
   }
 
-  // Verificar se CPF já está em uso por outro usuário
-  const { data: existing } = await supabase
+  // cpf/kyc_verified são colunas privilegiadas (service-role-only após
+  // migration 042). A escrita usa o admin client — o client do usuário não
+  // tem mais GRANT nessas colunas (G7).
+  const admin = createAdminClient();
+
+  // Verificação prévia (UX). A garantia real de unicidade é o índice parcial
+  // UNIQUE profiles_cpf_unique (migration 042): fecha o TOCTOU de dois
+  // cadastros concorrentes do mesmo CPF (Sybil no concurso com prêmio em R$).
+  const { data: existing } = await admin
     .from("profiles")
     .select("id")
     .eq("cpf", cpfLimpo)
@@ -28,12 +35,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "CPF já cadastrado" }, { status: 409 });
   }
 
-  const { error } = await supabase
+  const { error } = await admin
     .from("profiles")
     .update({ cpf: cpfLimpo, kyc_verified: true })
     .eq("id", user.id);
 
-  if (error) return NextResponse.json({ error: "Erro ao salvar CPF" }, { status: 500 });
+  if (error) {
+    // 23505 = violação de UNIQUE (corrida no índice profiles_cpf_unique).
+    if ((error as { code?: string }).code === "23505") {
+      return NextResponse.json({ error: "CPF já cadastrado" }, { status: 409 });
+    }
+    return NextResponse.json({ error: "Erro ao salvar CPF" }, { status: 500 });
+  }
 
   return NextResponse.json({ success: true });
 }

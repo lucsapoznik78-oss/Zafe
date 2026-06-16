@@ -1,10 +1,12 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+
+  const admin = createAdminClient();
 
   const { code } = await request.json();
   if (!code) return NextResponse.json({ error: "Código inválido" }, { status: 400 });
@@ -30,9 +32,10 @@ export async function POST(request: Request) {
   if (!referrer) return NextResponse.json({ error: "Código não encontrado" }, { status: 404 });
   if (referrer.id === user.id) return NextResponse.json({ error: "Não pode usar seu próprio código" }, { status: 400 });
 
-  // Registrar referral
-  await supabase.from("profiles").update({ referred_by: referrer.id }).eq("id", user.id);
-  await supabase.from("referrals").insert({
+  // Registrar referral — referred_by é coluna privilegiada (service-role-only
+  // após migration 042), escrita pelo admin client.
+  await admin.from("profiles").update({ referred_by: referrer.id }).eq("id", user.id);
+  await admin.from("referrals").insert({
     referrer_id: referrer.id,
     referred_id: user.id,
     status: "pending",
