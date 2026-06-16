@@ -2,11 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Trophy, Loader2, Eye, EyeOff, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Trophy, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 import { formatarCPF, validarCPF } from "@/lib/cpf";
 
 function calcularIdade(isoDate: string): number {
@@ -20,23 +19,19 @@ function calcularIdade(isoDate: string): number {
 }
 
 interface Props {
-  email: string;
   titulo: string;
   saldoInicial: number;
   initialFullName?: string;
   initialUsername?: string;
 }
 
-export default function ConfirmarInscricao({ email, titulo, saldoInicial, initialFullName = "", initialUsername = "" }: Props) {
+export default function ConfirmarInscricao({ titulo, saldoInicial, initialFullName = "", initialUsername = "" }: Props) {
   const router = useRouter();
-  const supabase = createClient();
 
   const [fullName, setFullName] = useState(initialFullName);
   const [username, setUsername] = useState(initialUsername);
   const [cpf, setCpf] = useState("");
   const [birthDate, setBirthDate] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
@@ -70,15 +65,9 @@ export default function ConfirmarInscricao({ email, titulo, saldoInicial, initia
 
     setLoading(true);
 
-    // Re-autenticação: confirma a senha da conta logada antes de inscrever
-    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
-    if (authError) {
-      setError("Senha incorreta. Confirme sua senha para participar.");
-      setLoading(false);
-      return;
-    }
-
-    // Inscrição (envia identificação completa)
+    // A sessão já autentica o usuário (Google ou email/senha); o servidor revalida
+    // em /api/concurso/inscrever. Não re-pedimos senha — isso travava quem entrou
+    // com Google (sem senha) e adicionava fricção desnecessária.
     const res = await fetch("/api/concurso/inscrever", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -208,35 +197,11 @@ export default function ConfirmarInscricao({ email, titulo, saldoInicial, initia
           )}
         </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="confirm-password" className="text-sm text-muted-foreground">
-            Confirme sua senha
-          </Label>
-          <div className="relative">
-            <Input
-              id="confirm-password"
-              type={showPass ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="bg-input border-border focus:border-yellow-400 pr-10"
-              required
-            />
-            <button
-              type="button"
-              onClick={() => setShowPass(!showPass)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white"
-            >
-              {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
-            </button>
-          </div>
-        </div>
-
         {error && <p className="text-destructive text-sm">{error}</p>}
 
         <Button
           type="submit"
-          disabled={loading || !password || !fullName || !username || !cpf || !birthDate}
+          disabled={loading || !fullName || !username || !cpf || !birthDate}
           className="w-full bg-yellow-400 text-black font-semibold hover:bg-yellow-300"
         >
           {loading ? <Loader2 size={16} className="animate-spin" /> : "Confirmar participação"}

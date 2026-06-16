@@ -88,7 +88,6 @@ export default async function ConcursoEntrar() {
       <div className="min-h-[calc(100vh-56px)] flex flex-col items-center justify-center py-8 px-4">
         <div className="w-full max-w-sm">
           <ConfirmarInscricao
-            email={user.email ?? ""}
             titulo={concurso.titulo}
             saldoInicial={concurso.saldo_inicial}
             initialFullName={perfil?.full_name ?? ""}

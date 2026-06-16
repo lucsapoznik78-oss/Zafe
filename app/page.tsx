@@ -7,6 +7,7 @@ import { Suspense } from "react";
 
 import LandingHeader from "@/components/landing/LandingHeader";
 import Hero from "@/components/landing/Hero";
+import EntrarCards from "@/components/landing/EntrarCards";
 import HowItWorks from "@/components/landing/HowItWorks";
 import ConcursoAtivo from "@/components/landing/ConcursoAtivo";
 import EventosEmAlta from "@/components/landing/EventosEmAlta";
@@ -51,6 +52,9 @@ export default async function LandingPage() {
 
       <main>
         <Hero />
+
+        <div className="border-t border-border/20" />
+        <EntrarCards />
 
         <div className="border-t border-border/20" />
         <HowItWorks />
