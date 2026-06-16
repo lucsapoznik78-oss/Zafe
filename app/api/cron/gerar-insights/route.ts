@@ -18,8 +18,12 @@ import { getOrGenerateInsights } from "@/lib/premium/insights";
 // janela larga. Mesmo teto de resolver-oracle.
 export const maxDuration = 300;
 
-// Teto de eventos por execução (limita custo de API por run).
-const BATCH_LIMIT = 40;
+// Teto de eventos considerados por execução. Cache fresco (<24h) é pulado rápido
+// dentro de getOrGenerateInsights, então um teto alto só custa um SELECT por
+// evento já aquecido — e garante que re-execuções caminhem por todo o backlog
+// (não ficam presas nos N que fecham primeiro). Geração real é limitada pela
+// janela de maxDuration, não por este número.
+const BATCH_LIMIT = 120;
 
 // Vercel cron dispatch é GET; reaproveita o mesmo handler (declaração hoisted).
 export const GET = POST;
