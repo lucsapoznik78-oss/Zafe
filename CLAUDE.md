@@ -30,8 +30,17 @@ UI strings, emails, push, and marketing must say "previsão/palpite/previsor" (n
 npm run dev        # dev server at localhost:3000
 npm run build      # production build (also the de-facto type check)
 npm run lint       # ESLint
-npx vercel --prod  # deploy — NO GitHub auto-deploy; prod domain zafe.app.br
 ```
+
+### Deploy workflow — ALWAYS commit + push
+
+Deploy is **auto-deploy via GitHub**: every push to `main` ships to production (prod domain `zafe.app.br`). Do NOT use `npx vercel --prod`.
+
+After making any change, the default workflow is: **always commit and always push to `main`** so it auto-deploys — unless the user explicitly says otherwise. Don't wait to be asked to commit/push; it's the expected end of every task.
+
+### Migrations — ALWAYS write one for schema changes
+
+Any schema change MUST ship with a new numbered SQL migration in `supabase/migrations/` (continue the `001…` sequence). Migrations are applied manually in the Supabase SQL editor — there is no migration CLI. Always create the migration file as part of the change; never alter schema only ad-hoc in the dashboard.
 
 - No test framework is configured.
 - Migrations are plain SQL in `supabase/migrations/` (numbered `001`–`026`), applied manually in the Supabase SQL editor — there is no migration CLI workflow.
