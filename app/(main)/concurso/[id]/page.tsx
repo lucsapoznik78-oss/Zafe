@@ -10,6 +10,7 @@ import LiveStats from "@/components/topicos/LiveStats";
 import ResolvingBanner from "@/components/topicos/ResolvingBanner";
 import ConcursoBetForm from "@/components/concurso/ConcursoBetForm";
 import ParticipantsList from "@/components/topicos/ParticipantsList";
+import TopicInsights from "@/components/topicos/TopicInsights";
 import { calcOdds } from "@/lib/odds";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { format } from "date-fns";
@@ -224,6 +225,9 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
               }}
             />
           )}
+
+          {/* Insights Premium (perk exclusivo; free vê prévia borrada) */}
+          <TopicInsights topicId={topicId} />
 
           {/* Participantes do concurso neste evento */}
           <div className="space-y-2">
