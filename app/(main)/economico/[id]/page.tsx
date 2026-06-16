@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const supabase = await createClient();
   const isUUID = /^[0-9a-f-]{36}$/.test(id);
-  const query = supabase.from("topics").select("title, description, category");
+  const query = supabase.from("topics").select("id, slug, title, description, category");
   const { data: topic } = isUUID
     ? await query.eq("id", id).single()
     : await query.eq("slug", id).single();
@@ -21,10 +21,12 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const desc = topic.description
     ? topic.description.slice(0, 160)
     : `Preveja o resultado deste indicador econômico e compita no Zafe Econômico.`;
-  const resolvedId = isUUID ? id : (await supabase.from("topics").select("id").eq("slug", id).single())?.data?.id ?? id;
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.zafe.app.br";
-  const ogImage = `${appUrl}/api/og?id=${resolvedId}&type=economico`;
-  const canonicalUrl = `${appUrl}/economico/${resolvedId}`;
+  // OG image looks up topics by UUID; canonical must match sitemap + internal
+  // links, which use the slug. Pointing canonical at the UUID created a
+  // duplicate URL Google never saw linked → "canônica diferente" / não indexada.
+  const ogImage = `${appUrl}/api/og?id=${topic.id}&type=economico`;
+  const canonicalUrl = `${appUrl}/economico/${topic.slug ?? topic.id}`;
   return {
     title: topic.title,
     description: desc,
