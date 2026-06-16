@@ -236,7 +236,7 @@ export default async function CommunityDetailPage({ params }: PageProps) {
         <div className="space-y-4">
           {canResolve && <ResolveForm eventId={id} />}
 
-          {event.status === "active" && !isClosed && (
+          {event.status === "active" && !isClosed && !isCreator && (
             <CommunityBetForm
               eventId={id}
               totalSim={volumeSim}
@@ -244,6 +244,12 @@ export default async function CommunityDetailPage({ params }: PageProps) {
               isClosed={isClosed}
               userBalance={wallet?.balance ?? 0}
             />
+          )}
+
+          {event.status === "active" && !isClosed && isCreator && (
+            <div className="bg-card border border-border rounded-xl p-4 text-center text-muted-foreground text-sm">
+              Você criou este evento e vai resolvê-lo — por isso não pode palpitar nele.
+            </div>
           )}
 
           {isClosed && !isResolved && !isAwaitingResolution && !canResolve && (

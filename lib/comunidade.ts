@@ -75,6 +75,11 @@ export async function executeCommunityBet(
   if (new Date(event.closes_at) < new Date()) {
     return { error: "O prazo para palpitar já encerrou", status: 400 };
   }
+  // O criador resolve o próprio evento — palpitar nele seria conflito de
+  // interesse (poderia resolver a favor do próprio palpite).
+  if (event.creator_id === userId) {
+    return { error: "Você não pode palpitar no evento que você criou.", status: 403 };
+  }
 
   const { data: wallet } = await supabase
     .from("wallets")
