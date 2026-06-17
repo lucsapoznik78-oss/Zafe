@@ -186,12 +186,17 @@ export async function POST(req: Request) {
 
     // Um tópico pode ter palpites em `bets` (Liga) E em `concurso_bets`
     // (Concurso). Pagar só uma tabela com base em concurso_id deixava o outro
-    // conjunto sem pagamento. Conta as duas e paga ambas quando houver matched.
-    const [{ count: matchedBets }, { count: matchedConcurso }] = await Promise.all([
-      admin.from("bets").select("id", { count: "exact", head: true }).eq("topic_id", topic.id).eq("status", "matched"),
-      admin.from("concurso_bets").select("id", { count: "exact", head: true }).eq("topic_id", topic.id).eq("status", "matched"),
+    // conjunto sem pagamento. Conta as duas e paga ambas quando houver palpite.
+    // Conta TODO palpite liquidável (pending + matched), não só matched: um
+    // palpite `pending` (sem contraparte ainda) já teve o Z$ debitado e precisa
+    // ser pago/reembolsado por pagarVencedores. Contar só `matched` marcava o
+    // tópico como resolvido deixando os `pending` presos — Z$ saía e não voltava.
+    const settleableFilter = '("refunded","exited","won","lost")';
+    const [{ count: settleableBets }, { count: settleableConcurso }] = await Promise.all([
+      admin.from("bets").select("id", { count: "exact", head: true }).eq("topic_id", topic.id).not("status", "in", settleableFilter),
+      admin.from("concurso_bets").select("id", { count: "exact", head: true }).eq("topic_id", topic.id).not("status", "in", settleableFilter),
     ]);
-    const semBets = (matchedBets ?? 0) === 0 && (matchedConcurso ?? 0) === 0;
+    const semBets = (settleableBets ?? 0) === 0 && (settleableConcurso ?? 0) === 0;
 
     if (resultado === "SIM" || resultado === "NAO") {
       try {
@@ -206,8 +211,8 @@ export async function POST(req: Request) {
         // Ordem importa: pagarVencedores faz o claim atômico do tópico (C7) e
         // marca resolved; rodá-lo primeiro garante que pagarConcursoBets (sem
         // claim) ainda pague o seu conjunto em tópicos mistos.
-        if ((matchedBets ?? 0) > 0) await pagarVencedores(admin, topic.id, resolucao, user.id);
-        if ((matchedConcurso ?? 0) > 0) await pagarConcursoBets(admin, topic.id, resolucao);
+        if ((settleableBets ?? 0) > 0) await pagarVencedores(admin, topic.id, resolucao, user.id);
+        if ((settleableConcurso ?? 0) > 0) await pagarConcursoBets(admin, topic.id, resolucao);
         // Sem palpites nenhum payout marca o tópico — fecha manualmente
         if (semBets) {
           await admin.from("topics").update({ status: "resolved", resolution: resolucao, resolved_at: new Date().toISOString() }).eq("id", topic.id);
