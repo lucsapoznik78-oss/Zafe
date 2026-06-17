@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/server";
 import { verifyCronAuth } from "@/lib/cron-auth";
 
@@ -35,6 +36,10 @@ export async function POST(req: Request) {
       data: { community_event_id: event.id },
     });
     moved++;
+  }
+
+  if (moved > 0) {
+    revalidatePath("/comunidade");
   }
 
   return NextResponse.json({ moved });

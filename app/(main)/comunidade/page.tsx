@@ -48,7 +48,15 @@ async function CommunityList({ tab, category, search, minScore, userId }: { tab:
 
   if (isEncerrados) {
     const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    query = query.in("status", ["community_resolved", "auto_cancelled", "mod_cancelled"]).gte("resolved_at", oneWeekAgo);
+    // Mostra eventos encerrados, aguardando resolução, ou expirados que o cron
+    // ainda não moveu. Inclui resolvidos da última semana + todos os em
+    // awaiting_resolution + active expirados (órfãos do cron).
+    query = query
+      .or(
+        `and(status.in.(community_resolved,auto_cancelled,mod_cancelled),resolved_at.gte.${oneWeekAgo}),` +
+        `status.eq.awaiting_resolution,` +
+        `and(status.eq.active,closes_at.lt.${new Date().toISOString()})`
+      );
   } else {
     query = query.eq("status", "active").gte("closes_at", new Date().toISOString());
   }

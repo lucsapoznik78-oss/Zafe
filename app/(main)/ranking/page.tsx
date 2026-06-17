@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Ranking",
@@ -18,22 +18,22 @@ export const metadata: Metadata = {
   },
 };
 import { formatCurrency } from "@/lib/utils";
-import { Trophy, TrendingUp, Medal } from "lucide-react";
+import { Trophy, TrendingUp, Medal, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import RankingFilters from "@/components/ranking/RankingFilters";
 
-// Mínimo de apostas resolvidas para aparecer no ranking
 const MIN_BETS = 1;
+const PER_PAGE = 50;
 
 interface PageProps {
-  searchParams: Promise<{ periodo?: string }>;
+  searchParams: Promise<{ periodo?: string; page?: string }>;
 }
 
 export default async function RankingPage({ searchParams }: PageProps) {
-  const { periodo = "todos" } = await searchParams;
-  const supabase = await createClient();
+  const { periodo = "todos", page: pageStr = "1" } = await searchParams;
+  const page = Math.max(1, parseInt(pageStr) || 1);
+  const supabase = createAdminClient();
 
-  // Definir janela de tempo
   const desde: string | null =
     periodo === "semana"
       ? new Date(Date.now() - 7  * 24 * 60 * 60 * 1000).toISOString()
@@ -41,10 +41,6 @@ export default async function RankingPage({ searchParams }: PageProps) {
       ? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
       : null;
 
-  // Conta apostas resolvidas (won/lost) E posições em aberto (matched/pending).
-  // Sem incluir as abertas, quem acabou de palpitar some do ranking até um evento
-  // resolver — fazendo a lista parecer "fixa" e ignorando novos usuários ativos.
-  // 'refunded' fica de fora (não é participação real).
   let query = supabase
     .from("bets")
     .select("user_id, amount, potential_payout, status")
@@ -56,7 +52,6 @@ export default async function RankingPage({ searchParams }: PageProps) {
 
   const { data: bets } = await query;
 
-  // Agregar por usuário
   const statsMap = new Map<string, {
     wins: number; losses: number; pendentes: number;
     lucro: number; volume: number;
@@ -72,20 +67,21 @@ export default async function RankingPage({ searchParams }: PageProps) {
       s.losses++;
       s.lucro -= bet.amount;
     } else {
-      // matched/pending: posição em aberto — entra no volume, ainda sem lucro realizado
       s.pendentes++;
     }
     statsMap.set(bet.user_id, s);
   }
 
-  // Inclui quem tem qualquer palpite (resolvido ou em aberto). Ordena por lucro
-  // realizado e, em empate (ex.: novatos só com posições abertas), por volume.
-  const userIds = Array.from(statsMap.entries())
+  const allUserIds = Array.from(statsMap.entries())
     .filter(([, s]) => s.wins + s.losses + s.pendentes >= MIN_BETS)
     .sort((a, b) => b[1].lucro - a[1].lucro || b[1].volume - a[1].volume)
     .map(([id]) => id);
 
-  // Buscar perfis
+  const totalPages = Math.max(1, Math.ceil(allUserIds.length / PER_PAGE));
+  const currentPage = Math.min(page, totalPages);
+  const offset = (currentPage - 1) * PER_PAGE;
+  const userIds = allUserIds.slice(offset, offset + PER_PAGE);
+
   const { data: profiles } = userIds.length > 0
     ? await supabase
         .from("profiles")
@@ -101,7 +97,7 @@ export default async function RankingPage({ searchParams }: PageProps) {
       const p = profileMap.get(id);
       const total = s.wins + s.losses;
       return {
-        pos: index + 1,
+        pos: offset + index + 1,
         id,
         username: p?.username ?? "—",
         full_name: p?.full_name ?? "—",
@@ -114,6 +110,9 @@ export default async function RankingPage({ searchParams }: PageProps) {
         volume: s.volume,
       };
     });
+
+  const buildPageHref = (p: number) =>
+    `/ranking?${new URLSearchParams({ periodo, page: String(p) })}`;
 
   return (
     <div className="py-6 max-w-3xl mx-auto space-y-5">
@@ -145,7 +144,6 @@ export default async function RankingPage({ searchParams }: PageProps) {
               href={`/u/${r.username}`}
               className="flex items-center gap-4 bg-card border border-border rounded-xl px-4 py-3 hover:border-primary/30 transition-colors"
             >
-              {/* Posição */}
               <div className="w-8 text-center shrink-0">
                 {r.pos === 1 ? (
                   <Medal size={20} className="text-yellow-400 mx-auto" />
@@ -158,13 +156,11 @@ export default async function RankingPage({ searchParams }: PageProps) {
                 )}
               </div>
 
-              {/* Nome */}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-white truncate">{r.full_name}</p>
                 <p className="text-xs text-muted-foreground">@{r.username}</p>
               </div>
 
-              {/* Stats */}
               <div className="hidden sm:flex items-center gap-6 text-right shrink-0">
                 <div>
                   <p className="text-xs text-muted-foreground">Acertos</p>
@@ -191,7 +187,6 @@ export default async function RankingPage({ searchParams }: PageProps) {
                 </div>
               </div>
 
-              {/* Mobile: só lucro */}
               <div className="sm:hidden shrink-0 text-right">
                 <p className="text-xs text-muted-foreground">
                   {r.total > 0 ? `${r.winRate.toFixed(0)}% acerto` : `${r.pendentes} em aberto`}
@@ -204,6 +199,32 @@ export default async function RankingPage({ searchParams }: PageProps) {
               <TrendingUp size={14} className="text-muted-foreground shrink-0 hidden sm:block" />
             </Link>
           ))}
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-3 pt-4">
+              {currentPage > 1 && (
+                <Link
+                  href={buildPageHref(currentPage - 1)}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-card border border-border text-sm text-white hover:border-primary/40 transition-colors"
+                >
+                  <ChevronLeft size={14} />
+                  Anterior
+                </Link>
+              )}
+              <span className="text-sm text-muted-foreground">
+                Página {currentPage} de {totalPages}
+              </span>
+              {currentPage < totalPages && (
+                <Link
+                  href={buildPageHref(currentPage + 1)}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-card border border-border text-sm text-white hover:border-primary/40 transition-colors"
+                >
+                  Próxima
+                  <ChevronRight size={14} />
+                </Link>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>

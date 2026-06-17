@@ -1,5 +1,6 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { pagarVencedores, pagarVencedoresMulti, reembolsarTodos } from "@/lib/payout";
 
 export async function POST(request: Request) {
@@ -24,8 +25,19 @@ export async function POST(request: Request) {
 
   if (resolution === "cancelled") {
     await reembolsarTodos(admin, topic_id, "Mercado cancelado pelo admin", user.id);
+    revalidatePath("/liga");
+    revalidatePath("/economico");
+    revalidatePath("/ranking");
+    revalidatePath("/perfil");
     return NextResponse.json({ success: true });
   }
+
+  revalidatePath("/liga");
+  revalidatePath("/economico");
+  revalidatePath(`/liga/${topic_id}`);
+  revalidatePath(`/economico/${topic_id}`);
+  revalidatePath("/ranking");
+  revalidatePath("/perfil");
 
   if (topic.market_type === "multi") {
     if (!winning_outcome_id) {

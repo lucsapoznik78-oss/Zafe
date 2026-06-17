@@ -5,6 +5,7 @@
  */
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import Anthropic from "@anthropic-ai/sdk";
 import { pagarVencedores } from "@/lib/payout";
 import { pagarConcursoBets } from "@/lib/concurso-payout";
@@ -233,6 +234,11 @@ export async function POST(req: Request) {
     .select("id", { count: "exact", head: true })
     .eq("status", "resolving").eq("is_private", false)
     .lt("oracle_retry_count", MAX_ATTEMPTS);
+
+  revalidatePath("/liga");
+  revalidatePath("/economico");
+  revalidatePath("/ranking");
+  revalidatePath("/perfil");
 
   return NextResponse.json({
     resolved: results.filter(r => r.outcome === "SIM" || r.outcome === "NAO").length,

@@ -6,6 +6,7 @@
 
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { resolverTopic } from "@/lib/oracles";
 
 export const maxDuration = 300;
@@ -60,6 +61,13 @@ export async function POST(req: Request) {
       errors.push(`${topic.title}: ${String(err)}`);
       console.error(`[oracle] Erro ao resolver ${topic.id}:`, err);
     }
+  }
+
+  if (paid > 0) {
+    revalidatePath("/liga");
+    revalidatePath("/economico");
+    revalidatePath("/ranking");
+    revalidatePath("/perfil");
   }
 
   return NextResponse.json({

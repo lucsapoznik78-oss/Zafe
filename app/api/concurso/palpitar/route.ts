@@ -1,5 +1,6 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { calcOdds } from "@/lib/odds";
 import { debitConcursoBalance, creditConcursoBalance } from "@/lib/wallet";
 
@@ -108,6 +109,10 @@ export async function POST(request: Request) {
     console.error("[concurso/palpitar]", betError);
     return NextResponse.json({ error: "Erro ao registrar palpite no concurso" }, { status: 500 });
   }
+
+  revalidatePath("/concurso");
+  revalidatePath("/ranking");
+  revalidatePath("/perfil");
 
   return NextResponse.json({ success: true, estimated_odds: estimatedOdds });
 }

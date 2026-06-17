@@ -24,14 +24,14 @@ function stakeOf(b: { cost_basis?: number | null; amount: number }): number {
 }
 
 /** Executa `fn` sobre os itens em lotes paralelos de `size` (audit #32). */
-async function emLotes<T>(items: T[], size: number, fn: (item: T) => Promise<unknown>) {
+export async function emLotes<T>(items: T[], size: number, fn: (item: T) => Promise<unknown>) {
   for (let i = 0; i < items.length; i += size) {
     await Promise.all(items.slice(i, i + size).map(fn));
   }
 }
 
 /** Soma valores por usuário para creditar uma única vez por carteira (CAS preservado). */
-function somarPorUsuario(items: { user_id: string; valor: number }[]): [string, number][] {
+export function somarPorUsuario(items: { user_id: string; valor: number }[]): [string, number][] {
   const m = new Map<string, number>();
   for (const it of items) {
     m.set(it.user_id, parseFloat(((m.get(it.user_id) ?? 0) + it.valor).toFixed(2)));
@@ -75,7 +75,10 @@ async function pagarBonusPioneiro(supabase: any, topicId: string, topicTitle: st
 
     if (!first) continue;
 
-    await creditBalance(supabase, first.user_id, BONUS_PIONEIRO);
+    const bonusResult = await creditBalance(supabase, first.user_id, BONUS_PIONEIRO);
+    if (!bonusResult.ok) {
+      console.error(`[payout/bonusPioneiro] creditBalance falhou user=${first.user_id} amount=${BONUS_PIONEIRO} reason=${bonusResult.reason}`);
+    }
     await supabase.from("transactions").insert({
       user_id: first.user_id,
       type: "bonus",
@@ -102,7 +105,14 @@ async function refundBets(supabase: any, bets: any[], topicId: string, reason: s
   if (bets.length === 0) return;
 
   const creditos = somarPorUsuario(bets.map((b) => ({ user_id: b.user_id, valor: stakeOf(b) })));
-  await emLotes(creditos, 10, ([userId, total]) => creditBalance(supabase, userId, total));
+  const failedCredits: string[] = [];
+  await emLotes(creditos, 10, async ([userId, total]) => {
+    const r = await creditBalance(supabase, userId, total);
+    if (!r.ok) failedCredits.push(`user=${userId} amount=${total} reason=${r.reason}`);
+  });
+  if (failedCredits.length > 0) {
+    console.error(`[payout/refundBets] creditBalance falhou para ${failedCredits.length} usuários:`, failedCredits.join("; "));
+  }
 
   await supabase.from("bets").update({ status: "refunded" }).in("id", bets.map((b) => b.id));
   await supabase.from("transactions").insert(bets.map((bet) => ({
@@ -218,7 +228,14 @@ export async function pagarVencedoresMulti(
   });
 
   const creditos = somarPorUsuario(winners.map((w: any) => ({ user_id: w.bet.user_id, valor: w.payout })));
-  await emLotes(creditos, 10, ([userId, total]) => creditBalance(supabase, userId, total));
+  const failedPayout: string[] = [];
+  await emLotes(creditos, 10, async ([userId, total]) => {
+    const r = await creditBalance(supabase, userId, total);
+    if (!r.ok) failedPayout.push(`user=${userId} amount=${total} reason=${r.reason}`);
+  });
+  if (failedPayout.length > 0) {
+    console.error(`[payout/pagarVencedoresMulti] creditBalance falhou para ${failedPayout.length} usuários:`, failedPayout.join("; "));
+  }
 
   await emLotes(winners, 10, ({ bet, payout }: any) =>
     supabase.from("bets").update({ status: "won", potential_payout: payout }).eq("id", bet.id)
@@ -313,7 +330,14 @@ export async function pagarVencedores(
   });
 
   const creditos = somarPorUsuario(winners.map((w: any) => ({ user_id: w.bet.user_id, valor: w.payout })));
-  await emLotes(creditos, 10, ([userId, total]) => creditBalance(supabase, userId, total));
+  const failedPayout: string[] = [];
+  await emLotes(creditos, 10, async ([userId, total]) => {
+    const r = await creditBalance(supabase, userId, total);
+    if (!r.ok) failedPayout.push(`user=${userId} amount=${total} reason=${r.reason}`);
+  });
+  if (failedPayout.length > 0) {
+    console.error(`[payout/pagarVencedores] creditBalance falhou para ${failedPayout.length} usuários:`, failedPayout.join("; "));
+  }
 
   await emLotes(winners, 10, ({ bet, payout }: any) =>
     supabase.from("bets").update({ status: "won", potential_payout: payout }).eq("id", bet.id)

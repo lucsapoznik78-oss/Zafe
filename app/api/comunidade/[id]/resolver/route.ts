@@ -1,5 +1,6 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { pagarComunidade, adjustReputation } from "@/lib/comunidade";
 
 export async function POST(request: Request, { params }: { params: { id: string } }) {
@@ -32,6 +33,11 @@ export async function POST(request: Request, { params }: { params: { id: string 
   }
 
   const result = await pagarComunidade(admin, params.id, resolution);
+
+  revalidatePath("/comunidade");
+  revalidatePath(`/comunidade/${params.id}`);
+  revalidatePath("/perfil");
+  revalidatePath("/ranking");
 
   // Update reputation: +2 for resolved
   await adjustReputation(admin, user.id, 2, {

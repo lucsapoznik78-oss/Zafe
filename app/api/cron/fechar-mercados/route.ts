@@ -1,5 +1,6 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { sendPushToMany } from "@/lib/webpush";
 
 // Vercel cron dispatch é GET; reaproveita o mesmo handler (declaração hoisted).
@@ -155,6 +156,9 @@ export async function POST(request: Request) {
       ]);
     }
   }
+
+  revalidatePath("/liga");
+  revalidatePath("/economico");
 
   return NextResponse.json({
     success: true,

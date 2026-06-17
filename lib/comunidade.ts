@@ -7,6 +7,7 @@
 import { calcOdds } from "@/lib/odds";
 import { sendPushToUser } from "@/lib/webpush";
 import { debitBalance, creditBalance } from "@/lib/wallet";
+import { emLotes, somarPorUsuario } from "@/lib/payout";
 
 function fmt(v: number) {
   return "Z$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -215,27 +216,48 @@ export async function pagarComunidade(
 
   const totalWinPool = winnerBets.reduce((s: number, b: any) => s + b.amount, 0);
 
-  for (const bet of winnerBets) {
+  // Batch payouts: aggregate per user for single CAS credit per wallet
+  const payouts = winnerBets.map((bet: any) => {
     const share = bet.amount / totalWinPool;
     const payout = parseFloat((share * distributablePool).toFixed(2));
+    return { bet, payout };
+  });
 
-    await creditBalance(supabase, bet.user_id, payout);
-    await supabase.from("community_bets").update({ status: "won", potential_payout: payout }).eq("id", bet.id);
-    await supabase.from("transactions").insert({
-      user_id: bet.user_id,
-      type: "bet_won",
-      amount: payout,
-      net_amount: payout,
-      description: `Ganhou ${resolution.toUpperCase()} — Comunidade "${title}"`,
-      reference_id: eventId,
-    });
-    await supabase.from("notifications").insert({
-      user_id: bet.user_id,
-      type: "bet_won",
-      title: "Você ganhou!",
-      body: `Seu ${resolution.toUpperCase()} em "${title}" rendeu ${fmt(payout)}.`,
-      data: { community_event_id: eventId, payout },
-    });
+  const creditos = somarPorUsuario(payouts.map((w: any) => ({ user_id: w.bet.user_id, valor: w.payout })));
+  const failedCredits: string[] = [];
+  await emLotes(creditos, 10, async ([userId, total]) => {
+    const r = await creditBalance(supabase, userId, total);
+    if (!r.ok) failedCredits.push(`user=${userId} amount=${total} reason=${r.reason}`);
+  });
+  if (failedCredits.length > 0) {
+    console.error(`[comunidade/pagarComunidade] creditBalance falhou ${failedCredits.length}:`, failedCredits.join("; "));
+  }
+
+  await emLotes(payouts, 10, ({ bet, payout }: any) =>
+    supabase.from("community_bets").update({ status: "won", potential_payout: payout }).eq("id", bet.id)
+  );
+
+  const nowIso = new Date().toISOString();
+  await supabase.from("transactions").insert(payouts.map(({ bet, payout }: any) => ({
+    user_id: bet.user_id,
+    type: "bet_won",
+    amount: payout,
+    net_amount: payout,
+    description: `Ganhou ${resolution.toUpperCase()} — Comunidade "${title}"`,
+    reference_id: eventId,
+    created_at: nowIso,
+  })));
+
+  await supabase.from("notifications").insert(payouts.map(({ bet, payout }: any) => ({
+    user_id: bet.user_id,
+    type: "bet_won",
+    title: "Você ganhou!",
+    body: `Seu ${resolution.toUpperCase()} em "${title}" rendeu ${fmt(payout)}.`,
+    data: { community_event_id: eventId, payout },
+    created_at: nowIso,
+  })));
+
+  for (const { bet, payout } of payouts) {
     sendPushToUser(supabase, bet.user_id, {
       title: "Você ganhou!",
       body: `Seu ${resolution.toUpperCase()} em "${title}" rendeu ${fmt(payout)}.`,
@@ -243,20 +265,24 @@ export async function pagarComunidade(
     }).catch(() => {});
   }
 
-  for (const bet of loserBets) {
-    await supabase.from("community_bets").update({ status: "lost" }).eq("id", bet.id);
-    await supabase.from("notifications").insert({
+  if (loserBets.length > 0) {
+    await supabase.from("community_bets").update({ status: "lost" }).in("id", loserBets.map((b: any) => b.id));
+    await supabase.from("notifications").insert(loserBets.map((bet: any) => ({
       user_id: bet.user_id,
       type: "market_resolved",
       title: "Evento resolvido",
       body: `"${title}" foi resolvido como ${resolution.toUpperCase()}. Boa sorte na próxima!`,
       data: { community_event_id: eventId },
-    });
+      created_at: nowIso,
+    })));
   }
 
   // Pagar comissão ao criador
   if (event?.creator_id && creatorCommission > 0) {
-    await creditBalance(supabase, event.creator_id, creatorCommission);
+    const commResult = await creditBalance(supabase, event.creator_id, creatorCommission);
+    if (!commResult.ok) {
+      console.error(`[comunidade/pagarComunidade] creditBalance comissão falhou user=${event.creator_id} amount=${creatorCommission} reason=${commResult.reason}`);
+    }
     await supabase.from("transactions").insert({
       user_id: event.creator_id,
       type: "commission",
@@ -264,6 +290,7 @@ export async function pagarComunidade(
       net_amount: creatorCommission,
       description: `Comissão de criador — "${title}"`,
       reference_id: eventId,
+      created_at: nowIso,
     });
   }
 
@@ -299,18 +326,28 @@ export async function reembolsarComunidade(
     .eq("event_id", eventId)
     .not("status", "in", '("refunded","won","lost")');
 
-  for (const bet of bets ?? []) {
-    await creditBalance(supabase, bet.user_id, bet.amount);
-    await supabase.from("community_bets").update({ status: "refunded" }).eq("id", bet.id);
-    await supabase.from("transactions").insert({
-      user_id: bet.user_id,
-      type: "bet_refund",
-      amount: bet.amount,
-      net_amount: bet.amount,
-      description: `Reembolso — ${motivo}`,
-      reference_id: eventId,
-    });
+  const allBets = bets ?? [];
+  if (allBets.length === 0) return;
+
+  const creditos = somarPorUsuario(allBets.map((b: any) => ({ user_id: b.user_id, valor: b.amount })));
+  const failedCredits: string[] = [];
+  await emLotes(creditos, 10, async ([userId, total]) => {
+    const r = await creditBalance(supabase, userId, total);
+    if (!r.ok) failedCredits.push(`user=${userId} amount=${total} reason=${r.reason}`);
+  });
+  if (failedCredits.length > 0) {
+    console.error(`[comunidade/reembolsarComunidade] creditBalance falhou ${failedCredits.length}:`, failedCredits.join("; "));
   }
+
+  await supabase.from("community_bets").update({ status: "refunded" }).in("id", allBets.map((b: any) => b.id));
+  await supabase.from("transactions").insert(allBets.map((bet: any) => ({
+    user_id: bet.user_id,
+    type: "bet_refund",
+    amount: bet.amount,
+    net_amount: bet.amount,
+    description: `Reembolso — ${motivo}`,
+    reference_id: eventId,
+  })));
 }
 
 // ── Estorno de payout (clawback verificado + log) ───────────────

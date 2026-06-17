@@ -26,7 +26,10 @@ async function pagarBonusPioneiroConcurso(
 
     if (!first) continue;
 
-    await creditBalance(adminClient, first.user_id, BONUS_PIONEIRO);
+    const bonusResult = await creditBalance(adminClient, first.user_id, BONUS_PIONEIRO);
+    if (!bonusResult.ok) {
+      console.error(`[concurso-payout/bonusPioneiro] creditBalance falhou user=${first.user_id} amount=${BONUS_PIONEIRO} reason=${bonusResult.reason}`);
+    }
     await adminClient.from("transactions").insert({
       user_id: first.user_id,
       type: "bonus",
@@ -73,7 +76,10 @@ export async function pagarConcursoBets(
           .eq("status", "matched")
           .select("id");
         if (claimed && claimed.length > 0) {
-          await creditConcursoBalance(adminClient, bet.user_id, bet.concurso_id, Number(bet.amount));
+          const cr = await creditConcursoBalance(adminClient, bet.user_id, bet.concurso_id, Number(bet.amount));
+          if (!cr.ok) {
+            console.error(`[concurso-payout/refund] creditConcursoBalance falhou user=${bet.user_id} amount=${bet.amount} concurso=${bet.concurso_id} reason=${cr.reason}`);
+          }
         }
       }
       await adminClient.from("topics").update({
@@ -108,7 +114,10 @@ export async function pagarConcursoBets(
         .select("id");
 
       if (claimed && claimed.length > 0) {
-        await creditConcursoBalance(adminClient, bet.user_id, bet.concurso_id, payout);
+        const cr = await creditConcursoBalance(adminClient, bet.user_id, bet.concurso_id, payout);
+        if (!cr.ok) {
+          console.error(`[concurso-payout/winner] creditConcursoBalance falhou user=${bet.user_id} amount=${payout} concurso=${bet.concurso_id} reason=${cr.reason}`);
+        }
       }
     }
 
@@ -165,7 +174,10 @@ export async function pagarConcursoBetsMulti(
         .eq("status", "matched")
         .select("id");
       if (claimed && claimed.length > 0) {
-        await creditConcursoBalance(adminClient, bet.user_id, bet.concurso_id, payout);
+        const cr = await creditConcursoBalance(adminClient, bet.user_id, bet.concurso_id, payout);
+        if (!cr.ok) {
+          console.error(`[concurso-payout/multi] creditConcursoBalance falhou user=${bet.user_id} amount=${payout} concurso=${bet.concurso_id} reason=${cr.reason}`);
+        }
       }
     }
 
