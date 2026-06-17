@@ -151,6 +151,17 @@ export async function resolveDueMatches(admin: SupabaseClient): Promise<ResolveS
         continue;
       }
 
+      // api_error é falha TRANSITÓRIA da API (ex.: créditos esgotados, 429,
+      // timeout) — não é um veredito ambíguo. Tratar como not_final: loga e
+      // deixa 'scheduled' para o próximo run re-tentar. Antes virava
+      // 'under_review' (terminal) e o cron nunca re-pegava, então restaurar
+      // créditos não destravava nada.
+      if (outcome.kind === "review" && outcome.reason === "api_error") {
+        await logChecks(admin, match.id, outcome.checks, "api_error");
+        summaries.push({ match_id: match.id, match_number: match.match_number, outcome: "not_final", detail: "api_error" });
+        continue;
+      }
+
       if (outcome.kind === "review") {
         await logChecks(admin, match.id, outcome.checks, outcome.reason);
         await admin.from("copa_matches").update({ status: "under_review" }).eq("id", match.id);
