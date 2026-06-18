@@ -39,7 +39,7 @@ export default function JoinCard({ buyIn }: Props) {
       <div className="space-y-1.5">
         <button
           onClick={() => setConfirming(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-yellow-400 text-black font-bold text-sm rounded-lg hover:bg-yellow-400/90 transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 bg-amber-400 text-black font-bold text-sm rounded-lg hover:bg-amber-400/90 transition-colors"
         >
           <Ticket size={15} /> Participar por Z$ {buyIn.toLocaleString("pt-BR")}
         </button>
@@ -61,7 +61,7 @@ export default function JoinCard({ buyIn }: Props) {
         <button
           onClick={join}
           disabled={loading}
-          className="flex-1 py-2 bg-yellow-400 text-black font-bold text-sm rounded-lg hover:bg-yellow-400/90 disabled:opacity-50 transition-colors"
+          className="flex-1 py-2 bg-amber-400 text-black font-bold text-sm rounded-lg hover:bg-amber-400/90 disabled:opacity-50 transition-colors"
         >
           {loading ? <Loader2 size={14} className="animate-spin mx-auto" /> : "Confirmar e participar"}
         </button>
