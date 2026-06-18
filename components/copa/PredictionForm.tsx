@@ -68,7 +68,7 @@ export default function PredictionForm({ match, prediction }: Props) {
   const pickBtn = (active: boolean) =>
     `flex-1 py-2 px-2 rounded-lg text-xs font-bold border transition-colors ${
       active
-        ? "bg-sky-400/20 border-sky-400 text-sky-400"
+        ? "bg-green-400/20 border-green-400 text-green-400"
         : "bg-input border-border text-muted-foreground hover:text-white"
     }`;
 
@@ -105,24 +105,24 @@ export default function PredictionForm({ match, prediction }: Props) {
 
       <div>
         <p className="text-xs text-muted-foreground mb-1.5">
-          Placar exato <span className="text-sky-400">(+10, opcional)</span>
+          Placar exato <span className="text-green-400">(+10, opcional)</span>
           {ko && <span className="block text-[10px]">ao fim da prorrogação, sem pênaltis</span>}
         </p>
         <div className="flex items-center gap-2">
           <input
             type="number" min={0} max={20} inputMode="numeric"
             value={homeGoals} onChange={(e) => setHomeGoals(e.target.value)}
-            className="w-16 bg-input border border-border rounded-lg px-2 py-1.5 text-sm text-white text-center focus:outline-none focus:border-sky-400/50"
+            className="w-16 bg-input border border-border rounded-lg px-2 py-1.5 text-sm text-white text-center focus:outline-none focus:border-green-400/50"
           />
           <span className="text-muted-foreground text-sm">×</span>
           <input
             type="number" min={0} max={20} inputMode="numeric"
             value={awayGoals} onChange={(e) => setAwayGoals(e.target.value)}
-            className="w-16 bg-input border border-border rounded-lg px-2 py-1.5 text-sm text-white text-center focus:outline-none focus:border-sky-400/50"
+            className="w-16 bg-input border border-border rounded-lg px-2 py-1.5 text-sm text-white text-center focus:outline-none focus:border-green-400/50"
           />
         </div>
         {scoreIncomplete && (
-          <p className="text-[10px] text-sky-400 mt-1">Preencha os dois lados do placar (ou nenhum)</p>
+          <p className="text-[10px] text-green-400 mt-1">Preencha os dois lados do placar (ou nenhum)</p>
         )}
       </div>
 
@@ -132,7 +132,7 @@ export default function PredictionForm({ match, prediction }: Props) {
         <button
           onClick={submit}
           disabled={loading || locked || pickMissing || scoreIncomplete}
-          className="px-4 py-2 bg-sky-400 text-black font-bold text-xs rounded-lg hover:bg-sky-400/90 disabled:opacity-50 transition-colors"
+          className="px-4 py-2 bg-green-400 text-black font-bold text-xs rounded-lg hover:bg-green-400/90 disabled:opacity-50 transition-colors"
         >
           {loading ? (
             <Loader2 size={13} className="animate-spin mx-auto" />
@@ -143,7 +143,7 @@ export default function PredictionForm({ match, prediction }: Props) {
           )}
         </button>
         {saved && (
-          <span className="text-xs text-sky-400 flex items-center gap-1">
+          <span className="text-xs text-green-400 flex items-center gap-1">
             <CheckCircle2 size={12} /> Palpite salvo
           </span>
         )}

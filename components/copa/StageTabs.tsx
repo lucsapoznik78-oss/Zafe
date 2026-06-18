@@ -19,7 +19,7 @@ export default function StageTabs({ current }: { current: string }) {
           key={t.key}
           href={t.key ? `/copa?stage=${t.key}` : "/copa"}
           className={`px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap transition-colors ${
-            current === t.key ? "bg-sky-400/20 text-sky-400" : "text-muted-foreground hover:text-white"
+            current === t.key ? "bg-green-400/20 text-green-400" : "text-muted-foreground hover:text-white"
           }`}
         >
           {t.label}
