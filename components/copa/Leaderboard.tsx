@@ -32,16 +32,16 @@ export default function Leaderboard({ rows, meUserId }: Props) {
           <div
             key={r.participant_id}
             className={`grid grid-cols-[2.5rem_1fr_3.5rem_3.5rem_3.5rem] gap-2 px-4 py-2.5 items-center border-b border-border last:border-b-0 text-sm ${
-              isMe ? "bg-amber-400/10" : ""
+              isMe ? "bg-sky-400/10" : ""
             }`}
           >
             <span className="font-mono text-muted-foreground flex items-center gap-1">
               {r.posicao}
-              {r.posicao === 1 && <Trophy size={11} className="text-amber-400" />}
+              {r.posicao === 1 && <Trophy size={11} className="text-sky-400" />}
             </span>
-            <span className={`truncate ${isMe ? "text-amber-400 font-semibold" : "text-white"}`}>
+            <span className={`truncate ${isMe ? "text-sky-400 font-semibold" : "text-white"}`}>
               {r.username}
-              {isMe && <span className="text-[10px] ml-1.5 text-amber-400/70">(você)</span>}
+              {isMe && <span className="text-[10px] ml-1.5 text-sky-400/70">(você)</span>}
             </span>
             <span className="text-right font-bold text-white">{r.points}</span>
             <span className="text-right text-muted-foreground">{r.exact_count}</span>

@@ -63,7 +63,7 @@ export default async function CopaPage({ searchParams }: PageProps) {
   if (!competition) {
     return (
       <div className="py-20 text-center text-muted-foreground">
-        <Trophy size={40} className="mx-auto mb-3 text-amber-400/40" />
+        <Trophy size={40} className="mx-auto mb-3 text-sky-400/40" />
         <p className="text-white font-semibold mb-1">Zafe Copa ainda não está no ar</p>
         <p className="text-sm">A competição será aberta em breve.</p>
       </div>
@@ -109,7 +109,7 @@ export default async function CopaPage({ searchParams }: PageProps) {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-white flex items-center gap-2">
-            <Trophy size={20} className="text-amber-400" /> {competition.name}
+            <Trophy size={20} className="text-sky-400" /> {competition.name}
           </h1>
           <p className="text-xs text-muted-foreground mt-1">
             Acerte o vencedor (+10) e o placar exato (+10) de cada partida. Quem somar mais pontos leva o pote.
@@ -117,13 +117,13 @@ export default async function CopaPage({ searchParams }: PageProps) {
         </div>
         {participant ? (
           <div className="text-right shrink-0">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-400/20 border border-amber-400/30 text-[10px] font-bold text-amber-400">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-sky-400/20 border border-sky-400/30 text-[10px] font-bold text-sky-400">
               <CheckCircle2 size={11} /> Inscrito
             </span>
-            <p className="text-2xl font-bold text-amber-400 mt-1">{myRow?.points ?? 0} pts</p>
+            <p className="text-2xl font-bold text-sky-400 mt-1">{myRow?.points ?? 0} pts</p>
             <p className="text-[11px] text-muted-foreground">
               {myRow ? `${myRow.posicao}º lugar` : "Sem pontuação ainda"} ·{" "}
-              <Link href="/copa/ranking" className="text-amber-400 hover:underline">
+              <Link href="/copa/ranking" className="text-sky-400 hover:underline">
                 ver ranking
               </Link>
             </p>
@@ -140,7 +140,7 @@ export default async function CopaPage({ searchParams }: PageProps) {
         <StageTabs current={stage} />
         <Link
           href="/copa/ranking"
-          className="px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-white border border-border hover:border-amber-400/40 transition-all flex items-center gap-1.5"
+          className="px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-white border border-border hover:border-sky-400/40 transition-all flex items-center gap-1.5"
         >
           <Medal size={13} /> Ranking
         </Link>
