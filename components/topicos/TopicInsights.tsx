@@ -52,6 +52,10 @@ export default function TopicInsights({ topicId }: { topicId: string }) {
           <div className="h-3 bg-muted rounded w-full" />
           <div className="h-3 bg-muted rounded w-2/3" />
         </div>
+        <p className="text-[11px] text-muted-foreground/80 mt-3">
+          Gerando análise com IA e busca na web — pode levar até 30 segundos.
+          Aguarde nesta página.
+        </p>
       </div>
     );
   }

@@ -8,6 +8,8 @@ import CommunityBetForm from "@/components/comunidade/CommunityBetForm";
 import ResolveForm from "@/components/comunidade/ResolveForm";
 import ContestButton from "@/components/comunidade/ContestButton";
 import DeleteEventButton from "@/components/comunidade/DeleteEventButton";
+import CommunityChat from "@/components/comunidade/CommunityChat";
+import { isPremium } from "@/lib/premium";
 import { formatCurrency, timeUntil } from "@/lib/utils";
 import { Clock, Star, User, AlertTriangle } from "lucide-react";
 import Link from "next/link";
@@ -42,14 +44,17 @@ export default async function CommunityDetailPage({ params }: PageProps) {
 
   if (!event) notFound();
 
-  const [{ data: stats }, { data: wallet }, { data: userBets }, { data: allBets }, { data: rep }, { data: contestations }] = await Promise.all([
+  const [{ data: stats }, { data: wallet }, { data: userBets }, { data: allBets }, { data: rep }, { data: contestations }, { data: profile }] = await Promise.all([
     admin.from("v_community_event_stats").select("*").eq("event_id", id).single(),
     user ? admin.from("wallets").select("balance").eq("user_id", user.id).single() : { data: null },
     user ? admin.from("community_bets").select("*").eq("event_id", id).eq("user_id", user.id) : { data: [] },
     admin.from("community_bets").select("*, user:profiles!user_id(username, full_name)").eq("event_id", id).order("created_at", { ascending: false }),
     admin.from("creator_reputation").select("*").eq("user_id", event.creator_id).single(),
     admin.from("community_contestations").select("*, user:profiles!user_id(username)").eq("event_id", id).order("created_at", { ascending: false }),
+    user ? admin.from("profiles").select("is_premium, premium_until").eq("id", user.id).maybeSingle() : { data: null },
   ]);
+
+  const premium = isPremium(profile);
 
   const volumeSim = stats?.volume_sim ?? 0;
   const volumeNao = stats?.volume_nao ?? 0;
@@ -221,6 +226,9 @@ export default async function CommunityDetailPage({ params }: PageProps) {
               </div>
             ))}
           </div>
+
+          {/* Chat Premium do evento */}
+          <CommunityChat eventId={id} isPremium={premium} />
 
           {/* Disclaimer */}
           <div className="flex items-start gap-2 bg-yellow-500/5 border border-yellow-500/20 rounded-lg px-3 py-2.5">
