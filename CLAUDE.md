@@ -32,11 +32,16 @@ npm run build      # production build (also the de-facto type check)
 npm run lint       # ESLint
 ```
 
-### Deploy workflow — ALWAYS commit + push
+### Deploy workflow — ALWAYS commit + push + `vercel --prod`
 
-Deploy is **auto-deploy via GitHub**: every push to `main` ships to production (prod domain `zafe.app.br`). Do NOT use `npx vercel --prod`.
+The GitHub→Vercel auto-deploy is unreliable (it silently stopped firing; production stayed on a 20h-old build despite pushes landing on `main`). So **Claude deploys to production directly with the Vercel CLI** — do not assume pushing to `main` ships anything.
 
-After making any change, the default workflow is: **always commit and always push to `main`** so it auto-deploys — unless the user explicitly says otherwise. Don't wait to be asked to commit/push; it's the expected end of every task.
+After making any change, the default end-of-task workflow is:
+1. **commit** and **push to `main`** (source of truth on GitHub);
+2. **`vercel --prod`** from the repo root to actually ship to production (prod domain `zafe.app.br`). The project is already linked (`.vercel/project.json`, project `zafe`).
+3. **verify** the deploy is live (e.g. `curl` a changed route / check it stops redirecting).
+
+Don't wait to be asked to commit/push/deploy; it's the expected end of every task — unless the user explicitly says otherwise. (If the GitHub auto-deploy is ever reconnected, this can revert to push-only.)
 
 ### Migrations — ALWAYS write one for schema changes
 
