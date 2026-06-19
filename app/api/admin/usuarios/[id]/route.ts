@@ -7,6 +7,7 @@
  */
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { recordPremiumConversion } from "@/lib/games/streamer";
 
 interface RouteParams { params: Promise<{ id: string }> }
 
@@ -83,6 +84,14 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
   if (error || !updated?.length) {
     return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
+  }
+
+  // Streamer rev share: virou Premium e foi trazido por um streamer → confirma
+  // a atribuição e lança o ganho (idempotente). Não bloqueia a resposta.
+  if (hasPremium && is_premium) {
+    recordPremiumConversion(admin, id).catch((e) =>
+      console.error("[admin/usuarios] recordPremiumConversion", e)
+    );
   }
 
   return NextResponse.json({ success: true, ...updated[0] });

@@ -1,0 +1,148 @@
+import { z } from "zod";
+
+// ============================================================
+// Zafe Games — tipos, constantes e schemas de validação.
+// Módulo de bolão de e-sports (ver modules/games/COMPLIANCE.md).
+// ============================================================
+
+export const POINTS_CORRECT_PICK = 10; // acerto do lado vencedor (modo grátis)
+
+export type GameKind = "free_fire" | "valorant" | "cs2" | "lol";
+export type GamesMode = "free" | "pot";
+export type GamesEventStatus =
+  | "scheduled"
+  | "live"
+  | "under_review"
+  | "finished"
+  | "cancelled";
+export type GamesSide = "a" | "b";
+export type GamesSettleStatus = "pending" | "won" | "lost" | "refunded";
+export type GamesTier =
+  | "ferro"
+  | "bronze"
+  | "prata"
+  | "ouro"
+  | "platina"
+  | "diamante"
+  | "mestre";
+
+export const GAME_LABELS: Record<GameKind, string> = {
+  free_fire: "Free Fire",
+  valorant: "Valorant",
+  cs2: "CS2",
+  lol: "League of Legends",
+};
+
+// Limiares de rank derivados de events_won — DEVE espelhar games_recalc_stats
+// no banco (a verdade é o servidor; isto é só para exibição).
+export const TIER_THRESHOLDS: Array<{ tier: GamesTier; minWins: number; label: string }> = [
+  { tier: "mestre", minWins: 400, label: "Mestre" },
+  { tier: "diamante", minWins: 200, label: "Diamante" },
+  { tier: "platina", minWins: 100, label: "Platina" },
+  { tier: "ouro", minWins: 50, label: "Ouro" },
+  { tier: "prata", minWins: 25, label: "Prata" },
+  { tier: "bronze", minWins: 10, label: "Bronze" },
+  { tier: "ferro", minWins: 0, label: "Ferro" },
+];
+
+export const TIER_LABELS: Record<GamesTier, string> = {
+  ferro: "Ferro",
+  bronze: "Bronze",
+  prata: "Prata",
+  ouro: "Ouro",
+  platina: "Platina",
+  diamante: "Diamante",
+  mestre: "Mestre",
+};
+
+export function tierForWins(wins: number): GamesTier {
+  return TIER_THRESHOLDS.find((t) => wins >= t.minWins)?.tier ?? "ferro";
+}
+
+export interface GamesEvent {
+  id: string;
+  game: GameKind;
+  tournament: string | null;
+  side_a: string;
+  side_b: string;
+  mode: GamesMode;
+  buy_in: number;
+  pot_total: number;
+  closes_at: string;
+  starts_at: string;
+  status: GamesEventStatus;
+  winner: GamesSide | null;
+  pot_paid_at: string | null;
+  resolved_at: string | null;
+  provider: string | null;
+  external_id: string | null;
+  source_url: string | null;
+  created_at: string;
+}
+
+export interface GamesPrediction {
+  id: string;
+  event_id: string;
+  user_id: string;
+  pick: GamesSide;
+  buy_in_paid: number;
+  settle_status: GamesSettleStatus;
+  payout: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GamesUserStats {
+  user_id: string;
+  events_played: number;
+  events_won: number;
+  points_total: number;
+  current_streak: number;
+  best_streak: number;
+  current_tier: GamesTier;
+  updated_at: string;
+}
+
+export interface GamesLeaderboardRow {
+  user_id: string;
+  username: string;
+  full_name: string;
+  avatar_url: string | null;
+  events_played: number;
+  events_won: number;
+  points_total: number;
+  best_streak: number;
+  current_tier: GamesTier;
+  posicao: number;
+}
+
+export interface GamesStreamer {
+  id: string;
+  user_id: string;
+  code: string;
+  display_name: string;
+  status: "active" | "suspended";
+  rev_share_pct: number;
+  created_at: string;
+}
+
+// ------------------------------------------------------------
+// Input de palpite (server-side). pick obrigatório; o resto (modo,
+// deadline, buy-in) é decidido pelo BANCO, nunca pelo client.
+// ------------------------------------------------------------
+export const predictionInputSchema = z.object({
+  event_id: z.string().uuid(),
+  pick: z.enum(["a", "b"]),
+});
+
+export type PredictionInput = z.infer<typeof predictionInputSchema>;
+
+// Veredito do provedor de resultados (anti-alucinação: confiança + fonte).
+export const resultVerdictSchema = z.object({
+  is_final: z.boolean(),
+  winner: z.enum(["a", "b"]).nullable(),
+  confidence: z.number().min(0).max(1),
+  source_url: z.string().url().nullable(),
+});
+
+export type ResultVerdict = z.infer<typeof resultVerdictSchema>;

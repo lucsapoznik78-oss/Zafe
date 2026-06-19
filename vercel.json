@@ -16,6 +16,7 @@
     { "path": "/api/cron/comunidade-contestacoes",  "schedule": "0 2 * * *" },
     { "path": "/api/cron/comunidade-snapshots",     "schedule": "0 1 * * *" },
     { "path": "/api/cron/copa-resolver",            "schedule": "30 8 * * *" },
+    { "path": "/api/cron/games-resolver",           "schedule": "15 */2 * * *" },
     { "path": "/api/cron/gerar-insights",           "schedule": "0 0 * * *" }
   ]
 }
