@@ -12,6 +12,15 @@ const GAME_TABS: Array<{ key: string; label: string }> = [
   { key: "valorant", label: "Valorant" },
   { key: "cs2", label: "CS2" },
   { key: "lol", label: "LoL" },
+  { key: "ea_fc", label: "EA FC" },
+  { key: "fortnite", label: "Fortnite" },
+  { key: "gta", label: "GTA" },
+  { key: "clash_royale", label: "Clash Royale" },
+  { key: "rocket_league", label: "Rocket League" },
+  { key: "dota2", label: "Dota 2" },
+  { key: "pubg", label: "PUBG" },
+  { key: "codm", label: "COD Mobile" },
+  { key: "r6", label: "Rainbow Six" },
 ];
 
 function href(status: string, game: string) {

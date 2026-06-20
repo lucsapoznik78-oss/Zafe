@@ -12,22 +12,51 @@ interface Props {
   event: GamesEvent;
   prediction: GamesPrediction | null;
   isAuthed: boolean;
+  currentUserId?: string | null;
 }
 
 // Card de um evento de e-sports. Lock real é no servidor (closes_at re-lido
 // no POST); aqui só desabilitamos a UI quando o horário passa. No modo pote,
 // o palpite é definitivo (o stake entra no pote) — sem troca.
-export default function EventCard({ event, prediction, isAuthed }: Props) {
+export default function EventCard({ event, prediction, isAuthed, currentUserId }: Props) {
   const router = useRouter();
   const [pick, setPick] = useState<GamesSide | null>(prediction?.pick ?? null);
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [resolving, setResolving] = useState(false);
 
   const isPot = event.mode === "pot";
   const locked = event.status !== "scheduled" || new Date(event.closes_at).getTime() <= Date.now();
   const potLockedIn = isPot && !!prediction; // pote já pago, não troca
   const finished = event.status === "finished";
+  const cancelled = event.status === "cancelled";
+
+  // O criador resolve seu próprio evento (modo grátis) depois que fecha.
+  const isCreator = !!event.creator_id && event.creator_id === currentUserId;
+  const canResolve = isCreator && locked && !finished && !cancelled && !isPot;
+
+  async function resolve(winner: GamesSide) {
+    setResolving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/games/${event.id}/resolver`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ winner }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error ?? "Erro ao resolver evento");
+        return;
+      }
+      router.refresh();
+    } catch {
+      setError("Falha de rede — tente novamente");
+    } finally {
+      setResolving(false);
+    }
+  }
 
   async function submit(chosen: GamesSide) {
     if (potLockedIn) return;
@@ -86,6 +115,11 @@ export default function EventCard({ event, prediction, isAuthed }: Props) {
         <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-violet-500/15 text-violet-300 text-[10px] font-bold uppercase tracking-wide">
           {GAME_LABELS[event.game]}
         </span>
+        {event.creator_id && (
+          <span className="px-2 py-0.5 rounded-full bg-white/5 text-muted-foreground text-[10px] font-medium">
+            Comunidade
+          </span>
+        )}
         {event.tournament && (
           <span className="text-[11px] text-muted-foreground truncate">{event.tournament}</span>
         )}
@@ -106,6 +140,31 @@ export default function EventCard({ event, prediction, isAuthed }: Props) {
         <p className="text-[11px] text-violet-300/80">
           Entrada: Z$ {Number(event.buy_in).toFixed(0)} — vai pro pote. Palpite definitivo.
         </p>
+      )}
+
+      {canResolve && (
+        <div className="rounded-lg border border-violet-400/30 bg-violet-500/5 p-2.5 space-y-2">
+          <p className="text-[11px] text-violet-200 font-medium">
+            Você é o juiz. Quem venceu?
+          </p>
+          <div className="flex gap-2">
+            <button
+              disabled={resolving}
+              onClick={() => resolve("a")}
+              className="flex-1 py-1.5 px-2 rounded-md text-xs font-bold border border-border bg-input text-white hover:border-violet-400/50 disabled:opacity-50"
+            >
+              {event.side_a}
+            </button>
+            <button
+              disabled={resolving}
+              onClick={() => resolve("b")}
+              className="flex-1 py-1.5 px-2 rounded-md text-xs font-bold border border-border bg-input text-white hover:border-violet-400/50 disabled:opacity-50"
+            >
+              {event.side_b}
+            </button>
+          </div>
+          {resolving && <Loader2 size={12} className="animate-spin text-violet-300" />}
+        </div>
       )}
 
       {error && <p className="text-xs text-red-400">{error}</p>}

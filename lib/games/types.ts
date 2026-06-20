@@ -7,7 +7,37 @@ import { z } from "zod";
 
 export const POINTS_CORRECT_PICK = 10; // acerto do lado vencedor (modo grátis)
 
-export type GameKind = "free_fire" | "valorant" | "cs2" | "lol";
+export type GameKind =
+  | "free_fire"
+  | "valorant"
+  | "cs2"
+  | "lol"
+  | "ea_fc"
+  | "fortnite"
+  | "gta"
+  | "clash_royale"
+  | "rocket_league"
+  | "dota2"
+  | "pubg"
+  | "codm"
+  | "r6";
+
+// Catálogo dos jogos válidos (espelha o CHECK games_event_game_check).
+export const GAME_KINDS: GameKind[] = [
+  "free_fire",
+  "valorant",
+  "cs2",
+  "lol",
+  "ea_fc",
+  "fortnite",
+  "gta",
+  "clash_royale",
+  "rocket_league",
+  "dota2",
+  "pubg",
+  "codm",
+  "r6",
+];
 export type GamesMode = "free" | "pot";
 export type GamesEventStatus =
   | "scheduled"
@@ -31,6 +61,15 @@ export const GAME_LABELS: Record<GameKind, string> = {
   valorant: "Valorant",
   cs2: "CS2",
   lol: "League of Legends",
+  ea_fc: "EA FC",
+  fortnite: "Fortnite",
+  gta: "GTA",
+  clash_royale: "Clash Royale",
+  rocket_league: "Rocket League",
+  dota2: "Dota 2",
+  pubg: "PUBG",
+  codm: "Call of Duty Mobile",
+  r6: "Rainbow Six",
 };
 
 // Limiares de rank derivados de events_won — DEVE espelhar games_recalc_stats
@@ -59,6 +98,31 @@ export function tierForWins(wins: number): GamesTier {
   return TIER_THRESHOLDS.find((t) => wins >= t.minWins)?.tier ?? "ferro";
 }
 
+// Progressão de rank: a partir das vitórias atuais, o próximo tier e quantas
+// vitórias ainda faltam. Retorna null quando já está no rank máximo (Mestre).
+export function nextTierProgress(wins: number): {
+  next: GamesTier;
+  label: string;
+  winsNeeded: number;
+  currentFloor: number;
+  nextFloor: number;
+} | null {
+  // TIER_THRESHOLDS está em ordem decrescente; ordenamos crescente para achar
+  // o primeiro patamar acima das vitórias atuais.
+  const ascending = [...TIER_THRESHOLDS].sort((a, b) => a.minWins - b.minWins);
+  const current = tierForWins(wins);
+  const currentFloor = ascending.find((t) => t.tier === current)?.minWins ?? 0;
+  const next = ascending.find((t) => t.minWins > wins);
+  if (!next) return null; // já é Mestre
+  return {
+    next: next.tier,
+    label: next.label,
+    winsNeeded: next.minWins - wins,
+    currentFloor,
+    nextFloor: next.minWins,
+  };
+}
+
 export interface GamesEvent {
   id: string;
   game: GameKind;
@@ -77,6 +141,7 @@ export interface GamesEvent {
   provider: string | null;
   external_id: string | null;
   source_url: string | null;
+  creator_id: string | null; // null = evento oficial (admin/cron)
   created_at: string;
 }
 

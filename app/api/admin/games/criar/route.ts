@@ -9,7 +9,11 @@ import { z } from "zod";
 
 const bodySchema = z
   .object({
-    game: z.enum(["free_fire", "valorant", "cs2", "lol"]),
+    game: z.enum([
+      "free_fire", "valorant", "cs2", "lol",
+      "ea_fc", "fortnite", "gta", "clash_royale",
+      "rocket_league", "dota2", "pubg", "codm", "r6",
+    ]),
     tournament: z.string().max(120).nullish(),
     side_a: z.string().min(1).max(80),
     side_b: z.string().min(1).max(80),
