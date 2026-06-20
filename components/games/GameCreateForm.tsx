@@ -10,6 +10,7 @@ import { GAME_KINDS, GAME_LABELS } from "@/lib/games/types";
 export default function GameCreateForm() {
   const router = useRouter();
   const [game, setGame] = useState(GAME_KINDS[0]);
+  const [customGame, setCustomGame] = useState("");
   const [tournament, setTournament] = useState("");
   const [sideA, setSideA] = useState("");
   const [sideB, setSideB] = useState("");
@@ -28,6 +29,7 @@ export default function GameCreateForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           game,
+          custom_game: game === "outros" ? customGame.trim() : null,
           tournament: tournament.trim() || null,
           side_a: sideA,
           side_b: sideB,
@@ -64,6 +66,20 @@ export default function GameCreateForm() {
           ))}
         </select>
       </div>
+
+      {game === "outros" && (
+        <div>
+          <label className="block text-xs text-muted-foreground mb-1">Nome do jogo</label>
+          <input
+            value={customGame}
+            onChange={(e) => setCustomGame(e.target.value)}
+            maxLength={40}
+            required
+            placeholder="Ex.: Mortal Kombat, FIFA, Brawl Stars"
+            className={inputClass}
+          />
+        </div>
+      )}
 
       <div>
         <label className="block text-xs text-muted-foreground mb-1">Campeonato (opcional)</label>

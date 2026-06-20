@@ -6,7 +6,7 @@ import { CheckCircle2, Loader2, Lock, Coins, Trophy } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { GamesEvent, GamesPrediction, GamesSide } from "@/lib/games/types";
-import { GAME_LABELS } from "@/lib/games/types";
+import { gameDisplayName } from "@/lib/games/types";
 
 interface Props {
   event: GamesEvent;
@@ -113,7 +113,7 @@ export default function EventCard({ event, prediction, isAuthed, currentUserId }
     <div className="rounded-xl border border-border bg-card p-4 space-y-3">
       <div className="flex items-center justify-between gap-2">
         <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-violet-500/15 text-violet-300 text-[10px] font-bold uppercase tracking-wide">
-          {GAME_LABELS[event.game]}
+          {gameDisplayName(event.game, event.custom_game)}
         </span>
         {event.creator_id && (
           <span className="px-2 py-0.5 rounded-full bg-white/5 text-muted-foreground text-[10px] font-medium">

@@ -14,6 +14,7 @@ import { getOrCreateReputation } from "@/lib/comunidade";
 const bodySchema = z
   .object({
     game: z.enum(GAME_KINDS as [string, ...string[]]),
+    custom_game: z.string().max(40).nullish(),
     tournament: z.string().max(120).nullish(),
     side_a: z.string().min(1).max(80),
     side_b: z.string().min(1).max(80),
@@ -25,6 +26,9 @@ const bodySchema = z
   })
   .refine((b) => b.side_a.trim().toLowerCase() !== b.side_b.trim().toLowerCase(), {
     message: "Os dois lados devem ser diferentes",
+  })
+  .refine((b) => b.game !== "outros" || !!b.custom_game?.trim(), {
+    message: "Digite o nome do jogo",
   });
 
 export async function POST(request: Request) {
@@ -86,6 +90,7 @@ export async function POST(request: Request) {
     .from("games_event")
     .insert({
       game: b.game,
+      custom_game: b.game === "outros" ? b.custom_game!.trim() : null,
       tournament: b.tournament?.trim() || null,
       side_a: b.side_a.trim(),
       side_b: b.side_b.trim(),

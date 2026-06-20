@@ -21,6 +21,7 @@ const GAME_TABS: Array<{ key: string; label: string }> = [
   { key: "pubg", label: "PUBG" },
   { key: "codm", label: "COD Mobile" },
   { key: "r6", label: "Rainbow Six" },
+  { key: "outros", label: "Outros" },
 ];
 
 function href(status: string, game: string) {

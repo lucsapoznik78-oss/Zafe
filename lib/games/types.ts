@@ -20,9 +20,11 @@ export type GameKind =
   | "dota2"
   | "pubg"
   | "codm"
-  | "r6";
+  | "r6"
+  | "outros";
 
 // Catálogo dos jogos válidos (espelha o CHECK games_event_game_check).
+// "outros" fica por último — usa custom_game (nome digitado pelo criador).
 export const GAME_KINDS: GameKind[] = [
   "free_fire",
   "valorant",
@@ -37,6 +39,7 @@ export const GAME_KINDS: GameKind[] = [
   "pubg",
   "codm",
   "r6",
+  "outros",
 ];
 export type GamesMode = "free" | "pot";
 export type GamesEventStatus =
@@ -70,7 +73,14 @@ export const GAME_LABELS: Record<GameKind, string> = {
   pubg: "PUBG",
   codm: "Call of Duty Mobile",
   r6: "Rainbow Six",
+  outros: "Outro",
 };
+
+// Nome exibido de um evento: usa custom_game quando o jogo é "outros".
+export function gameDisplayName(game: GameKind, customGame?: string | null): string {
+  if (game === "outros") return customGame?.trim() || "Outro";
+  return GAME_LABELS[game];
+}
 
 // Limiares de rank derivados de events_won — DEVE espelhar games_recalc_stats
 // no banco (a verdade é o servidor; isto é só para exibição).
@@ -126,6 +136,7 @@ export function nextTierProgress(wins: number): {
 export interface GamesEvent {
   id: string;
   game: GameKind;
+  custom_game: string | null; // nome livre quando game = 'outros'
   tournament: string | null;
   side_a: string;
   side_b: string;
