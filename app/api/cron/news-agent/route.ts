@@ -87,14 +87,13 @@ export async function POST(request: Request) {
       ],
     });
 
-    // Extrai o texto final da resposta
-    let rawText = "";
-    for (const block of response.content) {
-      if (block.type === "text") {
-        rawText = block.text;
-        break;
-      }
-    }
+    // Extrai o texto final da resposta. Com web_search há vários blocos de
+    // texto (preâmbulo + resultados + resposta final); o JSON está no último.
+    // Concatena todos para garantir que o array JSON seja capturado.
+    const rawText = response.content
+      .filter((block: any) => block.type === "text")
+      .map((block: any) => block.text)
+      .join("\n");
 
     if (!rawText) {
       return NextResponse.json({ error: "Resposta vazia do Claude" }, { status: 500 });
