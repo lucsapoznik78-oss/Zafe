@@ -8,10 +8,6 @@
  */
 
 import { oracleEsportes } from "./sports";
-import { oracleEconomia, oracleEconomiaAuto } from "./economia";
-import { oraclePolitica } from "./politica";
-import { oracleEntretenimento } from "./entretenimento";
-import { oracleTecnologia } from "./tecnologia";
 import { oracleAITripleCheck } from "./ai-triple-check";
 import { pagarVencedores, pagarVencedoresMulti, reembolsarTodos } from "@/lib/payout";
 import { pagarConcursoBets, pagarConcursoBetsMulti } from "@/lib/concurso-payout";
@@ -59,20 +55,9 @@ async function tentativaApiFixa(topic: Topic): Promise<OracleResult | null> {
   const q = topic.title;
   const cat = topic.category;
   try {
-    if (cat === "esportes" && id) return await oracleEsportes(id, q);
-    if (cat === "economia" && id) return await oracleEconomia(id, q, topic.closes_at);
-    if (cat === "politica" && id) return await oraclePolitica(id, q);
-    if (cat === "entretenimento" && id) return await oracleEntretenimento(id, q);
-    if (cat === "tecnologia" && id) return await oracleTecnologia(id, q);
-  } catch { return null; }
-  return null;
-}
-
-async function tentativaAutoDetect(topic: Topic): Promise<OracleResult | null> {
-  try {
-    if (topic.category === "economia") {
-      return await oracleEconomiaAuto(topic.title, topic.closes_at);
-    }
+    // Esporte e e-sports usam a mesma API de resultados esportivos quando há
+    // oracle_api_id; sem id, caem para o Claude (camada 2).
+    if ((cat === "esportes" || cat === "esports") && id) return await oracleEsportes(id, q);
   } catch { return null; }
   return null;
 }
@@ -104,12 +89,6 @@ export async function resolverTopic(supabase: any, topic: Topic): Promise<{ outc
     let apiResult: OracleResult | null = null;
     if (topic.oracle_api_id) {
       apiResult = await tentativaApiFixa(topic);
-    }
-    if (!apiResult || apiResult.resultado === "INCERTO") {
-      const autoResult = await tentativaAutoDetect(topic);
-      if (autoResult && autoResult.resultado !== "INCERTO") {
-        apiResult = autoResult;
-      }
     }
     if (apiResult && apiResult.resultado !== "INCERTO") {
       const resultado = apiResult.resultado.toLowerCase() as "sim" | "nao";

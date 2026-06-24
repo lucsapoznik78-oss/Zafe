@@ -10,8 +10,8 @@ export default function SearchBar() {
   const searchParams = useSearchParams();
   const [value, setValue] = useState(searchParams.get("search") ?? "");
 
-  // Rota base: preserva /liga ou /economico; fallback para /liga
-  const basePath = pathname.startsWith("/economico") ? "/economico" : "/liga";
+  // Rota base: preserva /concurso; fallback para /liga
+  const basePath = pathname.startsWith("/concurso") ? "/concurso" : "/liga";
 
   const debounce = useCallback(
     (fn: (v: string) => void, delay: number) => {

@@ -44,7 +44,6 @@ async function LigaList({
     .from("topics")
     .select("*, creator:profiles!creator_id(id, username, full_name)")
     .eq("is_private", false)
-    .neq("category", "economia")
     .is("concurso_id", null);
 
   if (isEncerrados) {
@@ -151,7 +150,7 @@ export default async function LigaPage({ searchParams }: PageProps) {
 
       <SearchBar />
       <Suspense fallback={null}>
-        <TopicFilters excludeCategory="economia" />
+        <TopicFilters />
       </Suspense>
 
       <Suspense

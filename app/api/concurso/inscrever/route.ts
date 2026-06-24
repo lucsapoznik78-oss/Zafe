@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "CPF inválido" }, { status: 400 });
   }
   // Gate 18+: exclusivo do Concurso (prêmio em R$ via PIX). Menores podem usar
-  // o restante da plataforma (Liga/Econômico/Privadas/Comunidade).
+  // o restante da plataforma (Liga/Privadas/Comunidade/Games).
   const nascimento = new Date(birthDate);
   if (!birthDate || Number.isNaN(nascimento.getTime())) {
     return NextResponse.json({ error: "Informe sua data de nascimento" }, { status: 400 });

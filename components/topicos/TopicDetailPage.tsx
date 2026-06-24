@@ -114,8 +114,7 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
   const creator = Array.isArray(topic.creator) ? topic.creator[0] : topic.creator;
   const creatorUsername = creator?.username ?? creator?.full_name ?? null;
 
-  const pilar = topic.category === "economia" ? "economico" : "liga";
-  const eventPath = topic.slug ? `/${pilar}/${topic.slug}` : `/${pilar}/${topicId}`;
+  const eventPath = topic.slug ? `/liga/${topic.slug}` : `/liga/${topicId}`;
 
   const proofUrl = resolucao?.check1_fonte || resolucao?.check2_fonte || null;
   const resolvedByLabel = resolucao?.resolvido_por ?? topic.resolved_by ?? null;
@@ -392,7 +391,7 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
               isClosed={isClosed}
               userBalance={userBalance}
               initialSide={initialSide as "sim" | "nao" | undefined}
-              pilar={pilar}
+              pilar="liga"
             />
           )}
 

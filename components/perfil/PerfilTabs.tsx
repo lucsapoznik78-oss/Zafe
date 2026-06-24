@@ -45,8 +45,7 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl }:
   }
 
   const CATEGORY_LABELS: Record<string, string> = {
-    politica: "Política", economia: "Economia", esportes: "Esportes",
-    tecnologia: "Tecnologia", entretenimento: "Entretenimento", internacional: "Internacional", outro: "Outro",
+    esportes: "Esportes", esports: "e-Sports",
   };
   const catStats: Record<string, { won: number; total: number }> = {};
   for (const b of resolved as any[]) {
@@ -235,8 +234,8 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl }:
           <div className="bg-card border border-border rounded-xl p-4 space-y-2">
             <h3 className="text-sm font-semibold text-white">O que é a Zafe?</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              A Zafe é uma liga de previsões onde você palpita em eventos do mundo real —
-              geopolítica, economia, tecnologia e mais. Se sua previsão estiver certa, você
+              A Zafe é uma liga de previsões onde você palpita em eventos reais de
+              esporte e e-sports. Se sua previsão estiver certa, você
               recebe parte do que quem errou investiu. Quanto mais certeiros forem seus palpites,
               maior seu lucro.
             </p>

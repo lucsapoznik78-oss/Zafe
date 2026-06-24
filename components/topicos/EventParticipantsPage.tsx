@@ -6,7 +6,7 @@ import { ptBR } from "date-fns/locale";
 import CategoryBadge from "@/components/topicos/CategoryBadge";
 import { createAdminClient } from "@/lib/supabase/server";
 
-type Pillar = "liga" | "economico" | "concurso" | "privadas";
+type Pillar = "liga" | "concurso" | "privadas";
 type BetSide = "sim" | "nao";
 
 interface EventParticipantsPageProps {
@@ -84,7 +84,6 @@ function entryPercent(bet: BetRow) {
 function eventHref(pillar: Pillar, topic: any) {
   if (pillar === "privadas") return `/privadas/${topic.id}`;
   const key = topic.slug ?? topic.id;
-  if (pillar === "economico") return `/economico/${key}`;
   if (pillar === "concurso") return `/concurso/${key}`;
   return `/liga/${key}`;
 }
@@ -250,7 +249,7 @@ export async function EventParticipantsPage({
         <div className="flex items-center gap-2 flex-wrap">
           <CategoryBadge category={topic.category} />
           <span className="px-2 py-0.5 rounded bg-muted text-muted-foreground text-[10px] font-bold">
-            {pillar === "economico" ? "Zafe Econômico" : pillar === "concurso" ? "Concurso" : pillar === "privadas" ? "Privadas" : "Zafe Liga"}
+            {pillar === "concurso" ? "Concurso" : pillar === "privadas" ? "Privadas" : "Zafe Liga"}
           </span>
         </div>
         <div>

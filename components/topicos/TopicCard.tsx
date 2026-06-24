@@ -46,8 +46,7 @@ export default function TopicCard({ topic, href: hrefProp }: TopicCardProps) {
   const badge = STATUS_BADGE[effectiveStatus] ?? STATUS_BADGE.active;
 
   const slug = (topic as any).slug;
-  const base = topic.category === "economia" ? "/economico" : "/liga";
-  const href = hrefProp ?? `${base}/${slug ?? topic.id}`;
+  const href = hrefProp ?? `/liga/${slug ?? topic.id}`;
 
   const fmtZ = (v: number) => "Z$ " + new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 }).format(v);
 

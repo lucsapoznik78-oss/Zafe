@@ -19,6 +19,9 @@ export async function POST(request: Request) {
   if (description.length > 500) {
     return NextResponse.json({ error: "Descrição muito longa (máx 500 chars)" }, { status: 400 });
   }
+  if (category !== "esportes" && category !== "esports") {
+    return NextResponse.json({ error: "Categoria inválida — só esporte ou e-sports" }, { status: 400 });
+  }
 
   const closesDate = new Date(closes_at);
   const now = new Date();
@@ -60,7 +63,7 @@ export async function POST(request: Request) {
       creator_id: user.id,
       title: title.trim(),
       description: description.trim(),
-      category: category || "outros",
+      category,
       closes_at: closesDate.toISOString(),
       resolution_deadline: resolutionDeadline,
       status: "active",

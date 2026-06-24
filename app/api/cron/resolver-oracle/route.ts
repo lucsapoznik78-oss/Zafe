@@ -65,7 +65,6 @@ export async function POST(req: Request) {
 
   if (paid > 0) {
     revalidatePath("/liga");
-    revalidatePath("/economico");
     revalidatePath("/ranking");
     revalidatePath("/perfil");
   }

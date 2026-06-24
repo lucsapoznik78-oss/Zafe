@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, Wallet, Info, Star } from "lucide-react";
+import { LogOut, Wallet, Info, Star, Trophy } from "lucide-react";
 import NotificationBell from "@/components/layout/NotificationBell";
 import PushSetup from "@/components/layout/PushSetup";
 import { createClient } from "@/lib/supabase/client";
@@ -78,13 +78,11 @@ export default function Navbar() {
         <nav className="hidden md:flex items-center gap-1">
           {[
             { href: "/liga", label: "Liga" },
-            { href: "/economico", label: "Econômico" },
             { href: "/copa", label: "Copa" },
-            { href: "/ranking", label: "Ranking" },
-            { href: "/amigos", label: "Amigos" },
-            { href: "/privadas", label: "Privadas" },
             { href: "/comunidade", label: "Comunidade" },
             { href: "/games", label: "Games" },
+            { href: "/privadas", label: "Privadas" },
+            { href: "/ranking", label: "Ranking" },
           ].map((item) => (
             <Link
               key={item.href}
@@ -101,6 +99,16 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-3">
+          {/* Porta do mundo PAGO — destacada, separada da zona grátis */}
+          <Link
+            href="/concurso"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-yellow-400 text-black text-sm font-bold hover:bg-yellow-300 transition-colors"
+          >
+            <Trophy size={14} />
+            <span>Concurso</span>
+            <span className="hidden lg:inline font-semibold text-black/70">· Prêmio R$</span>
+          </Link>
+
           <div className="relative hidden sm:block group">
             <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary/10 text-primary text-sm font-medium cursor-default">
               <Wallet size={14} />

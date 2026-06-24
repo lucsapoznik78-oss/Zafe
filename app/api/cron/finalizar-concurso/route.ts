@@ -13,6 +13,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { verifyCronAuth } from "@/lib/cron-auth";
 import { sendEmail } from "@/lib/email";
+import { registrarPayoutsVencedores } from "@/lib/concurso-pagamento";
 
 async function isAdminRequest(): Promise<boolean> {
   const { createClient } = await import("@/lib/supabase/server");
@@ -100,14 +101,19 @@ export async function POST(req: Request) {
     const topCount = total > 0 ? Math.max(1, Math.ceil(total * 0.05)) : 0;
     const vencedores = (ranking ?? []).slice(0, topCount);
 
+    const payoutEntries: { userId: string; posicao: number; valorCentavos: number }[] = [];
     let enviados = 0;
     for (const v of vencedores) {
+      const valor = premioParaPosicao(concurso.premios as Premio[] | null, v.posicao);
+      if (valor != null && valor > 0) {
+        payoutEntries.push({ userId: v.user_id, posicao: v.posicao, valorCentavos: Math.round(valor * 100) });
+      }
+
       // Email do usuário vem do auth (não está no profile)
       const { data: userRes } = await admin.auth.admin.getUserById(v.user_id);
       const to = userRes?.user?.email;
       if (!to) continue;
 
-      const valor = premioParaPosicao(concurso.premios as Premio[] | null, v.posicao);
       const nome = v.full_name || v.username || "campeão";
 
       const r = await sendEmail({
@@ -118,6 +124,9 @@ export async function POST(req: Request) {
       if (r.ok) enviados++;
     }
 
+    // Razão de prêmios (R$ via PIX) — idempotente. Fonte de verdade do payout.
+    const payoutsRegistrados = await registrarPayoutsVencedores(admin, concurso.id, payoutEntries);
+
     // Marca como apurando (encerrado, aguardando pagamento)
     await admin.from("concursos").update({ status: "apurando" }).eq("id", concurso.id);
 
@@ -127,6 +136,7 @@ export async function POST(req: Request) {
       total_inscritos: total,
       top_5pct: topCount,
       emails_enviados: enviados,
+      payouts_registrados: payoutsRegistrados,
     });
   }
 

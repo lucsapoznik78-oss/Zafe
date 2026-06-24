@@ -8,7 +8,7 @@ const SORT_OPTIONS = [
   { value: "recent", label: "Mais recentes" },
 ];
 
-export default function TopicFilters({ excludeCategory }: { excludeCategory?: string } = {}) {
+export default function TopicFilters() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -26,9 +26,7 @@ export default function TopicFilters({ excludeCategory }: { excludeCategory?: st
     router.push(`${pathname}?${params.toString()}`);
   }
 
-  const visibleCategories = excludeCategory
-    ? CATEGORIES.filter((c) => c.value !== excludeCategory)
-    : CATEGORIES;
+  const visibleCategories = CATEGORIES;
 
   return (
     <div className="space-y-3">

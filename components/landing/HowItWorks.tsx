@@ -13,7 +13,7 @@ const steps = [
     color: "text-blue-400",
     bg: "bg-blue-400/10",
     title: "Palpite no que você acompanha",
-    body: "Esporte, política, economia, tecnologia. Centenas de eventos abertos toda semana. Diga SIM ou NÃO e aloque seus Z$ na previsão.",
+    body: "Esporte e e-sports. Centenas de eventos abertos toda semana. Diga SIM ou NÃO e aloque seus Z$ na previsão.",
   },
   {
     icon: Trophy,

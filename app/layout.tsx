@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     template: "%s — Zafe",
   },
   description: "O fantasy game de previsões do Brasil. Compete prevendo eventos reais, receba Z$ grátis e dispute o prêmio mensal com os melhores previsores.",
-  keywords: ["zafe", "fantasy game", "liga de previsões", "concurso de previsões", "previsão esportiva", "brasil", "política", "esportes", "economia", "competição de habilidade"],
+  keywords: ["zafe", "fantasy sport", "fantasy game", "liga de previsões", "concurso de previsões", "previsão esportiva", "e-sports", "brasil", "esportes", "competição de habilidade"],
   authors: [{ name: "Zafe" }],
   creator: "Zafe",
   publisher: "Zafe",

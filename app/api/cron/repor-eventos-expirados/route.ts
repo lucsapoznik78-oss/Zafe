@@ -2,8 +2,8 @@
  * Cron: Repor eventos expirados automaticamente
  * 
  * Verifica eventos que fecharam há mais de X horas e cria novos eventos
- * para manter a Liga e Econômico sempre com eventos ativos.
- * 
+ * para manter a Liga sempre com eventos ativos.
+ *
  * Deve ser executado a cada 6 horas.
  */
 import { createAdminClient } from "@/lib/supabase/server";
@@ -26,12 +26,11 @@ export async function GET(req: Request) {
   let erros = 0;
 
   try {
-    // 1. Buscar eventos expirados da Liga (não-economia, sem concurso_id)
+    // Buscar eventos expirados da Liga (sem concurso_id)
     const { data: eventosExpiradosLiga } = await supabase
       .from("topics")
       .select("id, title, category, closes_at")
       .eq("status", "resolved")
-      .neq("category", "economia")
       .is("concurso_id", null)
       .lt("closes_at", limiteExpiracao.toISOString())
       .order("closes_at", { ascending: false })
@@ -42,71 +41,10 @@ export async function GET(req: Request) {
       const { data: templates } = await supabase
         .from("topic_templates")
         .select("*")
-        .neq("category", "economia")
         .limit(EVENTOS_POR_EXECUCAO);
 
       if (templates && templates.length > 0) {
         for (const template of templates) {
-          try {
-            // Verificar se já existe tópico ativo com o mesmo título
-            const { data: existingTopic } = await supabase
-              .from("topics")
-              .select("id")
-              .eq("title", template.title)
-              .eq("status", "active")
-              .is("concurso_id", null)
-              .maybeSingle();
-
-            if (existingTopic) {
-              console.log(`[repor-eventos] Tópico já existe: ${template.title}. Pulando.`);
-              continue;
-            }
-
-            const novoClosesAt = new Date(agora.getTime() + 7 * 24 * 60 * 60 * 1000);
-            
-            const { error } = await supabase.from("topics").insert({
-              title: template.title,
-              description: template.description || "",
-              category: template.category,
-              closes_at: novoClosesAt.toISOString(),
-              status: "active",
-              min_bet: 10,
-              is_private: false,
-              creator_id: process.env.SYSTEM_USER_ID ?? "89aee166-8ccd-4511-8082-8848925d60db",
-              total_volume: 0,
-              volume_sim: 0,
-              volume_nao: 0,
-              bet_count: 0,
-            });
-
-            if (!error) criados++;
-          } catch (e) {
-            erros++;
-          }
-        }
-      }
-    }
-
-    // 2. Buscar eventos expirados do Econômico
-    const { data: eventosExpiradosEconomico } = await supabase
-      .from("topics")
-      .select("id, title, category, closes_at")
-      .eq("status", "resolved")
-      .eq("category", "economia")
-      .is("concurso_id", null)
-      .lt("closes_at", limiteExpiracao.toISOString())
-      .order("closes_at", { ascending: false })
-      .limit(EVENTOS_POR_EXECUCAO);
-
-    if (eventosExpiradosEconomico && eventosExpiradosEconomico.length > 0) {
-      const { data: templatesEconomico } = await supabase
-        .from("topic_templates")
-        .select("*")
-        .eq("category", "economia")
-        .limit(EVENTOS_POR_EXECUCAO);
-
-      if (templatesEconomico && templatesEconomico.length > 0) {
-        for (const template of templatesEconomico) {
           try {
             // Verificar se já existe tópico ativo com o mesmo título
             const { data: existingTopic } = await supabase

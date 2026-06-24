@@ -111,8 +111,7 @@ export default async function AdminPage() {
   }));
 
   // Separar em JS (funciona com ou sem coluna concurso_id no banco)
-  const economicTopics = (allActiveTopics ?? []).filter(t => t.category === 'economia' && !t.concurso_id);
-  const ligaTopics = (allActiveTopics ?? []).filter(t => t.category !== 'economia' && !t.concurso_id);
+  const ligaTopics = (allActiveTopics ?? []).filter(t => !t.concurso_id);
   const concursoTopics = (allActiveTopics ?? []).filter(t => t.concurso_id);
 
   // Copa: partidas já disputadas que o oráculo não fechou (manual). Inclui as
@@ -159,14 +158,7 @@ export default async function AdminPage() {
       <AdminResolve topics={[]} allResolving={resolvingWithOutcomes} />
       <AdminCopaResolve matches={copaMatchesDue} />
 
-      {/* Zafe Econômico */}
-      <div>
-        <h2 className="text-lg font-bold text-white mb-1">Zafe Econômico (Admin Cria)</h2>
-        <p className="text-xs text-muted-foreground mb-3">Eventos de categoria econômica criados pela administração</p>
-        <AdminActiveTopics topics={economicTopics ?? []} showCategory />
-      </div>
-
-      {/* Liga - Sem economia */}
+      {/* Liga */}
       <div>
         <h2 className="text-lg font-bold text-white mb-1">Liga (Eventos Gerais)</h2>
         <p className="text-xs text-muted-foreground mb-3">Eventos que NÃO são econômicos (esportes, política, tecnologia, entretenimento)</p>

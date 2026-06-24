@@ -21,9 +21,9 @@ export default function EntrarCards() {
               <Gift size={20} className="text-primary" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">Jogar no site</h3>
+              <h3 className="text-lg font-bold text-white">Jogar grátis</h3>
               <p className="text-sm text-muted-foreground mt-1">
-                A liga de previsões completa, de graça.
+                A zona grátis completa de esporte e e-sports, com Z$ virtual.
               </p>
             </div>
             <ul className="space-y-2 text-sm text-muted-foreground flex-1">
@@ -34,7 +34,7 @@ export default function EntrarCards() {
                 <Check size={15} className="text-primary shrink-0" /> Sem CPF, sem cartão
               </li>
               <li className="flex items-center gap-2">
-                <Check size={15} className="text-primary shrink-0" /> Liga, Econômico, Privadas e Comunidade
+                <Check size={15} className="text-primary shrink-0" /> Liga, Privadas, Games e Comunidade
               </li>
             </ul>
             <Link

@@ -14,7 +14,7 @@ interface BetFormProps {
   isClosed: boolean;
   userBalance?: number;
   initialSide?: "sim" | "nao";
-  pilar?: "liga" | "economico";
+  pilar?: "liga";
 }
 
 export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed, userBalance = 0, initialSide, pilar }: BetFormProps) {

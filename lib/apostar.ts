@@ -4,7 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { debitBalance, creditBalance } from "@/lib/wallet";
 import { createAdminClient } from "@/lib/supabase/server";
 
-/** Core palpitar logic shared by /api/apostar and /api/liga|economico/[id]/palpitar */
+/** Core palpitar logic shared by /api/apostar and /api/liga/[id]/palpitar */
 export async function executePalpitar(
   supabase: SupabaseClient,
   userId: string,

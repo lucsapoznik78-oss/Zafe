@@ -103,7 +103,7 @@ export default async function MinhasPosicoes() {
   const losses = resolvedRows.filter((r) => r.status === "lost").length;
   const decided = wins + losses;
   const winRate = decided > 0 ? (wins / decided) * 100 : 0;
-  const href = (t: any) => (t.category === "economia" ? `/economico/${t.id}` : `/liga/${t.id}`);
+  const href = (t: any) => `/liga/${t.id}`;
   const SideTag = ({ side }: { side: "sim" | "nao" }) => (
     <span className={`inline-block px-1.5 py-0.5 rounded text-[11px] font-bold ${side === "sim" ? "bg-sim/15 text-sim" : "bg-nao/15 text-nao"}`}>
       {side.toUpperCase()}

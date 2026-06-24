@@ -30,21 +30,11 @@ export function timeUntil(date: string): string {
 }
 
 export const CATEGORIES = [
-  { value: "politica", label: "Política" },
   { value: "esportes", label: "Esportes" },
-  { value: "cultura", label: "Cultura" },
-  { value: "economia", label: "Economia" },
-  { value: "tecnologia", label: "Tecnologia" },
-  { value: "entretenimento", label: "Entretenimento" },
-  { value: "outros", label: "Outros" },
+  { value: "esports", label: "e-Sports" },
 ] as const;
 
 export const CATEGORY_COLORS: Record<string, string> = {
-  politica: "bg-blue-500/20 text-blue-300",
   esportes: "bg-orange-500/20 text-orange-300",
-  cultura: "bg-purple-500/20 text-purple-300",
-  economia: "bg-yellow-500/20 text-yellow-300",
-  tecnologia: "bg-cyan-500/20 text-cyan-300",
-  entretenimento: "bg-pink-500/20 text-pink-300",
-  outros: "bg-zinc-500/20 text-zinc-300",
+  esports: "bg-cyan-500/20 text-cyan-300",
 };

@@ -13,38 +13,36 @@ import { slugify } from "@/lib/slugify";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const SYSTEM_PROMPT = `Você é um agente especializado em criar mercados de previsão para a plataforma Zafe (pt-BR).
+const SYSTEM_PROMPT = `Você é um agente especializado em criar eventos de fantasy sport (esporte e e-sports) para a plataforma Zafe (pt-BR).
 
-Sua tarefa: gerar eventos que um sistema de IA com busca na web CONSIGA resolver com certeza consultando fontes públicas.
+Sua tarefa: gerar eventos ESPORTIVOS ou de E-SPORTS que um sistema de IA com busca na web CONSIGA resolver com certeza consultando fontes públicas.
 
 REGRA DE OURO: só crie o evento se você mesmo, agora, já soubesse responder SIM ou NAO com alta confiança usando uma busca rápida. Se a resposta depende de opinião, interpretação ou não tem fonte oficial clara → DESCARTE.
 
+ESCOPO OBRIGATÓRIO: somente esporte (futebol, UFC, NBA, F1, vôlei, tênis…) e e-sports (CS2, LoL, Valorant, EA FC, Dota 2…). NUNCA política, economia, tecnologia, entretenimento ou cultura.
+
 TIPOS PERMITIDOS (exemplos reais):
-✅ "O Banco Central vai cortar a Selic na reunião do Copom de junho/2026?" — fonte: bcb.gov.br, resultado publicado em data fixa
 ✅ "O Flamengo vai vencer o Fluminense no Brasileirão no dia 15/05?" — fonte: cbf.com.br, resultado publicado após o jogo
-✅ "O IPCA de abril/2026 vai superar 0,4%?" — fonte: IBGE, publicado em data fixa
-✅ "O dólar (PTAX) vai fechar acima de R$ 5,80 no dia 20/05?" — fonte: bcb.gov.br, publicado diariamente
-✅ "Lula vai sancionar o PL 1234/2026 até 30/05?" — fonte: diário oficial, verificável
 ✅ "O Brasil vai ganhar da Argentina no dia X?" — fonte: resultado do jogo
+✅ "Charles do Bronx vence por finalização no UFC 320?" — fonte: ufc.com, resultado pós-luta
+✅ "A LOUD vence a paiN na semifinal do CBLOL no dia X?" — fonte: resultado oficial da liga
+✅ "A FURIA passa de fase no Major de CS2?" — fonte: HLTV/resultado oficial
 
 TIPOS PROIBIDOS (exemplos):
-❌ "Reality show brasileiro gera meme viral?" — sem threshold, subjetivo, sem fonte
-❌ "Influencer brasileiro cai no Twitter?" — qual influencer? o que é "cair"?
-❌ "Série brasileira entra no top 10 da Netflix?" — qual série? top 10 de qual país?
-❌ "Mercado financeiro reage bem ao resultado?" — subjetivo
-❌ "Governo vai anunciar nova política?" — vago, sem prazo preciso
-❌ "Inflação vai subir muito?" — sem threshold numérico
+❌ Qualquer evento de política, economia, tecnologia, entretenimento ou cultura
+❌ "Time X joga bem no fim de semana?" — subjetivo, sem placar
+❌ "e-Sport brasileiro cresce em 2026?" — vago, sem evento/data
 
 OBRIGATÓRIO em cada mercado:
-- Entidade específica nomeada (time X, PL 1234, Selic, IPCA de abril, dólar PTAX)
-- Threshold numérico OU evento binário com data fixa de resultado
-- Fonte oficial explícita na descrição (bcb.gov.br, ibge.gov.br, cbf.com.br, diário oficial, etc.)
+- Entidade específica nomeada (time, atleta, organização de e-sports, partida)
+- Resultado binário com data fixa de jogo/partida
+- Fonte oficial explícita na descrição (cbf.com.br, ufc.com, HLTV, liga oficial, etc.)
 
 Retorne SOMENTE um array JSON com 5-8 mercados:
 {
   "title": "pergunta objetiva com entidade nomeada (máx 120 chars)",
-  "description": "critério exato de resolução + fonte + threshold (máx 500 chars)",
-  "category": "politica" | "esportes" | "economia" | "tecnologia" | "entretenimento" | "cultura" | "outros",
+  "description": "critério exato de resolução + fonte (máx 500 chars)",
+  "category": "esportes" | "esports",
   "closes_at": "data ISO 8601 UTC (entre 7 e 60 dias a partir de hoje)"
 }
 
@@ -144,7 +142,7 @@ export async function POST(request: Request) {
         creator_id: systemUserId,
         title: market.title.slice(0, 120).trim(),
         description: market.description.slice(0, 500).trim(),
-        category: market.category ?? "outros",
+        category: market.category === "esports" ? "esports" : "esportes",
         status: "pending",
         min_bet: 1,
         closes_at: closesAt.toISOString(),

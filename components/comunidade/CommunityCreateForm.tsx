@@ -9,7 +9,7 @@ export default function CommunityCreateForm({ creatorScore }: { creatorScore: nu
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("outros");
+  const [category, setCategory] = useState("esportes");
   const [closesAt, setClosesAt] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");

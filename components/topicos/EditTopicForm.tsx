@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-const CATEGORIES = ["politica","esportes","cultura","economia","tecnologia","entretenimento","outros"];
+const CATEGORIES = ["esportes","esports"];
 
 interface Topic {
   id: string;

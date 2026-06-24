@@ -1,11 +1,6 @@
 export type TopicCategory =
-  | "politica"
   | "esportes"
-  | "cultura"
-  | "economia"
-  | "tecnologia"
-  | "entretenimento"
-  | "outros";
+  | "esports";
 
 export type TopicStatus = "pending" | "active" | "resolving" | "resolved" | "cancelled";
 export type TopicResolution = "sim" | "nao" | null;

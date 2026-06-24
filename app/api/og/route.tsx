@@ -4,23 +4,13 @@ import { createAdminClient } from "@/lib/supabase/server";
 export const runtime = "edge";
 
 const CATEGORY_LABELS: Record<string, string> = {
-  politica: "Política",
   esportes: "Esportes",
-  economia: "Economia",
-  tecnologia: "Tecnologia",
-  entretenimento: "Entretenimento",
-  cultura: "Cultura",
-  outros: "Outros",
+  esports: "e-Sports",
 };
 
 const CATEGORY_COLOR: Record<string, string> = {
-  politica: "#f87171",
-  esportes: "#60a5fa",
-  economia: "#facc15",
-  tecnologia: "#a78bfa",
-  entretenimento: "#f472b6",
-  cultura: "#fb923c",
-  outros: "#94a3b8",
+  esportes: "#fb923c",
+  esports: "#22d3ee",
 };
 
 export async function GET(req: Request) {

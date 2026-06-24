@@ -158,7 +158,6 @@ export async function POST(request: Request) {
   }
 
   revalidatePath("/liga");
-  revalidatePath("/economico");
 
   return NextResponse.json({
     success: true,

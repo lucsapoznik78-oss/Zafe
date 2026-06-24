@@ -241,7 +241,6 @@ export async function POST(req: Request) {
     .lt("oracle_retry_count", MAX_ATTEMPTS);
 
   revalidatePath("/liga");
-  revalidatePath("/economico");
   revalidatePath("/ranking");
   revalidatePath("/perfil");
 

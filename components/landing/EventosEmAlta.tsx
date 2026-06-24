@@ -14,7 +14,6 @@ async function getTopTopics(): Promise<TopicWithStats[]> {
       .select("*, creator:profiles!creator_id(id, username, full_name)")
       .eq("status", "active")
       .eq("is_private", false)
-      .neq("category", "economia")
       .gt("closes_at", oneHourFromNow)
       .order("created_at", { ascending: false })
       .limit(20);

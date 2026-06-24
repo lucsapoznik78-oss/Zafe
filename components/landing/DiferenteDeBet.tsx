@@ -15,25 +15,26 @@ export default function DiferenteDeBet() {
           </div>
 
           <p className="text-sm text-muted-foreground leading-relaxed">
-            A Zafe é uma{" "}
-            <span className="text-white font-semibold">competição de habilidade</span>{" "}
-            — quem prevê melhor, ganha. O modelo é o mesmo do xadrez online ou de
-            competições de palpites entre amigos. Você não compete contra a
-            plataforma: compete contra outros previsores.
+            A Zafe é um{" "}
+            <span className="text-white font-semibold">fantasy game de habilidade</span>{" "}
+            de esporte e e-sports — quem prevê melhor, ganha. É o mesmo modelo do
+            fantasy sport (tipo Cartola): você não compete contra a plataforma,
+            compete contra outros previsores.
           </p>
 
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Operamos sob a{" "}
-            <span className="text-white font-medium">Lei 5.768/71</span>{" "}
-            (concurso de previsões) e não sob a Lei 14.790/23, que regula casas de
-            jogos de quota fixa. Não somos uma casa de jogos e não pretendemos ser.
+            O Concurso se enquadra como{" "}
+            <span className="text-white font-medium">fantasy sport pelo Art. 49 da Lei 14.790/2023</span>{" "}
+            — prêmio fixo definido na abertura, independente do número de inscritos,
+            sobre eventos reais de esporte e e-sports. Não somos uma casa de jogos e
+            não pretendemos ser.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             {[
-              { label: "Z$ é virtual", sub: "Não há depósito nem valor real envolvido" },
-              { label: "Prêmio de concurso", sub: "Regulamentado como competição de habilidade" },
-              { label: "Sem fixação de quota", sub: "Pool parimutuel entre participantes" },
+              { label: "Z$ é virtual", sub: "Na zona grátis não há depósito nem valor real" },
+              { label: "Prêmio fixo (Art. 49)", sub: "Definido na abertura, independe de inscritos" },
+              { label: "Só esporte e e-sports", sub: "Eventos reais e verificáveis" },
               { label: "Transparência total", sub: "Probabilidades visíveis e auditáveis" },
             ].map((item) => (
               <div key={item.label} className="flex items-start gap-2">

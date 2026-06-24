@@ -20,9 +20,5 @@ export default async function TopicosParticipantesRedirect({ params }: PageProps
   if (!topic) redirect("/liga");
 
   const canonicalId = topic.slug ?? topic.id;
-  if (topic.category === "economia") {
-    redirect(`/economico/${canonicalId}/participantes`);
-  }
-
   redirect(`/liga/${canonicalId}/participantes`);
 }

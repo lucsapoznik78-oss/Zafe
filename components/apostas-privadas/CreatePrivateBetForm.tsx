@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Search, UserPlus, X, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
-const CATEGORIES = ["politica","esportes","cultura","economia","tecnologia","entretenimento","outros"];
+const CATEGORIES = ["esportes","esports"];
 
 interface UserRow { id: string; username: string; full_name: string }
 
@@ -139,7 +139,7 @@ export default function CreatePrivateBetForm({
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("outros");
+  const [category, setCategory] = useState("esportes");
   const [minBet, setMinBet] = useState("10");
   const [closesAt, setClosesAt] = useState("");
   const [aliados, setAliados] = useState<UserRow[]>([]);

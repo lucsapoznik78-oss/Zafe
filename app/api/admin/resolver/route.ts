@@ -26,16 +26,13 @@ export async function POST(request: Request) {
   if (resolution === "cancelled") {
     await reembolsarTodos(admin, topic_id, "Mercado cancelado pelo admin", user.id);
     revalidatePath("/liga");
-    revalidatePath("/economico");
     revalidatePath("/ranking");
     revalidatePath("/perfil");
     return NextResponse.json({ success: true });
   }
 
   revalidatePath("/liga");
-  revalidatePath("/economico");
   revalidatePath(`/liga/${topic_id}`);
-  revalidatePath(`/economico/${topic_id}`);
   revalidatePath("/ranking");
   revalidatePath("/perfil");
 

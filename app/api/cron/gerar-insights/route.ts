@@ -34,7 +34,7 @@ export async function POST(req: Request) {
   const admin = createAdminClient();
   const now = new Date().toISOString();
 
-  // Eventos abertos (Liga, Econômico e Concurso vivem todos em `topics`),
+  // Eventos abertos (Liga e Concurso vivem todos em `topics`),
   // priorizando os que fecham primeiro.
   const { data: topics } = await admin
     .from("topics")

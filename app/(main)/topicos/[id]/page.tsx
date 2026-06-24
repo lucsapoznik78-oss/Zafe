@@ -15,9 +15,5 @@ export default async function TopicosDetailRedirect({ params }: { params: Promis
   if (!topic) redirect("/liga");
 
   const canonicalId = topic.slug ?? topic.id;
-  if (topic.category === "economia") {
-    redirect(`/economico/${canonicalId}`);
-  } else {
-    redirect(`/liga/${canonicalId}`);
-  }
+  redirect(`/liga/${canonicalId}`);
 }

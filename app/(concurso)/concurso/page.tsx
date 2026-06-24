@@ -319,7 +319,7 @@ export default async function ConcursoPage({ searchParams }: PageProps) {
         <>
           <SearchBar />
           <Suspense fallback={null}>
-            <TopicFilters excludeCategory="economia" />
+            <TopicFilters />
           </Suspense>
           <Suspense
             fallback={

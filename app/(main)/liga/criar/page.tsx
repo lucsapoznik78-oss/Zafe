@@ -18,7 +18,7 @@ export default async function CriarLigaPage() {
           Proponha um evento para a comunidade palpitar
         </p>
       </div>
-      <CreateTopicForm excludeCategories={["economia"]} />
+      <CreateTopicForm />
     </div>
   );
 }

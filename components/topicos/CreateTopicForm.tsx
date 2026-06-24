@@ -31,7 +31,7 @@ export default function CreateTopicForm({ excludeCategories = [] }: CreateTopicF
   const [form, setForm] = useState({
     title: "",
     description: "",
-    category: "outros",
+    category: "esportes",
     closes_at: "",
     min_bet: "1",
   });

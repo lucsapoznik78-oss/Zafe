@@ -17,17 +17,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Data de encerramento inválida" }, { status: 400 });
   }
 
-  // Bloquear criação de eventos econômicos para não-admins
-  if (category === "economia") {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role, pode_criar_economico")
-      .eq("id", user.id)
-      .single();
-    const canCreate = (profile as any)?.role === "admin" || (profile as any)?.pode_criar_economico === true;
-    if (!canCreate) {
-      return NextResponse.json({ error: "Apenas administradores podem criar eventos econômicos" }, { status: 403 });
-    }
+  // Fantasy (Art. 49): só esporte e e-sports são eventos válidos.
+  if (category !== "esportes" && category !== "esports") {
+    return NextResponse.json({ error: "Categoria inválida — só esporte ou e-sports" }, { status: 400 });
   }
 
   const isMulti = market_type === "multi";
@@ -49,7 +41,7 @@ export async function POST(request: Request) {
     creator_id: user.id,
     title: title.trim(),
     description: description.trim(),
-    category: category ?? "outros",
+    category,
     status: "pending",
     min_bet: parseFloat(min_bet) || 1,
     closes_at: new Date(closes_at).toISOString(),
