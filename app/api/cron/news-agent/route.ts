@@ -82,7 +82,7 @@ export async function POST(request: Request) {
       messages: [
         {
           role: "user",
-          content: `Hoje é ${today}. Busque as principais notícias brasileiras dos últimos 2 dias e gere 5-8 mercados de previsão de alta qualidade. Foque em: eleições municipais/estaduais, SELIC e indicadores do Banco Central, IPCA (IBGE), Campeonato Brasileiro, Copa do Brasil, decisões do STF, votações no Congresso, câmbio USD/BRL, PIB, desemprego (PNAD). Seja específico nos thresholds numéricos e fontes.`,
+          content: `Hoje é ${today}. Busque os principais jogos e partidas de esporte e e-sports dos próximos 7 a 60 dias e gere 5-8 mercados de previsão binários (SIM/NAO) de alta qualidade. Foque em: Campeonato Brasileiro, Copa do Brasil, Libertadores, UFC, NBA, F1, futebol europeu, e em e-sports (CS2 — Majors/HLTV, LoL — CBLOL/Worlds, Valorant — VCT, Dota 2, EA FC). Cada mercado precisa de uma partida/evento real com data confirmada, entidade nomeada e fonte oficial. NUNCA política, economia, tecnologia, entretenimento ou cultura.`,
         },
       ],
     });
