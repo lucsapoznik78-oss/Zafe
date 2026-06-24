@@ -5,8 +5,8 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const token_hash = searchParams.get("token_hash");
   const type = searchParams.get("type");
-  const next = searchParams.get("next") ?? "/liga";
-  const safeNext = next.startsWith("/") ? next : "/liga";
+  const next = searchParams.get("next") ?? "/inicio";
+  const safeNext = next.startsWith("/") ? next : "/inicio";
 
   const errorRedirect = NextResponse.redirect(`${origin}/login?error=auth_failed`);
 

@@ -44,7 +44,7 @@ export default async function LandingPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (user) redirect("/liga");
+  if (user) redirect("/inicio");
 
   return (
     <div className="min-h-screen bg-black text-white">

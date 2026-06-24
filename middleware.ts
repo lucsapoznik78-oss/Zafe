@@ -44,7 +44,7 @@ export async function middleware(request: NextRequest) {
   }
 
   if (authed && pathname === "/login") {
-    return NextResponse.redirect(new URL("/liga", request.url));
+    return NextResponse.redirect(new URL("/inicio", request.url));
   }
 
   // Rotas protegidas: uma única leitura do perfil cobre o gate de admin e o

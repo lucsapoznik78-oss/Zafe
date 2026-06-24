@@ -70,7 +70,7 @@ export default function Navbar() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-14 border-b border-border bg-black/90 backdrop-blur-sm">
       <div className="flex items-center justify-between h-full px-4 max-w-7xl mx-auto">
-        <Link href="/liga" className="flex items-center gap-2">
+        <Link href="/inicio" className="flex items-center gap-2">
           <img src="/zafe-logo-full.png" alt="Zafe" className="h-8 hidden sm:block" />
           <img src="/zafe-icon.png" alt="Zafe" className="h-8 w-8 sm:hidden rounded" />
         </Link>
