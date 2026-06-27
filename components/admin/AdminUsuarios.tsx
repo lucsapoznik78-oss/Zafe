@@ -20,6 +20,7 @@ interface AdminUser {
   balance: number | null;
   self_excluded_until: string | null;
   cooloff_until: string | null;
+  palpites30d: number;
 }
 
 interface SemanaAtividade {
@@ -231,19 +232,25 @@ export default function AdminUsuarios() {
           {users.length === 0 && (
             <p className="text-sm text-muted-foreground p-5 text-center">Nenhum usuário encontrado.</p>
           )}
-          {users.map((u) => (
+          {users.map((u, i) => (
             <div key={u.id} className="p-4 bg-card space-y-3">
               <div className="flex items-center justify-between gap-3 flex-wrap">
-                <div className="min-w-0">
-                  <p className="text-sm font-bold text-white truncate">
-                    @{u.username ?? u.id.slice(0, 8)}
-                    {u.is_admin && <span className="ml-2 text-[10px] text-primary font-semibold">ADMIN</span>}
-                    {isPremium(u) && <span className="ml-2 text-[10px] text-yellow-400 font-semibold">PREMIUM</span>}
-                    {u.banned && <span className="ml-2 text-[10px] text-destructive font-semibold">BANIDO</span>}
-                    {pausaAtiva(u) === "autoexcluido" && <span className="ml-2 text-[10px] text-red-400 font-semibold">AUTOEXCLUÍDO</span>}
-                    {pausaAtiva(u) === "pausa" && <span className="ml-2 text-[10px] text-violet-300 font-semibold">EM PAUSA</span>}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">{u.full_name ?? "—"}</p>
+                <div className="min-w-0 flex items-center gap-3">
+                  <span className="text-xs font-bold text-muted-foreground tabular-nums w-6 shrink-0 text-right">#{i + 1}</span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-white truncate">
+                      @{u.username ?? u.id.slice(0, 8)}
+                      {u.is_admin && <span className="ml-2 text-[10px] text-primary font-semibold">ADMIN</span>}
+                      {isPremium(u) && <span className="ml-2 text-[10px] text-yellow-400 font-semibold">PREMIUM</span>}
+                      {u.banned && <span className="ml-2 text-[10px] text-destructive font-semibold">BANIDO</span>}
+                      {pausaAtiva(u) === "autoexcluido" && <span className="ml-2 text-[10px] text-red-400 font-semibold">AUTOEXCLUÍDO</span>}
+                      {pausaAtiva(u) === "pausa" && <span className="ml-2 text-[10px] text-violet-300 font-semibold">EM PAUSA</span>}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {u.full_name ?? "—"}
+                      <span className="ml-2 text-primary/70">· {u.palpites30d} palpite{u.palpites30d === 1 ? "" : "s"}/30d</span>
+                    </p>
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-bold text-primary tabular-nums">{fmtZ(u.balance)}</span>
