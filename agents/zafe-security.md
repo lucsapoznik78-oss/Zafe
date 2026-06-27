@@ -28,6 +28,18 @@ attackers do.
 - **Client manipulation**: can the client-side code directly call wallet
   mutation endpoints without server validation?
 - All wallet changes must be server-side in transactions
+- **R$↔virtual wall**: no path turns the R$ Concurso fee into Z$/ZC$
+- **Games pots**: `games_join_pot`/`games_pot_settle`/`games_pot_refund`
+  (SECURITY DEFINER) must re-check auth/ownership and be idempotent (can't
+  settle or refund a pot twice; parimutuel pool conserved)
+
+### 2b. Paid Concurso / PIX payment (CRITICAL)
+- Webhook **idempotency**: the `pending → paid` claim must be atomic so a
+  replayed provider notification can't enroll/pay twice
+- **CPF/KYC**: payer CPF must match profile CPF; fail closed
+  (`cpf_unverified` / `cpf_mismatch`) — never enroll on mismatch
+- Webhook **signature/secret** verification before trusting payment events
+- Fixed-prize payouts (`payouts_concurso`) idempotent via UNIQUE(user, concurso)
 
 ### 3. API security
 - Every route in `app/api/` must check authentication

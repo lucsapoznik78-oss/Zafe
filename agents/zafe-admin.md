@@ -42,14 +42,22 @@ You are the Zafe Admin Agent. You audit all admin functionality.
 - KYC verification approval
 - Manual Z$ adjustment (with logging)
 
-### 5. Cron jobs
-- Market resolution cron: schedule, auth, retry
-- CRON_SECRET configured and required?
-- Fallback if CRON_SECRET unset (should fail, not fallback)
-- Contest lifecycle cron (monthly rollover)
-- Stale market cleanup
+### 5. Resolution surfaces (main admin page)
+- Setores aguardando resolução (Liga events)
+- Copa — partidas aguardando resolução (`/api/admin/copa/partidas/[id]/resultado`,
+  `/api/cron/copa-resolver`)
+- Games event resolution (`games_event_resolver`)
 
-### 6. Dashboard & monitoring
+### 6. Cron jobs
+- Event resolution cron: schedule, auth, retry
+- CRON_SECRET configured and required (`verifyCronAuth`)?
+- Fallback if CRON_SECRET unset (should fail, not fallback)
+- Concurso (paid) lifecycle cron
+- `saneamento-fantasy` cron: refunds/migrates off-topic (non esporte/e-sports)
+  events; defaults to `dryRun:true` — confirm before a non-dry run
+- Stale event cleanup
+
+### 7. Dashboard & monitoring
 - Active markets count
 - Total users, DAU
 - Pending moderation queue

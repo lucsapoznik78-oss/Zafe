@@ -154,19 +154,20 @@ grep -rn "resolve\|resolution" --include="*.ts" -A 10 | grep -i "date\|time\|sch
 
 ## Step 6: Check edge cases
 
-### Econômico module dates
-- Selic/IPCA/Dólar markets have known announcement dates (COPOM, IBGE)
-- Market must close BEFORE the announcement, not after
-- Verify: does the system know the official calendar?
+### Sports / e-sports fixture dates
+- Events reference real matches with known kickoff/start times
+- The event must CLOSE before the match starts, not after
+- Copa matches (`copa_matches.kickoff_at`) and Games events
+  (`games_event_lock_before_start`) must lock before the fixture begins
 
 ```bash
-grep -rn "copom\|ibge\|selic.*date\|ipca.*date\|announcement" --include="*.ts" .
+grep -rn "kickoff_at\|closes_at\|lock_before_start\|match.*date" --include="*.ts" --include="*.sql" .
 ```
 
-### Concurso Mensal dates
-- Contest start/end must align with calendar month
-- All contest markets must resolve BEFORE contest end date
-- If a contest market references an event after contest end → problem
+### Concurso (paid) dates
+- Contest `periodo_inicio` / `periodo_fim` coherent
+- All contest events must resolve BEFORE `periodo_fim`
+- If a contest event references a fixture after the period end → problem
 
 ### Privadas (private markets)
 - User-created markets: is there date validation?
@@ -230,9 +231,9 @@ Waits for event_date:    [YES ✅|NO ❌|NO EVENT_DATE FIELD]
 Pre-event resolution:    [BLOCKED ✅|POSSIBLE ❌]
 
 ═══ MODULE-SPECIFIC ═══
-Econômico calendar:      [SYNCED ✅|MANUAL ⚠️|MISSING ❌]
-Concurso alignment:      [OK ✅|MISALIGNED ⚠️]
-Privadas min duration:   [ENFORCED ✅|NONE ❌]
+Fixture close-before-start: [OK ✅|VIOLATIONS ❌] (Liga/Copa/Games)
+Concurso period alignment:  [OK ✅|MISALIGNED ⚠️]
+Privadas min duration:      [ENFORCED ✅|NONE ❌]
 
 ═══ ISSUES ═══
 [CRITICAL] ...

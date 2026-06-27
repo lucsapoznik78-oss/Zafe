@@ -4,9 +4,10 @@ export default function LegalFooter() {
   return (
     <div className="mt-10 pt-6 border-t border-border/40 text-xs text-muted-foreground/60 space-y-2 leading-relaxed">
       <p>
-        A Zafe é uma plataforma de competição de habilidade preditiva operando sob a Lei 5.768/71.
-        Z$ é moeda virtual sem valor monetário real. O prêmio mensal é destinado exclusivamente
-        aos vencedores do concurso de previsões. Resultados passados não garantem posições futuras no ranking.
+        A Zafe é um fantasy game de habilidade de esporte e e-sports, enquadrado como fantasy sport
+        pelo Art. 49 da Lei 14.790/2023. Z$ é moeda virtual sem valor monetário real. O prêmio do
+        Concurso é fixo, definido na abertura e independente do número de inscritos. Resultados passados
+        não garantem posições futuras no ranking.
       </p>
       <p>
         Uso restrito a maiores de 18 anos.

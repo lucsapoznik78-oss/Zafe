@@ -14,20 +14,21 @@ You are the Zafe Docs Agent. You generate and audit project documentation.
 ## What to document
 
 ### 1. README.md
-- Project description (Liga de Previsões do Brasil)
+- Project description (fantasy-sport prediction platform — esporte/e-sports)
 - Tech stack summary
 - Local development setup (clone, install, env vars, supabase, run)
 - Available scripts (dev, build, test, lint)
 - Project structure overview
 - Contributing guidelines
-- Legal notice (Lei 5.768/71, not betting)
+- Legal notice (Lei 14.790/2023 Art. 49 fantasy sport, not betting)
 
 ### 2. Architecture overview (ARCHITECTURE.md)
 - System diagram: Next.js → Supabase → APIs
-- Module breakdown: Liga, Econômico, Privadas, Concurso
+- Two worlds: PAID Concurso (R$ → fixed R$ PIX prize) + FREE Z$ zone
+- Module breakdown: Liga, Copa, Comunidade, Games, Privadas, Concurso, Ranking
 - Data flow: user action → API → DB → response
-- Resolution system: 4 layers explained
-- Wallet system: Z$ lifecycle
+- Resolution system: layers explained (sports/e-sports + Copa/Games oracles)
+- Wallet system: Z$ / ZC$ lifecycle; R$↔virtual wall
 
 ### 3. API documentation
 - Every route: method, path, auth required, body schema, response

@@ -2,10 +2,10 @@
 name: zafe-crosscheck
 description: >
   Detects duplicate and overlapping events across all Zafe modules: Liga,
-  Concurso Mensal, Comunidade, and Econômico. Finds exact duplicates,
-  semantic duplicates (same event worded differently), and cross-module
-  conflicts. Run regularly before publishing new events or monthly before
-  each Concurso cycle.
+  Concurso, Comunidade, Copa, and Games. Finds exact duplicates, semantic
+  duplicates (same event worded differently), and cross-module conflicts.
+  Also flags off-topic (non esporte/e-sports) events. Run regularly before
+  publishing new events or before each Concurso cycle.
 tools: Read, Glob, Grep, Bash, WebFetch
 model: sonnet
 color: orange
@@ -21,15 +21,15 @@ Read the codebase to identify all tables/views that store events:
 
 ```
 Likely tables (confirm by reading migrations/types):
-- topics              → Liga events (admin + user-created)
-- concurso_topics     → Concurso Mensal events (or replicar-topics copies from Liga)
+- topics              → Liga events (admin + user-created); concurso_id scopes Concurso
 - comunidade_events   → Community-created events
-- economico markets   → Econômico module (Selic, IPCA, Dólar, etc.)
-- desafios            → Private challenges (1v1 or group)
+- copa_matches        → Copa bracket fixtures
+- games_event*        → Zafe Games e-sports bolão events
+- bets / privadas     → Private challenges (1v1 or group)
 ```
 
 Run: `grep -r "CREATE TABLE\|create table" supabase/migrations/ --include="*.sql"`
-Also check: `grep -r "topics\|concurso\|comunidade\|desafio\|economico" src/lib/supabase/ --include="*.ts"`
+Also check: `grep -r "topics\|concurso\|comunidade\|copa\|games" lib/supabase/ --include="*.ts"`
 
 Identify the key fields for each table:
 - Title / question text
@@ -55,7 +55,8 @@ WHERE t1.status NOT IN ('resolved', 'cancelled')
   AND t2.status NOT IN ('resolved', 'cancelled');
 ```
 
-Repeat for concurso_topics, comunidade_events, and desafios.
+Repeat for Concurso topics (topics with `concurso_id`), comunidade_events,
+copa_matches, and games events.
 
 ### 2.2 — Near-duplicates (semantic similarity)
 Look for events that ask the SAME question with different wording.
@@ -72,35 +73,38 @@ Use these heuristics:
 
    Examples of semantic duplicates:
    - "Flamengo ganha o Brasileirão 2026?" vs "O Mengão será campeão brasileiro em 2026?"
-   - "Selic sobe na próxima reunião?" vs "COPOM vai aumentar a taxa Selic?"
-   - "Trump vence em 2028?" vs "Donald Trump será o próximo presidente dos EUA?"
+   - "FURIA vence o Major?" vs "A FURIA será campeã do Major 2026?"
+   - "LOUD ganha o VCT?" vs "A LOUD será campeã do Valorant Champions 2026?"
 
 3. **Substring containment**: If one title is fully contained in another
    (ignoring articles/prepositions), flag it.
 
 ### 2.3 — Contradictory events
 Find pairs where both outcomes are represented as separate events:
-- "Lula ganha a eleição?" AND "Lula perde a eleição?" → redundant, should be one binary event
-- "Selic sobe?" AND "Selic cai?" → only valid if mutually exclusive options on same event
+- "Flamengo vence o clássico?" AND "Flamengo perde o clássico?" → redundant, should be one binary event
+- "FURIA passa de fase?" AND "FURIA é eliminada?" → only valid if mutually exclusive options on same event
 
 ## Step 3 — Cross-module duplicate check
 
 This is the critical check. Compare events BETWEEN modules:
 
 ### 3.1 — Liga ↔ Concurso
-The Concurso replicates events from Liga via `/api/concurso/replicar-topics`.
+Concurso events are `topics` rows scoped by `concurso_id` (the paid contest).
 Check:
-- Are there Concurso events that DON'T exist in Liga? (orphaned copies)
-- Are there Liga events duplicated in Concurso with different resolution dates?
-- Are there Liga events duplicated in Concurso with different wording/odds?
-- If replication is automatic, verify the replication is 1:1 (no drift)
+- Are there Concurso events duplicated in the free Liga with the same wording?
+- Are there near-identical events split across the two with different dates?
+- Both must stay within esporte/e-sports.
 
 ```sql
--- Find Concurso events with no Liga match
-SELECT c.id, c.title
-FROM concurso_topics c
-LEFT JOIN topics t ON LOWER(TRIM(c.title)) = LOWER(TRIM(t.title))
-WHERE t.id IS NULL;
+-- Find titles that appear both as a Concurso event and a free-Liga event
+SELECT c.id AS concurso_id, l.id AS liga_id, c.title
+FROM topics c
+JOIN topics l
+  ON LOWER(TRIM(c.title)) = LOWER(TRIM(l.title))
+WHERE c.concurso_id IS NOT NULL
+  AND l.concurso_id IS NULL
+  AND c.status NOT IN ('resolved','cancelled')
+  AND l.status NOT IN ('resolved','cancelled');
 ```
 
 ### 3.2 — Liga ↔ Comunidade
@@ -115,24 +119,17 @@ Compare all active comunidade_events against all active Liga topics using:
 ### 3.3 — Concurso ↔ Comunidade
 Same logic as 3.2 but between Concurso and Comunidade.
 
-### 3.4 — Econômico ↔ Liga
-Economic events should only exist in the Econômico module.
-Flag any Liga topic that references Selic, IPCA, Dólar, PIB, Ibovespa,
-Bitcoin, Fed, BCE, or other financial indicators — these belong in Econômico.
+### 3.4 — Off-topic scope check (esporte/e-sports only)
+Zafe is fantasy-sport: active public events must be `category` in
+{`esportes`, `esports`}. Flag any active Liga/Concurso topic outside that scope
+(política, economia, cultura, entretenimento, tecnologia, "outros") — these are
+off-topic and should be handled by the `saneamento-fantasy` cron (refund/migrate).
 
 ```sql
-SELECT id, title FROM topics
-WHERE module = 'liga'
-  AND (
-    LOWER(title) LIKE '%selic%'
-    OR LOWER(title) LIKE '%ipca%'
-    OR LOWER(title) LIKE '%dólar%' OR LOWER(title) LIKE '%dolar%'
-    OR LOWER(title) LIKE '%ibovespa%'
-    OR LOWER(title) LIKE '%bitcoin%' OR LOWER(title) LIKE '%btc%'
-    OR LOWER(title) LIKE '%pib%'
-    OR LOWER(title) LIKE '%copom%'
-    OR LOWER(title) LIKE '%fed%'
-  );
+SELECT id, title, category FROM topics
+WHERE is_private = false
+  AND status IN ('active','pending','resolving')
+  AND category NOT IN ('esportes','esports');
 ```
 
 ## Step 4 — Generate the report
@@ -179,9 +176,9 @@ For each duplicate pair, recommend:
 
 - Never auto-delete or auto-merge. This agent REPORTS only.
 - Focus on ACTIVE events (not resolved/cancelled).
-- The Concurso replication via `replicar-topics` is intentional — the issue
-  is when it drifts or creates events that don't match Liga originals.
-- Econômico events are structurally different (order book, FIFO) — they
-  should NEVER appear in Liga or Comunidade.
+- Concurso events are `topics` scoped by `concurso_id` (paid world) — the issue
+  is when they duplicate free-Liga events or drift in wording/dates.
+- All active public events must be esporte/e-sports — off-topic events are a
+  compliance bug (route them to the `saneamento-fantasy` cron, don't merge).
 - Community events created by users are the biggest duplicate risk since
   there's no admin review gate before publishing.

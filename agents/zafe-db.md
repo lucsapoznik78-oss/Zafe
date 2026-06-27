@@ -18,6 +18,9 @@ migration files for integrity issues.
 ### 1. Wallet integrity
 - Z$ balances must never be negative — grep for balance checks in code
 - Conservation law: sum of all user Z$ should equal total Z$ issued
+- ZC$ (Concurso scoring wallet) conserved within its scope
+- **R$↔virtual wall**: no column/trigger/query converts the R$ Concurso fee
+  (`pagamentos_concurso`/`payouts_concurso`, migration 049) into Z$/ZC$
 - No orphan wallet_transactions without matching market positions
 - All wallet mutations must use optimistic locking (version column)
 
@@ -27,10 +30,13 @@ migration files for integrity issues.
 - Resolved markets must have resolution_data populated
 - No duplicate positions (same user + same market + same side)
 
-### 3. Order book (FIFO)
+### 3. Order book (Liga FIFO) & Games pots
 - Orders must be sorted by created_at in matching logic
 - No partially matched orders left unprocessed
 - Matched amounts must sum correctly (buyer + seller = 0 net)
+- Zafe Games pots (`games_*`, migrations 045–047): parimutuel pool == sum of
+  buy-ins; settlement/refund idempotent, no Z$ minted/destroyed
+- (The Econômico module and its dedicated order book were removed.)
 
 ### 4. Probability snapshots
 - All probabilities between 0 and 1

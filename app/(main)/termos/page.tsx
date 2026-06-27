@@ -34,8 +34,8 @@ export default function TermosPage() {
         </p>
         <p>
           Z$ é distribuído via bônus de boas-vindas (1.000 Z$), bônus semanal de engajamento e como prêmio
-          nos eventos da Liga, Econômico e Privadas. Palpites não-correspondidos (sem contrapartida) são
-          reembolsados integralmente em Z$ quando o evento é encerrado.
+          nos eventos da zona grátis (Liga, Copa, Comunidade, Games e Privadas). Palpites não-correspondidos
+          (sem contrapartida) são reembolsados integralmente em Z$ quando o evento é encerrado.
         </p>
       </section>
 
@@ -49,10 +49,11 @@ export default function TermosPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-base font-semibold text-white">5. Concursos e prêmios em dinheiro real</h2>
+        <h2 className="text-base font-semibold text-white">5. Concurso e prêmios em dinheiro real</h2>
         <p>
-          A Zafe promove concursos de habilidade preditiva (Zafe Liga) com prêmios em dinheiro real (R$),
-          nos termos da Lei 5.768/71 (concurso de previsões). A participação é gratuita no período beta.
+          A Zafe promove o Concurso, um fantasy game de habilidade sobre eventos reais de esporte e
+          e-sports, enquadrado como fantasy sport pelo Art. 49 da Lei 14.790/2023. O prêmio é fixo,
+          definido na abertura e independente do número de inscritos ou do valor arrecadado.
         </p>
         <p>
           Prêmios são pagos via PIX diretamente ao vencedor. Prêmios de concursos estão sujeitos

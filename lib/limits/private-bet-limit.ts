@@ -1,5 +1,5 @@
 /**
- * Trava 4 do Privadas (pós-CMN 5.298/2026):
+ * Trava 4 do Privadas (Lei 14.790/2023, Art. 49 — fantasy sport):
  * Limite anual de Z$ por par de usuários em apostas privadas.
  * Default: 5.000 Z$/ano. Configurável via env PRIVATE_BET_LIMIT_Z.
  *

@@ -86,7 +86,7 @@ Tipos de duplicata a evitar:
 
 ### 4. Conformidade / linguagem
 
-- Use **"previsão/palpite"**, nunca "aposta/bet" (Lei 5.768/71 + CMN 5.298).
+- Use **"previsão/palpite"**, nunca "aposta/bet" (Lei 14.790/2023, Art. 49 — fantasy sport).
 - Sem conteúdo ofensivo/ilegal; mercados de pessoas físicas privadas com cautela.
 
 ---

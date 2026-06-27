@@ -8,31 +8,36 @@ argument-hint: "[focus area or 'all']"
 
 Orchestrator that delegates to specialized subagents and compiles results.
 
-## Agent roster (20 agents)
+Zafe is a **fantasy-sport prediction platform (Lei 14.790/2023, Art. 49)**.
+Events are **esporte + e-sports ONLY**. Two worlds: a PAID **Concurso**
+(R$ entry → fixed R$ prize via PIX) and a FREE zone (everything else, Z$
+virtual only). Golden rule: R$ is a fee and NEVER becomes Z$/ZC$.
+
+## Agent roster (26 agents)
 
 ### Core audit (run with /audit or /audit all)
 | Agent | Focus |
 |-------|-------|
 | zafe-qa | Bugs, TypeScript errors, broken logic |
-| zafe-security | Auth, wallet exploits, XSS, injection |
+| zafe-security | Auth, wallet exploits, PIX/payment, XSS, injection |
 | zafe-db | Schema integrity, RLS, constraints |
-| zafe-compliance | Lei 5.768/71, CMN 5.298, language |
+| zafe-compliance | Lei 14.790/2023 Art. 49 (fantasy), language, esporte/e-sports scope |
 
 ### Module-specific
 | Agent | Focus |
 |-------|-------|
-| zafe-liga | Liga module: topics, betting, odds, ranking |
-| zafe-economico | Econômico: Selic/IPCA/Dólar, order book, APIs |
+| zafe-liga | Liga module: topics, betting, odds, ranking (esporte/e-sports) |
+| zafe-games | Zafe Games: e-sports bolão (free points / Z$ pot), streamer rev-share |
 | zafe-privadas | Privadas: creation, acceptance, limits, payout |
-| zafe-concurso | Concurso Mensal: entry, scoring, prizes, legal |
-| zafe-wallet | All Z$ operations: every code path touching balances |
-| zafe-odds | Dynamic odds, FIFO matching, probability snapshots |
+| zafe-concurso | Concurso PAGO: R$ entry, scoring, fixed R$ PIX prize, Art. 49 |
+| zafe-wallet | All Z$/ZC$ operations: every code path touching balances |
+| zafe-odds | Dynamic odds, FIFO matching, parimutuel pools, probability snapshots |
 
 ### Infrastructure
 | Agent | Focus |
 |-------|-------|
-| zafe-auth | Signup, login, sessions, KYC, middleware |
-| zafe-admin | Admin panel, moderation, cron, seed bets |
+| zafe-auth | Signup, login, sessions, CPF/KYC, middleware |
+| zafe-admin | Admin panel, moderation, cron, seed bets, Copa/Games resolution |
 | zafe-api | All API routes: auth, validation, error handling |
 | zafe-deploy | Pre-deploy checklist: build, env, migrations |
 | zafe-perf | Performance: queries, indexes, bundle, rendering |
@@ -42,12 +47,15 @@ Orchestrator that delegates to specialized subagents and compiles results.
 ### Utility
 | Agent | Focus |
 |-------|-------|
-| zafe-fixer | Reads AUDIT-REPORT.md and applies fixes |
 | zafe-migration | Creates Supabase SQL migrations |
 | zafe-tests | Writes tests for critical flows |
-| zafe-resolver | 4-layer market resolution |
-| zafe-content | Market ideas and social media copy |
+| zafe-resolver | Sports/e-sports market resolution + Copa/Games oracles |
+| zafe-validity | Validates active events are still factually possible |
+| zafe-crosscheck | Duplicate/overlap detection across modules |
+| zafe-dates | Date coherence: market closes before the real event |
+| zafe-content | Market ideas and social media copy (esporte/e-sports) |
 | zafe-docs | Documentation generation and audit |
+| zafe-analytics | Engagement, growth, and resolution metrics |
 
 ## Execution
 
@@ -59,20 +67,20 @@ Phase 4: delegate to zafe-compliance → "Legal compliance scan"
 
 ### /audit [agent-name] → run one specific agent
 - `qa`, `security`, `db`, `compliance`
-- `liga`, `economico`, `privadas`, `concurso`
+- `liga`, `games`, `privadas`, `concurso`
 - `wallet`, `odds`, `auth`, `admin`, `api`
 - `deploy`, `perf`, `frontend`, `social`
-- `fixer`, `migration`, `tests`, `resolver`
-- `content`, `docs`
+- `migration`, `tests`, `resolver`, `validity`
+- `crosscheck`, `dates`, `content`, `docs`, `analytics`
 
 ### /audit deep → all 10 audit agents
-Runs: qa → security → db → compliance → wallet → liga → economico → privadas → api → auth
+Runs: qa → security → db → compliance → wallet → liga → games → privadas → api → auth
 
 ### /audit fix → auto-fix mode
-Runs zafe-fixer on existing AUDIT-REPORT.md
+Applies fixes from existing AUDIT-REPORT.md
 
 ### /audit fix [N] → fix specific issue
-Runs zafe-fixer targeting issue number N from AUDIT-REPORT.md
+Targets issue number N from AUDIT-REPORT.md
 
 ## Final report
 Compile all findings into AUDIT-REPORT.md sorted by severity.

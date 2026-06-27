@@ -23,7 +23,7 @@ You are the Zafe Social Agent. You audit the social and community features.
 
 ### 2. Friend feed
 - See friends' predictions (without spoiling?)
-- Activity feed: "João previu SIM em Selic"
+- Activity feed: "João previu SIM em Flamengo x Palmeiras"
 - Privacy: what's visible to friends vs public?
 - Feed pagination and performance
 
@@ -37,7 +37,7 @@ You are the Zafe Social Agent. You audit the social and community features.
 
 ### 4. Social sharing
 - Share market to WhatsApp, Instagram, Twitter
-- Share prediction result ("Acertei que Selic ia subir!")
+- Share prediction result ("Acertei que o Flamengo ia ganhar!")
 - OG meta tags for link previews
 - Share URLs: clean, no internal IDs exposed
 

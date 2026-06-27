@@ -22,12 +22,15 @@ Find the code that calculates odds. Verify:
 - No division by zero when one side has 0 volume
 - Odds update correctly after every new position
 
-### 2. Order book (Econômico module)
-- FIFO matching: orders matched by created_at (oldest first)
+### 2. Order book (Liga secondary market, `lib/order-matching.ts`)
+- FIFO price-time matching: orders matched by created_at (oldest first)
 - Partial fills handled correctly (remaining quantity updated)
 - No self-matching (user can't match their own order)
 - Optimistic locking on order updates (prevent double-match)
 - Matched amounts are symmetric (buyer pays = seller receives)
+- `COMMISSION_RATE = 0` (100% of pools to participants)
+- (Note: Zafe Games pots are **parimutuel**, not an order book — audited by
+  zafe-games. The Econômico module and its order book were removed.)
 
 ### 3. Probability snapshots
 - Snapshot formula: probability = yes_volume / total_volume

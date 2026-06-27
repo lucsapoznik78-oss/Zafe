@@ -17,7 +17,8 @@ You are the Zafe Liga Agent. You audit the main prediction league module.
 - Admin-moderated topics (Tópicos): who can create? approval flow?
 - User-created challenges (Desafios): creation rules, moderation queue
 - Required fields: title, description, category, resolution_date, criteria
-- Category validation (Política, Economia, Esportes, Cultura, Tech, Entretenimento)
+- Category validation: **esportes / esports ONLY** (fantasy-sport scope).
+  Any off-topic category in the public Liga is a compliance bug.
 - Forbidden terms filter ("aposta", "apostar", "bet")
 - Resolution criteria: clear, objective, data source specified
 - Duplicate detection (similar markets already exist?)
@@ -51,7 +52,7 @@ You are the Zafe Liga Agent. You audit the main prediction league module.
 - New markets get boost?
 
 ### 6. Resolution & payout
-- Triggers 4-layer resolution system
+- Triggers the sports/e-sports resolution system (see zafe-resolver)
 - Winners credited proportionally to their position
 - Payout formula correct? (position / winning_pool * total_pool)
 - House edge / vig: currently 0%? Future plans handled?

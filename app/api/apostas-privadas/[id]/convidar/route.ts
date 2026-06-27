@@ -49,7 +49,7 @@ export async function POST(
 
   if (existing) return NextResponse.json({ error: "Usuário já convidado ou participando" }, { status: 400 });
 
-  // Pré-checagem do teto anual (CMN 5.298/2026) já no convite — espelha a
+  // Pré-checagem do teto anual (Lei 14.790/2023, Art. 49) já no convite — espelha a
   // verificação autoritativa do /aceitar para rejeitar convites acima do limite
   // antes de criar o participante. O débito/checagem final continua no aceitar.
   const limite = await verificarLimiteAnual(admin, inviteeId, topic.creator_id, Number(topic.min_bet) || 1);

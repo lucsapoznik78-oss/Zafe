@@ -6,16 +6,18 @@
 
 ## 1. A pergunta legal
 
-Zafe é uma **competição de habilidade com moeda virtual (Z$)**, regida pela
-Lei 5.768/71 e pela Resolução CMN 5.298/2026 — **não é casa de apostas, não é
+Zafe é uma **competição de habilidade com moeda virtual (Z$)**, enquadrada como
+**fantasy sport pelo Art. 49 da Lei 14.790/2023** — **não é casa de apostas, não é
 jogo de azar**. A regra que governa este módulo:
 
-> **Mercados públicos só podem ser sobre indicadores econômicos** (Selic,
-> IPCA, dólar, Ibovespa, Bitcoin). Qualquer evento público fora desse
-> escopo descaracteriza a plataforma.
+> **Eventos públicos só podem ser sobre esporte e e-sports** (resultados de
+> partidas, classificações, eliminações, títulos). Qualquer evento público fora
+> desse escopo descaracteriza a plataforma e deve ser saneado (cron
+> `saneamento-fantasy`).
 
-Logo: **e-sports NUNCA pode ser um mercado público** (sem order book público,
-sem "probabilidade/odds" exibida como mercado aberto, sem livro de ofertas).
+Logo: **e-sports é o escopo central da plataforma**. O prêmio do Concurso pago é
+**fixo, definido na abertura e independente do número de inscritos ou do valor
+arrecadado** (Art. 49) — nunca um pool variável de apostas.
 
 ## 2. Decisão de estrutura
 

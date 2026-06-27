@@ -23,10 +23,10 @@ schema, and any available data to generate or plan engagement reports.
 - Churn: users inactive >14 days
 
 ### 2. Market metrics
-- Markets created, by module (Liga / Econômico / Privadas)
-- Markets resolved, by layer:
-  - L1: API fixa (BCB, Yahoo, CoinGecko) — target: majority
-  - L2: IA dupla verificação — fallback
+- Events created, by module (Liga / Copa / Comunidade / Games / Privadas / Concurso)
+- Events resolved, by layer:
+  - L1: Resultado esporte/e-sports — target: majority
+  - L2: IA dupla verificação (web search) — fallback
   - L3: Retry automático — edge cases
   - L4: Reembolso — last resort
 - Overall resolution success rate (target: 87%)
@@ -36,7 +36,7 @@ schema, and any available data to generate or plan engagement reports.
 ### 3. Engagement
 - Positions placed per user per day (mean, median)
 - Average Z$ per position
-- Concurso Mensal: participation count, % of MAU
+- Concurso (pago): inscrições count, % of MAU, R$ collected vs fixed prize
 - Top 10 predictors by net Z$ profit
 - Trending markets: highest volume in last 48h
 

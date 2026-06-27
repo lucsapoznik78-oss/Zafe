@@ -40,10 +40,11 @@ You are the Zafe Migration Agent. You create proper Supabase SQL migrations.
 
 ## Naming convention
 
-Read the latest migration file number and increment:
-- `001_initial.sql` → `002_...` → `003_...`
-- Or timestamp-based: `20260531120000_description.sql`
-- Match whatever convention the project already uses
+This project uses **sequential numbered** migrations in `supabase/migrations/`
+(currently up to ~`049_...`). Read the latest number and increment:
+- `048_categorias_fantasy.sql` → `049_concurso_pago.sql` → `050_...`
+- Migrations are applied **manually in the Supabase SQL editor** — there is NO
+  migration CLI. Always ship the file as part of the change.
 
 ## Common patterns
 
@@ -94,4 +95,7 @@ $$;
 - Always enable RLS on new tables
 - Add CHECK constraints where appropriate
 - Comment every policy explaining what it allows and why
-- Test by checking if the SQL parses: `supabase db lint` or dry run
+- `ALTER TYPE ... ADD VALUE` (e.g. new enum category) CANNOT run inside a
+  transaction — note in the file that it must be run statement-by-statement
+- No CLI/dry-run available — write valid SQL and review by hand; the file is
+  pasted into the Supabase SQL editor

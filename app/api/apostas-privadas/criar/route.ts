@@ -42,7 +42,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Saldo insuficiente" }, { status: 400 });
   }
 
-  // Verificar limite anual Z$ por par de usuários (CMN 5.298/2026)
+  // Verificar limite anual Z$ por par de usuários (Lei 14.790/2023, Art. 49)
   for (const adversarioId of adversario_ids) {
     const limite = await verificarLimiteAnual(admin, user.id, adversarioId, betAmount);
     if (!limite.ok) {

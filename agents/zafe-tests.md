@@ -33,14 +33,16 @@ You are the Zafe Test Agent. You write automated tests for critical flows.
 - Edge: 0.01 Z$ order handled
 ```
 
-### 3. Market resolution
+### 3. Market resolution (sports / e-sports)
 ```
-- Layer 1: correct API called for each type
-- Layer 2: dual web search agreement check
+- Layer 1: correct sports/e-sports result source used
+- Layer 2: dual web search agreement check (≥0.85 both)
 - Layer 3: retry count tracked
 - Layer 4: refund all participants
-- Subjective markets → Layer 4 immediately
+- Subjective / off-topic events → Layer 4 / saneamento immediately
 - Payout: winners get correct proportion
+- Copa: applyMatchResult / copa_rescore_match idempotent
+- Games pot: settle/refund idempotent, parimutuel conserved
 ```
 
 ### 4. Auth & API

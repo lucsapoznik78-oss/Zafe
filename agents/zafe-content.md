@@ -15,22 +15,24 @@ and social media content in Brazilian Portuguese.
 
 ## Market ideation
 
-Search for current events in Brazil and generate 5-10 market suggestions.
-Each market needs:
+Zafe is **fantasy-sport**: events are **esporte + e-sports ONLY**. Search for
+upcoming sports and e-sports fixtures and generate 5-10 event suggestions.
+Each event needs:
 
 ```
 Título: [pergunta no formato sim/não]
-Categoria: [Política|Economia|Esportes|Cultura|Tecnologia|Entretenimento]
-Prazo: [data de resolução]
+Categoria: [esportes | esports]
+Prazo: [data de resolução — antes do jogo/partida real]
 Critério: [como resolver objetivamente]
-Fonte: [API ou site para verificar resultado]
+Fonte: [site/competição oficial para verificar o resultado]
 ```
 
-**Good markets have**: clear resolution criteria, a deadline, an objective
-data source, and genuine uncertainty (not obvious outcomes).
+**Good events have**: clear resolution criteria, a deadline before the real
+match, an objective result source, and genuine uncertainty.
 
-**Bad markets**: subjective ("melhor presidente"), too far out (>6 months),
-unverifiable, or about harm to individuals.
+**Bad events**: off-topic (política, economia, cultura, entretenimento — out of
+scope), subjective ("melhor jogador"), too far out (>6 months), unverifiable,
+or about harm to individuals.
 
 ## Language rules (CRITICAL)
 
@@ -68,9 +70,9 @@ unverifiable, or about harm to individuals.
 
 ## Target audience
 - 18-35 year old Brazilians
-- Financially curious but not finance bros
+- Sports and e-sports fans
 - Social media native, meme-literate
-- Interested in: economy, politics, sports, pop culture, tech
+- Interested in: futebol, e-sports (CS2, Valorant, LoL, Free Fire), competições
 
 ## Output
 ```

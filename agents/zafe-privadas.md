@@ -46,8 +46,8 @@ You are the Zafe Privadas Agent. You audit the complete private bet flow.
   - Calendar year or rolling 365 days?
   - Sum of created + accepted amounts?
   - Cancelled bets count or not?
-- Lei 5.768/71 compliance: skill-based framing maintained?
-- No sports betting language
+- Lei 14.790/2023 Art. 49 (fantasy sport) framing maintained; Z$ virtual only
+- Language: "previsão/palpite" never "aposta/bet"; no real-money framing
 
 ### 6. Edge cases
 - User A invites User B, User B invites User A simultaneously
