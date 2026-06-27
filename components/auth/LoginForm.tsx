@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { TERMS_VERSION } from "@/lib/terms";
+import { formatarCPF, validarCPF } from "@/lib/cpf";
 
 // Rate-limit client-side de login: após várias tentativas falhas, impõe um
 // cooldown crescente. Não substitui proteção server-side, mas freia força-bruta
@@ -67,6 +68,7 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
   const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
   const [phone, setPhone] = useState("");
+  const [cpf, setCpf] = useState("");
   const [birthDate, setBirthDate] = useState("");
   const [cep, setCep] = useState("");
   const [logradouro, setLogradouro] = useState("");
@@ -151,6 +153,12 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
         setLoading(false);
         return;
       }
+      const cpfClean = cpf.replace(/\D/g, "");
+      if (!validarCPF(cpfClean)) {
+        setError("CPF inválido — confira os números.");
+        setLoading(false);
+        return;
+      }
       const cepClean = cep.replace(/\D/g, "");
       const ufClean = uf.trim().toUpperCase();
       if (!birthDate || !cepClean || !logradouro.trim() || !numero.trim() || !bairro.trim() || !cidade.trim() || !ufClean) {
@@ -181,6 +189,7 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
           data: {
             full_name: fullName,
             username,
+            cpf: cpfClean,
             birth_date: birthDate,
             cep: cepClean,
             logradouro: logradouro.trim(),
@@ -479,6 +488,22 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
                 onChange={(e) => setBirthDate(e.target.value)}
                 className={inputFocusClass}
               />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="cpf" className="text-sm text-muted-foreground">CPF</Label>
+              <Input
+                id="cpf"
+                type="text"
+                inputMode="numeric"
+                value={cpf}
+                onChange={(e) => setCpf(formatarCPF(e.target.value))}
+                placeholder="000.000.000-00"
+                maxLength={14}
+                className={inputFocusClass}
+              />
+              {cpf.replace(/\D/g, "").length === 11 && !validarCPF(cpf) && (
+                <p className="text-destructive text-xs">CPF inválido. Confira os números.</p>
+              )}
             </div>
             <div className="pt-1">
               <p className="text-xs font-medium text-muted-foreground">Endereço</p>
