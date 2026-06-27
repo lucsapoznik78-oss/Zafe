@@ -53,6 +53,17 @@ export interface Profile {
   is_admin: boolean;
   is_premium: boolean;
   premium_until: string | null;
+  birth_date: string | null;
+  cpf: string | null;
+  kyc_verified: boolean;
+  phone: string | null;
+  cep: string | null;
+  logradouro: string | null;
+  numero: string | null;
+  complemento: string | null;
+  bairro: string | null;
+  cidade: string | null;
+  uf: string | null;
   created_at: string;
 }
 

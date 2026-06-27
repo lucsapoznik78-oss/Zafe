@@ -28,10 +28,10 @@ interface PageProps {
 }
 
 const PREMIOS = [
-  { pos: "1º", valor: "R$ 200" },
-  { pos: "2º", valor: "R$ 150" },
-  { pos: "3º", valor: "R$ 100" },
-  { pos: "4º–5º", valor: "R$ 25 cada" },
+  { pos: "1º", valor: "R$ 8.000" },
+  { pos: "2º", valor: "R$ 5.000" },
+  { pos: "3º", valor: "R$ 3.000" },
+  { pos: "4º–5º", valor: "R$ 2.000 cada" },
 ];
 
 async function EventosConcurso({ category, search, tab, concurso, now }: { category: string; search: string; tab: string; concurso: any; now: string }) {

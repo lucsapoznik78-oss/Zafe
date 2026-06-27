@@ -35,16 +35,16 @@ export default async function ConcursoAtivo() {
 
   // Fallback se não houver concurso ativo
   const titulo = data?.concurso.titulo ?? "Concurso Liga Zafe — Temporada Maio";
-  const premioTotal = data?.concurso.premiacao_total ?? 500;
+  const premioTotal = data?.concurso.premiacao_total ?? 20000;
   const inscritos = data?.inscritos ?? 0;
   const inicio = data?.concurso.periodo_inicio ?? "2026-05-01";
   const fim = data?.concurso.periodo_fim ?? "2026-05-31";
 
   const premios = [
-    { pos: "1º", valor: "R$ 200" },
-    { pos: "2º", valor: "R$ 150" },
-    { pos: "3º", valor: "R$ 100" },
-    { pos: "4º–5º", valor: "R$ 25 cada" },
+    { pos: "1º", valor: "R$ 8.000" },
+    { pos: "2º", valor: "R$ 5.000" },
+    { pos: "3º", valor: "R$ 3.000" },
+    { pos: "4º–5º", valor: "R$ 2.000 cada" },
   ];
 
   return (

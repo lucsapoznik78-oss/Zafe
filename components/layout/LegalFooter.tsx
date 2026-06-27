@@ -16,6 +16,13 @@ export default function LegalFooter() {
         </Link>
         {" "}e com as regras do concurso.
       </p>
+      <p>
+        Jogue com responsabilidade.{" "}
+        <Link href="/jogo-responsavel" className="underline hover:text-muted-foreground transition-colors">
+          Jogo responsável
+        </Link>
+        {" "}— pausa, autoexclusão e canais de ajuda.
+      </p>
     </div>
   );
 }

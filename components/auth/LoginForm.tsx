@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { TERMS_VERSION } from "@/lib/terms";
 
 // Rate-limit client-side de login: após várias tentativas falhas, impõe um
 // cooldown crescente. Não substitui proteção server-side, mas freia força-bruta
@@ -65,6 +67,15 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
   const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
   const [phone, setPhone] = useState("");
+  const [birthDate, setBirthDate] = useState("");
+  const [cep, setCep] = useState("");
+  const [logradouro, setLogradouro] = useState("");
+  const [numero, setNumero] = useState("");
+  const [complemento, setComplemento] = useState("");
+  const [bairro, setBairro] = useState("");
+  const [cidade, setCidade] = useState("");
+  const [uf, setUf] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -140,12 +151,46 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
         setLoading(false);
         return;
       }
+      const cepClean = cep.replace(/\D/g, "");
+      const ufClean = uf.trim().toUpperCase();
+      if (!birthDate || !cepClean || !logradouro.trim() || !numero.trim() || !bairro.trim() || !cidade.trim() || !ufClean) {
+        setError("Preencha data de nascimento e endereço completo.");
+        setLoading(false);
+        return;
+      }
+      if (cepClean.length !== 8) {
+        setError("CEP inválido — use 8 dígitos.");
+        setLoading(false);
+        return;
+      }
+      if (ufClean.length !== 2) {
+        setError("UF inválida — use a sigla de 2 letras (ex.: SP).");
+        setLoading(false);
+        return;
+      }
+      if (!acceptedTerms) {
+        setError("Você precisa aceitar os Termos de Uso para criar a conta.");
+        setLoading(false);
+        return;
+      }
       const phoneClean = phone.replace(/\D/g, "");
       const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: { full_name: fullName, username },
+          data: {
+            full_name: fullName,
+            username,
+            birth_date: birthDate,
+            cep: cepClean,
+            logradouro: logradouro.trim(),
+            numero: numero.trim(),
+            complemento: complemento.trim(),
+            bairro: bairro.trim(),
+            cidade: cidade.trim(),
+            uf: ufClean,
+            terms_version: TERMS_VERSION,
+          },
         },
       });
       if (signUpError) {
@@ -425,6 +470,115 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
                 className={inputFocusClass}
               />
             </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="birthDate" className="text-sm text-muted-foreground">Data de nascimento</Label>
+              <Input
+                id="birthDate"
+                type="date"
+                value={birthDate}
+                onChange={(e) => setBirthDate(e.target.value)}
+                className={inputFocusClass}
+              />
+            </div>
+            <div className="pt-1">
+              <p className="text-xs font-medium text-muted-foreground">Endereço</p>
+              <p className="text-[10px] text-muted-foreground/60">Exigido para conformidade (prevenção à lavagem de dinheiro).</p>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="space-y-1.5 col-span-1">
+                <Label htmlFor="cep" className="text-sm text-muted-foreground">CEP</Label>
+                <Input
+                  id="cep"
+                  inputMode="numeric"
+                  value={cep}
+                  onChange={(e) => setCep(e.target.value)}
+                  placeholder="00000-000"
+                  className={inputFocusClass}
+                />
+              </div>
+              <div className="space-y-1.5 col-span-2">
+                <Label htmlFor="logradouro" className="text-sm text-muted-foreground">Logradouro</Label>
+                <Input
+                  id="logradouro"
+                  value={logradouro}
+                  onChange={(e) => setLogradouro(e.target.value)}
+                  placeholder="Rua / Avenida"
+                  className={inputFocusClass}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="space-y-1.5 col-span-1">
+                <Label htmlFor="numero" className="text-sm text-muted-foreground">Número</Label>
+                <Input
+                  id="numero"
+                  value={numero}
+                  onChange={(e) => setNumero(e.target.value)}
+                  placeholder="123"
+                  className={inputFocusClass}
+                />
+              </div>
+              <div className="space-y-1.5 col-span-2">
+                <Label htmlFor="complemento" className="text-sm text-muted-foreground">
+                  Complemento <span className="text-muted-foreground/50 font-normal">(opcional)</span>
+                </Label>
+                <Input
+                  id="complemento"
+                  value={complemento}
+                  onChange={(e) => setComplemento(e.target.value)}
+                  placeholder="Apto 45"
+                  className={inputFocusClass}
+                />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="bairro" className="text-sm text-muted-foreground">Bairro</Label>
+              <Input
+                id="bairro"
+                value={bairro}
+                onChange={(e) => setBairro(e.target.value)}
+                placeholder="Centro"
+                className={inputFocusClass}
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="space-y-1.5 col-span-2">
+                <Label htmlFor="cidade" className="text-sm text-muted-foreground">Cidade</Label>
+                <Input
+                  id="cidade"
+                  value={cidade}
+                  onChange={(e) => setCidade(e.target.value)}
+                  placeholder="São Paulo"
+                  className={inputFocusClass}
+                />
+              </div>
+              <div className="space-y-1.5 col-span-1">
+                <Label htmlFor="uf" className="text-sm text-muted-foreground">UF</Label>
+                <Input
+                  id="uf"
+                  value={uf}
+                  onChange={(e) => setUf(e.target.value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 2))}
+                  placeholder="SP"
+                  maxLength={2}
+                  className={inputFocusClass}
+                />
+              </div>
+            </div>
+            <label className="flex items-start gap-2 text-xs text-muted-foreground cursor-pointer">
+              <input
+                type="checkbox"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="mt-0.5 accent-violet-500"
+              />
+              <span>
+                Tenho 18 anos ou mais e li e aceito os{" "}
+                <Link href="/termos" target="_blank" className="text-violet-300 hover:underline">
+                  Termos de Uso
+                </Link>
+                .
+              </span>
+            </label>
           </>
         )}
 

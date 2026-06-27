@@ -126,7 +126,7 @@ export default async function ConcursoEntrar() {
               </span>
             )}
             <span className="flex items-center gap-1">
-              Prêmio total: R$ {Number(concurso?.premiacao_total ?? 500).toLocaleString("pt-BR")}
+              Prêmio total: R$ {Number(concurso?.premiacao_total ?? 20000).toLocaleString("pt-BR")}
             </span>
           </div>
         </div>

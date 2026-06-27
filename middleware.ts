@@ -31,7 +31,7 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  const publicRoutes = ["/login", "/auth/callback", "/auth/confirm", "/historico", "/termos", "/api/cron", "/api/push", "/api/concurso/pagamento/webhook", "/r/", "/sitemap.xml", "/robots.txt", "/google", "/liga", "/ranking", "/u/", "/concurso", "/comunidade", "/copa", "/games", "/banido"];
+  const publicRoutes = ["/login", "/auth/callback", "/auth/confirm", "/historico", "/termos", "/jogo-responsavel", "/api/cron", "/api/push", "/api/concurso/pagamento/webhook", "/r/", "/sitemap.xml", "/robots.txt", "/google", "/liga", "/ranking", "/u/", "/concurso", "/comunidade", "/copa", "/games", "/banido"];
   const isPublicRoute = pathname === "/" || publicRoutes.some((r) => pathname.startsWith(r));
 
   // Email não confirmado (signups por senha) conta como não autenticado para
@@ -50,10 +50,16 @@ export async function middleware(request: NextRequest) {
   // Rotas protegidas: uma única leitura do perfil cobre o gate de admin e o
   // bloqueio de contas banidas (audit #21). Rotas públicas (somente leitura)
   // ficam fora para não custar uma query por navegação.
+  // A página de jogo responsável e sua API ficam fora do bloqueio de pausa,
+  // senão um usuário em autoexclusão/cool-off entraria em loop de redirect e
+  // não conseguiria ver o próprio status.
+  const isPauseExempt =
+    pathname.startsWith("/jogo-responsavel") || pathname.startsWith("/api/jogo-responsavel");
+
   if (authed && !isPublicRoute) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("is_admin, banned")
+      .select("is_admin, banned, self_excluded_until, cooloff_until")
       .eq("id", user?.id)
       .single();
 
@@ -62,6 +68,19 @@ export async function middleware(request: NextRequest) {
         return NextResponse.json({ error: "Conta suspensa" }, { status: 403 });
       }
       return NextResponse.redirect(new URL("/banido", request.url));
+    }
+
+    // Jogo responsável: autoexclusão ou pausa (cool-off) ativa bloqueia o
+    // acesso ao produto até o prazo terminar.
+    const now = Date.now();
+    const pausaAtiva =
+      (profile?.self_excluded_until && new Date(profile.self_excluded_until).getTime() > now) ||
+      (profile?.cooloff_until && new Date(profile.cooloff_until).getTime() > now);
+    if (pausaAtiva && !isPauseExempt) {
+      if (pathname.startsWith("/api")) {
+        return NextResponse.json({ error: "Conta em pausa (jogo responsável)" }, { status: 403 });
+      }
+      return NextResponse.redirect(new URL("/jogo-responsavel", request.url));
     }
 
     if (

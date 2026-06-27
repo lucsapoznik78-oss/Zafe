@@ -44,6 +44,12 @@ Apresentar a Zafe como a **única empresa regulada e operando legalmente** no se
 - **Futuro:** Converter Z$ em descontos reais via parcerias
 - **O que NÃO somos:** Casa de apostas, P2P, intermediadora financeira
 
+> **Divisão do pote do Concurso (modelo 80/20):** do pote bruto que o Concurso
+> gera, **80% retorna ao pote de prêmios** (distribuído aos vencedores via PIX)
+> e **20% fica com a Zafe** (operação/sustentação). Substitui a divisão anterior
+> de 50/50. *Modelo de apresentação/business plan — a implementação efetiva do
+> split em R$ vem junto com o módulo de pagamento (ainda não concluído).*
+
 ### 3. Por que somos uma Liga (não Bet)
 - **CMN 5.298 (4/5/2026):** Proibiu apostas com dinheiro real
 - **Antes:** Modelo Polymarket (cripto, P2P) - ilegal
@@ -127,7 +133,8 @@ Apresentar a Zafe como a **única empresa regulada e operando legalmente** no se
 - **Estado Beta:** Operando com Zafes
 - **Objetivo:** 1.000 usuários
 - **Lançamento:** Quando código estiver aprimorado
-- **Receita:** Premium (SaaS) + Patrocínio + Conversão Z$ (futuro)
+- **Receita:** Premium (SaaS) + Patrocínio + Conversão Z$ (futuro) + 20% do pote
+  do Concurso (modelo 80/20: 80% volta ao pote de prêmios, 20% fica com a Zafe)
 
 ---
 
