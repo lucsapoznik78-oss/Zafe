@@ -59,7 +59,7 @@ export async function middleware(request: NextRequest) {
   if (authed && !isPublicRoute) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("is_admin, banned, self_excluded_until, cooloff_until")
+      .select("is_admin, banned, self_excluded_until, cooloff_until, cpf")
       .eq("id", user?.id)
       .single();
 
@@ -88,6 +88,22 @@ export async function middleware(request: NextRequest) {
       !profile?.is_admin
     ) {
       return NextResponse.redirect(new URL("/liga", request.url));
+    }
+
+    // Cadastro incompleto: toda conta precisa de CPF (validado + único) antes de
+    // usar o produto — vale para email/senha E Google. O CPF entra pela rota
+    // autenticada /api/perfil/completar (nunca no user_metadata, migration 051).
+    // Admins (founders/seed) ficam de fora pra não travarem o painel.
+    const isCadastroGate =
+      pathname.startsWith("/completar-cadastro") ||
+      pathname.startsWith("/api/perfil/completar");
+    if (!profile?.cpf && !profile?.is_admin && !isCadastroGate && !isPauseExempt) {
+      if (pathname.startsWith("/api")) {
+        return NextResponse.json({ error: "Cadastro incompleto" }, { status: 403 });
+      }
+      const url = new URL("/completar-cadastro", request.url);
+      url.searchParams.set("next", pathname);
+      return NextResponse.redirect(url);
     }
   }
 
