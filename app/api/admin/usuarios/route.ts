@@ -22,7 +22,7 @@ export async function GET(request: Request) {
 
   let query = admin
     .from("profiles")
-    .select("id, username, full_name, is_admin, banned, is_premium, premium_until, created_at")
+    .select("id, username, full_name, is_admin, banned, is_premium, premium_until, created_at, self_excluded_until, cooloff_until")
     .order("created_at", { ascending: false })
     .limit(50);
 

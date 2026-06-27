@@ -5,7 +5,7 @@
  * banir/reativar e ajuste manual de Z$ (com motivo obrigatório).
  */
 import { useEffect, useState, useCallback } from "react";
-import { Search, Loader2, Ban, RotateCcw, Coins, Star } from "lucide-react";
+import { Search, Loader2, Ban, RotateCcw, Coins, Star, Activity } from "lucide-react";
 import { isPremium } from "@/lib/premium";
 
 interface AdminUser {
@@ -18,11 +18,58 @@ interface AdminUser {
   premium_until: string | null;
   created_at: string;
   balance: number | null;
+  self_excluded_until: string | null;
+  cooloff_until: string | null;
+}
+
+interface SemanaAtividade {
+  indice: number;
+  inicio: string;
+  fim: string;
+  palpites: number;
+  diasAtivos: number;
+  sessoes: number;
+  minutosEstimados: number;
+}
+
+interface AtividadeResp {
+  semanas: SemanaAtividade[];
+  jogoResponsavel: {
+    banned: boolean;
+    cooloffAtivo: boolean;
+    cooloff_until: string | null;
+    autoexcluido: boolean;
+    self_excluded_until: string | null;
+  };
 }
 
 function fmtZ(v: number | null) {
   if (v === null) return "—";
   return "Z$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 2 });
+}
+
+function fmtDuracao(min: number) {
+  if (min <= 0) return "0 min";
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  if (h === 0) return `${m} min`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}min`;
+}
+
+function rotuloSemana(i: number) {
+  if (i === 0) return "Esta semana";
+  if (i === 1) return "1 semana atrás";
+  return `${i} semanas atrás`;
+}
+
+function pausaAtiva(u: AdminUser) {
+  const now = Date.now();
+  const auto = u.self_excluded_until && new Date(u.self_excluded_until).getTime() > now;
+  const cool = u.cooloff_until && new Date(u.cooloff_until).getTime() > now;
+  if (auto) return "autoexcluido" as const;
+  if (cool) return "pausa" as const;
+  return null;
 }
 
 export default function AdminUsuarios() {
@@ -34,6 +81,9 @@ export default function AdminUsuarios() {
   const [amount, setAmount] = useState("");
   const [motivo, setMotivo] = useState("");
   const [msg, setMsg] = useState("");
+  const [atividadeId, setAtividadeId] = useState<string | null>(null);
+  const [atividade, setAtividade] = useState<AtividadeResp | null>(null);
+  const [atividadeLoading, setAtividadeLoading] = useState(false);
 
   const fetchUsers = useCallback(async (query: string) => {
     setLoading(true);
@@ -47,6 +97,33 @@ export default function AdminUsuarios() {
     const t = setTimeout(() => fetchUsers(q), 300);
     return () => clearTimeout(t);
   }, [q, fetchUsers]);
+
+  async function toggleAtividade(u: AdminUser) {
+    if (atividadeId === u.id) {
+      setAtividadeId(null);
+      setAtividade(null);
+      return;
+    }
+    setAtividadeId(u.id);
+    setAtividade(null);
+    setAtividadeLoading(true);
+    setMsg("");
+    try {
+      const res = await fetch(`/api/admin/usuarios/${u.id}/atividade`);
+      const data = await res.json();
+      if (!res.ok) {
+        setMsg(data.error ?? "Erro ao carregar atividade");
+        setAtividadeId(null);
+      } else {
+        setAtividade(data);
+      }
+    } catch {
+      setMsg("Falha de rede ao carregar atividade.");
+      setAtividadeId(null);
+    } finally {
+      setAtividadeLoading(false);
+    }
+  }
 
   async function toggleBan(u: AdminUser) {
     const acao = u.banned ? "reativar" : "banir";
@@ -163,11 +240,24 @@ export default function AdminUsuarios() {
                     {u.is_admin && <span className="ml-2 text-[10px] text-primary font-semibold">ADMIN</span>}
                     {isPremium(u) && <span className="ml-2 text-[10px] text-yellow-400 font-semibold">PREMIUM</span>}
                     {u.banned && <span className="ml-2 text-[10px] text-destructive font-semibold">BANIDO</span>}
+                    {pausaAtiva(u) === "autoexcluido" && <span className="ml-2 text-[10px] text-red-400 font-semibold">AUTOEXCLUÍDO</span>}
+                    {pausaAtiva(u) === "pausa" && <span className="ml-2 text-[10px] text-violet-300 font-semibold">EM PAUSA</span>}
                   </p>
                   <p className="text-xs text-muted-foreground truncate">{u.full_name ?? "—"}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-bold text-primary tabular-nums">{fmtZ(u.balance)}</span>
+                  <button
+                    onClick={() => toggleAtividade(u)}
+                    className={`p-2 rounded-lg border transition-colors ${
+                      atividadeId === u.id
+                        ? "border-primary/50 text-primary"
+                        : "border-border text-muted-foreground hover:text-white hover:border-primary/50"
+                    }`}
+                    title="Monitoramento / jogo responsável"
+                  >
+                    <Activity size={14} />
+                  </button>
                   <button
                     onClick={() => togglePremium(u)}
                     disabled={busyId === u.id}
@@ -226,6 +316,71 @@ export default function AdminUsuarios() {
                   >
                     {busyId === u.id ? <Loader2 size={14} className="animate-spin" /> : "Aplicar"}
                   </button>
+                </div>
+              )}
+
+              {atividadeId === u.id && (
+                <div className="bg-background/60 border border-border rounded-lg p-3 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Activity size={14} className="text-primary" />
+                    <p className="text-xs font-semibold text-white">Monitoramento — jogo responsável</p>
+                  </div>
+
+                  {atividadeLoading ? (
+                    <div className="flex justify-center py-4">
+                      <Loader2 size={16} className="animate-spin text-muted-foreground" />
+                    </div>
+                  ) : atividade ? (
+                    <>
+                      {/* Status de jogo responsável */}
+                      <div className="flex flex-wrap gap-2 text-[11px]">
+                        {atividade.jogoResponsavel.banned && (
+                          <span className="px-2 py-0.5 rounded-full bg-destructive/15 text-destructive font-semibold">Banido</span>
+                        )}
+                        {atividade.jogoResponsavel.autoexcluido && (
+                          <span className="px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 font-semibold">
+                            Autoexcluído até {new Date(atividade.jogoResponsavel.self_excluded_until!).toLocaleDateString("pt-BR")}
+                          </span>
+                        )}
+                        {atividade.jogoResponsavel.cooloffAtivo && (
+                          <span className="px-2 py-0.5 rounded-full bg-violet-500/15 text-violet-300 font-semibold">
+                            Em pausa até {new Date(atividade.jogoResponsavel.cooloff_until!).toLocaleDateString("pt-BR")}
+                          </span>
+                        )}
+                        {!atividade.jogoResponsavel.banned &&
+                          !atividade.jogoResponsavel.autoexcluido &&
+                          !atividade.jogoResponsavel.cooloffAtivo && (
+                            <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground">Sem restrições ativas</span>
+                          )}
+                      </div>
+
+                      {/* Tempo estimado por semana */}
+                      <div className="border border-border rounded-lg overflow-hidden">
+                        <div className="grid grid-cols-[1.4fr_1fr_0.8fr_0.8fr] gap-2 px-3 py-2 bg-card text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                          <span>Semana</span>
+                          <span className="text-right">Tempo est.</span>
+                          <span className="text-right">Palpites</span>
+                          <span className="text-right">Dias</span>
+                        </div>
+                        {atividade.semanas.map((s) => (
+                          <div
+                            key={s.indice}
+                            className="grid grid-cols-[1.4fr_1fr_0.8fr_0.8fr] gap-2 px-3 py-2 border-t border-border text-xs"
+                          >
+                            <span className="text-white">{rotuloSemana(s.indice)}</span>
+                            <span className="text-right text-primary font-semibold tabular-nums">{fmtDuracao(s.minutosEstimados)}</span>
+                            <span className="text-right text-muted-foreground tabular-nums">{s.palpites}</span>
+                            <span className="text-right text-muted-foreground tabular-nums">{s.diasAtivos}/7</span>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-[10px] text-muted-foreground/70 leading-relaxed">
+                        Tempo estimado a partir da atividade de palpites (sessões agrupadas por
+                        inatividade de 30 min). A plataforma não cronometra sessão de navegação —
+                        é um indicador de engajamento para fins de jogo responsável.
+                      </p>
+                    </>
+                  ) : null}
                 </div>
               )}
             </div>

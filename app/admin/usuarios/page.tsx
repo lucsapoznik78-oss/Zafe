@@ -16,7 +16,8 @@ export default async function AdminUsuariosPage() {
       <div>
         <h1 className="text-2xl font-black text-white">Usuários</h1>
         <p className="text-sm text-muted-foreground">
-          Carteiras, suspensão de contas e ajustes manuais de Z$.
+          Carteiras, suspensão de contas, ajustes manuais de Z$ e monitoramento de
+          jogo responsável (tempo de uso por semana, pausa e autoexclusão).
         </p>
       </div>
       <AdminUsuarios />
