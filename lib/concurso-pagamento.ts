@@ -152,18 +152,25 @@ export async function criarCobrancaInscricao(
 
 export type ConfirmarResult =
   | { ok: true; status: "enrolled" | "already" }
-  | { ok: false; reason: "not_found" | "already_paid" | "enroll_failed" };
+  | { ok: false; reason: "not_found" | "already_paid" | "enroll_failed" | "cpf_mismatch" | "cpf_unverified" };
 
 /**
  * Confirma um pagamento (chamado pelo webhook do provedor) e libera a entrada no
  * concurso. Idempotente: o claim `pending → paid` só passa uma vez, então uma
  * segunda notificação do provedor não inscreve duas vezes.
+ *
+ * Verificação de CPF (KYC via PIX): o PIX sempre sai de uma conta bancária já
+ * verificada pelo banco e amarrada a um CPF regular na Receita. Então o CPF do
+ * pagador que o provedor devolve é uma verificação real e gratuita. Exigimos que
+ * ele bata com o CPF do perfil; caso contrário NÃO inscrevemos e marcamos o
+ * pagamento como `cpf_mismatch` (pagador ≠ perfil) ou `cpf_unverified` (provedor
+ * não informou o CPF) — estado terminal que precisa de refund/revisão manual.
  */
 export async function confirmarPagamentoEInscrever(
   admin: SupabaseClient,
-  params: { provider: string; providerPaymentId: string }
+  params: { provider: string; providerPaymentId: string; payerCpf?: string | null }
 ): Promise<ConfirmarResult> {
-  const { provider, providerPaymentId } = params;
+  const { provider, providerPaymentId, payerCpf } = params;
 
   const { data: pagamento } = await admin
     .from("pagamentos_concurso")
@@ -174,6 +181,35 @@ export async function confirmarPagamentoEInscrever(
 
   if (!pagamento) return { ok: false, reason: "not_found" };
   if (pagamento.status === "paid") return { ok: false, reason: "already_paid" };
+
+  // KYC via PIX: o CPF do pagador precisa bater com o CPF do perfil antes de
+  // efetivar. Fail-closed — sem CPF do pagador, não inscrevemos.
+  const cpfPagador = (payerCpf ?? "").replace(/\D/g, "");
+  const { data: profile } = await admin
+    .from("profiles")
+    .select("cpf")
+    .eq("id", pagamento.user_id)
+    .maybeSingle();
+  const cpfPerfil = (profile?.cpf ?? "").replace(/\D/g, "");
+
+  if (!cpfPagador) {
+    await admin
+      .from("pagamentos_concurso")
+      .update({ status: "cpf_unverified" })
+      .eq("id", pagamento.id)
+      .eq("status", "pending");
+    console.error("[concurso-pagamento] pagador sem CPF — inscrição bloqueada", pagamento.id);
+    return { ok: false, reason: "cpf_unverified" };
+  }
+  if (cpfPagador !== cpfPerfil) {
+    await admin
+      .from("pagamentos_concurso")
+      .update({ status: "cpf_mismatch" })
+      .eq("id", pagamento.id)
+      .eq("status", "pending");
+    console.error("[concurso-pagamento] CPF do pagador ≠ perfil — inscrição bloqueada", pagamento.id);
+    return { ok: false, reason: "cpf_mismatch" };
+  }
 
   // Claim atômico pending→paid: só o primeiro webhook efetiva.
   const { data: claimed } = await admin

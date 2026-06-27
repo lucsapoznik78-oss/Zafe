@@ -37,6 +37,15 @@ export async function POST(request: Request) {
     payload?.data?.id?.toString() ?? payload?.providerPaymentId;
   const status: string | undefined = payload?.data?.status ?? payload?.status;
 
+  // CPF do pagador (KYC via PIX): vem da conta bancária verificada que originou o
+  // PIX. confirmarPagamentoEInscrever exige que bata com o CPF do perfil.
+  // TODO(pagamento): no Mercado Pago, o CPF vem ao consultar GET /v1/payments/{id}
+  // em `payer.identification.number` (não no payload do webhook); normalize aqui.
+  const payerCpf: string | undefined =
+    payload?.payer?.identification?.number ??     // Mercado Pago (payments API)
+    payload?.data?.customer?.document ??          // Pagar.me
+    payload?.payerCpf;
+
   if (!providerPaymentId) {
     return NextResponse.json({ ok: true, ignored: "no payment id" });
   }
@@ -48,6 +57,7 @@ export async function POST(request: Request) {
   const result = await confirmarPagamentoEInscrever(admin, {
     provider: config.provider,
     providerPaymentId,
+    payerCpf,
   });
 
   // Sempre 200 para o provedor não reentregar; o estado real fica na razão.
