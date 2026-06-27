@@ -127,7 +127,7 @@ def main():
                 font_size=24, bold=True, color=GREEN)
     
     items_esquerda = [
-        "• 100% Legal (Lei 5.768/71 + CMN 5.298)",
+        "• 100% Legal (fantasy sport — Lei 14.790/2023, Art. 49)",
         "• Sem apostas, sem depósitos de dinheiro real",
         "• Competição de habilidade analítica",
         "• Moeda virtual: Zafes (não convertível em dinheiro)",
@@ -153,7 +153,7 @@ def main():
     slide.notes_slide.notes_text_frame.text = \
         "Quem somos: plataforma de competição de previsões (100% legal). " \
         "Não somos casa de apostas, não operamos com dinheiro real. " \
-        "Moeda virtual: Zafes. Prêmios reais via PIX no concurso (Lei 5.768/71). " \
+        "Moeda virtual: Zafes. Prêmios reais via PIX no concurso (Lei 14.790/2023, Art. 49). " \
         "Diferencial: habilidade, não sorte."
     
     # ========== SLIDE 3: POR QUE LIGA ==========
@@ -180,7 +180,7 @@ def main():
                 font_size=24, bold=True, color=GREEN)
     
     solucoes = [
-        "• Posicionamento legal: concurso de previsões (Lei 5.768/71)",
+        "• Posicionamento legal: fantasy sport de previsões (Lei 14.790/2023, Art. 49)",
         "• Sem dinheiro real em jogo (Zafes virtuais)",
         "• Foco em habilidade analítica e calibração",
         "• Curadoria de informação (Premium) via IA"
@@ -233,7 +233,7 @@ def main():
     slide.notes_slide.notes_text_frame.text = \
         "Econômico: palpites sobre indicadores econômicos (Z$ virtual). " \
         "Apenas admin cria eventos (Selic, IPCA, Dólar, Bitcoin, Ibovespa). " \
-        "Mercado secundário com order book FIFO. Lei 5.768/71."
+        "Mercado secundário com order book FIFO. Lei 14.790/2023, Art. 49."
     
     # ========== SLIDE 5: LIGA ==========
     slide = add_slide(prs)
@@ -312,7 +312,7 @@ def main():
                        font_size=14, color=LIGHT_GRAY)
     
     # Direita
-    add_textbox(slide, "Base Legal (Lei 5.768/71)", 7, 2, 5, 0.5,
+    add_textbox(slide, "Base Legal (Lei 14.790/2023, Art. 49)", 7, 2, 5, 0.5,
                 font_size=24, bold=True, color=GREEN)
     
     add_textbox(slide, 
@@ -333,7 +333,7 @@ def main():
                 font_size=14, color=YELLOW)
     
     slide.notes_slide.notes_text_frame.text = \
-        "Concurso: R$ 2.500 via PIX (Lei 5.768/71). " \
+        "Concurso: prêmio fixo via PIX (Lei 14.790/2023, Art. 49). " \
         "Brier Score: maior acurácia agregada, mínimo 3 categorias. " \
         "Base legal: Dispensa SECAP (patrocínio cobre prêmios). " \
         "Concurso Major: R$ 10k-25k (exige SECAP, 10% patrocinador)."
@@ -575,7 +575,7 @@ def main():
                 alignment=PP_ALIGN.CENTER)
     
     items_fech = [
-        "• 100% Legal (Lei 5.768/71 + CMN 5.298)",
+        "• 100% Legal (fantasy sport — Lei 14.790/2023, Art. 49)",
         "• Sem apostas, sem depósitos de dinheiro real",
         "• Prêmios reais no concurso via PIX",
         "• Tecnologia de ponta (4 camadas de resolução)",
@@ -602,7 +602,7 @@ def main():
     
     slide.notes_slide.notes_text_frame.text = \
         "Fechamento: Zafe é a liga de previsões do Brasil (100% legal). " \
-        "Lei 5.768/71 + CMN 5.298: sem apostas, sem depósitos reais. " \
+        "Fantasy sport (Lei 14.790/2023, Art. 49): sem apostas, sem depósitos reais. " \
         "Prêmios reais via PIX no concurso, 4 camadas de resolução. " \
         "Obrigado pela atenção. zafe-rho.vercel.app → zafe.com.br."
     

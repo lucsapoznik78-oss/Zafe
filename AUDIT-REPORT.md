@@ -69,7 +69,7 @@ The platform's core architecture is sound (virtual Z$, parimutuel pool, skill-co
 | FLAGGED | `011_novos_eventos_maio_2026.sql:130` — "Mercado aposta em aceleracao" | Replace with "Mercado preve aceleracao" |
 | FLAGGED | `app/api/criar/route.ts` | Add category enum validation + forbidden-term filter |
 | FLAGGED | `app/api/apostas-privadas/criar/route.ts` | Enforce 5.000 Z$/year per-pair limit |
-| APPROVED | Concurso Mensal prize structure | Lei 5.768/71 compliant, SECAP dispensada |
+| APPROVED | Concurso Mensal prize structure | Lei 14.790/2023 Art. 49 (fantasy sport) — prêmio fixo, sem SECAP |
 | APPROVED | UI copy (termos, DiferenteDeBet) | Legal distancing language is correct |
 | APPROVED | All seed market content | No harmful/hateful content |
 

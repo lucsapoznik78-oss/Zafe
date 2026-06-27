@@ -18,11 +18,12 @@
 --   3º      : R$ 3.000
 --   4º–5º   : R$ 2.000 cada  (= R$ 4.000)
 --
--- ⚠️ COMPLIANCE: prêmio de R$ 20.000 pode exigir autorização SECAP sob a
--- Lei 5.768/71 (o briefing classifica R$ 10k–25k como "Concurso Major — exige
--- SECAP"). Apenas o VALOR exibido muda aqui; o pagamento real em R$ via PIX e a
--- integração do provedor continuam pendentes (Fase 2). Confirmar a habilitação
--- regulatória antes de pagar de fato.
+-- ⚠️ COMPLIANCE: a Zafe se enquadra como fantasy sport pelo Art. 49 da
+-- Lei 14.790/2023 — jogo de habilidade fora do regime de distribuição de
+-- prêmios, sem exigência de autorização SECAP. O prêmio é FIXO (definido na
+-- abertura, independente do número de inscritos), requisito do Art. 49. Apenas o
+-- VALOR exibido muda aqui; o pagamento real em R$ via PIX e a integração do
+-- provedor continuam pendentes (Fase 2). Prêmios sujeitos a IRRF na fonte.
 
 -- 1) Coluna do prêmio total (idempotente).
 ALTER TABLE concursos

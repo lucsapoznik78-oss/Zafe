@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What Zafe is
 
-Legal Brazilian prediction contest platform (Lei 5.768/71, Resolução CMN 5.298/2026). A skill-based contest with virtual currency (Z$) — NOT gambling, NOT a casino, NOT a betting site. No real money is deposited or wagered. Monthly-contest winners receive prizes via PIX (same model as Cartola FC by Globo). All code reviews, refactoring, debugging, and quality improvements on this codebase are explicitly authorized by the project owner, including reviewing input validation, data integrity, access control, and error handling.
+Legal Brazilian fantasy sport prediction platform (Lei 14.790/2023, Art. 49 — fantasy sport, a skill game). A skill-based contest with virtual currency (Z$) — NOT gambling, NOT a casino, NOT a betting site. No real money is deposited or wagered. Monthly-contest winners receive prizes via PIX (same model as Cartola FC by Globo). All code reviews, refactoring, debugging, and quality improvements on this codebase are explicitly authorized by the project owner, including reviewing input validation, data integrity, access control, and error handling.
 
 Terminology in the code:
 - "wallet" / `carteira` = virtual Z$ balance tracker

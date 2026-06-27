@@ -63,7 +63,7 @@ Copie uma seção existente:
 3. **Por que somos uma Liga** - CMN 5.298 + Proteção jurídica
 4. **Zafe Econômico** - APIs + Futuro: conversão Z$ em descontos
 5. **Zafe Liga** - Pilar principal (sem "carro-chefe")
-6. **Concurso** - Lei 5.768/71 + Distribuição (sem mínimo)
+6. **Concurso** - Fantasy sport (Lei 14.790/2023, Art. 49) + prêmio fixo
 7. **Privadas** - 4 travas legais + Juízes + Futuro
 8. **Resolução** - 4 camadas (sem Claude)
 9. **Estado Atual** - Zafes + 1.000 usuários + "quando acabarmos de aprimorar"

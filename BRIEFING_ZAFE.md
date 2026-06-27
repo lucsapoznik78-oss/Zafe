@@ -22,7 +22,7 @@ Apresentar a Zafe como a **única empresa regulada e operando legalmente** no se
 > "A Zafe não é uma aposta. É uma **liga de competição de habilidade** onde você compete prevendo o futuro e ganha prêmios reais através de concursos legais."
 
 **Pontos-chave:**
-1. 100% Legal (Lei 5.768/71 + CMN 5.298)
+1. 100% Legal (fantasy sport — Lei 14.790/2023, Art. 49)
 2. Nunca apostamos dinheiro real dos usuários
 3. Zafes (moeda virtual) valem descontos reais via parcerias
 4. Única plataforma deste tipo no Brasil
@@ -34,7 +34,7 @@ Apresentar a Zafe como a **única empresa regulada e operando legalmente** no se
 ### 1. Capa
 - Logo ZAFE (verde #86efac)
 - "A Liga de Previsões do Brasil"
-- Selos: Lei 5.768/71, CMN 5.298, 4 Camadas
+- Selos: Fantasy Sport (Lei 14.790/2023, Art. 49), 4 Camadas
 - **Créditos:** Feito por Luc Sapoznik e Lorenzo Fragali
 
 ### 2. Quem Somos (Expanido)
@@ -53,7 +53,7 @@ Apresentar a Zafe como a **única empresa regulada e operando legalmente** no se
 ### 3. Por que somos uma Liga (não Bet)
 - **CMN 5.298 (4/5/2026):** Proibiu apostas com dinheiro real
 - **Antes:** Modelo Polymarket (cripto, P2P) - ilegal
-- **Agora:** Liga de Habilidade (Lei 5.768/71)
+- **Agora:** Fantasy Sport de habilidade (Lei 14.790/2023, Art. 49)
 - **Diferencial:** Única empresa legal neste setor
 
 ### 4. Zafe Econômico
@@ -69,10 +69,11 @@ Apresentar a Zafe como a **única empresa regulada e operando legalmente** no se
 - **Banner do Concurso** sempre visível
 
 ### 6. Concurso (Sobreposto à Liga)
-- **Prêmio:** R$ 2.500 via PIX
+- **Prêmio:** fixo, definido na abertura, via PIX
 - **Critério:** Brier Score (acurácia estatística)
-- **Lei 5.768/71:** Dispensa SECAP (patrocínio cobre prêmios)
-- **Concurso Major:** R$ 10k-25k (exige SECAP)
+- **Lei 14.790/2023, Art. 49:** fantasy sport é jogo de habilidade fora do
+  regime de distribuição de prêmios — sem exigência de SECAP
+- **Requisito do Art. 49:** prêmio fixo e independente do nº de inscritos
 
 ### 7. Privadas (Bolão entre Amigos)
 - **4 Travas Legais:** Amigos confirmados, mercado fechado, sem revenda, limite anual
