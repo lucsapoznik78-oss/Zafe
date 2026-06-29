@@ -16,6 +16,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { fetchMatchResult, OracleCheck } from "./oracle";
 import { scoreGroupPicks } from "./group-picks";
+import { advanceBracket } from "./bracket";
 import { computeMatchEvents } from "./scoring";
 import type { CopaMatch, CopaPrediction } from "./types";
 
@@ -124,11 +125,31 @@ export async function applyMatchResult(
     }
   }
 
+  // Avança o chaveamento: o vencedor desta partida (ou a classificação do
+  // grupo recém-completo) pode preencher slots de mata-mata e abrir palpites.
+  try {
+    await advanceBracket(admin, match.competition_id);
+  } catch (e) {
+    console.error("[copa/resolve] advance", match.match_number, e);
+  }
+
   return { ok: true, events: events.length };
 }
 
 export async function resolveDueMatches(admin: SupabaseClient): Promise<ResolveSummary[]> {
   const cutoff = new Date(Date.now() - RESOLVE_GRACE_HOURS * 3600_000).toISOString();
+
+  // Avança o chaveamento ANTES de resolver: preenche os times de mata-mata
+  // já determinados (grupos terminados, vencedores conhecidos) para que as
+  // partidas devidas e já preenchidas entrem na fila de resolução abaixo.
+  const { data: comps } = await admin.from("copa_competition").select("id");
+  for (const c of comps ?? []) {
+    try {
+      await advanceBracket(admin, c.id);
+    } catch (e) {
+      console.error("[copa/resolve] advance bracket", c.id, e);
+    }
+  }
 
   const { data: matches } = await admin
     .from("copa_matches")

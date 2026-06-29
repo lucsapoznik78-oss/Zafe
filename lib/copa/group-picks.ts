@@ -35,7 +35,7 @@ export function groupLockAt(matches: Pick<CopaMatch, "kickoff_at">[]): string | 
   return sorted[Math.max(0, sorted.length - 2)].kickoff_at;
 }
 
-interface StandingRow {
+export interface StandingRow {
   team: string;
   pts: number;
   gd: number;
@@ -43,14 +43,15 @@ interface StandingRow {
 }
 
 /**
- * Classificação do grupo a partir dos jogos finalizados.
- * Critérios: pontos → saldo → gols pró → ordem alfabética (aproximação
- * determinística dos critérios FIFA; confronto direto/fair play são
- * raríssimos como desempate final).
+ * Tabela do grupo (linhas com estatísticas) a partir dos jogos finalizados,
+ * já ordenada. Critérios: pontos → saldo → gols pró → ordem alfabética
+ * (aproximação determinística dos critérios FIFA; confronto direto/fair play
+ * são raríssimos como desempate final). Base de computeGroupStandings e da
+ * classificação dos melhores 3ºs (lib/copa/bracket.ts).
  */
-export function computeGroupStandings(
+export function computeGroupTable(
   matches: Pick<CopaMatch, "home_team" | "away_team" | "home_goals" | "away_goals" | "status">[]
-): string[] {
+): StandingRow[] {
   const rows = new Map<string, StandingRow>();
   const ensure = (team: string) => {
     if (!rows.has(team)) rows.set(team, { team, pts: 0, gd: 0, gf: 0 });
@@ -74,12 +75,16 @@ export function computeGroupStandings(
     }
   }
 
-  return Array.from(rows.values())
-    .sort(
-      (a, b) =>
-        b.pts - a.pts || b.gd - a.gd || b.gf - a.gf || a.team.localeCompare(b.team, "pt-BR")
-    )
-    .map((r) => r.team);
+  return Array.from(rows.values()).sort(
+    (a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf || a.team.localeCompare(b.team, "pt-BR")
+  );
+}
+
+/** Ordem de classificação do grupo (só os nomes). */
+export function computeGroupStandings(
+  matches: Pick<CopaMatch, "home_team" | "away_team" | "home_goals" | "away_goals" | "status">[]
+): string[] {
+  return computeGroupTable(matches).map((r) => r.team);
 }
 
 /**
