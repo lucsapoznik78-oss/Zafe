@@ -1,6 +1,7 @@
 import Navbar from "@/components/layout/Navbar";
 import MobileNav from "@/components/layout/MobileNav";
 import ReferralActivator from "@/components/layout/ReferralActivator";
+import PendingPickActivator from "@/components/layout/PendingPickActivator";
 import WelcomeModal from "@/components/onboarding/WelcomeModal";
 
 export default function MainLayout({
@@ -16,6 +17,7 @@ export default function MainLayout({
       </main>
       <MobileNav />
       <ReferralActivator />
+      <PendingPickActivator />
       <WelcomeModal />
     </div>
   );

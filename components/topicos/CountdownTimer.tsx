@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Clock, AlertTriangle } from "lucide-react";
+import { playTick } from "@/lib/sound";
 
 export default function CountdownTimer({ closesAt }: { closesAt: string }) {
   const [timeLeft, setTimeLeft] = useState("");
   const [isUrgent, setIsUrgent] = useState(false);
   const [isClosed, setIsClosed] = useState(false);
+  const lastTickRef = useRef<number | null>(null);
 
   useEffect(() => {
     function calc() {
@@ -16,6 +18,14 @@ export default function CountdownTimer({ closesAt }: { closesAt: string }) {
         setIsClosed(true);
         setIsUrgent(false);
         return;
+      }
+      // Tique sonoro sutil nos últimos 10 segundos (1x por segundo)
+      if (diff <= 10000) {
+        const sec = Math.ceil(diff / 1000);
+        if (lastTickRef.current !== sec) {
+          lastTickRef.current = sec;
+          playTick();
+        }
       }
       const d = Math.floor(diff / 86400000);
       const h = Math.floor((diff % 86400000) / 3600000);

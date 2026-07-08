@@ -1,4 +1,5 @@
 import Link from "next/link";
+import SoundMenu from "@/components/layout/SoundMenu";
 
 export default function LandingHeader() {
   return (
@@ -8,6 +9,7 @@ export default function LandingHeader() {
           Zafe
         </Link>
         <nav className="flex items-center gap-2">
+          <SoundMenu />
           <Link
             href="/liga"
             className="hidden sm:inline-flex px-3 py-1.5 text-sm text-muted-foreground hover:text-white transition-colors"

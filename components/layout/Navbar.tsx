@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { LogOut, Wallet, Info, Star, Trophy } from "lucide-react";
 import NotificationBell from "@/components/layout/NotificationBell";
 import PushSetup from "@/components/layout/PushSetup";
+import SoundMenu from "@/components/layout/SoundMenu";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
 import { formatCurrency } from "@/lib/utils";
@@ -124,6 +125,7 @@ export default function Navbar() {
             </div>
           </div>
 
+          <SoundMenu />
           <PushSetup />
           <NotificationBell />
 

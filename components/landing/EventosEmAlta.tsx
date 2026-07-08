@@ -1,7 +1,8 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import type { TopicWithStats } from "@/types/database";
-import TopicCard from "@/components/topicos/TopicCard";
+import TrendingGrid from "@/components/landing/TrendingGrid";
+import LiveTicker from "@/components/landing/LiveTicker";
 import { TrendingUp } from "lucide-react";
 
 async function getTopTopics(): Promise<TopicWithStats[]> {
@@ -67,11 +68,9 @@ export default async function EventosEmAlta() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {topics.map((topic) => (
-            <TopicCard key={topic.id} topic={topic} href={`/liga/${topic.id}`} />
-          ))}
-        </div>
+        <LiveTicker />
+
+        <TrendingGrid initialTopics={topics} />
 
         <div className="mt-6 text-center sm:hidden">
           <Link

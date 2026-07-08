@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
 import { Loader2, Wallet, Lock } from "lucide-react";
+import { playConfirm } from "@/lib/sound";
 import type { BetSide } from "@/types/database";
 
 interface BetFormProps {
@@ -78,6 +79,7 @@ export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed,
       setError(data.error ?? "Erro ao registrar palpite");
     } else {
       setSuccess(`Palpite registrado! Probabilidade estimada: ${(data.estimated_odds ? (1/data.estimated_odds*100).toFixed(0) : "—")}%. O retorno final depende do volume na resolução.`);
+      playConfirm();
       setAmount("");
       router.refresh();
     }

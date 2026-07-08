@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
 import { Loader2, Wallet } from "lucide-react";
+import { playConfirm } from "@/lib/sound";
 
 interface Outcome {
   id: string;
@@ -66,6 +67,7 @@ export default function MultiOutcomeBetForm({
       setError(data.error ?? "Erro ao registrar palpite");
     } else {
       setSuccess("Palpite registrado! O retorno final depende do volume na resolução.");
+      playConfirm();
       setAmount("");
       router.refresh();
     }

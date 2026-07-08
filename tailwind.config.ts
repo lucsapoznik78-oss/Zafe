@@ -58,9 +58,24 @@ const config: Config = {
           "0%":   { transform: "translateY(-10px) rotate(0deg)", opacity: "1" },
           "100%": { transform: "translateY(350px) rotate(720deg)", opacity: "0" },
         },
+        "shimmer-sweep": {
+          "0%":   { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(100%)" },
+        },
+        "odds-pulse-up": {
+          "0%":   { backgroundColor: "rgba(134, 239, 172, 0.25)" },
+          "100%": { backgroundColor: "transparent" },
+        },
+        "odds-pulse-down": {
+          "0%":   { backgroundColor: "rgba(248, 113, 113, 0.25)" },
+          "100%": { backgroundColor: "transparent" },
+        },
       },
       animation: {
         "confetti-fall": "confetti-fall 1.8s ease-in forwards",
+        "shimmer-sweep": "shimmer-sweep 1.6s ease-in-out 0.3s 2",
+        "odds-pulse-up": "odds-pulse-up 1.2s ease-out",
+        "odds-pulse-down": "odds-pulse-down 1.2s ease-out",
       },
     },
   },

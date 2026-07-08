@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
+import DailyBonusCard from "@/components/inicio/DailyBonusCard";
 import { createAdminClient } from "@/lib/supabase/server";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -54,6 +55,9 @@ export default async function InicioPage() {
 
   return (
     <div className="space-y-12 pb-8">
+      {/* ─────────── BÔNUS DIÁRIO + STREAK ─────────── */}
+      <DailyBonusCard />
+
       {/* ─────────── HERÓI: CONCURSO (mundo pago) ─────────── */}
       <section className="relative overflow-hidden rounded-3xl border border-yellow-400/30 bg-gradient-to-br from-yellow-400/15 via-yellow-500/5 to-black p-6 sm:p-10">
         <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-yellow-400/20 blur-3xl" />
