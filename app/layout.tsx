@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
@@ -33,19 +33,21 @@ export const metadata: Metadata = {
     description: "O fantasy game de previsões do Brasil. Compete, ganhe Z$ grátis e dispute o prêmio mensal.",
   },
   manifest: "/manifest.json",
-  themeColor: "#86efac",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "Zafe",
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-    viewportFit: "cover",
-  },
+};
+
+// Next 14: viewport/themeColor têm export próprio — dentro de `metadata` são ignorados.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  themeColor: "#86efac",
 };
 
 const jsonLd = {
