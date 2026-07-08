@@ -1,35 +1,33 @@
 // Música ambiente 100% digital — gerada em tempo real via Web Audio API,
-// sem nenhum arquivo de áudio. Estilo: lo-fi "baile bossa" instrumental,
-// ~96 BPM, loop de 4 compassos em Lá menor (Am7 → Fmaj7 → Cmaj7 → G7),
-// com groove inspirado no tamborzão, baixo quente, pad suave e plucks
-// pentatônicos esparsos com eco. Volume baixo por design (camada de fundo).
+// sem nenhum arquivo de áudio. Estilo: house/funk animado e otimista,
+// 122 BPM, loop de 4 compassos em Dó maior (C → G → Am → F, a progressão
+// "hino"), bumbo quatro-no-chão, palmas, baixo saltitante em oitavas e
+// arpejo brilhante puxando pra cima. Energia de "bora jogar".
 
 import { getAudioContext } from "@/lib/sound";
 
-const BPM = 96;
+const BPM = 122;
 const STEP_DUR = 60 / BPM / 4; // semicolcheia
 const STEPS_PER_BAR = 16;
 const BARS = 4;
 const TOTAL_STEPS = BARS * STEPS_PER_BAR;
 const LOOKAHEAD_MS = 100;
 const SCHEDULE_AHEAD = 0.25; // segundos
-const MASTER_LEVEL = 0.6;
-const FADE_S = 2.5;
+const MASTER_LEVEL = 0.7;
+const FADE_S = 1.2;
 
-// Progressão: baixo (root) + pad (4 notas por acorde)
+// Progressão I–V–vi–IV: baixo (root) + acorde (4 notas) + tons do arpejo
 const PROGRESSION = [
-  { bass: 110.0,  pad: [220.0, 261.63, 329.63, 392.0] },   // Am7
-  { bass: 87.31,  pad: [174.61, 220.0, 261.63, 329.63] },  // Fmaj7
-  { bass: 130.81, pad: [196.0, 261.63, 329.63, 493.88] },  // Cmaj7
-  { bass: 98.0,   pad: [196.0, 246.94, 293.66, 349.23] },  // G7
+  { bass: 130.81, chord: [261.63, 329.63, 392.0, 523.25], arp: [523.25, 659.25, 783.99, 1046.5] },  // C
+  { bass: 98.0,   chord: [246.94, 293.66, 392.0, 493.88], arp: [493.88, 587.33, 783.99, 987.77] },  // G
+  { bass: 110.0,  chord: [220.0, 261.63, 329.63, 440.0],  arp: [440.0, 523.25, 659.25, 880.0] },    // Am
+  { bass: 87.31,  chord: [220.0, 261.63, 349.23, 440.0],  arp: [440.0, 523.25, 698.46, 880.0] },    // F
 ];
 
-// Pentatônica de Lá menor para os plucks
-const PENTA = [440.0, 523.25, 587.33, 659.25, 783.99];
-
-// Groove tamborzão simplificado (posições da semicolcheia no compasso)
-const KICK_STEPS = [0, 3, 6, 10];
-const HAT_STEPS = [2, 6, 10, 14];
+// Groove: bumbo quatro-no-chão, palma no 2 e 4, chimbal em colcheias
+const KICK_STEPS = [0, 4, 8, 12];
+const CLAP_STEPS = [4, 12];
+const STAB_STEPS = [2, 7, 10]; // stabs sincopados de acorde (piano house)
 
 let playing = false;
 let timer: ReturnType<typeof setInterval> | null = null;
@@ -40,18 +38,18 @@ let noiseBuf: AudioBuffer | null = null;
 
 function buildMaster(ctx: AudioContext): GainNode {
   const gain = ctx.createGain();
-  // Filtro lowpass dá o calor "lo-fi" (corta o brilho digital)
-  const warmth = ctx.createBiquadFilter();
-  warmth.type = "lowpass";
-  warmth.frequency.value = 2800;
-  warmth.Q.value = 0.4;
-  gain.connect(warmth).connect(ctx.destination);
+  // Lowpass alto mantém o brilho mas tira aspereza digital
+  const polish = ctx.createBiquadFilter();
+  polish.type = "lowpass";
+  polish.frequency.value = 6500;
+  polish.Q.value = 0.5;
+  gain.connect(polish).connect(ctx.destination);
   return gain;
 }
 
 function getNoise(ctx: AudioContext): AudioBuffer {
   if (noiseBuf) return noiseBuf;
-  const len = Math.floor(ctx.sampleRate * 0.1);
+  const len = Math.floor(ctx.sampleRate * 0.2);
   noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
   const data = noiseBuf.getChannelData(0);
   for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
@@ -62,84 +60,99 @@ function kick(ctx: AudioContext, out: GainNode, t: number) {
   const osc = ctx.createOscillator();
   const g = ctx.createGain();
   osc.type = "sine";
-  osc.frequency.setValueAtTime(120, t);
-  osc.frequency.exponentialRampToValueAtTime(42, t + 0.12);
-  g.gain.setValueAtTime(0.14, t);
-  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+  osc.frequency.setValueAtTime(150, t);
+  osc.frequency.exponentialRampToValueAtTime(48, t + 0.1);
+  g.gain.setValueAtTime(0.22, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
   osc.connect(g).connect(out);
   osc.start(t);
-  osc.stop(t + 0.25);
+  osc.stop(t + 0.22);
 }
 
-function hat(ctx: AudioContext, out: GainNode, t: number, accent: boolean) {
+function clap(ctx: AudioContext, out: GainNode, t: number) {
+  const src = ctx.createBufferSource();
+  src.buffer = getNoise(ctx);
+  const bp = ctx.createBiquadFilter();
+  bp.type = "bandpass";
+  bp.frequency.value = 1600;
+  bp.Q.value = 1.2;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.07, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+  src.connect(bp).connect(g).connect(out);
+  src.start(t);
+  src.stop(t + 0.14);
+}
+
+function hat(ctx: AudioContext, out: GainNode, t: number, open: boolean) {
   const src = ctx.createBufferSource();
   src.buffer = getNoise(ctx);
   const hp = ctx.createBiquadFilter();
   hp.type = "highpass";
-  hp.frequency.value = 7000;
+  hp.frequency.value = 8000;
   const g = ctx.createGain();
-  g.gain.setValueAtTime(accent ? 0.03 : 0.018, t);
-  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+  const dur = open ? 0.12 : 0.04;
+  g.gain.setValueAtTime(open ? 0.04 : 0.018, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
   src.connect(hp).connect(g).connect(out);
   src.start(t);
-  src.stop(t + 0.06);
+  src.stop(t + dur + 0.02);
 }
 
+// Baixo saltitante: root nos tempos, oitava acima nos contratempos
 function bass(ctx: AudioContext, out: GainNode, t: number, freq: number) {
   const osc = ctx.createOscillator();
+  const lp = ctx.createBiquadFilter();
   const g = ctx.createGain();
-  osc.type = "triangle";
+  osc.type = "sawtooth";
   osc.frequency.setValueAtTime(freq, t);
+  lp.type = "lowpass";
+  lp.frequency.setValueAtTime(500, t);
+  lp.frequency.exponentialRampToValueAtTime(220, t + STEP_DUR * 1.6);
   g.gain.setValueAtTime(0, t);
-  g.gain.linearRampToValueAtTime(0.07, t + 0.02);
-  g.gain.exponentialRampToValueAtTime(0.0001, t + STEP_DUR * 3);
-  osc.connect(g).connect(out);
+  g.gain.linearRampToValueAtTime(0.085, t + 0.008);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + STEP_DUR * 1.8);
+  osc.connect(lp).connect(g).connect(out);
   osc.start(t);
-  osc.stop(t + STEP_DUR * 3.2);
+  osc.stop(t + STEP_DUR * 2);
 }
 
-function pad(ctx: AudioContext, out: GainNode, t: number, freqs: number[]) {
-  const barDur = STEP_DUR * STEPS_PER_BAR;
+// Stab de acorde estilo piano house — curto, brilhante, sincopado
+function stab(ctx: AudioContext, out: GainNode, t: number, freqs: number[]) {
   for (const f of freqs) {
-    // Duas vozes levemente desafinadas por nota = textura análoga/quente
-    for (const detune of [-4, 4]) {
-      const osc = ctx.createOscillator();
-      const g = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(f, t);
-      osc.detune.setValueAtTime(detune, t);
-      g.gain.setValueAtTime(0, t);
-      g.gain.linearRampToValueAtTime(0.011, t + barDur * 0.3);
-      g.gain.linearRampToValueAtTime(0.008, t + barDur * 0.8);
-      g.gain.linearRampToValueAtTime(0, t + barDur);
-      osc.connect(g).connect(out);
-      osc.start(t);
-      osc.stop(t + barDur + 0.05);
-    }
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(f, t);
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.016, t + 0.005);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+    osc.connect(g).connect(out);
+    osc.start(t);
+    osc.stop(t + 0.25);
   }
 }
 
-function pluck(ctx: AudioContext, out: GainNode, t: number) {
-  const freq = PENTA[Math.floor(Math.random() * PENTA.length)];
+// Arpejo ascendente em colcheias — o "gancho" otimista, com eco
+function arp(ctx: AudioContext, out: GainNode, t: number, freq: number) {
   const osc = ctx.createOscillator();
   const g = ctx.createGain();
   osc.type = "triangle";
   osc.frequency.setValueAtTime(freq, t);
-  g.gain.setValueAtTime(0.045, t);
-  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+  g.gain.setValueAtTime(0.05, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
 
-  // Eco simples (delay pontuado com feedback) — assinatura do lo-fi
   const delay = ctx.createDelay(1);
-  delay.delayTime.value = STEP_DUR * 6;
+  delay.delayTime.value = STEP_DUR * 3;
   const fb = ctx.createGain();
-  fb.gain.value = 0.32;
+  fb.gain.value = 0.28;
   delay.connect(fb).connect(delay);
 
   osc.connect(g);
   g.connect(out);
   g.connect(delay).connect(out);
   osc.start(t);
-  osc.stop(t + 0.55);
+  osc.stop(t + 0.32);
 }
 
 function scheduleStep(ctx: AudioContext, out: GainNode, s: number, t: number) {
@@ -147,15 +160,22 @@ function scheduleStep(ctx: AudioContext, out: GainNode, s: number, t: number) {
   const pos = s % STEPS_PER_BAR;
   const chord = PROGRESSION[bar];
 
-  if (pos === 0) pad(ctx, out, t, chord.pad);
-  if (KICK_STEPS.includes(pos)) {
-    kick(ctx, out, t);
-    // Baixo acompanha o bumbo; na posição 10 sobe pra quinta
-    bass(ctx, out, t, pos === 10 ? chord.bass * 1.5 : chord.bass);
+  if (KICK_STEPS.includes(pos)) kick(ctx, out, t);
+  if (CLAP_STEPS.includes(pos)) clap(ctx, out, t);
+  // Chimbal em colcheias: fechado nos tempos, aberto nos contratempos
+  if (pos % 2 === 0) hat(ctx, out, t, pos % 4 === 2);
+
+  // Baixo em colcheias saltando de oitava (root ↔ oitava acima)
+  if (pos % 2 === 0) {
+    bass(ctx, out, t, pos % 4 === 0 ? chord.bass : chord.bass * 2);
   }
-  if (HAT_STEPS.includes(pos)) hat(ctx, out, t, pos === 6);
-  // Pluck esparso: 2º tempo dos compassos pares, nem sempre
-  if (pos === 8 && bar % 2 === 1 && Math.random() < 0.75) pluck(ctx, out, t);
+
+  if (STAB_STEPS.includes(pos)) stab(ctx, out, t, chord.chord);
+
+  // Arpejo sobe pelo acorde na segunda metade do compasso (colcheias)
+  if (pos >= 8 && pos % 2 === 0) {
+    arp(ctx, out, t, chord.arp[(pos - 8) / 2]);
+  }
 }
 
 export function ambientPlaying(): boolean {
@@ -197,9 +217,9 @@ export function stopAmbient() {
     const m = master;
     m.gain.cancelScheduledValues(ctx.currentTime);
     m.gain.setValueAtTime(m.gain.value, ctx.currentTime);
-    m.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.8);
+    m.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.5);
     // desconecta após o fade para liberar os nós
-    setTimeout(() => m.disconnect(), 1000);
+    setTimeout(() => m.disconnect(), 700);
   }
   master = null;
 }
