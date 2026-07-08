@@ -2,64 +2,86 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Loader2, ShieldCheck } from "lucide-react";
+import { Loader2, User, Mail, Phone, CreditCard, Calendar, Gift } from "lucide-react";
 import { formatarCPF, validarCPF } from "@/lib/cpf";
+import { formatarTelefone, formatarDataBR, dataBRparaISO } from "@/lib/masks";
 
 interface Props {
+  isGoogle: boolean;
+  email: string;
+  initialFullName: string;
   needsBirthDate: boolean;
-  needsAddress: boolean;
   next?: string;
 }
 
-export default function CompletarCadastro({ needsBirthDate, needsAddress, next }: Props) {
+const labelClass = "text-[11px] font-bold uppercase tracking-wider text-muted-foreground";
+const hintClass = "text-[11px] font-bold uppercase tracking-wider";
+const inputClass = "bg-input border-border focus:border-primary pl-10 h-11";
+
+function Field({
+  icon,
+  children,
+}: {
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="relative">
+      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
+        {icon}
+      </span>
+      {children}
+    </div>
+  );
+}
+
+export default function CompletarCadastro({ isGoogle, email, initialFullName, needsBirthDate, next }: Props) {
   const router = useRouter();
   const destino = next && next.startsWith("/") ? next : "/inicio";
 
+  const [fullName, setFullName] = useState(initialFullName);
+  const [phone, setPhone] = useState("");
   const [cpf, setCpf] = useState("");
   const [birthDate, setBirthDate] = useState("");
-  const [cep, setCep] = useState("");
-  const [logradouro, setLogradouro] = useState("");
-  const [numero, setNumero] = useState("");
-  const [complemento, setComplemento] = useState("");
-  const [bairro, setBairro] = useState("");
-  const [cidade, setCidade] = useState("");
-  const [uf, setUf] = useState("");
+  const [refCode, setRefCode] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const cpfValido = validarCPF(cpf);
-  const inputClass = "bg-input border-border focus:border-primary";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
 
+    if (fullName.trim().length < 3) {
+      setError("Informe seu nome completo.");
+      return;
+    }
+    const phoneClean = phone.replace(/\D/g, "");
+    if (phoneClean.length < 10) {
+      setError("Informe um telefone válido com DDD.");
+      return;
+    }
     if (!cpfValido) {
       setError("CPF inválido. Confira os números.");
       return;
     }
-    if (needsBirthDate && !birthDate) {
-      setError("Informe sua data de nascimento.");
-      return;
+    let birthISO: string | undefined;
+    if (needsBirthDate) {
+      const iso = dataBRparaISO(birthDate);
+      if (!iso) {
+        setError("Data de nascimento inválida — use DD/MM/AAAA.");
+        return;
+      }
+      birthISO = iso;
     }
-    if (needsAddress) {
-      const cepClean = cep.replace(/\D/g, "");
-      const ufClean = uf.trim().toUpperCase();
-      if (!cepClean || !logradouro.trim() || !numero.trim() || !bairro.trim() || !cidade.trim() || !ufClean) {
-        setError("Preencha o endereço completo.");
-        return;
-      }
-      if (cepClean.length !== 8) {
-        setError("CEP inválido — use 8 dígitos.");
-        return;
-      }
-      if (ufClean.length !== 2) {
-        setError("UF inválida — use a sigla de 2 letras (ex.: SP).");
-        return;
-      }
+    if (!acceptedTerms) {
+      setError("Você precisa concordar com os Termos de Uso para continuar.");
+      return;
     }
 
     setLoading(true);
@@ -67,15 +89,11 @@ export default function CompletarCadastro({ needsBirthDate, needsAddress, next }
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        fullName: fullName.trim(),
+        phone: phoneClean,
         cpf: cpf.replace(/\D/g, ""),
-        birthDate: needsBirthDate ? birthDate : undefined,
-        cep: needsAddress ? cep.replace(/\D/g, "") : undefined,
-        logradouro: needsAddress ? logradouro.trim() : undefined,
-        numero: needsAddress ? numero.trim() : undefined,
-        complemento: needsAddress ? complemento.trim() : undefined,
-        bairro: needsAddress ? bairro.trim() : undefined,
-        cidade: needsAddress ? cidade.trim() : undefined,
-        uf: needsAddress ? uf.trim().toUpperCase() : undefined,
+        birthDate: birthISO,
+        acceptedTerms: true,
       }),
     });
     const data = await res.json().catch(() => ({}));
@@ -85,36 +103,94 @@ export default function CompletarCadastro({ needsBirthDate, needsAddress, next }
       return;
     }
 
+    // Código de indicação (opcional) — reusa o endpoint do sistema de referral
+    if (refCode.trim()) {
+      await fetch("/api/referral/registrar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: refCode.trim().toUpperCase() }),
+      }).catch(() => {});
+    }
+
     router.replace(destino);
     router.refresh();
   }
 
   return (
     <div className="bg-card border border-border rounded-xl p-6 space-y-5">
-      <div className="flex items-start gap-2 rounded-lg bg-primary/10 border border-primary/20 px-3 py-2.5">
-        <ShieldCheck size={15} className="text-primary shrink-0 mt-0.5" />
-        <p className="text-[12px] text-muted-foreground leading-relaxed">
-          Para sua conta ficar completa e poder concorrer a prêmios em R$, precisamos do seu
-          <span className="font-semibold text-white"> CPF</span>
-          {needsBirthDate || needsAddress ? " e dos dados abaixo" : ""}. Coletamos uma única vez.
+      <div className="space-y-1">
+        <h1 className="text-lg font-bold text-white">Finalize seu cadastro</h1>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          {isGoogle
+            ? "Sua conta do Google foi conectada. Falta só completar alguns dados pra você começar a prever."
+            : "Falta só completar alguns dados pra você começar a prever."}
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-1.5">
-          <Label htmlFor="cpf" className="text-sm text-muted-foreground">CPF</Label>
-          <Input
-            id="cpf"
-            type="text"
-            inputMode="numeric"
-            value={cpf}
-            onChange={(e) => setCpf(formatarCPF(e.target.value))}
-            placeholder="000.000.000-00"
-            maxLength={14}
-            className={inputClass}
-            required
-            autoFocus
-          />
+          <label htmlFor="fullName" className={labelClass}>Nome completo</label>
+          <Field icon={<User size={15} />}>
+            <Input
+              id="fullName"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="Seu nome"
+              className={inputClass}
+              required
+            />
+          </Field>
+        </div>
+
+        <div className="space-y-1.5">
+          <label htmlFor="email" className={labelClass}>
+            E-mail {isGoogle && <span className={`${hintClass} text-primary`}>do Google</span>}
+          </label>
+          <Field icon={<Mail size={15} />}>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              readOnly
+              disabled
+              className={`${inputClass} opacity-70 cursor-not-allowed`}
+            />
+          </Field>
+        </div>
+
+        <div className="space-y-1.5">
+          <label htmlFor="phone" className={labelClass}>
+            Telefone <span className={`${hintClass} text-muted-foreground/60`}>(com DDD)</span>
+          </label>
+          <Field icon={<Phone size={15} />}>
+            <Input
+              id="phone"
+              type="tel"
+              inputMode="numeric"
+              value={phone}
+              onChange={(e) => setPhone(formatarTelefone(e.target.value))}
+              placeholder="(11) 99999-9999"
+              maxLength={15}
+              className={inputClass}
+              required
+            />
+          </Field>
+        </div>
+
+        <div className="space-y-1.5">
+          <label htmlFor="cpf" className={labelClass}>CPF</label>
+          <Field icon={<CreditCard size={15} />}>
+            <Input
+              id="cpf"
+              inputMode="numeric"
+              value={cpf}
+              onChange={(e) => setCpf(formatarCPF(e.target.value))}
+              placeholder="000.000.000-00"
+              maxLength={14}
+              className={inputClass}
+              required
+            />
+          </Field>
           {cpf.replace(/\D/g, "").length === 11 && !cpfValido && (
             <p className="text-destructive text-xs">CPF inválido. Confira os números.</p>
           )}
@@ -122,68 +198,60 @@ export default function CompletarCadastro({ needsBirthDate, needsAddress, next }
 
         {needsBirthDate && (
           <div className="space-y-1.5">
-            <Label htmlFor="birthDate" className="text-sm text-muted-foreground">Data de nascimento</Label>
-            <Input
-              id="birthDate"
-              type="date"
-              value={birthDate}
-              onChange={(e) => setBirthDate(e.target.value)}
-              max={new Date().toISOString().split("T")[0]}
-              className={inputClass}
-              required
-            />
+            <label htmlFor="birthDate" className={labelClass}>Data de nascimento</label>
+            <Field icon={<Calendar size={15} />}>
+              <Input
+                id="birthDate"
+                inputMode="numeric"
+                value={birthDate}
+                onChange={(e) => setBirthDate(formatarDataBR(e.target.value))}
+                placeholder="DD/MM/AAAA"
+                maxLength={10}
+                className={inputClass}
+                required
+              />
+            </Field>
           </div>
         )}
 
-        {needsAddress && (
-          <>
-            <div className="pt-1">
-              <p className="text-xs font-medium text-muted-foreground">Endereço</p>
-              <p className="text-[10px] text-muted-foreground/60">Exigido para conformidade (prevenção à lavagem de dinheiro).</p>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              <div className="space-y-1.5 col-span-1">
-                <Label htmlFor="cep" className="text-sm text-muted-foreground">CEP</Label>
-                <Input id="cep" inputMode="numeric" value={cep} onChange={(e) => setCep(e.target.value)} placeholder="00000-000" className={inputClass} />
-              </div>
-              <div className="space-y-1.5 col-span-2">
-                <Label htmlFor="logradouro" className="text-sm text-muted-foreground">Logradouro</Label>
-                <Input id="logradouro" value={logradouro} onChange={(e) => setLogradouro(e.target.value)} placeholder="Rua / Avenida" className={inputClass} />
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              <div className="space-y-1.5 col-span-1">
-                <Label htmlFor="numero" className="text-sm text-muted-foreground">Número</Label>
-                <Input id="numero" value={numero} onChange={(e) => setNumero(e.target.value)} placeholder="123" className={inputClass} />
-              </div>
-              <div className="space-y-1.5 col-span-2">
-                <Label htmlFor="complemento" className="text-sm text-muted-foreground">
-                  Complemento <span className="text-muted-foreground/50 font-normal">(opcional)</span>
-                </Label>
-                <Input id="complemento" value={complemento} onChange={(e) => setComplemento(e.target.value)} placeholder="Apto 45" className={inputClass} />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="bairro" className="text-sm text-muted-foreground">Bairro</Label>
-              <Input id="bairro" value={bairro} onChange={(e) => setBairro(e.target.value)} placeholder="Centro" className={inputClass} />
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              <div className="space-y-1.5 col-span-2">
-                <Label htmlFor="cidade" className="text-sm text-muted-foreground">Cidade</Label>
-                <Input id="cidade" value={cidade} onChange={(e) => setCidade(e.target.value)} placeholder="São Paulo" className={inputClass} />
-              </div>
-              <div className="space-y-1.5 col-span-1">
-                <Label htmlFor="uf" className="text-sm text-muted-foreground">UF</Label>
-                <Input id="uf" value={uf} onChange={(e) => setUf(e.target.value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 2))} placeholder="SP" maxLength={2} className={inputClass} />
-              </div>
-            </div>
-          </>
-        )}
+        <div className="space-y-1.5">
+          <label htmlFor="refCode" className={labelClass}>
+            Código de indicação <span className={`${hintClass} text-muted-foreground/60`}>(opcional)</span>
+          </label>
+          <Field icon={<Gift size={15} className="text-pink-400" />}>
+            <Input
+              id="refCode"
+              value={refCode}
+              onChange={(e) => setRefCode(e.target.value.toUpperCase())}
+              placeholder="Digite o código de quem te indicou"
+              className={inputClass}
+            />
+          </Field>
+        </div>
+
+        <label className="flex items-start gap-2.5 text-xs text-muted-foreground cursor-pointer pt-1">
+          <input
+            type="checkbox"
+            checked={acceptedTerms}
+            onChange={(e) => setAcceptedTerms(e.target.checked)}
+            className="mt-0.5 accent-primary"
+          />
+          <span>
+            Ao me cadastrar, concordo com os{" "}
+            <Link href="/termos" target="_blank" className="text-primary hover:underline">Termos de Uso</Link>
+            {" "}e a{" "}
+            <Link href="/termos" target="_blank" className="text-primary hover:underline">Política de Privacidade</Link>.
+          </span>
+        </label>
 
         {error && <p className="text-destructive text-sm">{error}</p>}
 
-        <Button type="submit" disabled={loading || !cpf} className="w-full bg-primary text-black font-semibold hover:bg-primary/90">
-          {loading ? <Loader2 size={16} className="animate-spin" /> : "Concluir cadastro"}
+        <Button
+          type="submit"
+          disabled={loading}
+          className="w-full h-11 bg-primary text-black font-bold hover:bg-primary/90"
+        >
+          {loading ? <Loader2 size={16} className="animate-spin" /> : "Começar a prever"}
         </Button>
       </form>
     </div>

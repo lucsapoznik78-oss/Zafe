@@ -6,10 +6,28 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import {
+  Eye, EyeOff, Loader2, User, AtSign, Mail, Phone, CreditCard,
+  Calendar, Gift, Lock, Check, X,
+} from "lucide-react";
 import Link from "next/link";
 import { TERMS_VERSION } from "@/lib/terms";
 import { formatarCPF, validarCPF } from "@/lib/cpf";
+import { formatarTelefone, formatarDataBR, dataBRparaISO } from "@/lib/masks";
+
+const labelClass = "text-[11px] font-bold uppercase tracking-wider text-muted-foreground";
+const hintClass = "text-[11px] font-bold uppercase tracking-wider";
+
+function Field({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="relative">
+      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
+        {icon}
+      </span>
+      {children}
+    </div>
+  );
+}
 
 // Rate-limit client-side de login: após várias tentativas falhas, impõe um
 // cooldown crescente. Não substitui proteção server-side, mas freia força-bruta
@@ -70,13 +88,8 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
   const [phone, setPhone] = useState("");
   const [cpf, setCpf] = useState("");
   const [birthDate, setBirthDate] = useState("");
-  const [cep, setCep] = useState("");
-  const [logradouro, setLogradouro] = useState("");
-  const [numero, setNumero] = useState("");
-  const [complemento, setComplemento] = useState("");
-  const [bairro, setBairro] = useState("");
-  const [cidade, setCidade] = useState("");
-  const [uf, setUf] = useState("");
+  const [refCode, setRefCode] = useState("");
+  const [usernameStatus, setUsernameStatus] = useState<"idle" | "checking" | "free" | "taken">("idle");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -148,8 +161,32 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
         router.push(redirectTo);
       }
     } else {
-      if (!fullName || !username) {
-        setError("Preencha nome completo e nome de usuário.");
+      if (fullName.trim().length < 3) {
+        setError("Informe seu nome completo.");
+        setLoading(false);
+        return;
+      }
+      if (!/^[a-z0-9_]{3,20}$/.test(username)) {
+        setError("Nome de usuário: use de 3 a 20 caracteres (letras minúsculas, números ou _).");
+        setLoading(false);
+        return;
+      }
+      // Username único — checa de novo no submit (o onBlur é só feedback)
+      try {
+        const check = await fetch(`/api/auth/username?u=${encodeURIComponent(username)}`);
+        const { available } = await check.json();
+        if (!available) {
+          setUsernameStatus("taken");
+          setError("Este nome de usuário já está em uso. Escolha outro.");
+          setLoading(false);
+          return;
+        }
+      } catch {
+        // Se a checagem falhar, o UNIQUE do banco ainda garante a unicidade.
+      }
+      const phoneClean = phone.replace(/\D/g, "");
+      if (phoneClean.length < 10) {
+        setError("Informe um telefone válido com DDD.");
         setLoading(false);
         return;
       }
@@ -159,45 +196,34 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
         setLoading(false);
         return;
       }
-      const cepClean = cep.replace(/\D/g, "");
-      const ufClean = uf.trim().toUpperCase();
-      if (!birthDate || !cepClean || !logradouro.trim() || !numero.trim() || !bairro.trim() || !cidade.trim() || !ufClean) {
-        setError("Preencha data de nascimento e endereço completo.");
-        setLoading(false);
-        return;
-      }
-      if (cepClean.length !== 8) {
-        setError("CEP inválido — use 8 dígitos.");
-        setLoading(false);
-        return;
-      }
-      if (ufClean.length !== 2) {
-        setError("UF inválida — use a sigla de 2 letras (ex.: SP).");
+      const birthISO = dataBRparaISO(birthDate);
+      if (!birthISO) {
+        setError("Data de nascimento inválida — use DD/MM/AAAA.");
         setLoading(false);
         return;
       }
       if (!acceptedTerms) {
-        setError("Você precisa aceitar os Termos de Uso para criar a conta.");
+        setError("Você precisa concordar com os Termos de Uso para criar a conta.");
         setLoading(false);
         return;
       }
-      const phoneClean = phone.replace(/\D/g, "");
+
+      // Código de indicação: vai num cookie (mesmo canal do link /r/[code]);
+      // o ReferralActivator registra no primeiro acesso logado.
+      if (refCode.trim()) {
+        document.cookie = `zafe_ref=${refCode.trim().toUpperCase()}; max-age=${60 * 60 * 24 * 7}; path=/; samesite=lax`;
+      }
+
       const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
-            full_name: fullName,
+            full_name: fullName.trim(),
             username,
+            phone: phoneClean,
             cpf: cpfClean,
-            birth_date: birthDate,
-            cep: cepClean,
-            logradouro: logradouro.trim(),
-            numero: numero.trim(),
-            complemento: complemento.trim(),
-            bairro: bairro.trim(),
-            cidade: cidade.trim(),
-            uf: ufClean,
+            birth_date: birthISO,
             terms_version: TERMS_VERSION,
           },
         },
@@ -207,17 +233,24 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
         setLoading(false);
         return;
       }
-      // Salva telefone no perfil se fornecido
-      if (phoneClean) {
-        // O trigger cria o perfil; atualizamos o phone logo após signup
-        const { data: { user: newUser } } = await supabase.auth.getUser();
-        if (newUser) {
-          await supabase.from("profiles").update({ phone: phoneClean }).eq("id", newUser.id);
-        }
-      }
       setSuccess("Conta criada! Enviamos um link de confirmação para seu email — confira também a caixa de spam.");
     }
     setLoading(false);
+  }
+
+  async function checarUsername() {
+    if (!/^[a-z0-9_]{3,20}$/.test(username)) {
+      setUsernameStatus("idle");
+      return;
+    }
+    setUsernameStatus("checking");
+    try {
+      const res = await fetch(`/api/auth/username?u=${encodeURIComponent(username)}`);
+      const data = await res.json();
+      setUsernameStatus(data.available ? "free" : "taken");
+    } catch {
+      setUsernameStatus("idle");
+    }
   }
 
   async function handleResendConfirmation() {
@@ -407,6 +440,54 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
     </button>
   );
 
+  const iconInputClass = `${inputFocusClass} pl-10 h-11`;
+
+  // Email e senha aparecem nos dois modos, mas em posições diferentes do form
+  // de cadastro (entre username e telefone, como no fluxo do Google).
+  const emailField = (
+    <div className="space-y-1.5">
+      <label htmlFor="email" className={labelClass}>E-mail</label>
+      <Field icon={<Mail size={15} />}>
+        <Input
+          id="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="voce@email.com"
+          className={iconInputClass}
+          required
+        />
+      </Field>
+    </div>
+  );
+
+  const passwordField = (
+    <div className="space-y-1.5">
+      <label htmlFor="password" className={labelClass}>Senha</label>
+      <div className="relative">
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
+          <Lock size={15} />
+        </span>
+        <Input
+          id="password"
+          type={showPass ? "text" : "password"}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="••••••••"
+          className={`${iconInputClass} pr-10`}
+          required
+        />
+        <button
+          type="button"
+          onClick={() => setShowPass(!showPass)}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white"
+        >
+          {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+        </button>
+      </div>
+    </div>
+  );
+
   // ── Tela principal ───────────────────────────────────────────────
   return (
     <div className={cardClass}>
@@ -447,200 +528,139 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
         {mode === "cadastro" && (
           <>
             <div className="space-y-1.5">
-              <Label htmlFor="fullName" className="text-sm text-muted-foreground">Nome completo</Label>
-              <Input
-                id="fullName"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="João Silva"
-                className={inputFocusClass}
-              />
+              <label htmlFor="fullName" className={labelClass}>Nome completo</label>
+              <Field icon={<User size={15} />}>
+                <Input
+                  id="fullName"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Seu nome"
+                  className={iconInputClass}
+                  required
+                />
+              </Field>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="username" className="text-sm text-muted-foreground">Nome de usuário</Label>
-              <Input
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s/g, ""))}
-                placeholder="joaosilva"
-                className={inputFocusClass}
-              />
+              <label htmlFor="username" className={labelClass}>Nome de usuário</label>
+              <Field icon={<AtSign size={15} />}>
+                <Input
+                  id="username"
+                  value={username}
+                  onChange={(e) => {
+                    setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 20));
+                    setUsernameStatus("idle");
+                  }}
+                  onBlur={checarUsername}
+                  placeholder="seunome"
+                  className={iconInputClass}
+                  required
+                />
+              </Field>
+              {usernameStatus === "checking" && (
+                <p className="text-muted-foreground text-xs flex items-center gap-1">
+                  <Loader2 size={11} className="animate-spin" /> verificando…
+                </p>
+              )}
+              {usernameStatus === "free" && (
+                <p className="text-primary text-xs flex items-center gap-1">
+                  <Check size={11} /> disponível
+                </p>
+              )}
+              {usernameStatus === "taken" && (
+                <p className="text-destructive text-xs flex items-center gap-1">
+                  <X size={11} /> já está em uso — escolha outro
+                </p>
+              )}
+            </div>
+          </>
+        )}
+
+        {emailField}
+        {passwordField}
+
+        {mode === "cadastro" && (
+          <>
+            <div className="space-y-1.5">
+              <label htmlFor="phone" className={labelClass}>
+                Telefone <span className={`${hintClass} text-muted-foreground/60`}>(com DDD)</span>
+              </label>
+              <Field icon={<Phone size={15} />}>
+                <Input
+                  id="phone"
+                  type="tel"
+                  inputMode="numeric"
+                  value={phone}
+                  onChange={(e) => setPhone(formatarTelefone(e.target.value))}
+                  placeholder="(11) 99999-9999"
+                  maxLength={15}
+                  className={iconInputClass}
+                  required
+                />
+              </Field>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="phone" className="text-sm text-muted-foreground">
-                Celular <span className="text-muted-foreground/50 font-normal">(opcional — para verificação em 2 etapas)</span>
-              </Label>
-              <Input
-                id="phone"
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="(11) 99999-9999"
-                className={inputFocusClass}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="birthDate" className="text-sm text-muted-foreground">Data de nascimento</Label>
-              <Input
-                id="birthDate"
-                type="date"
-                value={birthDate}
-                onChange={(e) => setBirthDate(e.target.value)}
-                className={inputFocusClass}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="cpf" className="text-sm text-muted-foreground">CPF</Label>
-              <Input
-                id="cpf"
-                type="text"
-                inputMode="numeric"
-                value={cpf}
-                onChange={(e) => setCpf(formatarCPF(e.target.value))}
-                placeholder="000.000.000-00"
-                maxLength={14}
-                className={inputFocusClass}
-              />
+              <label htmlFor="cpf" className={labelClass}>CPF</label>
+              <Field icon={<CreditCard size={15} />}>
+                <Input
+                  id="cpf"
+                  inputMode="numeric"
+                  value={cpf}
+                  onChange={(e) => setCpf(formatarCPF(e.target.value))}
+                  placeholder="000.000.000-00"
+                  maxLength={14}
+                  className={iconInputClass}
+                  required
+                />
+              </Field>
               {cpf.replace(/\D/g, "").length === 11 && !validarCPF(cpf) && (
                 <p className="text-destructive text-xs">CPF inválido. Confira os números.</p>
               )}
             </div>
-            <div className="pt-1">
-              <p className="text-xs font-medium text-muted-foreground">Endereço</p>
-              <p className="text-[10px] text-muted-foreground/60">Exigido para conformidade (prevenção à lavagem de dinheiro).</p>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              <div className="space-y-1.5 col-span-1">
-                <Label htmlFor="cep" className="text-sm text-muted-foreground">CEP</Label>
+            <div className="space-y-1.5">
+              <label htmlFor="birthDate" className={labelClass}>Data de nascimento</label>
+              <Field icon={<Calendar size={15} />}>
                 <Input
-                  id="cep"
+                  id="birthDate"
                   inputMode="numeric"
-                  value={cep}
-                  onChange={(e) => setCep(e.target.value)}
-                  placeholder="00000-000"
-                  className={inputFocusClass}
+                  value={birthDate}
+                  onChange={(e) => setBirthDate(formatarDataBR(e.target.value))}
+                  placeholder="DD/MM/AAAA"
+                  maxLength={10}
+                  className={iconInputClass}
+                  required
                 />
-              </div>
-              <div className="space-y-1.5 col-span-2">
-                <Label htmlFor="logradouro" className="text-sm text-muted-foreground">Logradouro</Label>
-                <Input
-                  id="logradouro"
-                  value={logradouro}
-                  onChange={(e) => setLogradouro(e.target.value)}
-                  placeholder="Rua / Avenida"
-                  className={inputFocusClass}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              <div className="space-y-1.5 col-span-1">
-                <Label htmlFor="numero" className="text-sm text-muted-foreground">Número</Label>
-                <Input
-                  id="numero"
-                  value={numero}
-                  onChange={(e) => setNumero(e.target.value)}
-                  placeholder="123"
-                  className={inputFocusClass}
-                />
-              </div>
-              <div className="space-y-1.5 col-span-2">
-                <Label htmlFor="complemento" className="text-sm text-muted-foreground">
-                  Complemento <span className="text-muted-foreground/50 font-normal">(opcional)</span>
-                </Label>
-                <Input
-                  id="complemento"
-                  value={complemento}
-                  onChange={(e) => setComplemento(e.target.value)}
-                  placeholder="Apto 45"
-                  className={inputFocusClass}
-                />
-              </div>
+              </Field>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="bairro" className="text-sm text-muted-foreground">Bairro</Label>
-              <Input
-                id="bairro"
-                value={bairro}
-                onChange={(e) => setBairro(e.target.value)}
-                placeholder="Centro"
-                className={inputFocusClass}
-              />
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              <div className="space-y-1.5 col-span-2">
-                <Label htmlFor="cidade" className="text-sm text-muted-foreground">Cidade</Label>
+              <label htmlFor="refCode" className={labelClass}>
+                Código de indicação <span className={`${hintClass} text-muted-foreground/60`}>(opcional)</span>
+              </label>
+              <Field icon={<Gift size={15} className="text-pink-400" />}>
                 <Input
-                  id="cidade"
-                  value={cidade}
-                  onChange={(e) => setCidade(e.target.value)}
-                  placeholder="São Paulo"
-                  className={inputFocusClass}
+                  id="refCode"
+                  value={refCode}
+                  onChange={(e) => setRefCode(e.target.value.toUpperCase())}
+                  placeholder="Digite o código de quem te indicou"
+                  className={iconInputClass}
                 />
-              </div>
-              <div className="space-y-1.5 col-span-1">
-                <Label htmlFor="uf" className="text-sm text-muted-foreground">UF</Label>
-                <Input
-                  id="uf"
-                  value={uf}
-                  onChange={(e) => setUf(e.target.value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 2))}
-                  placeholder="SP"
-                  maxLength={2}
-                  className={inputFocusClass}
-                />
-              </div>
+              </Field>
             </div>
-            <label className="flex items-start gap-2 text-xs text-muted-foreground cursor-pointer">
+            <label className="flex items-start gap-2.5 text-xs text-muted-foreground cursor-pointer pt-1">
               <input
                 type="checkbox"
                 checked={acceptedTerms}
                 onChange={(e) => setAcceptedTerms(e.target.checked)}
-                className="mt-0.5 accent-violet-500"
+                className="mt-0.5 accent-primary"
               />
               <span>
-                Tenho 18 anos ou mais e li e aceito os{" "}
-                <Link href="/termos" target="_blank" className="text-violet-300 hover:underline">
-                  Termos de Uso
-                </Link>
-                .
+                Ao me cadastrar, concordo com os{" "}
+                <Link href="/termos" target="_blank" className="text-primary hover:underline">Termos de Uso</Link>
+                {" "}e a{" "}
+                <Link href="/termos" target="_blank" className="text-primary hover:underline">Política de Privacidade</Link>.
               </span>
             </label>
           </>
         )}
-
-        <div className="space-y-1.5">
-          <Label htmlFor="email" className="text-sm text-muted-foreground">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="voce@email.com"
-            className={inputFocusClass}
-            required
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="password" className="text-sm text-muted-foreground">Senha</Label>
-          <div className="relative">
-            <Input
-              id="password"
-              type={showPass ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className={`${inputFocusClass} pr-10`}
-              required
-            />
-            <button
-              type="button"
-              onClick={() => setShowPass(!showPass)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white"
-            >
-              {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
-            </button>
-          </div>
-        </div>
 
         {error && <p className="text-destructive text-sm">{error}</p>}
         {success && <p className={successClass}>{success}</p>}
