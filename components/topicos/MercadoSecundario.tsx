@@ -7,6 +7,7 @@ import {
   ChevronDown, Info, RefreshCw,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import { playConfirm } from "@/lib/sound";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -300,6 +301,7 @@ export default function MercadoSecundario({ topicId, apiBase, isActive, userBets
         ? `Parcialmente executada: ${qty(filled)} — restante no livro`
         : "Ordem registrada no livro de ofertas";
     setFormMsg({ type: "ok", text: msg });
+    playConfirm();
     setQuantity("");
     setPrice("");
     setSourceBetId("");

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Trophy } from "lucide-react";
+import { playConfirm } from "@/lib/sound";
 import type { BetSide } from "@/types/database";
 
 interface Outcome {
@@ -87,6 +88,7 @@ export default function ConcursoBetForm({
       setError(data.error ?? "Erro ao registrar palpite");
     } else {
       setSuccess(`Palpite registrado! Retorno estimado: Z$ ${(amountNum * (data.estimated_odds ?? 1)).toFixed(2)}`);
+      playConfirm();
       setAmount("");
       router.refresh();
     }

@@ -7,6 +7,7 @@ import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { CopaMatch, CopaPrediction } from "@/lib/copa/types";
 import { isKnockout } from "@/lib/copa/types";
+import { playConfirm } from "@/lib/sound";
 
 interface Props {
   match: CopaMatch;
@@ -57,6 +58,7 @@ export default function PredictionForm({ match, prediction }: Props) {
         return;
       }
       setSaved(true);
+      playConfirm();
       router.refresh();
     } catch {
       setError("Falha de rede — tente novamente");

@@ -3,7 +3,7 @@
 //
 // Regras:
 // - SFX ligados por padrão (mutável no SoundMenu do Navbar)
-// - Música ambiente DESLIGADA por padrão (opt-in), arquivo em /public/audio/zafe-ambient.mp3
+// - Música ambiente DESLIGADA por padrão (opt-in), 100% sintetizada em lib/ambient.ts
 // - Nunca toca nada se o AudioContext não estiver liberado por gesto do usuário
 //   (política de autoplay dos browsers)
 
@@ -31,7 +31,8 @@ export function setMusicEnabled(on: boolean) {
   localStorage.setItem(MUSIC_KEY, on ? "on" : "off");
 }
 
-function getCtx(): AudioContext | null {
+/** AudioContext compartilhado entre SFX e a música ambiente gerada */
+export function getAudioContext(): AudioContext | null {
   if (typeof window === "undefined") return null;
   const AC =
     window.AudioContext ??
@@ -40,6 +41,8 @@ function getCtx(): AudioContext | null {
   if (!ctx) ctx = new AC();
   return ctx;
 }
+
+const getCtx = getAudioContext;
 
 /**
  * Libera o AudioContext no primeiro gesto do usuário (click/touch/tecla).

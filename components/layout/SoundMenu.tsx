@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Volume2, VolumeX, Music, Sparkles, Check } from "lucide-react";
 import {
   DropdownMenu,
@@ -15,84 +15,49 @@ import {
   setSfxEnabled,
   unlockAudioOnGesture,
 } from "@/lib/sound";
-
-const AMBIENT_SRC = "/audio/zafe-ambient.mp3";
-const AMBIENT_VOLUME = 0.22;
-const FADE_MS = 2000;
+import { startAmbient, stopAmbient } from "@/lib/ambient";
 
 export default function SoundMenu() {
   const [music, setMusic] = useState(false);
   const [sfx, setSfx] = useState(true);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const fadeRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Preferências só existem no client — lê após montar (evita mismatch de hydration)
+  // Preferências só existem no client — lê após montar (evita mismatch de hydration).
   useEffect(() => {
     setMusic(musicEnabled());
     setSfx(sfxEnabled());
     unlockAudioOnGesture();
+
+    // Autoplay é bloqueado sem gesto: se a música estava ligada, retoma no
+    // primeiro clique/toque da sessão.
+    function resume() {
+      if (musicEnabled()) startAmbient();
+    }
+    window.addEventListener("pointerdown", resume, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", resume);
+      stopAmbient();
+    };
   }, []);
-
-  function stopFade() {
-    if (fadeRef.current) {
-      clearInterval(fadeRef.current);
-      fadeRef.current = null;
-    }
-  }
-
-  function fadeIn(audio: HTMLAudioElement) {
-    stopFade();
-    audio.volume = 0;
-    const step = AMBIENT_VOLUME / (FADE_MS / 100);
-    fadeRef.current = setInterval(() => {
-      audio.volume = Math.min(AMBIENT_VOLUME, audio.volume + step);
-      if (audio.volume >= AMBIENT_VOLUME) stopFade();
-    }, 100);
-  }
-
-  function startMusic() {
-    let audio = audioRef.current;
-    if (!audio) {
-      audio = new Audio(AMBIENT_SRC);
-      audio.loop = true;
-      audio.addEventListener("error", () => {
-        // Arquivo ausente — falha silenciosa (dev: adicione public/audio/zafe-ambient.mp3)
-        console.warn("[zafe] música ambiente indisponível:", AMBIENT_SRC);
-      });
-      audioRef.current = audio;
-    }
-    audio.play().then(() => fadeIn(audio!)).catch(() => {});
-  }
-
-  function stopMusic() {
-    stopFade();
-    audioRef.current?.pause();
-  }
 
   // Pausa quando a aba perde o foco, retoma ao voltar
   useEffect(() => {
     function onVisibility() {
-      if (!audioRef.current) return;
       if (document.hidden) {
-        audioRef.current.pause();
+        stopAmbient();
       } else if (musicEnabled()) {
-        audioRef.current.play().catch(() => {});
+        startAmbient();
       }
     }
     document.addEventListener("visibilitychange", onVisibility);
-    return () => {
-      document.removeEventListener("visibilitychange", onVisibility);
-      stopFade();
-      audioRef.current?.pause();
-    };
+    return () => document.removeEventListener("visibilitychange", onVisibility);
   }, []);
 
   function toggleMusic() {
     const next = !music;
     setMusic(next);
     setMusicEnabled(next);
-    if (next) startMusic();
-    else stopMusic();
+    if (next) startAmbient();
+    else stopAmbient();
   }
 
   function toggleSfx() {

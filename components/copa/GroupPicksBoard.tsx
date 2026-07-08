@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Check, Loader2, Lock, Shuffle } from "lucide-react";
+import { playConfirm } from "@/lib/sound";
 
 // Matriz de palpites de classificação: para cada grupo, o usuário marca
 // quem termina em 1º, 2º e 3º (estilo cartela de bolão). Linhas ganham a
@@ -91,6 +92,7 @@ export default function GroupPicksBoard({ groups, initialPicks, isParticipant }:
         setErrors((prev) => ({ ...prev, [group.name]: data?.error ?? "Erro ao salvar" }));
       } else {
         setSaved((prev) => ({ ...prev, [group.name]: true }));
+        playConfirm();
       }
     } catch {
       setErrors((prev) => ({ ...prev, [group.name]: "Erro de conexão" }));

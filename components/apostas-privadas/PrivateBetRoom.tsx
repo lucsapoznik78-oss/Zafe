@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Clock, Users, Shield, Vote, CheckCircle } from "lucide-react";
+import { playConfirm } from "@/lib/sound";
 
 const PHASE_LABELS: Record<string, { label: string; step: number }> = {
   recruiting:         { label: "Recrutando participantes", step: 1 },
@@ -348,7 +349,8 @@ function AcceitarConvite({ topicId, minBet, onRefresh }: any) {
 
   async function aceitar() {
     setLoading(true);
-    await fetch(`/api/apostas-privadas/${topicId}/aceitar`, { method: "POST" });
+    const res = await fetch(`/api/apostas-privadas/${topicId}/aceitar`, { method: "POST" });
+    if (res.ok) playConfirm();
     setLoading(false);
     onRefresh();
   }

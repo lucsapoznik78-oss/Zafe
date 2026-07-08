@@ -7,6 +7,7 @@ import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { GamesEvent, GamesPrediction, GamesSide } from "@/lib/games/types";
 import { gameDisplayName } from "@/lib/games/types";
+import { playConfirm } from "@/lib/sound";
 
 interface Props {
   event: GamesEvent;
@@ -76,6 +77,7 @@ export default function EventCard({ event, prediction, isAuthed, currentUserId }
         return;
       }
       setSaved(true);
+      playConfirm();
       router.refresh();
     } catch {
       setError("Falha de rede — tente novamente");

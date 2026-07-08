@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
+import { playConfirm } from "@/lib/sound";
 import { Loader2, Wallet } from "lucide-react";
 
 interface CommunityBetFormProps {
@@ -48,6 +49,7 @@ export default function CommunityBetForm({ eventId, totalSim, totalNao, isClosed
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Erro"); return; }
       setSuccess("Palpite registrado!");
+      playConfirm();
       setAmount("");
       router.refresh();
     } catch { setError("Erro de rede"); } finally { setLoading(false); }
