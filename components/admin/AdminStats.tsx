@@ -16,9 +16,10 @@ interface Props {
   totalBets: number;
   volumeTotal: number;
   activeUsers30d: number;
+  concursoUsers: number;
 }
 
-export default function AdminStats({ passiveTotal, walletBalance, betsLocked, pendingCount, toResolveCount, totalUsers, newUsersWeek, totalBets, volumeTotal, activeUsers30d }: Props) {
+export default function AdminStats({ passiveTotal, walletBalance, betsLocked, pendingCount, toResolveCount, totalUsers, newUsersWeek, totalBets, volumeTotal, activeUsers30d, concursoUsers }: Props) {
   const router = useRouter();
   const [cronLoading, setCronLoading] = useState(false);
   const [cronResult, setCronResult] = useState("");
@@ -74,8 +75,13 @@ export default function AdminStats({ passiveTotal, walletBalance, betsLocked, pe
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="bg-card border border-border rounded-xl p-4">
           <div className="mb-2 text-primary"><Users size={18} /></div>
-          <p className="text-2xl font-bold text-white">{totalUsers.toLocaleString("pt-BR")}</p>
-          <p className="text-xs text-muted-foreground mt-1">Usuários cadastrados</p>
+          <p className="text-2xl font-bold text-white">
+            {totalUsers.toLocaleString("pt-BR")}
+            <span className="text-base font-bold text-yellow-400 ml-2">· {concursoUsers.toLocaleString("pt-BR")}</span>
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Usuários cadastrados <span className="text-yellow-400">· no concurso</span>
+          </p>
           <p className="text-[10px] text-sim mt-0.5">+{newUsersWeek} essa semana</p>
         </div>
         <div className="bg-card border border-border rounded-xl p-4">

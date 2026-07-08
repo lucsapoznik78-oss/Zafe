@@ -153,6 +153,7 @@ export default async function AdminPage() {
         totalBets={totalBets ?? 0}
         volumeTotal={volumeTotal}
         activeUsers30d={activeUsers30d ?? 0}
+        concursoUsers={concursoParticipantes.length}
       />
       <AdminQueue topics={pending ?? []} />
       <AdminResolve topics={[]} allResolving={resolvingWithOutcomes} />
