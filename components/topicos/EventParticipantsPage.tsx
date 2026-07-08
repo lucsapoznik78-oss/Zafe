@@ -253,7 +253,7 @@ export async function EventParticipantsPage({
           </span>
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-white leading-snug">Participantes</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-white leading-snug">Participantes</h1>
           <p className="text-sm text-muted-foreground mt-1">{topic.title}</p>
         </div>
       </div>

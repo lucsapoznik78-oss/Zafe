@@ -128,7 +128,7 @@ export default async function LigaPage({ searchParams }: PageProps) {
   return (
     <div className="py-6 space-y-5">
       <div>
-        <h1 className="text-2xl font-bold text-white">Liga</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-white">Liga</h1>
         <p className="text-muted-foreground text-sm mt-0.5">Faça seus palpites e suba no ranking</p>
       </div>
 

@@ -2,7 +2,7 @@ export default function TermosPage() {
   return (
     <div className="py-8 max-w-2xl mx-auto space-y-8 text-sm text-muted-foreground">
       <div>
-        <h1 className="text-2xl font-bold text-white mb-1">Termos de Uso e Política de Privacidade</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-white mb-1">Termos de Uso e Política de Privacidade</h1>
         <p className="text-xs">Última atualização: maio de 2026</p>
       </div>
 

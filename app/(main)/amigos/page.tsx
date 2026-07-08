@@ -98,7 +98,7 @@ export default async function AmigosPage({ searchParams }: PageProps) {
   return (
     <div className="py-6 max-w-2xl mx-auto space-y-0">
       <div className="mb-5">
-        <h1 className="text-2xl font-bold text-white">Amigos</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-white">Amigos</h1>
         <p className="text-muted-foreground text-sm mt-0.5">Invista contra ou junto com seus amigos</p>
       </div>
 

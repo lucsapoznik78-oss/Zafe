@@ -156,7 +156,7 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
       </div>
 
       {/* Título */}
-      <h1 className="text-2xl font-bold text-white leading-snug mb-4">{topic.title}</h1>
+      <h1 className="text-xl sm:text-2xl font-bold text-white leading-snug mb-4">{topic.title}</h1>
 
       {/* Banner resultado próprio (ganhou/perdeu) */}
       {finalizedBets.length > 0 && (
@@ -181,8 +181,8 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
         const colorClass = topic.winning_outcome_id ? "bg-primary/10 border-primary/30" : isSim ? "bg-sim/10 border-sim/30" : "bg-nao/10 border-nao/30";
         const textClass = topic.winning_outcome_id ? "text-primary" : isSim ? "text-sim" : "text-nao";
         return (
-          <div className={`flex items-center gap-3 rounded-xl px-5 py-4 mb-6 border ${colorClass}`}>
-            <span className={`text-2xl font-black ${textClass} max-w-[180px] truncate`}>{winningLabel}</span>
+          <div className={`flex items-center gap-3 rounded-xl px-4 py-3 sm:px-5 sm:py-4 mb-6 border ${colorClass}`}>
+            <span className={`text-xl sm:text-2xl font-black ${textClass} max-w-[110px] sm:max-w-[180px] truncate`}>{winningLabel}</span>
             <div className="flex-1">
               <p className={`text-sm font-bold ${textClass}`}>
                 {topic.winning_outcome_id ? `${winningLabel} venceu` : `${winningLabel} venceu`}
@@ -201,6 +201,30 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
         );
       })()}
 
+      {/* Palpite primeiro no mobile (no desktop fica na sidebar) */}
+      <div className="lg:hidden mb-5">
+        {isMulti ? (
+          <MultiOutcomeBetForm
+            topicId={topicId}
+            minBet={topic.min_bet}
+            outcomes={(topicOutcomes ?? []).map((o: any) => ({ id: o.id, label: o.label, pool: Number(o.pool) }))}
+            isClosed={isClosed}
+            userBalance={userBalance}
+          />
+        ) : (
+          <BetForm
+            topicId={topicId}
+            minBet={topic.min_bet}
+            totalSim={totalSim}
+            totalNao={totalNao}
+            isClosed={isClosed}
+            userBalance={userBalance}
+            initialSide={initialSide as "sim" | "nao" | undefined}
+            pilar="liga"
+          />
+        )}
+      </div>
+
       {/* Layout principal */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
@@ -208,7 +232,7 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
         <div className="lg:col-span-2 space-y-5">
 
           {/* Card principal: stats ao vivo + gráfico */}
-          <div className="bg-card border border-border rounded-xl p-5 space-y-5">
+          <div className="bg-card border border-border rounded-xl p-4 sm:p-5 space-y-5">
 
             {/* Stats ao vivo */}
             <LiveStats
@@ -225,10 +249,10 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
               const totalPool = outcomes.reduce((s: number, o: any) => s + Number(o.pool), 0);
               return (
                 <div>
-                  <div className="grid grid-cols-3 text-[11px] text-muted-foreground pb-2 border-b border-border">
+                  <div className="grid grid-cols-[1.2fr_0.9fr_0.9fr] sm:grid-cols-3 text-[11px] text-muted-foreground pb-2 border-b border-border">
                     <span>Resultado</span>
                     <span className="text-center">Retorno</span>
-                    <span className="text-center">Probabilidade</span>
+                    <span className="text-center"><span className="sm:hidden">Prob.</span><span className="hidden sm:inline">Probabilidade</span></span>
                   </div>
                   {outcomes.map((o: any, i: number) => {
                     const pool = Number(o.pool);
@@ -236,7 +260,7 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
                     const odds = pool > 0 && totalPool > 0 ? totalPool / pool : null;
                     const isWinner = topic.status === "resolved" && topic.winning_outcome_id === o.id;
                     return (
-                      <div key={o.id} className={`grid grid-cols-3 items-center py-3 ${i < outcomes.length - 1 ? "border-b border-border/40" : ""}`}>
+                      <div key={o.id} className={`grid grid-cols-[1.2fr_0.9fr_0.9fr] sm:grid-cols-3 items-center py-3 ${i < outcomes.length - 1 ? "border-b border-border/40" : ""}`}>
                         <div className="flex flex-col gap-1">
                           {isWinner && <div className="h-[3px] w-8 rounded-full bg-primary" />}
                           <span className={`font-semibold text-sm ${isWinner ? "text-primary" : "text-white"}`}>{o.label}</span>
@@ -262,14 +286,14 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
               );
             })() : (
             <div>
-              <div className="grid grid-cols-3 text-[11px] text-muted-foreground pb-2 border-b border-border">
+              <div className="grid grid-cols-[1.2fr_0.9fr_0.9fr] sm:grid-cols-3 text-[11px] text-muted-foreground pb-2 border-b border-border">
                 <span>Previsão</span>
                 <span className="text-center">Retorno</span>
-                <span className="text-center">Probabilidade</span>
+                <span className="text-center"><span className="sm:hidden">Prob.</span><span className="hidden sm:inline">Probabilidade</span></span>
               </div>
 
               {/* Linha SIM */}
-              <div className="grid grid-cols-3 items-center py-3 border-b border-border/40">
+              <div className="grid grid-cols-[1.2fr_0.9fr_0.9fr] sm:grid-cols-3 items-center py-3 border-b border-border/40">
                 <div className="flex flex-col gap-1">
                   <div className="h-[3px] w-8 rounded-full bg-sim" />
                   <span className="text-white font-semibold text-sm">SIM</span>
@@ -291,7 +315,7 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
               </div>
 
               {/* Linha NÃO */}
-              <div className="grid grid-cols-3 items-center py-3">
+              <div className="grid grid-cols-[1.2fr_0.9fr_0.9fr] sm:grid-cols-3 items-center py-3">
                 <div className="flex flex-col gap-1">
                   <div className="h-[3px] w-8 rounded-full bg-nao" />
                   <span className="text-white font-semibold text-sm">NÃO</span>
@@ -374,26 +398,28 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
 
         {/* Sidebar (1/3) */}
         <div className="space-y-4">
-          {isMulti ? (
-            <MultiOutcomeBetForm
-              topicId={topicId}
-              minBet={topic.min_bet}
-              outcomes={(topicOutcomes ?? []).map((o: any) => ({ id: o.id, label: o.label, pool: Number(o.pool) }))}
-              isClosed={isClosed}
-              userBalance={userBalance}
-            />
-          ) : (
-            <BetForm
-              topicId={topicId}
-              minBet={topic.min_bet}
-              totalSim={totalSim}
-              totalNao={totalNao}
-              isClosed={isClosed}
-              userBalance={userBalance}
-              initialSide={initialSide as "sim" | "nao" | undefined}
-              pilar="liga"
-            />
-          )}
+          <div className="hidden lg:block">
+            {isMulti ? (
+              <MultiOutcomeBetForm
+                topicId={topicId}
+                minBet={topic.min_bet}
+                outcomes={(topicOutcomes ?? []).map((o: any) => ({ id: o.id, label: o.label, pool: Number(o.pool) }))}
+                isClosed={isClosed}
+                userBalance={userBalance}
+              />
+            ) : (
+              <BetForm
+                topicId={topicId}
+                minBet={topic.min_bet}
+                totalSim={totalSim}
+                totalNao={totalNao}
+                isClosed={isClosed}
+                userBalance={userBalance}
+                initialSide={initialSide as "sim" | "nao" | undefined}
+                pilar="liga"
+              />
+            )}
+          </div>
 
           <MercadoSecundario
             topicId={topicId}

@@ -20,7 +20,7 @@ export default async function CriarGameEventPage() {
   return (
     <div className="py-6 space-y-5 max-w-lg mx-auto">
       <div>
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+        <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
           <Gamepad2 size={22} className="text-violet-400" /> Criar evento
         </h1>
         <p className="text-muted-foreground text-sm mt-0.5">

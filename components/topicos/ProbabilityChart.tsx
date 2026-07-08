@@ -297,7 +297,7 @@ export default function ProbabilityChart({ topicId, chartUrl, marketType = "bina
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`px-2.5 py-1 rounded text-xs font-semibold transition-colors ${
+              className={`px-3 py-1.5 sm:px-2.5 sm:py-1 rounded text-xs font-semibold transition-colors ${
                 filter === f ? "bg-primary text-black" : "text-muted-foreground hover:text-white"
               }`}
             >
@@ -395,7 +395,7 @@ export default function ProbabilityChart({ topicId, chartUrl, marketType = "bina
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`px-2.5 py-1 rounded text-xs font-semibold transition-colors ${
+            className={`px-3 py-1.5 sm:px-2.5 sm:py-1 rounded text-xs font-semibold transition-colors ${
               filter === f
                 ? "bg-primary text-black"
                 : "text-muted-foreground hover:text-white"

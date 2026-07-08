@@ -14,7 +14,7 @@ export default async function AdminUsuariosPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
       <div>
-        <h1 className="text-2xl font-black text-white">Usuários</h1>
+        <h1 className="text-xl sm:text-2xl font-black text-white">Usuários</h1>
         <p className="text-sm text-muted-foreground">
           Carteiras, suspensão de contas, ajustes manuais de Z$ e monitoramento de
           jogo responsável (tempo de uso por semana, pausa e autoexclusão).

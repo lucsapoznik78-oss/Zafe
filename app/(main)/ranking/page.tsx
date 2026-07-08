@@ -117,7 +117,7 @@ export default async function RankingPage({ searchParams }: PageProps) {
   return (
     <div className="py-6 max-w-3xl mx-auto space-y-5">
       <div>
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+        <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
           <Trophy size={22} className="text-primary" />
           Ranking de Preditores
         </h1>

@@ -64,7 +64,7 @@ export default async function HistoricoPage() {
             <CheckCircle2 size={12} />
             Transparência total
           </div>
-          <h1 className="text-3xl font-bold text-white">Histórico de Resoluções</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Histórico de Resoluções</h1>
           <p className="text-muted-foreground max-w-md mx-auto">
             Todos os eventos resolvidos na Zafe. Resultado público, auditável por qualquer pessoa.
           </p>

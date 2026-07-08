@@ -68,10 +68,11 @@ export default function PushSetup() {
     <button
       onClick={handleEnable}
       disabled={loading}
-      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors disabled:opacity-50"
+      className="flex items-center gap-2 p-2 sm:px-3 sm:py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors disabled:opacity-50"
+      title="Ativar notificações"
     >
       <Bell size={13} />
-      Ativar notificações
+      <span className="hidden sm:inline">Ativar notificações</span>
     </button>
   );
 }

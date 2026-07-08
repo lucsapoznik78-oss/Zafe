@@ -99,13 +99,15 @@ export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed,
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-white">Fazer Palpite</h3>
         {/* Saldo do usuário */}
-        <div className="relative group flex items-center gap-1 text-xs text-muted-foreground cursor-default">
-          <Wallet size={11} />
-          <span className={insufficientBalance && amountNum > 0 ? "text-destructive font-semibold" : ""}>
-            {formatCurrency(userBalance)}
-          </span>
-          <span className="text-[9px] text-muted-foreground/50 border border-muted-foreground/30 rounded px-0.5">virtual</span>
-          <div className="pointer-events-none absolute right-0 top-full mt-1.5 w-52 rounded-lg border border-border bg-card px-3 py-2 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-50">
+        <div className="relative group">
+          <button type="button" className="flex items-center gap-1 text-xs text-muted-foreground cursor-default">
+            <Wallet size={11} />
+            <span className={insufficientBalance && amountNum > 0 ? "text-destructive font-semibold" : ""}>
+              {formatCurrency(userBalance)}
+            </span>
+            <span className="text-[9px] text-muted-foreground/50 border border-muted-foreground/30 rounded px-0.5">virtual</span>
+          </button>
+          <div className="pointer-events-none absolute right-0 top-full mt-1.5 w-52 rounded-lg border border-border bg-card px-3 py-2 shadow-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50">
             <p className="text-[11px] text-muted-foreground leading-relaxed">
               Z$ é a moeda virtual da Zafe. <span className="text-white font-medium">Sem valor monetário real</span> e não convertível em dinheiro.
             </p>

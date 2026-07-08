@@ -69,8 +69,8 @@ export default function Navbar() {
   const premium = isPremium(profile);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 h-14 border-b border-border bg-black/90 backdrop-blur-sm">
-      <div className="flex items-center justify-between h-full px-4 max-w-7xl mx-auto">
+    <header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-black/90 backdrop-blur-sm pt-[env(safe-area-inset-top)]">
+      <div className="flex items-center justify-between h-14 px-3 sm:px-4 max-w-7xl mx-auto">
         <Link href="/inicio" className="flex items-center gap-2">
           <img src="/zafe-logo-full.png" alt="Zafe" className="h-8 hidden sm:block" />
           <img src="/zafe-icon.png" alt="Zafe" className="h-8 w-8 sm:hidden rounded" />
@@ -99,25 +99,25 @@ export default function Navbar() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3">
           {/* Porta do mundo PAGO — destacada, separada da zona grátis */}
           <Link
             href="/concurso"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-yellow-400 text-black text-sm font-bold hover:bg-yellow-300 transition-colors"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md bg-yellow-400 text-black text-sm font-bold hover:bg-yellow-300 transition-colors"
           >
             <Trophy size={14} />
             <span>Concurso</span>
             <span className="hidden lg:inline font-semibold text-black/70">· Prêmio R$</span>
           </Link>
 
-          <div className="relative hidden sm:block group">
-            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary/10 text-primary text-sm font-medium cursor-default">
+          <div className="relative group">
+            <button type="button" className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-md bg-primary/10 text-primary text-xs sm:text-sm font-medium cursor-default">
               <Wallet size={14} />
               {wallet ? formatCurrency(wallet.balance) : "Z$ —"}
               <Info size={11} className="text-primary/50" />
-            </span>
-            {/* Tooltip */}
-            <div className="pointer-events-none absolute right-0 top-full mt-2 w-56 rounded-lg border border-border bg-card px-3 py-2.5 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50">
+            </button>
+            {/* Tooltip (hover no desktop, toque/focus no mobile) */}
+            <div className="pointer-events-none absolute right-0 top-full mt-2 w-56 rounded-lg border border-border bg-card px-3 py-2.5 shadow-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-150 z-50">
               <p className="text-xs font-semibold text-white mb-1">Z$ — moeda virtual</p>
               <p className="text-[11px] text-muted-foreground leading-relaxed">
                 Z$ é a moeda virtual da Zafe. <span className="text-white font-medium">Não tem valor monetário real</span> e não pode ser convertida em dinheiro.
@@ -125,7 +125,9 @@ export default function Navbar() {
             </div>
           </div>
 
-          <SoundMenu />
+          <div className="hidden sm:block">
+            <SoundMenu />
+          </div>
           <PushSetup />
           <NotificationBell />
 
@@ -154,6 +156,9 @@ export default function Navbar() {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => window.location.href = "/meus-topicos"}>
                 <span className="text-sm">Minhas Posições</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => window.location.href = "/privadas"} className="md:hidden">
+                <span className="text-sm">Privadas</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => window.location.href = "/premium"}>
                 <Star size={14} className="mr-2 text-yellow-400" />

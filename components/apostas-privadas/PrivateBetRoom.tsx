@@ -84,7 +84,7 @@ export default function PrivateBetRoom({
             Ver participantes →
           </Link>
         </div>
-        <h1 className="text-2xl font-bold text-white">{topic.title}</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-white">{topic.title}</h1>
         {topic.description && <p className="text-muted-foreground text-sm mt-1">{topic.description}</p>}
       </div>
 

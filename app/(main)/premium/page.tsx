@@ -43,7 +43,7 @@ export default async function PremiumPage() {
           <Star size={11} />
           Zafe Premium
         </div>
-        <h1 className="text-2xl font-bold text-white">Leve seus palpites a sério</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-white">Leve seus palpites a sério</h1>
         <p className="text-muted-foreground text-sm">
           Recursos avançados para previsores que querem acompanhar o mercado de verdade.
         </p>

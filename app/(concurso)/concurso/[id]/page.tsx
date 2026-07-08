@@ -149,7 +149,7 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
         <CountdownTimer closesAt={topic.closes_at} />
       </div>
 
-      <h1 className="text-2xl font-bold text-white leading-snug mb-2">{topic.title}</h1>
+      <h1 className="text-xl sm:text-2xl font-bold text-white leading-snug mb-2">{topic.title}</h1>
       {topic.description && (
         <p className="text-muted-foreground text-sm mb-4">{topic.description}</p>
       )}

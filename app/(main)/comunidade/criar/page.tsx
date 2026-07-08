@@ -17,7 +17,7 @@ export default async function CriarComunidadePage() {
   return (
     <div className="py-6 space-y-5 max-w-lg mx-auto">
       <div>
-        <h1 className="text-2xl font-bold text-white">Criar Evento</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-white">Criar Evento</h1>
         <p className="text-muted-foreground text-sm mt-0.5">
           Crie um evento para a galera palpitar. Você será o juiz.
         </p>

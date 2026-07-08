@@ -136,7 +136,7 @@ export default async function AdminPage() {
     <div className="py-6 space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-white">Painel Admin</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-white">Painel Admin</h1>
           <p className="text-muted-foreground text-sm">Gerencie setores e acompanhe previsões</p>
         </div>
         <span className="ml-auto px-2 py-1 bg-primary/20 text-primary text-xs font-bold rounded">ADMIN</span>

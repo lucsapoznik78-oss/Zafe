@@ -42,7 +42,7 @@ export default async function JogoResponsavelPage() {
           <ShieldCheck size={20} className="text-violet-300" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-white">Jogo responsável</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-white">Jogo responsável</h1>
           <p className="text-sm text-muted-foreground">
             A Zafe é uma competição de habilidade com moeda virtual. Ainda assim,
             queremos que sua experiência seja saudável e sob controle.

@@ -38,7 +38,7 @@ export default async function CriarPrivadaPage({ searchParams }: PageProps) {
 
   return (
     <div className="py-6 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold text-white mb-1">Novo Bolão</h1>
+      <h1 className="text-xl sm:text-2xl font-bold text-white mb-1">Novo Bolão</h1>
       <p className="text-muted-foreground text-sm mb-6">
         {ligaName
           ? `Bolão do grupo ${ligaName}: defina quem é juiz, quem palpita SIM e quem palpita NÃO.`

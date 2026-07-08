@@ -217,7 +217,7 @@ export default async function ComunidadePage({ searchParams }: PageProps) {
     <div className="py-6 space-y-5">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Comunidade</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-white">Comunidade</h1>
           <p className="text-muted-foreground text-sm mt-0.5">Eventos criados e resolvidos pela galera</p>
         </div>
         <Link

@@ -20,7 +20,7 @@ export default function GlobalError({
         <div className="text-center space-y-6 max-w-md">
           <div className="text-8xl font-black text-nao/20">500</div>
           <div className="space-y-2">
-            <h1 className="text-2xl font-bold text-white">Algo deu errado</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-white">Algo deu errado</h1>
             <p className="text-muted-foreground">
               Ocorreu um erro inesperado. Já fomos notificados e estamos investigando.
             </p>
