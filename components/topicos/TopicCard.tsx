@@ -23,7 +23,7 @@ interface TopicCardProps {
 }
 
 const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
-  active:    { label: "Aberto",    cls: "bg-sim/15 text-sim" },
+  active:    { label: "Aberto",    cls: "bg-secondary text-muted-foreground" },
   resolved:  { label: "Resolvido", cls: "bg-muted text-muted-foreground" },
   cancelled: { label: "Cancelado", cls: "bg-nao/15 text-nao" },
   closed:    { label: "Fechado",   cls: "bg-yellow-500/15 text-yellow-400" },

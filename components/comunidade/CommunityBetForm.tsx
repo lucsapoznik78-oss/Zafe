@@ -71,7 +71,7 @@ export default function CommunityBetForm({ eventId, totalSim, totalNao, isClosed
         <button
           onClick={() => setSide("sim")}
           className={`py-2.5 rounded-lg text-sm font-bold transition-all ${
-            side === "sim" ? "bg-sim text-black" : "bg-sim/10 text-sim hover:bg-sim/20"
+            side === "sim" ? "bg-sim text-white" : "bg-sim/10 text-sim hover:bg-sim/20"
           }`}
         >
           SIM
@@ -123,7 +123,7 @@ export default function CommunityBetForm({ eventId, totalSim, totalNao, isClosed
       <button
         onClick={handleBet}
         disabled={loading || amountNum < 1}
-        className="w-full py-2.5 rounded-lg bg-primary text-black font-bold text-sm hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+        className="w-full py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
       >
         {loading && <Loader2 size={14} className="animate-spin" />}
         Palpitar {side.toUpperCase()}

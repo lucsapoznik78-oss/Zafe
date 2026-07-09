@@ -373,7 +373,7 @@ export default function MercadoSecundario({ topicId, apiBase, isActive, userBets
             onClick={() => setSide(s)}
             className={`flex-1 py-1.5 transition-colors ${
               side === s
-                ? s === "sim" ? "bg-sim text-black" : "bg-nao text-white"
+                ? s === "sim" ? "bg-sim text-white" : "bg-nao text-white"
                 : "text-muted-foreground hover:text-white"
             }`}
           >
@@ -405,7 +405,7 @@ export default function MercadoSecundario({ topicId, apiBase, isActive, userBets
           <p className="text-[10px] text-muted-foreground">Histórico de preços</p>
           <Sparkline
             data={book!.trade_history}
-            color={side === "sim" ? "#4ade80" : "#f87171"}
+            color={side === "sim" ? "#4ADE80" : "#FB7185"}
           />
           <div className="flex justify-between text-[9px] text-muted-foreground font-mono">
             <span>{pct(Math.min(...book!.trade_history.map(d => d.price)))}</span>
@@ -465,7 +465,7 @@ export default function MercadoSecundario({ topicId, apiBase, isActive, userBets
                   title={canSell ? `Sem palpites ${side.toUpperCase()} para vender` : undefined}
                   className={`flex-1 py-1.5 transition-colors ${
                     orderType === t
-                      ? t === "buy" ? "bg-sim text-black" : "bg-nao text-white"
+                      ? t === "buy" ? "bg-sim text-white" : "bg-nao text-white"
                       : canSell
                         ? "text-muted-foreground/40 cursor-not-allowed"
                         : "text-muted-foreground hover:text-white"
@@ -597,7 +597,7 @@ export default function MercadoSecundario({ topicId, apiBase, isActive, userBets
             disabled={submitting || (orderType === "sell" && sellableBets.length === 0)}
             className={`w-full py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 ${
               orderType === "buy"
-                ? "bg-sim text-black hover:bg-sim/90"
+                ? "bg-sim text-white hover:bg-sim/90"
                 : "bg-nao text-white hover:bg-nao/90"
             }`}
           >

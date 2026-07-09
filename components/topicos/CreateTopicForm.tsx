@@ -128,7 +128,7 @@ export default function CreateTopicForm({ excludeCategories = [] }: CreateTopicF
             onClick={() => setMarketType("binary")}
             className={`py-2.5 rounded-lg text-sm font-semibold border transition-all ${
               marketType === "binary"
-                ? "bg-primary text-black border-primary"
+                ? "bg-primary text-white border-primary"
                 : "bg-input text-muted-foreground border-border hover:border-primary/50"
             }`}
           >
@@ -139,7 +139,7 @@ export default function CreateTopicForm({ excludeCategories = [] }: CreateTopicF
             onClick={() => setMarketType("multi")}
             className={`py-2.5 rounded-lg text-sm font-semibold border transition-all ${
               marketType === "multi"
-                ? "bg-primary text-black border-primary"
+                ? "bg-primary text-white border-primary"
                 : "bg-input text-muted-foreground border-border hover:border-primary/50"
             }`}
           >
@@ -279,7 +279,7 @@ export default function CreateTopicForm({ excludeCategories = [] }: CreateTopicF
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-3 bg-primary text-black font-bold rounded-lg text-sm hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full py-3 bg-primary text-white font-bold rounded-lg text-sm hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         {loading ? <Loader2 size={16} className="animate-spin mx-auto" /> : "Enviar para Moderação"}
       </button>

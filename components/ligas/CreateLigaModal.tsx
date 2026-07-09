@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { X, Loader2, Trophy, Globe, Lock, Check, Plus, UserPlus } from "lucide-react";
 
 const COLORS = [
-  "#86efac", "#60a5fa", "#f472b6", "#fb923c", "#a78bfa", "#34d399", "#fbbf24",
+  "#B9AEFF", "#60a5fa", "#f472b6", "#fb923c", "#a78bfa", "#34d399", "#fbbf24",
 ];
 
 interface Friend {

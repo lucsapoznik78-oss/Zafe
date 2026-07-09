@@ -14,7 +14,7 @@ export default function CtaFinal() {
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
             href="/concurso/entrar"
-            className="px-8 py-3.5 rounded-xl bg-primary text-black font-bold text-base hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="px-8 py-3.5 rounded-xl bg-primary text-white font-bold text-base hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
             Criar conta grátis
           </Link>

@@ -44,7 +44,7 @@ export default function ResolveForm({ eventId }: { eventId: string }) {
             <button
               onClick={() => handleResolve(confirming)}
               disabled={loading}
-              className="flex-1 py-2 rounded-lg bg-primary text-black font-bold text-sm disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 py-2 rounded-lg bg-primary text-white font-bold text-sm disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading && <Loader2 size={14} className="animate-spin" />}
               Confirmar
@@ -62,7 +62,7 @@ export default function ResolveForm({ eventId }: { eventId: string }) {
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={() => setConfirming("sim")}
-            className="py-2.5 rounded-lg bg-sim text-black font-bold text-sm hover:bg-sim/90"
+            className="py-2.5 rounded-lg bg-sim text-white font-bold text-sm hover:bg-sim/90"
           >
             Resultado: SIM
           </button>

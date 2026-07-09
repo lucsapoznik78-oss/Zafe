@@ -109,7 +109,7 @@ export default function EditTopicForm({ topic }: { topic: Topic }) {
         <button
           type="submit"
           disabled={loading}
-          className="flex-1 py-3 bg-primary text-black font-bold rounded-xl disabled:opacity-50"
+          className="flex-1 py-3 bg-primary text-white font-bold rounded-xl disabled:opacity-50"
         >
           {loading ? "Salvando..." : "Salvar Alterações"}
         </button>

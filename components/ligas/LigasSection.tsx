@@ -162,7 +162,7 @@ export default function LigasSection({ ligas, currentUserId, friends }: Props) {
                 <p className="text-xs text-muted-foreground">Crie um grupo e convide seus amigos para palpitar juntos</p>
                 <button
                   onClick={() => setShowCreate(true)}
-                  className="mt-2 px-4 py-2 bg-primary text-black text-sm font-bold rounded-lg hover:bg-primary/90 transition-colors"
+                  className="mt-2 px-4 py-2 bg-primary text-white text-sm font-bold rounded-lg hover:bg-primary/90 transition-colors"
                 >
                   Criar grupo privado
                 </button>

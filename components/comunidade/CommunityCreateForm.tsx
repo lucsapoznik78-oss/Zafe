@@ -122,7 +122,7 @@ export default function CommunityCreateForm({ creatorScore }: { creatorScore: nu
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-3 rounded-lg bg-primary text-black font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+        className="w-full py-3 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
       >
         {loading && <Loader2 size={14} className="animate-spin" />}
         Criar evento

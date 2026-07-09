@@ -37,7 +37,7 @@ export default function TopicFilters() {
             onClick={() => setParam("sort", opt.value)}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
               currentSort === opt.value
-                ? "bg-primary text-black"
+                ? "bg-primary text-white"
                 : "bg-card border border-border text-muted-foreground hover:text-white hover:border-primary/30"
             }`}
           >

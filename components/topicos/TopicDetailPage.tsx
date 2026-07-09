@@ -23,7 +23,7 @@ import { formatCurrency } from "@/lib/utils";
 import { calcOdds, formatOdds } from "@/lib/odds";
 
 const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
-  active:    { label: "Aberto",               cls: "bg-sim/20 text-sim" },
+  active:    { label: "Aberto",               cls: "bg-secondary text-muted-foreground" },
   closed:    { label: "Fechado",              cls: "bg-yellow-500/20 text-yellow-400" },
   resolved:  { label: "Resolvido",            cls: "bg-muted text-muted-foreground" },
   cancelled: { label: "Cancelado",            cls: "bg-nao/20 text-nao" },

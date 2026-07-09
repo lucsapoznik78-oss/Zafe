@@ -64,7 +64,7 @@ export default function CommentSection({ topicId }: { topicId: string }) {
           <button
             type="submit"
             disabled={loading || !content.trim()}
-            className="px-3 py-2 bg-primary text-black rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
+            className="px-3 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
           >
             {loading ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
           </button>

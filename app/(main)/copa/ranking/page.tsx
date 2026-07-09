@@ -33,7 +33,7 @@ export default async function CopaRankingPage() {
           <ArrowLeft size={12} /> Voltar à Zafe Copa
         </Link>
         <h1 className="text-xl font-bold text-white flex items-center gap-2">
-          <Trophy size={20} className="text-green-400" /> Ranking da Zafe Copa
+          <Trophy size={20} className="text-primary" /> Ranking da Zafe Copa
         </h1>
         <p className="text-xs text-muted-foreground mt-1">
           Desempate: pontos → placares exatos → acertos de vencedor → ordem de inscrição. O 1º colocado leva o

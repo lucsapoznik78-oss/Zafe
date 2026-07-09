@@ -16,7 +16,7 @@ export default function BanidoPage() {
         </p>
         <a
           href="mailto:suporte@zafe.app.br"
-          className="inline-block px-5 py-2.5 bg-primary text-black font-bold text-sm rounded-lg hover:bg-primary/90 transition-colors"
+          className="inline-block px-5 py-2.5 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary/90 transition-colors"
         >
           Falar com o suporte
         </a>

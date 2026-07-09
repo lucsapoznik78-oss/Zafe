@@ -181,7 +181,7 @@ export default function ConcursoBetForm({
                   className={`py-3 rounded-lg font-bold text-sm transition-all ${
                     active
                       ? s === "sim"
-                        ? "bg-green-500 text-black ring-2 ring-green-500/50"
+                        ? "bg-green-500 text-white ring-2 ring-green-500/50"
                         : "bg-red-500 text-white ring-2 ring-red-500/50"
                       : s === "sim"
                         ? "bg-green-500/10 text-green-400 hover:bg-green-500/20"
@@ -217,7 +217,7 @@ export default function ConcursoBetForm({
               key={val}
               onClick={() => { setAmount(String(val)); setError(""); }}
               disabled={val > zcBalance}
-              className="flex-1 py-1 text-xs bg-yellow-400/10 hover:bg-yellow-400/20 text-yellow-400 rounded transition-colors disabled:opacity-30"
+              className="flex-1 py-1 text-xs bg-yellow-400/10 hover:bg-primary/90/20 text-yellow-400 rounded transition-colors disabled:opacity-30"
             >
               {val}
             </button>
@@ -281,7 +281,7 @@ export default function ConcursoBetForm({
       <button
         onClick={handleBet}
         disabled={loading || !amountNum || insufficientBalance}
-        className="w-full py-3 rounded-lg font-bold text-sm bg-yellow-400 text-black hover:bg-yellow-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full py-3 rounded-lg font-bold text-sm bg-primary text-white hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         {loading ? (
           <Loader2 size={16} className="animate-spin mx-auto" />

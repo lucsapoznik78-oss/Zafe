@@ -107,7 +107,7 @@ export default function AdminResolve({ topics, allResolving }: Props) {
             <button
               onClick={() => chosen && resolve(topicId, "sim", chosen)}
               disabled={!!loading || !chosen}
-              className="flex-1 py-2 bg-primary text-black font-bold text-sm rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
+              className="flex-1 py-2 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {loading === topicId + chosen ? <Loader2 size={14} className="animate-spin mx-auto" /> : "Confirmar vencedor"}
             </button>
@@ -123,11 +123,11 @@ export default function AdminResolve({ topics, allResolving }: Props) {
     return (
       <div className="flex gap-2">
         <button onClick={() => resolve(topicId, "sim")} disabled={!!loading}
-          className="flex-1 py-2 bg-sim text-black font-bold text-sm rounded-lg hover:bg-sim/90 disabled:opacity-50 transition-colors">
+          className="flex-1 py-2 bg-sim text-white font-bold text-sm rounded-lg hover:bg-sim/90 disabled:opacity-50 transition-colors">
           {loading === topicId + "sim" ? <Loader2 size={14} className="animate-spin mx-auto" /> : "SIM venceu"}
         </button>
         <button onClick={() => resolve(topicId, "nao")} disabled={!!loading}
-          className="flex-1 py-2 bg-nao text-black font-bold text-sm rounded-lg hover:bg-nao/90 disabled:opacity-50 transition-colors">
+          className="flex-1 py-2 bg-nao text-white font-bold text-sm rounded-lg hover:bg-nao/90 disabled:opacity-50 transition-colors">
           {loading === topicId + "nao" ? <Loader2 size={14} className="animate-spin mx-auto" /> : "NÃO venceu"}
         </button>
         <button onClick={() => resolve(topicId, "cancelled")} disabled={!!loading}

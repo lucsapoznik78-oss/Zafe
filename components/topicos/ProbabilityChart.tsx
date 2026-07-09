@@ -48,7 +48,7 @@ interface Props {
 
 // Paleta para resultados (uma cor por linha).
 const PALETTE = [
-  "#86efac", "#f87171", "#60a5fa", "#fbbf24", "#c084fc",
+  "#7C5CFC", "#f87171", "#60a5fa", "#fbbf24", "#c084fc",
   "#34d399", "#fb923c", "#f472b6", "#22d3ee", "#a3e635",
 ];
 
@@ -298,7 +298,7 @@ export default function ProbabilityChart({ topicId, chartUrl, marketType = "bina
               key={f}
               onClick={() => setFilter(f)}
               className={`px-3 py-1.5 sm:px-2.5 sm:py-1 rounded text-xs font-semibold transition-colors ${
-                filter === f ? "bg-primary text-black" : "text-muted-foreground hover:text-white"
+                filter === f ? "bg-primary text-white" : "text-muted-foreground hover:text-white"
               }`}
             >
               {f}
@@ -366,10 +366,10 @@ export default function ProbabilityChart({ topicId, chartUrl, marketType = "bina
             <Line
               type="monotone"
               dataKey="sim"
-              stroke="#86efac"
+              stroke="#7C5CFC"
               strokeWidth={2}
-              dot={EndDot("#86efac")}
-              activeDot={{ r: 4, fill: "#86efac" }}
+              dot={EndDot("#7C5CFC")}
+              activeDot={{ r: 4, fill: "#7C5CFC" }}
               isAnimationActive={false}
             />
             <Line
@@ -397,7 +397,7 @@ export default function ProbabilityChart({ topicId, chartUrl, marketType = "bina
             onClick={() => setFilter(f)}
             className={`px-3 py-1.5 sm:px-2.5 sm:py-1 rounded text-xs font-semibold transition-colors ${
               filter === f
-                ? "bg-primary text-black"
+                ? "bg-primary text-white"
                 : "text-muted-foreground hover:text-white"
             }`}
           >

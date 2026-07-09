@@ -136,7 +136,7 @@ export default function CopaAdminPanel({ competition, matches, participants, rev
           <button
             onClick={() => call("resolver", "/api/cron/copa-resolver")}
             disabled={!!busy}
-            className="flex items-center gap-1.5 px-3 py-2 bg-primary text-black font-bold text-sm rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
           >
             {busy === "resolver" ? <Loader2 size={14} className="animate-spin" /> : <PlayCircle size={14} />}
             Resolver agora
@@ -181,7 +181,7 @@ export default function CopaAdminPanel({ competition, matches, participants, rev
                 if (ok) setConfirmFinalize(false);
               }}
               disabled={!!busy}
-              className="px-3 py-2 bg-yellow-500 text-black font-bold text-sm rounded-lg hover:bg-yellow-400 disabled:opacity-50 transition-colors"
+              className="px-3 py-2 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {busy === "finalizar" ? <Loader2 size={14} className="animate-spin mx-auto" /> : "Confirmar e pagar premiação"}
             </button>
@@ -390,7 +390,7 @@ function ResultForm({ match: m, busy, onSubmit }: { match: CopaMatch; busy: stri
           })
         }
         disabled={!!busy || homeGoals === "" || awayGoals === "" || (ko && !advanced)}
-        className="px-3 py-1.5 bg-primary text-black font-bold text-xs rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
+        className="px-3 py-1.5 bg-primary text-white font-bold text-xs rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
       >
         {busy === key ? <Loader2 size={12} className="animate-spin mx-auto" /> : isCorrection ? "Corrigir e recomputar pontos" : "Aplicar resultado"}
       </button>
@@ -428,7 +428,7 @@ function SlotForm({ match: m, busy, onSubmit }: { match: CopaMatch; busy: string
             })
           }
           disabled={!!busy || home.trim().length < 2 || away.trim().length < 2}
-          className="px-3 py-1.5 bg-primary text-black font-bold text-xs rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
+          className="px-3 py-1.5 bg-primary text-white font-bold text-xs rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
         >
           {busy === key ? <Loader2 size={12} className="animate-spin mx-auto" /> : "Salvar times"}
         </button>
@@ -494,7 +494,7 @@ function VoidButton({ match: m, busy, onSubmit }: { match: CopaMatch; busy: stri
           if (ok) setConfirming(false);
         }}
         disabled={!!busy}
-        className="px-3 py-1.5 bg-nao text-black font-bold text-xs rounded-lg hover:bg-nao/90 disabled:opacity-50 transition-colors"
+        className="px-3 py-1.5 bg-nao text-white font-bold text-xs rounded-lg hover:bg-nao/90 disabled:opacity-50 transition-colors"
       >
         {busy === key ? <Loader2 size={12} className="animate-spin mx-auto" /> : "Sim, anular"}
       </button>

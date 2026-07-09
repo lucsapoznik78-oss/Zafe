@@ -31,7 +31,7 @@ export default function MainLayoutError({
       </div>
       <button
         onClick={reset}
-        className="px-5 py-2 bg-primary text-black font-semibold rounded-lg hover:bg-primary/90 transition-colors text-sm"
+        className="px-5 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors text-sm"
       >
         Tentar novamente
       </button>

@@ -67,15 +67,15 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
 
   // Cores dinâmicas baseadas no tema
   const btnClass = isConcurso
-    ? "w-full bg-yellow-400 text-black font-semibold hover:bg-yellow-300"
-    : "w-full bg-primary text-black font-semibold hover:bg-primary/90";
+    ? "w-full bg-primary text-white font-semibold hover:bg-primary/90"
+    : "w-full bg-primary text-white font-semibold hover:bg-primary/90";
   const tabActiveClass = isConcurso
-    ? "bg-yellow-400 text-black"
-    : "bg-primary text-black";
+    ? "bg-primary text-white"
+    : "bg-primary text-white";
   const inputFocusClass = isConcurso
-    ? "bg-input border-border focus:border-yellow-400"
+    ? "bg-input border-border focus:border-primary"
     : "bg-input border-border focus:border-primary";
-  const successClass = isConcurso ? "text-yellow-400 text-sm" : "text-primary text-sm";
+  const successClass = isConcurso ? "text-primary text-sm" : "text-primary text-sm";
   const cardClass = isConcurso
     ? "bg-yellow-400/5 border border-yellow-400/30 rounded-xl p-6 space-y-5"
     : "bg-card border border-border rounded-xl p-6 space-y-5";

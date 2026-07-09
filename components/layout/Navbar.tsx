@@ -103,11 +103,11 @@ export default function Navbar() {
           {/* Porta do mundo PAGO — destacada, separada da zona grátis */}
           <Link
             href="/concurso"
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md bg-yellow-400 text-black text-sm font-bold hover:bg-yellow-300 transition-colors"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors"
           >
             <Trophy size={14} />
             <span>Concurso</span>
-            <span className="hidden lg:inline font-semibold text-black/70">· Prêmio R$</span>
+            <span className="hidden lg:inline font-semibold text-prize-text">· Prêmio R$</span>
           </Link>
 
           <div className="relative group">

@@ -287,7 +287,7 @@ export default async function PortfolioPage() {
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="text-xs font-bold text-white">{fmtPct(probSim)}</span>
-                    <Link href={`/liga/${topic.id}`} className="px-2.5 py-1 bg-primary text-black text-xs font-bold rounded-lg hover:bg-primary/90">
+                    <Link href={`/liga/${topic.id}`} className="px-2.5 py-1 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary/90">
                       Palpitar
                     </Link>
                   </div>
@@ -339,7 +339,7 @@ export default async function PortfolioPage() {
         <div className="text-center py-20">
           <p className="text-white font-medium mb-1">Nenhuma posição ainda</p>
           <p className="text-muted-foreground text-sm">Explore os eventos e faça seu primeiro palpite</p>
-          <Link href="/liga" className="inline-block mt-4 px-5 py-2.5 bg-primary text-black font-semibold rounded-lg text-sm">
+          <Link href="/liga" className="inline-block mt-4 px-5 py-2.5 bg-primary text-white font-semibold rounded-lg text-sm">
             Explorar eventos
           </Link>
         </div>

@@ -41,7 +41,7 @@ export default function ReferralSection({ referralCode, totalReferrals, complete
         </div>
         <button
           onClick={copiar}
-          className="flex items-center gap-1.5 px-3 py-2 bg-primary text-black text-xs font-bold rounded-lg hover:bg-primary/90 transition-colors shrink-0"
+          className="flex items-center gap-1.5 px-3 py-2 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary/90 transition-colors shrink-0"
         >
           {copied ? <Check size={12} /> : <Copy size={12} />}
           {copied ? "Copiado!" : "Copiar"}

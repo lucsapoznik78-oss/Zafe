@@ -104,8 +104,8 @@ export default function AdminStats({ passiveTotal, walletBalance, betsLocked, pe
       {/* Linha 2: financeiro */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="bg-card border border-border rounded-xl p-4 col-span-2 sm:col-span-1">
-          <div className="mb-2 text-yellow-400"><Wallet size={18} /></div>
-          <p className="text-2xl font-bold text-yellow-400">{formatCurrency(passiveTotal)}</p>
+          <div className="mb-2 text-primary"><Wallet size={18} /></div>
+          <p className="text-2xl font-bold text-primary">{formatCurrency(passiveTotal)}</p>
           <p className="text-xs text-muted-foreground mt-1">Saldo passivo total</p>
           <p className="text-[10px] text-muted-foreground/60 mt-1">
             Saldos Z$: {formatCurrency(walletBalance)} · Palpites ativos: {formatCurrency(betsLocked)}
@@ -176,7 +176,7 @@ export default function AdminStats({ passiveTotal, walletBalance, betsLocked, pe
             router.refresh();
           }}
           disabled={directLoading}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-black text-sm font-bold rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors shrink-0"
+          className="flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-bold rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors shrink-0"
         >
           <Zap size={14} className={directLoading ? "animate-pulse" : ""} />
           {directLoading ? "Resolvendo..." : "Resolver agora"}

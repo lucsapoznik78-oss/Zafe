@@ -47,7 +47,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
-  themeColor: "#86efac",
+  themeColor: "#0A0A0F",
 };
 
 const jsonLd = {
@@ -107,7 +107,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="antialiased bg-black text-white min-h-screen">
+      <body className="antialiased bg-background text-white min-h-screen">
         {children}
       </body>
     </html>

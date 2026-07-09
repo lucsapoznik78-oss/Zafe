@@ -79,7 +79,7 @@ export default async function PremiumPage() {
 
         {/* Premium plan */}
         <div className="bg-card border border-primary/50 rounded-xl p-5 space-y-4 relative overflow-hidden">
-          <div className="absolute top-0 right-0 bg-primary text-black text-[10px] font-bold px-2.5 py-1 rounded-bl-lg">
+          <div className="absolute top-0 right-0 bg-primary text-white text-[10px] font-bold px-2.5 py-1 rounded-bl-lg">
             MAIS POPULAR
           </div>
           <div>

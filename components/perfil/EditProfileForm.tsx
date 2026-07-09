@@ -70,7 +70,7 @@ export default function EditProfileForm({ fullName, username }: EditProfileFormP
         <button
           onClick={handleSave}
           disabled={loading}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-black text-xs font-semibold rounded-lg hover:bg-primary/90 disabled:opacity-50"
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary/90 disabled:opacity-50"
         >
           {loading ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
           Salvar

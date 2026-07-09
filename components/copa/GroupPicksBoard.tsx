@@ -31,7 +31,7 @@ type Slots = { [pos: number]: string | undefined };
 const POS_STYLES: Record<number, string> = {
   1: "bg-violet-600 text-white",
   2: "bg-rose-600 text-white",
-  3: "bg-green-500 text-black",
+  3: "bg-green-500 text-white",
 };
 
 function toSlots(pick: PickValue | undefined): Slots {
@@ -106,7 +106,7 @@ export default function GroupPicksBoard({ groups, initialPicks, isParticipant }:
   return (
     <section className="space-y-3">
       <div>
-        <h2 className="text-base font-bold text-green-400">Quem passa de grupo?</h2>
+        <h2 className="text-base font-bold text-primary">Quem passa de grupo?</h2>
         <p className="text-xs text-emerald-100/70">
           Marque o 1º, 2º e 3º de cada grupo. Cada posição certa vale +10 pts.
           Dá pra editar até a última rodada do grupo.
@@ -160,7 +160,7 @@ export default function GroupPicksBoard({ groups, initialPicks, isParticipant }:
                                 ? "border-white bg-transparent"
                                 : pos
                                   ? "border-white/50"
-                                  : "border-emerald-400/60 hover:border-green-400"
+                                  : "border-primary/60 hover:border-primary"
                             } disabled:opacity-50 disabled:cursor-not-allowed`}
                           >
                             {s[p] === team && <span className="w-2.5 h-2.5 rounded-full bg-white" />}
@@ -189,7 +189,7 @@ export default function GroupPicksBoard({ groups, initialPicks, isParticipant }:
                     <button
                       type="button"
                       onClick={() => randomize(group)}
-                      className="flex-1 flex items-center justify-center gap-1.5 rounded-md bg-green-600 hover:bg-green-500 text-white text-xs font-bold uppercase py-2 transition-colors"
+                      className="flex-1 flex items-center justify-center gap-1.5 rounded-md bg-primary hover:bg-primary/90 text-white text-xs font-bold uppercase py-2 transition-colors"
                     >
                       <Shuffle size={13} /> Sorteio aleatório
                     </button>
@@ -197,7 +197,7 @@ export default function GroupPicksBoard({ groups, initialPicks, isParticipant }:
                       type="button"
                       disabled={!complete || saving[group.name] || saved[group.name]}
                       onClick={() => save(group)}
-                      className="flex-1 flex items-center justify-center gap-1.5 rounded-md bg-green-400 hover:bg-green-300 text-black text-xs font-bold uppercase py-2 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="flex-1 flex items-center justify-center gap-1.5 rounded-md bg-primary hover:bg-primary/90 text-white text-xs font-bold uppercase py-2 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       {saving[group.name] ? (
                         <Loader2 size={13} className="animate-spin" />

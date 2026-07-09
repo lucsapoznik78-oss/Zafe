@@ -108,7 +108,7 @@ export default async function PrivadasPage({
         </div>
         <Link
           href="/privadas/criar"
-          className="flex items-center gap-1.5 px-4 py-2 bg-primary text-black text-sm font-bold rounded-xl"
+          className="flex items-center gap-1.5 px-4 py-2 bg-primary text-white text-sm font-bold rounded-xl"
         >
           <Plus size={16} />
           Criar
@@ -158,7 +158,7 @@ export default async function PrivadasPage({
           {aba === "ativos" && (
             <Link
               href="/privadas/criar"
-              className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-primary text-black text-sm font-bold rounded-xl"
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-xl"
             >
               <Plus size={14} />
               Criar Bolão

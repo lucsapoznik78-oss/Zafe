@@ -180,7 +180,7 @@ export default function MultiOutcomeBetForm({
       <button
         onClick={handleBet}
         disabled={loading || !amountNum || insufficientBalance || !selectedOutcomeId}
-        className="w-full py-3 rounded-lg font-bold text-sm bg-primary text-black hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full py-3 rounded-lg font-bold text-sm bg-primary text-white hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         {loading ? (
           <Loader2 size={16} className="animate-spin mx-auto" />

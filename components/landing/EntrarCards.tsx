@@ -39,7 +39,7 @@ export default function EntrarCards() {
             </ul>
             <Link
               href="/login"
-              className="w-full text-center px-4 py-2.5 rounded-xl bg-primary text-black font-bold text-sm hover:bg-primary/90 transition-colors"
+              className="w-full text-center px-4 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-colors"
             >
               Criar conta grátis
             </Link>
@@ -69,7 +69,7 @@ export default function EntrarCards() {
             </ul>
             <Link
               href="/concurso/entrar"
-              className="w-full text-center px-4 py-2.5 rounded-xl bg-yellow-400 text-black font-bold text-sm hover:bg-yellow-300 transition-colors"
+              className="w-full text-center px-4 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-colors"
             >
               Entrar no concurso
             </Link>

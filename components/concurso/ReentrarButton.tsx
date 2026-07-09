@@ -52,7 +52,7 @@ export default function ReentrarButton({ saldoInicial, mesLabel }: Props) {
       <button
         onClick={handleReentrar}
         disabled={loading}
-        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-yellow-400 text-black text-sm font-bold hover:bg-yellow-300 transition-colors disabled:opacity-60"
+        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors disabled:opacity-60"
       >
         {loading ? <Loader2 size={16} className="animate-spin" /> : <>Entrar no Concurso de {mesLabel}</>}
       </button>

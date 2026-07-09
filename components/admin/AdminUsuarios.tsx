@@ -319,7 +319,7 @@ export default function AdminUsuarios() {
                   <button
                     onClick={() => submitAdjust(u)}
                     disabled={busyId === u.id}
-                    className="px-4 py-2 bg-primary text-black font-bold text-sm rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                    className="px-4 py-2 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
                   >
                     {busyId === u.id ? <Loader2 size={14} className="animate-spin" /> : "Aplicar"}
                   </button>

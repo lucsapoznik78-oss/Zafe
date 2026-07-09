@@ -112,7 +112,7 @@ export default async function InicioPage() {
           <div className="mt-8">
             <Link
               href="/concurso"
-              className="group inline-flex items-center gap-2 rounded-2xl bg-yellow-400 px-7 py-3.5 text-base font-black text-black transition-colors hover:bg-yellow-300"
+              className="group inline-flex items-center gap-2 rounded-2xl bg-yellow-400 px-7 py-3.5 text-base font-black text-black transition-colors hover:bg-primary/90"
             >
               <Trophy size={18} />
               Entrar no Concurso

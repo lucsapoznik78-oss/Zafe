@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     name: name.trim(),
     description: description?.trim() ?? null,
     creator_id: user.id,
-    color: color ?? "#86efac",
+    color: color ?? "#B9AEFF",
     is_public: is_public === true,
     parent_liga_id: parent_liga_id ?? null,
   }).select().single();

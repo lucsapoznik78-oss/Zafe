@@ -259,7 +259,7 @@ export default async function ConcursoPage({ searchParams }: PageProps) {
               </span>
               <Link
                 href="/concurso/entrar"
-                className="block px-4 py-2 rounded-lg bg-yellow-400 text-black text-sm font-bold hover:bg-yellow-300 transition-colors"
+                className="block px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors"
               >
                 Entrar para participar
               </Link>

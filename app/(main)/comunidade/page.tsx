@@ -222,7 +222,7 @@ export default async function ComunidadePage({ searchParams }: PageProps) {
         </div>
         <Link
           href="/comunidade/criar"
-          className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-black text-sm font-bold hover:bg-primary/90 transition-colors"
+          className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors"
         >
           <Plus size={16} />
           Criar evento

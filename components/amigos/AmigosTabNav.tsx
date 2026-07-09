@@ -35,7 +35,7 @@ export default function AmigosTabNav({ pendingJudge }: Props) {
             <Icon size={15} />
             {t.label}
             {t.badge > 0 && (
-              <span className="px-1.5 py-0.5 bg-yellow-500 text-black text-[10px] font-bold rounded-full leading-none">
+              <span className="px-1.5 py-0.5 bg-primary text-white text-[10px] font-bold rounded-full leading-none">
                 {t.badge}
               </span>
             )}

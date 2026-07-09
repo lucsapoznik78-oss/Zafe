@@ -127,7 +127,7 @@ export default function TwoFaSettings({ enabled: initialEnabled, method: initial
       <button
         onClick={save}
         disabled={loading}
-        className="flex items-center gap-1.5 px-4 py-2 bg-primary text-black text-sm font-semibold rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
+        className="flex items-center gap-1.5 px-4 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
       >
         {loading ? <Loader2 size={13} className="animate-spin" /> : "Salvar segurança"}
       </button>

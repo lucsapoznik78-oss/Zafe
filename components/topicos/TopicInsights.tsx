@@ -93,7 +93,7 @@ export default function TopicInsights({ topicId }: { topicId: string }) {
             </p>
             <Link
               href="/premium"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-black text-sm font-bold hover:bg-primary/90 transition-colors"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors"
             >
               <Star className="w-4 h-4" />
               Desbloquear com Premium

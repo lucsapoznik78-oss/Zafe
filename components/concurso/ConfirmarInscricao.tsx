@@ -202,7 +202,7 @@ export default function ConfirmarInscricao({ titulo, saldoInicial, initialFullNa
         <Button
           type="submit"
           disabled={loading || !fullName || !username || !cpf || !birthDate}
-          className="w-full bg-yellow-400 text-black font-semibold hover:bg-yellow-300"
+          className="w-full bg-primary text-white font-semibold hover:bg-primary/90"
         >
           {loading ? <Loader2 size={16} className="animate-spin" /> : "Confirmar participação"}
         </Button>

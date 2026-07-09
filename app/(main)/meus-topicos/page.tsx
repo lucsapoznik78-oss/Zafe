@@ -124,7 +124,7 @@ export default async function MinhasPosicoes() {
         <div className="text-center py-16">
           <p className="text-white font-medium mb-1">Nenhuma posição ainda</p>
           <p className="text-muted-foreground text-sm">Explore os eventos e faça seu primeiro palpite</p>
-          <Link href="/liga" className="inline-block mt-4 px-4 py-2 bg-primary text-black font-semibold rounded-lg text-sm">
+          <Link href="/liga" className="inline-block mt-4 px-4 py-2 bg-primary text-white font-semibold rounded-lg text-sm">
             Ver eventos
           </Link>
         </div>

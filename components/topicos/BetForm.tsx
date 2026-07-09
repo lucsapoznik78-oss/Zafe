@@ -152,7 +152,7 @@ export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed,
               onClick={() => setSide(s)}
               className={`py-3 rounded-lg font-bold text-sm transition-all ${
                 active
-                  ? `bg-${colorClass} text-black ring-2 ring-${colorClass}/50`
+                  ? `bg-${colorClass} text-white ring-2 ring-${colorClass}/50`
                   : `bg-${colorClass}/10 text-${colorClass} hover:bg-${colorClass}/20`
               }`}
             >
@@ -241,7 +241,7 @@ export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed,
       <button
         onClick={handleBet}
         disabled={loading || !amountNum || insufficientBalance}
-        className="w-full py-3 rounded-lg font-bold text-sm bg-primary text-black hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full py-3 rounded-lg font-bold text-sm bg-primary text-white hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         {loading ? (
           <Loader2 size={16} className="animate-spin mx-auto" />

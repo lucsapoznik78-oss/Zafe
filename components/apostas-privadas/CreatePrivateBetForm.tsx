@@ -328,7 +328,7 @@ export default function CreatePrivateBetForm({
       {error && <p className="text-red-400 text-sm bg-red-400/10 rounded-lg px-3 py-2">{error}</p>}
       <button
         type="submit" disabled={loading}
-        className="w-full py-3 bg-primary text-black font-bold rounded-xl disabled:opacity-50"
+        className="w-full py-3 bg-primary text-white font-bold rounded-xl disabled:opacity-50"
       >
         {loading ? "Criando..." : "Criar Bolão"}
       </button>

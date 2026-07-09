@@ -107,7 +107,7 @@ export default function RedefinirSenhaPage() {
               <Button
                 type="submit"
                 disabled={loading || !password || !confirm}
-                className="w-full bg-primary text-black font-semibold hover:bg-primary/90"
+                className="w-full bg-primary text-white font-semibold hover:bg-primary/90"
               >
                 {loading ? <Loader2 size={16} className="animate-spin" /> : "Redefinir senha"}
               </Button>

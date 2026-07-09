@@ -16,7 +16,7 @@ interface FeaturedTopic {
 }
 
 function Confetti() {
-  const colors = ["#86efac", "#f87171", "#facc15", "#60a5fa", "#e879f9", "#fb923c"];
+  const colors = ["#7C5CFC", "#f87171", "#facc15", "#60a5fa", "#e879f9", "#fb923c"];
   const pieces = Array.from({ length: 36 });
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl">
@@ -140,7 +140,7 @@ export default function WelcomeModal() {
             </div>
             <button
               onClick={next}
-              className="w-full py-3 bg-primary text-black font-bold rounded-xl text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
+              className="w-full py-3 bg-primary text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
             >
               Começar <ArrowRight size={15} />
             </button>
@@ -166,7 +166,7 @@ export default function WelcomeModal() {
                 <div className="space-y-2">
                   <div className="flex overflow-hidden rounded-lg h-5">
                     <div
-                      className="bg-sim flex items-center justify-center text-[10px] font-bold text-black"
+                      className="bg-sim flex items-center justify-center text-[10px] font-bold text-white"
                       style={{ width: `${probSim}%` }}
                     >
                       {probSim.toFixed(0)}%
@@ -187,7 +187,7 @@ export default function WelcomeModal() {
 
                 <button
                   onClick={goToTopic}
-                  className="w-full py-3 bg-primary text-black font-bold rounded-xl text-sm hover:bg-primary/90 transition-colors"
+                  className="w-full py-3 bg-primary text-white font-bold rounded-xl text-sm hover:bg-primary/90 transition-colors"
                 >
                   Ver e palpitar
                 </button>
@@ -203,7 +203,7 @@ export default function WelcomeModal() {
             {(!featured || loadingTopic) && (
               <button
                 onClick={next}
-                className="w-full py-3 bg-primary text-black font-bold rounded-xl text-sm hover:bg-primary/90 transition-colors"
+                className="w-full py-3 bg-primary text-white font-bold rounded-xl text-sm hover:bg-primary/90 transition-colors"
               >
                 Explorar eventos
               </button>
@@ -233,7 +233,7 @@ export default function WelcomeModal() {
               </div>
               <button
                 onClick={dismiss}
-                className="w-full py-3 bg-primary text-black font-bold rounded-xl text-sm hover:bg-primary/90 transition-colors"
+                className="w-full py-3 bg-primary text-white font-bold rounded-xl text-sm hover:bg-primary/90 transition-colors"
               >
                 Começar a palpitar
               </button>

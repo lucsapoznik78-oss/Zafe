@@ -249,7 +249,7 @@ export default function CompletarCadastro({ isGoogle, email, initialFullName, ne
         <Button
           type="submit"
           disabled={loading}
-          className="w-full h-11 bg-primary text-black font-bold hover:bg-primary/90"
+          className="w-full h-11 bg-primary text-white font-bold hover:bg-primary/90"
         >
           {loading ? <Loader2 size={16} className="animate-spin" /> : "Começar a prever"}
         </Button>

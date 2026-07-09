@@ -239,7 +239,7 @@ function PhaseProgress({ currentStep }: { currentStep: number }) {
         <div key={s.n} className="flex items-center gap-1 flex-1">
           <div className={`flex flex-col items-center flex-1`}>
             <div className={`w-6 h-6 rounded-full text-[10px] font-bold flex items-center justify-center ${
-              s.n < currentStep ? "bg-primary text-black" :
+              s.n < currentStep ? "bg-primary text-white" :
               s.n === currentStep ? "bg-primary/30 text-primary border border-primary" :
               "bg-border text-muted-foreground"
             }`}>{s.n < currentStep ? "✓" : s.n}</div>
@@ -370,7 +370,7 @@ function AcceitarConvite({ topicId, minBet, onRefresh }: any) {
       </p>
       <div className="flex gap-3 justify-center">
         <button onClick={aceitar} disabled={loading || recusando}
-          className="px-6 py-2 bg-primary text-black font-bold rounded-lg disabled:opacity-50">
+          className="px-6 py-2 bg-primary text-white font-bold rounded-lg disabled:opacity-50">
           {loading ? "Aceitando..." : "Aceitar e Palpitar"}
         </button>
         <button onClick={recusar} disabled={loading || recusando}

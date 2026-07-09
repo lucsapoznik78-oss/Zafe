@@ -24,7 +24,7 @@ export default function LandingHeader() {
           </Link>
           <Link
             href="/login"
-            className="px-4 py-1.5 rounded-lg bg-primary text-black text-sm font-bold hover:bg-primary/90 transition-colors"
+            className="px-4 py-1.5 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors"
           >
             Criar conta
           </Link>

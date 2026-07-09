@@ -22,7 +22,7 @@ interface CommunityEvent {
 }
 
 const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
-  active:                { label: "Aberto",     cls: "bg-sim/15 text-sim" },
+  active:                { label: "Aberto",     cls: "bg-secondary text-muted-foreground" },
   awaiting_resolution:   { label: "Aguardando", cls: "bg-yellow-500/15 text-yellow-400" },
   community_resolved:    { label: "Resolvido",  cls: "bg-muted text-muted-foreground" },
   contested:             { label: "Contestado", cls: "bg-orange-500/15 text-orange-300" },

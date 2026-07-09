@@ -80,7 +80,7 @@ export default function DailyBonusCard() {
         <button
           onClick={claim}
           disabled={loading}
-          className="shrink-0 rounded-xl bg-primary px-4 py-2 text-sm font-black text-black transition-colors hover:bg-primary/90 disabled:opacity-50"
+          className="shrink-0 rounded-xl bg-primary px-4 py-2 text-sm font-black text-white transition-colors hover:bg-primary/90 disabled:opacity-50"
         >
           {loading ? (
             <Loader2 size={16} className="animate-spin" />

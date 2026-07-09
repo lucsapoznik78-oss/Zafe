@@ -4,26 +4,59 @@
 
 @layer base {
   :root {
-    --background: 0 0% 0%;
-    --foreground: 0 0% 100%;
-    --card: 0 0% 7%;
-    --card-foreground: 0 0% 100%;
-    --popover: 0 0% 7%;
-    --popover-foreground: 0 0% 100%;
-    --primary: 142 76% 73%;
-    --primary-foreground: 0 0% 0%;
-    --secondary: 0 0% 7%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 0 0% 10%;
-    --muted-foreground: 240 5% 64%;
-    --accent: 142 76% 73%;
-    --accent-foreground: 0 0% 0%;
-    --destructive: 0 84% 60%;
+    --background: 240 20% 5%;
+    --foreground: 240 8% 96%;
+    --card: 240 17% 9%;
+    --card-foreground: 240 8% 96%;
+    --popover: 240 17% 18%;
+    --popover-foreground: 240 8% 96%;
+    --primary: 252 96% 67%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 17% 14%;
+    --secondary-foreground: 240 8% 96%;
+    --muted: 240 17% 14%;
+    --muted-foreground: 240 7% 63%;
+    --accent: 252 96% 67%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 350 89% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 13%;
-    --input: 0 0% 10%;
-    --ring: 142 76% 73%;
+    --border: 240 17% 16%;
+    --input: 240 17% 14%;
+    --ring: 252 96% 67%;
     --radius: 0.75rem;
+
+    /* ---- Zafe design tokens (guia de cores) ---- */
+    --brand:          #7C5CFC;
+    --brand-hover:    #8B6DFF;
+    --brand-active:   #6D4DE8;
+    --brand-text:     #B9AEFF;
+    --brand-bg:       #1B1636;
+    --brand-bg-soft:  rgba(124, 92, 252, 0.12);
+    --brand-border:   #3A2E7A;
+
+    --surface-1:      #14141C;
+    --surface-2:      #1E1E2A;
+    --surface-3:      #262636;
+
+    --sim:            #22C55E;
+    --sim-text:       #4ADE80;
+    --sim-bg:         rgba(34, 197, 94, 0.10);
+    --sim-border:     rgba(34, 197, 94, 0.35);
+
+    --nao:            #F43F5E;
+    --nao-text:       #FB7185;
+    --nao-bg:         rgba(244, 63, 94, 0.10);
+    --nao-border:     rgba(244, 63, 94, 0.35);
+
+    --prize:          #FBBF24;
+    --prize-text:     #FCD34D;
+    --prize-bg:       rgba(251, 191, 36, 0.12);
+    --prize-border:   rgba(251, 191, 36, 0.35);
+
+    --success:        #22C55E;
+    --warning:        #F59E0B;
+    --danger:         #F43F5E;
+    --info:           #7C5CFC;
   }
 
   * {

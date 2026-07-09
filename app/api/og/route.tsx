@@ -65,7 +65,7 @@ export async function GET(req: Request) {
               {catLabel}
             </div>
           </div>
-          <div style={{ fontSize: "32px", fontWeight: 800, color: "#86efac", letterSpacing: "-1px" }}>
+          <div style={{ fontSize: "32px", fontWeight: 800, color: "#7C5CFC", letterSpacing: "-1px" }}>
             Zafe
           </div>
         </div>
@@ -89,7 +89,7 @@ export async function GET(req: Request) {
             <div
               style={{
                 width: `${probSim}%`,
-                background: "#86efac",
+                background: "#22C55E",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -101,7 +101,7 @@ export async function GET(req: Request) {
             <div
               style={{
                 flex: 1,
-                background: "#f87171",
+                background: "#F43F5E",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -116,14 +116,14 @@ export async function GET(req: Request) {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div style={{ display: "flex", gap: "32px" }}>
               <div style={{ display: "flex", flexDirection: "column" }}>
-                <span style={{ fontSize: "16px", color: "#86efac", fontWeight: 600 }}>SIM</span>
-                <span style={{ fontSize: "40px", fontWeight: 800, color: "#86efac", lineHeight: 1 }}>
+                <span style={{ fontSize: "16px", color: "#4ADE80", fontWeight: 600 }}>SIM</span>
+                <span style={{ fontSize: "40px", fontWeight: 800, color: "#4ADE80", lineHeight: 1 }}>
                   {probSim}%
                 </span>
               </div>
               <div style={{ display: "flex", flexDirection: "column" }}>
-                <span style={{ fontSize: "16px", color: "#f87171", fontWeight: 600 }}>NÃO</span>
-                <span style={{ fontSize: "40px", fontWeight: 800, color: "#f87171", lineHeight: 1 }}>
+                <span style={{ fontSize: "16px", color: "#FB7185", fontWeight: 600 }}>NÃO</span>
+                <span style={{ fontSize: "40px", fontWeight: 800, color: "#FB7185", lineHeight: 1 }}>
                   {probNao}%
                 </span>
               </div>

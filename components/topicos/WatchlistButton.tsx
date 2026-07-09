@@ -120,7 +120,7 @@ export default function WatchlistButton({ topicId }: Props) {
           <button
             onClick={confirm}
             disabled={saving}
-            className="w-full py-2 bg-primary text-black text-xs font-bold rounded-lg hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-1.5"
+            className="w-full py-2 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-1.5"
           >
             {saving ? <Loader2 size={12} className="animate-spin" /> : saved ? <><Check size={12} /> Salvo!</> : <><BellRing size={12} /> Ativar alertas</>}
           </button>

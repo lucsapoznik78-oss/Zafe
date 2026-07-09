@@ -84,7 +84,7 @@ export default function AdminCopaResolve({ matches }: Props) {
           <button
             onClick={() => call("resolver", "/api/cron/copa-resolver")}
             disabled={!!busy}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-black font-bold text-xs rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white font-bold text-xs rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
           >
             {busy === "resolver" ? <Loader2 size={12} className="animate-spin" /> : <PlayCircle size={12} />}
             Resolver agora
@@ -219,7 +219,7 @@ function ResultForm({
           if (ok) onDone();
         }}
         disabled={!!busy || homeGoals === "" || awayGoals === "" || (ko && !advanced)}
-        className="px-3 py-1.5 bg-primary text-black font-bold text-xs rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
+        className="px-3 py-1.5 bg-primary text-white font-bold text-xs rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
       >
         {busy === key ? <Loader2 size={12} className="animate-spin mx-auto" /> : "Aplicar e distribuir pontos"}
       </button>

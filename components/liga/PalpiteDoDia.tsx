@@ -65,7 +65,7 @@ export default async function PalpiteDoDia() {
 
         <div className="flex overflow-hidden rounded-md h-4 mb-1.5">
           <div
-            className="bg-sim flex items-center justify-center text-[9px] font-bold text-black min-w-[28px]"
+            className="bg-sim flex items-center justify-center text-[9px] font-bold text-white min-w-[28px]"
             style={{ width: `${probSim}%` }}
           >
             {probSim}%

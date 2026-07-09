@@ -177,7 +177,7 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
           <div className="bg-card border border-border rounded-xl p-4">
             <p className="text-xs text-muted-foreground mb-2 font-medium">Probabilidade (pool do concurso)</p>
             <div className="flex rounded-lg overflow-hidden h-8 mb-2">
-              <div className="bg-sim flex items-center justify-center text-black text-xs font-bold transition-all" style={{ width: `${probSimPct}%` }}>
+              <div className="bg-sim flex items-center justify-center text-white text-xs font-bold transition-all" style={{ width: `${probSimPct}%` }}>
                 {Number(probSimPct) > 12 ? `${probSimPct}%` : ""}
               </div>
               <div className="bg-nao flex items-center justify-center text-white text-xs font-bold transition-all" style={{ width: `${probNaoPct}%` }}>
@@ -303,7 +303,7 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
                 </p>
                 <Link
                   href="/concurso"
-                  className="block w-full py-2.5 rounded-lg bg-yellow-400 text-black text-sm font-bold hover:bg-yellow-300 transition-colors"
+                  className="block w-full py-2.5 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors"
                 >
                   Inscrever-se
                 </Link>
