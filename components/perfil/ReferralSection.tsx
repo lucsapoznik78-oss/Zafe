@@ -32,7 +32,7 @@ export default function ReferralSection({ referralCode, totalReferrals, complete
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Compartilhe seu link. Quando o amigo criar a conta, <span className="text-white font-semibold">ambos ganham Z$ 5,00</span>.
+        Compartilhe seu link. Quando o amigo criar a conta, <span className="text-white font-semibold">ambos ganham Z$ 50</span>.
       </p>
 
       <div className="flex gap-2">
@@ -50,7 +50,7 @@ export default function ReferralSection({ referralCode, totalReferrals, complete
 
       {completedReferrals > 0 && (
         <p className="text-xs text-sim">
-          +Z$ {(completedReferrals * 5).toFixed(2)} ganhos com indicações
+          +Z$ {(completedReferrals * 50).toFixed(2)} ganhos com indicações
         </p>
       )}
     </div>

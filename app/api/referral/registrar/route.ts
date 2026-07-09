@@ -1,12 +1,18 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { creditBalance } from "@/lib/wallet";
 
 // POST /api/referral/registrar — registra a indicação a partir do código do
 // cookie zafe_ref (setado por /r/[code]). Um mesmo código pode ser:
 //  * de AMIGO (profiles.referral_code) → grava profiles.referred_by + referrals
+//    e credita Z$ 50 para os dois (indicador e indicado) na hora.
 //  * de STREAMER (games_streamers.code) → grava games_referrals (atribuição
 //    do programa de streamers da Zafe Games), com sinais anti-fraude.
 // As duas atribuições são independentes e não se bloqueiam.
+// O pagamento roda no máximo 1x por usuário: só entra no bloco de amigo se
+// profiles.referred_by ainda está vazio, e ele é setado antes do crédito.
+
+const REFERRAL_REWARD = 50; // Z$ para cada lado quando a indicação converte
 
 function clientIp(request: Request): string | null {
   const fwd = request.headers.get("x-forwarded-for");
@@ -41,11 +47,39 @@ export async function POST(request: Request) {
 
     if (referrer && referrer.id !== user.id) {
       await admin.from("profiles").update({ referred_by: referrer.id }).eq("id", user.id);
-      await admin.from("referrals").insert({
+      const { error: refError } = await admin.from("referrals").insert({
         referrer_id: referrer.id,
         referred_id: user.id,
-        status: "pending",
+        status: "completed",
+        bonus_paid_at: new Date().toISOString(),
       });
+
+      // Bônus Z$ 50 pros dois lados — só se o registro da indicação entrou
+      // (o INSERT falhar = provável duplicata; não paga de novo).
+      if (!refError) {
+        const [r1, r2] = await Promise.all([
+          creditBalance(admin, referrer.id, REFERRAL_REWARD),
+          creditBalance(admin, user.id, REFERRAL_REWARD),
+        ]);
+        await admin.from("transactions").insert(
+          [
+            r1.ok && {
+              user_id: referrer.id,
+              type: "referral_bonus",
+              amount: REFERRAL_REWARD,
+              net_amount: REFERRAL_REWARD,
+              description: "Bônus de indicação — seu amigo criou a conta",
+            },
+            r2.ok && {
+              user_id: user.id,
+              type: "referral_bonus",
+              amount: REFERRAL_REWARD,
+              net_amount: REFERRAL_REWARD,
+              description: "Bônus de boas-vindas — você entrou por indicação",
+            },
+          ].filter(Boolean) as Record<string, unknown>[]
+        );
+      }
     }
   }
 

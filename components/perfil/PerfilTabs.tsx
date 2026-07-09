@@ -9,6 +9,9 @@ import EditProfileForm from "@/components/perfil/EditProfileForm";
 import CpfForm from "@/components/kyc/CpfForm";
 import TwoFaSettings from "@/components/perfil/TwoFaSettings";
 import ReferralSection from "@/components/perfil/ReferralSection";
+import NivelSection from "@/components/perfil/NivelSection";
+import RankBadge from "@/components/games/RankBadge";
+import { tierForWins } from "@/lib/games/types";
 import PremiumBadge from "@/components/ui/PremiumBadge";
 import { isPremium } from "@/lib/premium";
 import { mascaraCPF } from "@/lib/cpf";
@@ -19,9 +22,10 @@ interface Props {
   bets: any[];
   referrals: any[];
   appUrl: string;
+  totalWins: number;
 }
 
-export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl }: Props) {
+export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl, totalWins }: Props) {
   const [tab, setTab] = useState<"conta" | "como-funciona">("conta");
 
   const betsWon    = bets.filter((b) => b.status === "won").length;
@@ -77,12 +81,16 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl }:
         <div className="flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-xl font-bold text-white">{profile?.full_name}</h1>
+            <RankBadge tier={tierForWins(totalWins)} />
             {premiumActive && <PremiumBadge />}
           </div>
           <p className="text-muted-foreground text-sm">@{profile?.username}</p>
           <p className="text-primary font-semibold mt-1">{formatCurrency(wallet?.balance ?? 0)}</p>
         </div>
       </div>
+
+      {/* Nível */}
+      <NivelSection totalWins={totalWins} />
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
