@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Flame, Gift, Check, Loader2 } from "lucide-react";
-import { playConfirm } from "@/lib/sound";
+import { playConfirm, playStreak } from "@/lib/sound";
 
 interface State {
   claimed_today: boolean;
@@ -31,7 +31,9 @@ export default function DailyBonusCard() {
       const res = await fetch("/api/bonus-diario", { method: "POST" });
       const data = await res.json();
       if (res.ok) {
-        playConfirm();
+        // Sequência ativa ganha o sting de combo; primeiro dia é confirmação simples
+        if (data.streak > 1) playStreak();
+        else playConfirm();
         setJustClaimed(data.bonus);
         setState({ claimed_today: true, streak: data.streak, claim_bonus: 0 });
         router.refresh();

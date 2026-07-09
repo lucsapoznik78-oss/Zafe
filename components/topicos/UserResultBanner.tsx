@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { formatCurrency } from "@/lib/utils";
 import { TrendingUp, TrendingDown, RotateCcw } from "lucide-react";
-import { playWin } from "@/lib/sound";
+import { playWin, playWrong } from "@/lib/sound";
 
 interface Bet {
   id: string;
@@ -89,6 +89,31 @@ function WinBanner({
   );
 }
 
+function LossBanner({ totalLost, resolution, betIds }: { totalLost: number; resolution: string | null; betIds: string }) {
+  // Som de erro só na primeira vez que o usuário vê este resultado
+  useEffect(() => {
+    const key = `zafe_loss_seen_${betIds}`;
+    if (!localStorage.getItem(key)) {
+      localStorage.setItem(key, "1");
+      playWrong();
+    }
+  }, [betIds]);
+
+  return (
+    <div className="bg-nao/10 border border-nao/30 rounded-xl px-5 py-4 flex items-center gap-4">
+      <div className="w-10 h-10 rounded-full bg-nao/20 flex items-center justify-center shrink-0">
+        <TrendingDown size={20} className="text-nao" />
+      </div>
+      <div>
+        <p className="text-nao font-bold text-base">Você perdeu {formatCurrency(totalLost)}</p>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          O resultado foi {resolution?.toUpperCase()} — boa sorte na próxima!
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function UserResultBanner({ bets, resolution }: Props) {
   if (!bets || bets.length === 0) return null;
 
@@ -131,16 +156,10 @@ export default function UserResultBanner({ bets, resolution }: Props) {
   }
 
   return (
-    <div className="bg-nao/10 border border-nao/30 rounded-xl px-5 py-4 flex items-center gap-4">
-      <div className="w-10 h-10 rounded-full bg-nao/20 flex items-center justify-center shrink-0">
-        <TrendingDown size={20} className="text-nao" />
-      </div>
-      <div>
-        <p className="text-nao font-bold text-base">Você perdeu {formatCurrency(totalLost)}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">
-          O resultado foi {resolution?.toUpperCase()} — boa sorte na próxima!
-        </p>
-      </div>
-    </div>
+    <LossBanner
+      totalLost={totalLost}
+      resolution={resolution}
+      betIds={lostBets.map((b) => b.id).join("_")}
+    />
   );
 }
