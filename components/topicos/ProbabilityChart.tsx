@@ -190,7 +190,7 @@ function EndDot(color: string) {
 }
 
 export default function ProbabilityChart({ topicId, chartUrl, marketType = "binary", initialSnapshots, initialStats }: Props) {
-  const resolvedChartUrl = chartUrl ?? (topicId ? `/api/topicos/${topicId}/chart` : null);
+  const resolvedChartUrl = chartUrl ?? (topicId ? `/api/liga/${topicId}/chart` : null);
   const [filter, setFilter] = useState<Filter>("ALL");
   const [mode, setMode] = useState<"binary" | "multi">(marketType);
   const [snapshots, setSnapshots] = useState<Snapshot[]>(initialSnapshots);

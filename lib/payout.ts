@@ -253,6 +253,14 @@ export async function pagarVencedoresMulti(
     data: { topic_id: topicId, payout },
   })));
 
+  for (const { bet, payout } of winners) {
+    sendPushToUser(supabase, bet.user_id, {
+      title: "Você ganhou! 🏆",
+      body: `Seu palpite em "${title}" rendeu ${fmt(payout)}.`,
+      url: `/liga/${topicId}`,
+    }).catch(() => {});
+  }
+
   if (loserBets.length > 0) {
     await supabase.from("bets").update({ status: "lost" }).in("id", loserBets.map((b: any) => b.id));
     await supabase.from("notifications").insert(loserBets.map((bet: any) => ({
@@ -261,6 +269,14 @@ export async function pagarVencedoresMulti(
       body: `"${title}" foi resolvido. Boa sorte na próxima!`,
       data: { topic_id: topicId },
     })));
+    // Push para perdedores (dedupe por usuário — pode haver múltiplos palpites)
+    for (const userId of new Set(loserBets.map((b: any) => b.user_id))) {
+      sendPushToUser(supabase, userId as string, {
+        title: "Mercado resolvido",
+        body: `"${title}" foi resolvido. Veja o resultado.`,
+        url: `/liga/${topicId}`,
+      }).catch(() => {});
+    }
   }
 
   const { data: topicMeta } = await supabase.from("topics").select("is_private").eq("id", topicId).single();
@@ -371,6 +387,14 @@ export async function pagarVencedores(
       body: `"${title}" foi resolvido como ${resolution.toUpperCase()}. Boa sorte na próxima!`,
       data: { topic_id: topicId },
     })));
+    // Push para perdedores (dedupe por usuário — pode haver múltiplos palpites)
+    for (const userId of new Set(loserBets.map((b: any) => b.user_id))) {
+      sendPushToUser(supabase, userId as string, {
+        title: "Mercado resolvido",
+        body: `"${title}" foi resolvido como ${resolution.toUpperCase()}. Veja o resultado.`,
+        url: `/liga/${topicId}`,
+      }).catch(() => {});
+    }
   }
 
   const { data: topicMeta2 } = await supabase.from("topics").select("is_private").eq("id", topicId).single();

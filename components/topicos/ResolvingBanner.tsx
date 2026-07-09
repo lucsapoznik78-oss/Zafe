@@ -21,7 +21,7 @@ export default function ResolvingBanner({ topicId }: Props) {
 
   // Polling a cada 5s para verificar se o mercado foi resolvido
   useEffect(() => {
-    const apiPath = `/api/topicos/${topicId}/status`;
+    const apiPath = `/api/liga/${topicId}/status`;
 
     const interval = setInterval(async () => {
       try {

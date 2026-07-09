@@ -26,7 +26,7 @@ export default function TopicInsights({ topicId }: { topicId: string }) {
   useEffect(() => {
     let active = true;
     setLoading(true);
-    fetch(`/api/topicos/${topicId}/insights`)
+    fetch(`/api/liga/${topicId}/insights`)
       .then((r) => (r.ok ? r.json() : null))
       .then((j) => {
         if (active) setData(j);

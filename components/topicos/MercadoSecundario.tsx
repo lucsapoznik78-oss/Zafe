@@ -186,7 +186,7 @@ function PositionCard({
 
 export default function MercadoSecundario({ topicId, apiBase, isActive, userBets = [] }: Props) {
   const router = useRouter();
-  const base = apiBase ?? (topicId ? `/api/topicos/${topicId}` : "");
+  const base = apiBase ?? (topicId ? `/api/liga/${topicId}` : "");
 
   const [data, setData]       = useState<OrderBookData | null>(null);
   const [loading, setLoading] = useState(true);

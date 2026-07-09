@@ -13,7 +13,7 @@ interface Props {
 }
 
 export default function LiveStats({ topicId, chartUrl, initialSim, initialNao, initialBetCount, isResolved }: Props) {
-  const resolvedChartUrl = chartUrl ?? (topicId ? `/api/topicos/${topicId}/chart` : null);
+  const resolvedChartUrl = chartUrl ?? (topicId ? `/api/liga/${topicId}/chart` : null);
   const [sim, setSim] = useState(initialSim);
   const [nao, setNao] = useState(initialNao);
   const [betCount, setBetCount] = useState(initialBetCount);

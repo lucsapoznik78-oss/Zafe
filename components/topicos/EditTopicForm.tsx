@@ -34,7 +34,7 @@ export default function EditTopicForm({ topic }: { topic: Topic }) {
       closesDate.setHours(23, 59, 59, 0);
     }
 
-    const res = await fetch(`/api/topicos/${topic.id}/editar`, {
+    const res = await fetch(`/api/liga/${topic.id}/editar`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title, description, category, closes_at: closesDate.toISOString() }),

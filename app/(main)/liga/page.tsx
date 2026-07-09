@@ -9,6 +9,7 @@ import LegalFooter from "@/components/layout/LegalFooter";
 import type { TopicWithStats } from "@/types/database";
 import { Suspense } from "react";
 import ConcursoBanner from "@/components/liga/ConcursoBanner";
+import PalpiteDoDia from "@/components/liga/PalpiteDoDia";
 
 const EVENT_LIST_LIMIT = 200;
 
@@ -133,6 +134,12 @@ export default async function LigaPage({ searchParams }: PageProps) {
       </div>
 
       <ConcursoBanner />
+
+      {tab === "abertos" && !search && !category && (
+        <Suspense fallback={null}>
+          <PalpiteDoDia />
+        </Suspense>
+      )}
 
       <div className="flex gap-1 bg-muted rounded-lg p-1 w-fit">
         {tabs.map((t) => (

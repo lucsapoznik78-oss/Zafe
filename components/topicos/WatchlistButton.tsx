@@ -17,7 +17,7 @@ export default function WatchlistButton({ topicId }: Props) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch(`/api/topicos/${topicId}/watchlist`)
+    fetch(`/api/liga/${topicId}/watchlist`)
       .then(r => r.json())
       .then(d => {
         setWatching(d.watching);
@@ -39,7 +39,7 @@ export default function WatchlistButton({ topicId }: Props) {
   async function toggle() {
     if (watching) {
       setSaving(true);
-      await fetch(`/api/topicos/${topicId}/watchlist`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) });
+      await fetch(`/api/liga/${topicId}/watchlist`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) });
       setWatching(false);
       setSaving(false);
       setOpen(false);
@@ -50,7 +50,7 @@ export default function WatchlistButton({ topicId }: Props) {
 
   async function confirm() {
     setSaving(true);
-    const res = await fetch(`/api/topicos/${topicId}/watchlist`, {
+    const res = await fetch(`/api/liga/${topicId}/watchlist`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ threshold_pct: threshold }),
@@ -66,7 +66,7 @@ export default function WatchlistButton({ topicId }: Props) {
   async function updateThreshold(val: number) {
     setThreshold(val);
     if (watching) {
-      await fetch(`/api/topicos/${topicId}/watchlist`, {
+      await fetch(`/api/liga/${topicId}/watchlist`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ threshold_pct: val, update_only: true }),
