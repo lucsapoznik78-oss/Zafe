@@ -41,16 +41,18 @@ const MODULES = [
 export default async function InicioPage() {
   const data = await getConcurso();
   const titulo = data?.concurso.titulo ?? "Concurso Zafe";
-  const premioTotal = Number(data?.concurso.premiacao_total ?? 500);
+  const premioTotal = Number(data?.concurso.premiacao_total ?? 20000);
   const inscritos = data?.inscritos ?? 0;
   const inicio = data?.concurso.periodo_inicio;
   const fim = data?.concurso.periodo_fim;
 
+  // Distribuição de R$ 20.000 — deve espelhar o DEFAULT de `concursos.premios`
+  // (migration 050): 8k + 5k + 3k + 2×2k.
   const premios = [
-    { pos: "1º", valor: "R$ 200" },
-    { pos: "2º", valor: "R$ 150" },
-    { pos: "3º", valor: "R$ 100" },
-    { pos: "4º–5º", valor: "R$ 25" },
+    { pos: "1º", valor: "R$ 8.000" },
+    { pos: "2º", valor: "R$ 5.000" },
+    { pos: "3º", valor: "R$ 3.000" },
+    { pos: "4º–5º", valor: "R$ 2.000" },
   ];
 
   return (
