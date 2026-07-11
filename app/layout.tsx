@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import CookieNotice from "@/components/layout/CookieNotice";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -109,6 +110,7 @@ export default function RootLayout({
       </head>
       <body className="antialiased bg-background text-white min-h-screen">
         {children}
+        <CookieNotice />
       </body>
     </html>
   );

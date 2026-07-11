@@ -3,7 +3,7 @@ export default function TermosPage() {
     <div className="py-8 max-w-2xl mx-auto space-y-8 text-sm text-muted-foreground">
       <div>
         <h1 className="text-xl sm:text-2xl font-bold text-white mb-1">Termos de Uso e Política de Privacidade</h1>
-        <p className="text-xs">Última atualização: maio de 2026</p>
+        <p className="text-xs">Última atualização: julho de 2026</p>
       </div>
 
       <section className="space-y-3">
@@ -102,7 +102,23 @@ export default function TermosPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-base font-semibold text-white">9. Limitação de responsabilidade</h2>
+        <h2 className="text-base font-semibold text-white">9. Cookies</h2>
+        <p>
+          A Zafe utiliza apenas cookies essenciais, estritamente necessários para o funcionamento
+          da plataforma: (a) cookies de sessão de autenticação, que mantêm você conectado à sua conta;
+          e (b) o cookie <code className="text-white/80">zafe_ref</code>, gravado quando você acessa um
+          link de convite de outro usuário, usado exclusivamente para atribuir a indicação (expira em 7 dias).
+        </p>
+        <p>
+          Não utilizamos cookies de publicidade, análise ou rastreamento de terceiros. Por serem
+          estritamente necessários, esses cookies dispensam consentimento nos termos da LGPD
+          (Lei 13.709/2018). Você pode removê-los limpando os dados do seu navegador — isso encerrará
+          sua sessão na Zafe.
+        </p>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-base font-semibold text-white">10. Limitação de responsabilidade</h2>
         <p>
           O Z$ não tem valor monetário real. A participação em concursos envolve habilidade preditiva, não
           garantia de prêmio. A Zafe não é responsável por decisões tomadas com base em curadoria de informação.
@@ -110,7 +126,7 @@ export default function TermosPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-base font-semibold text-white">10. Alterações nos termos</h2>
+        <h2 className="text-base font-semibold text-white">11. Alterações nos termos</h2>
         <p>
           A Zafe pode atualizar estes termos a qualquer momento. Usuários serão notificados sobre mudanças
           significativas. O uso continuado da plataforma após notificação constitui aceitação dos novos termos.
@@ -118,7 +134,7 @@ export default function TermosPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-base font-semibold text-white">11. Contato</h2>
+        <h2 className="text-base font-semibold text-white">12. Contato</h2>
         <p>
           Para dúvidas, suporte ou solicitações relacionadas à privacidade, entre em contato pelo email da plataforma.
         </p>
