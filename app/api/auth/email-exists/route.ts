@@ -21,16 +21,13 @@ export async function GET(request: Request) {
   }
 
   const admin = createAdminClient();
-  const { data, error } = await admin
-    .schema("auth")
-    .from("users")
-    .select("id")
-    .eq("email", email)
-    .limit(1);
+  // Vai via RPC (migration 058) — service_role -> auth.users. Antes usava
+  // .schema("auth").from("users"), mas PostgREST não expõe o schema auth.
+  const { data, error } = await admin.rpc("email_exists", { p_email: email });
 
   if (error) {
     return NextResponse.json({ error: "Erro ao verificar" }, { status: 500 });
   }
 
-  return NextResponse.json({ exists: !!data && data.length > 0 });
+  return NextResponse.json({ exists: !!data });
 }
