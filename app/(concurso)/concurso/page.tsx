@@ -275,7 +275,7 @@ export default async function ConcursoPage({ searchParams }: PageProps) {
             <p className="text-[10px] text-yellow-300/50 font-semibold uppercase tracking-wide">Premiação</p>
             <Link
               href="/concurso/como-funciona"
-              className="text-[10px] font-semibold text-yellow-400 hover:text-yellow-300 transition-colors"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-400 text-black text-xs font-extrabold uppercase tracking-wide hover:bg-yellow-300 transition-colors"
             >
               Como funciona →
             </Link>
