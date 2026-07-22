@@ -129,13 +129,13 @@ export default function ComoFuncionaPage() {
         </h2>
         <p className="text-base text-muted-foreground leading-relaxed">
           A premiação total da edição (ex.: <strong className="text-yellow-400">R$ 20.000</strong>) é
-          dividida entre os melhores colocados do ranking final. A regra depende do número de inscritos:
+          dividida entre os melhores colocados do ranking final:
         </p>
 
-        {/* Regra percentual */}
+        {/* Tabela de premiação */}
         <div className="bg-card border border-border rounded-xl overflow-hidden">
           <div className="px-5 py-3.5 border-b border-border/50">
-            <p className="text-base font-semibold text-white">Com 300 ou mais inscritos</p>
+            <p className="text-base font-semibold text-white">Premiação</p>
             <p className="text-sm text-muted-foreground">
               Percentuais sobre a premiação total (exemplo com R$ 20.000)
             </p>
@@ -173,31 +173,6 @@ export default function ComoFuncionaPage() {
           </div>
         </div>
 
-        {/* Regra fixa */}
-        <div className="bg-card border border-border rounded-xl overflow-hidden">
-          <div className="px-5 py-3.5 border-b border-border/50">
-            <p className="text-base font-semibold text-white">Com menos de 300 inscritos</p>
-            <p className="text-sm text-muted-foreground">Tabela fixa de prêmios</p>
-          </div>
-          <div className="divide-y divide-border/30 text-base">
-            <div className="px-5 py-3.5 flex items-center justify-between">
-              <span className="text-white">1º lugar</span>
-              <span className="text-yellow-400 font-semibold">R$ 8.000</span>
-            </div>
-            <div className="px-5 py-3.5 flex items-center justify-between">
-              <span className="text-white">2º lugar</span>
-              <span className="text-yellow-400 font-semibold">R$ 5.000</span>
-            </div>
-            <div className="px-5 py-3.5 flex items-center justify-between">
-              <span className="text-white">3º lugar</span>
-              <span className="text-yellow-400 font-semibold">R$ 3.000</span>
-            </div>
-            <div className="px-5 py-3.5 flex items-center justify-between">
-              <span className="text-white">4º e 5º lugares</span>
-              <span className="text-yellow-400 font-semibold">R$ 2.000 cada</span>
-            </div>
-          </div>
-        </div>
       </section>
 
       {/* Empates */}
@@ -279,6 +254,11 @@ export default function ComoFuncionaPage() {
           Participar do concurso
         </Link>
       </div>
+
+      <p className="text-[10px] text-muted-foreground/50 text-center leading-relaxed">
+        Se o concurso tiver menos de 500 inscritos, a edição será cancelada e todos os participantes
+        serão reembolsados.
+      </p>
     </div>
   );
 }

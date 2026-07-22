@@ -27,8 +27,8 @@ interface PageProps {
   searchParams: Promise<{ tab?: string; category?: string; search?: string }>;
 }
 
-// Com 300+ inscritos vale a regra percentual; abaixo disso, a tabela fixa do
-// jsonb `concursos.premios` (8k/5k/3k/2×2k). Ver lib/concurso-premios.ts.
+// Distribuição percentual da premiação — ver lib/concurso-premios.ts e
+// /concurso/como-funciona. Com <500 inscritos a edição é cancelada e reembolsada.
 const PREMIOS = [
   { pos: "1º", valor: "30% — R$ 6.000" },
   { pos: "2º", valor: "5% — R$ 1.000" },
@@ -289,8 +289,8 @@ export default async function ConcursoPage({ searchParams }: PageProps) {
             ))}
           </div>
           <p className="mt-1.5 text-[10px] text-yellow-300/40">
-            Regra percentual válida com 300+ inscritos; abaixo disso vale a tabela fixa (1º R$ 8.000 ·
-            2º R$ 5.000 · 3º R$ 3.000 · 4º–5º R$ 2.000).
+            Se o concurso tiver menos de 500 inscritos, a edição será cancelada e todos os
+            participantes serão reembolsados.
           </p>
           <div className="mt-3 flex items-start gap-2 rounded-lg bg-yellow-400/10 border border-yellow-400/20 px-3 py-2">
             <Mail size={14} className="text-yellow-400 shrink-0 mt-0.5" />
