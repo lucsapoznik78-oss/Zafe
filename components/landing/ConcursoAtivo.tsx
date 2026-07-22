@@ -33,12 +33,17 @@ async function getConcursoData() {
 export default async function ConcursoAtivo() {
   const data = await getConcursoData();
 
-  // Fallback se não houver concurso ativo
-  const titulo = data?.concurso.titulo ?? "Concurso Liga Zafe — Temporada Maio";
-  const premioTotal = data?.concurso.premiacao_total ?? 20000;
-  const inscritos = data?.inscritos ?? 0;
-  const inicio = data?.concurso.periodo_inicio ?? "2026-05-01";
-  const fim = data?.concurso.periodo_fim ?? "2026-05-31";
+  // Sem concurso ativo (ou erro na query) esconde a seção — antes tinha
+  // fallback com "Temporada Maio" e datas de 05/2026 hardcoded que ficaram
+  // stale quando Maio/Junho foram cancelados. Melhor não renderizar do
+  // que mostrar dado errado na landing.
+  if (!data) return null;
+
+  const titulo = data.concurso.titulo;
+  const premioTotal = data.concurso.premiacao_total ?? 20000;
+  const inscritos = data.inscritos;
+  const inicio = data.concurso.periodo_inicio;
+  const fim = data.concurso.periodo_fim;
 
   const premios = [
     { pos: "1º", valor: "R$ 8.000" },
