@@ -99,6 +99,7 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
   // Estado do fluxo de recuperação de senha
   const [showReset, setShowReset] = useState(false);
   const [resetSent, setResetSent] = useState(false);
+  const [resetNotFound, setResetNotFound] = useState(false);
 
   // Reenvio do email de confirmação (signup não confirmado)
   const [showResend, setShowResend] = useState(false);
@@ -307,10 +308,25 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
     e.preventDefault();
     setLoading(true);
     setError("");
+    setResetNotFound(false);
     if (!email) {
       setError("Informe seu email para recuperar a senha.");
       setLoading(false);
       return;
+    }
+    // Checa primeiro se o email tem cadastro — decisão de UX explícita:
+    // preferimos mensagem clara ("não existe conta") ao invés do genérico
+    // "se houver, enviamos", mesmo sabendo que isso permite enumeração.
+    try {
+      const check = await fetch(`/api/auth/email-exists?e=${encodeURIComponent(email)}`);
+      const { exists } = await check.json();
+      if (!exists) {
+        setResetNotFound(true);
+        setLoading(false);
+        return;
+      }
+    } catch {
+      // Se a checagem falhar, cai no fluxo antigo (envia mesmo assim).
     }
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth/confirm?next=/redefinir-senha`,
@@ -338,7 +354,7 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
           <p className="text-lg font-bold text-white">Recuperar senha</p>
           <p className="text-sm text-muted-foreground">
             {resetSent
-              ? `Se houver uma conta com ${email}, enviamos um link para redefinir a senha.`
+              ? `Enviamos um link para ${email}. Confira sua caixa de entrada e o spam.`
               : "Informe seu email e enviaremos um link para redefinir sua senha."}
           </p>
         </div>
@@ -351,13 +367,18 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
                 id="reset-email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => { setEmail(e.target.value); setResetNotFound(false); }}
                 placeholder="voce@email.com"
                 className={inputFocusClass}
                 required
               />
             </div>
 
+            {resetNotFound && (
+              <p className="text-destructive text-sm">
+                Não encontramos nenhuma conta com <strong>{email}</strong>. Confira se digitou certo ou crie uma conta.
+              </p>
+            )}
             {error && <p className="text-destructive text-sm">{error}</p>}
 
             <Button type="submit" disabled={loading} className={btnClass}>
@@ -367,7 +388,7 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
         )}
 
         <button
-          onClick={() => { setShowReset(false); setResetSent(false); setError(""); }}
+          onClick={() => { setShowReset(false); setResetSent(false); setResetNotFound(false); setError(""); }}
           className="w-full text-xs text-muted-foreground hover:text-white transition-colors"
         >
           Voltar ao login
