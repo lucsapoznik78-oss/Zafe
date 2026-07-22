@@ -48,23 +48,23 @@ const PASSOS = [
 
 export default function ComoFuncionaPage() {
   return (
-    <div className="py-8 max-w-2xl mx-auto space-y-8 px-4">
+    <div className="py-10 max-w-3xl mx-auto space-y-10 px-4">
       {/* Header */}
       <div>
         <Link
           href="/concurso"
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-white transition-colors mb-4"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-white transition-colors mb-5"
         >
-          <ArrowLeft size={13} />
+          <ArrowLeft size={15} />
           Voltar ao concurso
         </Link>
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-yellow-400/15 flex items-center justify-center shrink-0">
-            <Trophy size={20} className="text-yellow-400" />
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-yellow-400/15 flex items-center justify-center shrink-0">
+            <Trophy size={24} className="text-yellow-400" />
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-white">Como funciona o Concurso</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white">Como funciona o Concurso</h1>
+            <p className="text-base text-muted-foreground mt-1">
               A competição mensal de previsões da Zafe, com prêmios reais em dinheiro.
             </p>
           </div>
@@ -72,8 +72,8 @@ export default function ComoFuncionaPage() {
       </div>
 
       {/* O que é */}
-      <section className="space-y-2 text-sm text-muted-foreground leading-relaxed">
-        <h2 className="text-base font-semibold text-white">O que é o Concurso</h2>
+      <section className="space-y-3 text-base text-muted-foreground leading-relaxed">
+        <h2 className="text-xl font-semibold text-white">O que é o Concurso</h2>
         <p>
           O Concurso Zafe é uma <strong className="text-white">competição mensal de habilidade</strong>{" "}
           (fantasy sport, nos termos do Art. 49 da Lei 14.790/2023 — o mesmo modelo do Cartola FC). Você
@@ -83,17 +83,17 @@ export default function ComoFuncionaPage() {
       </section>
 
       {/* Passo a passo */}
-      <section className="space-y-3">
-        <h2 className="text-base font-semibold text-white">Passo a passo</h2>
-        <div className="space-y-3">
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold text-white">Passo a passo</h2>
+        <div className="space-y-4">
           {PASSOS.map((p) => (
-            <div key={p.titulo} className="bg-card border border-border rounded-xl p-4 flex gap-3">
-              <div className="w-8 h-8 rounded-lg bg-yellow-400/10 flex items-center justify-center shrink-0 mt-0.5">
-                <p.icon size={15} className="text-yellow-400" />
+            <div key={p.titulo} className="bg-card border border-border rounded-xl p-5 flex gap-4">
+              <div className="w-10 h-10 rounded-lg bg-yellow-400/10 flex items-center justify-center shrink-0 mt-0.5">
+                <p.icon size={18} className="text-yellow-400" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-white">{p.titulo}</p>
-                <p className="text-sm text-muted-foreground leading-relaxed mt-1">{p.texto}</p>
+                <p className="text-base font-semibold text-white">{p.titulo}</p>
+                <p className="text-base text-muted-foreground leading-relaxed mt-1.5">{p.texto}</p>
               </div>
             </div>
           ))}
@@ -101,9 +101,9 @@ export default function ComoFuncionaPage() {
       </section>
 
       {/* Exemplo prático */}
-      <section className="space-y-2">
-        <h2 className="text-base font-semibold text-white">Um exemplo prático</h2>
-        <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm text-muted-foreground leading-relaxed space-y-2">
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold text-white">Um exemplo prático</h2>
+        <div className="rounded-xl border border-primary/30 bg-primary/5 p-5 text-base text-muted-foreground leading-relaxed space-y-3">
           <p>
             Você se inscreve e começa com <strong className="text-white">ZC$ 1.000</strong>. Coloca{" "}
             <strong className="text-white">ZC$ 100</strong> na previsão{" "}
@@ -122,50 +122,50 @@ export default function ComoFuncionaPage() {
       </section>
 
       {/* Quem ganha */}
-      <section className="space-y-3">
-        <h2 className="text-base font-semibold text-white flex items-center gap-2">
-          <Crown size={16} className="text-yellow-400" />
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+          <Crown size={20} className="text-yellow-400" />
           Quem ganha e quanto
         </h2>
-        <p className="text-sm text-muted-foreground leading-relaxed">
+        <p className="text-base text-muted-foreground leading-relaxed">
           A premiação total da edição (ex.: <strong className="text-yellow-400">R$ 20.000</strong>) é
           dividida entre os melhores colocados do ranking final. A regra depende do número de inscritos:
         </p>
 
         {/* Regra percentual */}
         <div className="bg-card border border-border rounded-xl overflow-hidden">
-          <div className="px-4 py-2.5 border-b border-border/50">
-            <p className="text-sm font-semibold text-white">Com 300 ou mais inscritos</p>
-            <p className="text-xs text-muted-foreground">
+          <div className="px-5 py-3.5 border-b border-border/50">
+            <p className="text-base font-semibold text-white">Com 300 ou mais inscritos</p>
+            <p className="text-sm text-muted-foreground">
               Percentuais sobre a premiação total (exemplo com R$ 20.000)
             </p>
           </div>
-          <div className="divide-y divide-border/30 text-sm">
-            <div className="px-4 py-2.5 flex items-center justify-between">
+          <div className="divide-y divide-border/30 text-base">
+            <div className="px-5 py-3.5 flex items-center justify-between">
               <span className="text-white">1º lugar</span>
               <span className="text-yellow-400 font-semibold">30% — R$ 6.000</span>
             </div>
-            <div className="px-4 py-2.5 flex items-center justify-between">
+            <div className="px-5 py-3.5 flex items-center justify-between">
               <span className="text-white">2º lugar</span>
               <span className="text-yellow-400 font-semibold">5% — R$ 1.000</span>
             </div>
-            <div className="px-4 py-2.5 flex items-center justify-between gap-4">
+            <div className="px-5 py-3.5 flex items-center justify-between gap-4">
               <span className="text-white">
-                Resto do top 1% <span className="text-muted-foreground text-xs">(do 3º em diante)</span>
+                Resto do top 1% <span className="text-muted-foreground text-sm">(do 3º em diante)</span>
               </span>
               <span className="text-yellow-400 font-semibold text-right shrink-0">
                 45% — R$ 9.000 divididos igualmente
               </span>
             </div>
-            <div className="px-4 py-2.5 flex items-center justify-between gap-4">
+            <div className="px-5 py-3.5 flex items-center justify-between gap-4">
               <span className="text-white">Resto do top 2%</span>
               <span className="text-yellow-400 font-semibold text-right shrink-0">
                 20% — R$ 4.000 divididos igualmente
               </span>
             </div>
           </div>
-          <div className="px-4 py-2.5 bg-muted/20 border-t border-border/40">
-            <p className="text-xs text-muted-foreground leading-relaxed">
+          <div className="px-5 py-3.5 bg-muted/20 border-t border-border/40">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               Exemplo com 10.000 inscritos: o top 1% são as 100 primeiras posições. O 1º leva R$ 6.000,
               o 2º leva R$ 1.000, do 3º ao 100º dividem R$ 9.000 (cerca de R$ 92 cada) e do 101º ao
               200º dividem R$ 4.000 (R$ 40 cada).
@@ -175,24 +175,24 @@ export default function ComoFuncionaPage() {
 
         {/* Regra fixa */}
         <div className="bg-card border border-border rounded-xl overflow-hidden">
-          <div className="px-4 py-2.5 border-b border-border/50">
-            <p className="text-sm font-semibold text-white">Com menos de 300 inscritos</p>
-            <p className="text-xs text-muted-foreground">Tabela fixa de prêmios</p>
+          <div className="px-5 py-3.5 border-b border-border/50">
+            <p className="text-base font-semibold text-white">Com menos de 300 inscritos</p>
+            <p className="text-sm text-muted-foreground">Tabela fixa de prêmios</p>
           </div>
-          <div className="divide-y divide-border/30 text-sm">
-            <div className="px-4 py-2.5 flex items-center justify-between">
+          <div className="divide-y divide-border/30 text-base">
+            <div className="px-5 py-3.5 flex items-center justify-between">
               <span className="text-white">1º lugar</span>
               <span className="text-yellow-400 font-semibold">R$ 8.000</span>
             </div>
-            <div className="px-4 py-2.5 flex items-center justify-between">
+            <div className="px-5 py-3.5 flex items-center justify-between">
               <span className="text-white">2º lugar</span>
               <span className="text-yellow-400 font-semibold">R$ 5.000</span>
             </div>
-            <div className="px-4 py-2.5 flex items-center justify-between">
+            <div className="px-5 py-3.5 flex items-center justify-between">
               <span className="text-white">3º lugar</span>
               <span className="text-yellow-400 font-semibold">R$ 3.000</span>
             </div>
-            <div className="px-4 py-2.5 flex items-center justify-between">
+            <div className="px-5 py-3.5 flex items-center justify-between">
               <span className="text-white">4º e 5º lugares</span>
               <span className="text-yellow-400 font-semibold">R$ 2.000 cada</span>
             </div>
@@ -201,17 +201,17 @@ export default function ComoFuncionaPage() {
       </section>
 
       {/* Empates */}
-      <section className="space-y-2">
-        <h2 className="text-base font-semibold text-white flex items-center gap-2">
-          <Scale size={16} className="text-primary" />
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+          <Scale size={20} className="text-primary" />
           E se der empate?
         </h2>
-        <div className="text-sm text-muted-foreground leading-relaxed space-y-2">
+        <div className="text-base text-muted-foreground leading-relaxed space-y-3">
           <p>
             Quem termina com o mesmo saldo de ZC$ divide o prêmio de forma justa — ninguém é
             desempatado &ldquo;no sorteio&rdquo;.
           </p>
-          <ul className="list-disc pl-5 space-y-1.5">
+          <ul className="list-disc pl-5 space-y-2">
             <li>
               Empate no 1º e 2º lugares: os empatados somam os dois prêmios e dividem igualmente.
             </li>
@@ -230,12 +230,12 @@ export default function ComoFuncionaPage() {
       </section>
 
       {/* Pagamento */}
-      <section className="space-y-2">
-        <h2 className="text-base font-semibold text-white flex items-center gap-2">
-          <Banknote size={16} className="text-yellow-400" />
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+          <Banknote size={20} className="text-yellow-400" />
           Como o prêmio é pago
         </h2>
-        <ul className="list-disc pl-5 text-sm text-muted-foreground leading-relaxed space-y-1.5">
+        <ul className="list-disc pl-5 text-base text-muted-foreground leading-relaxed space-y-2">
           <li>Os vencedores recebem um email ao fim do concurso com a posição e o valor conquistado.</li>
           <li>
             O pagamento é feito via <strong className="text-white">PIX</strong>, em até 7 dias úteis,
@@ -247,12 +247,12 @@ export default function ComoFuncionaPage() {
       </section>
 
       {/* Requisitos */}
-      <section className="space-y-2">
-        <h2 className="text-base font-semibold text-white flex items-center gap-2">
-          <ShieldCheck size={16} className="text-primary" />
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+          <ShieldCheck size={20} className="text-primary" />
           Requisitos e jogo limpo
         </h2>
-        <ul className="list-disc pl-5 text-sm text-muted-foreground leading-relaxed space-y-1.5">
+        <ul className="list-disc pl-5 text-base text-muted-foreground leading-relaxed space-y-2">
           <li>Idade mínima de 18 anos e verificação de identidade (CPF).</li>
           <li>Uma inscrição por pessoa por edição. Contas múltiplas são desclassificadas.</li>
           <li>
@@ -274,7 +274,7 @@ export default function ComoFuncionaPage() {
       <div className="pt-2">
         <Link
           href="/concurso/entrar"
-          className="block w-full text-center rounded-xl bg-yellow-400 text-black font-bold py-3 text-sm hover:bg-yellow-300 transition-colors"
+          className="block w-full text-center rounded-xl bg-yellow-400 text-black font-bold py-4 text-base hover:bg-yellow-300 transition-colors"
         >
           Participar do concurso
         </Link>
