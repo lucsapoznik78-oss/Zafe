@@ -27,11 +27,13 @@ interface PageProps {
   searchParams: Promise<{ tab?: string; category?: string; search?: string }>;
 }
 
+// Com 300+ inscritos vale a regra percentual; abaixo disso, a tabela fixa do
+// jsonb `concursos.premios` (8k/5k/3k/2×2k). Ver lib/concurso-premios.ts.
 const PREMIOS = [
-  { pos: "1º", valor: "R$ 8.000" },
-  { pos: "2º", valor: "R$ 5.000" },
-  { pos: "3º", valor: "R$ 3.000" },
-  { pos: "4º–5º", valor: "R$ 2.000 cada" },
+  { pos: "1º", valor: "30% — R$ 6.000" },
+  { pos: "2º", valor: "5% — R$ 1.000" },
+  { pos: "Top 1%", valor: "45% divididos" },
+  { pos: "Top 2%", valor: "20% divididos" },
 ];
 
 async function EventosConcurso({ category, search, tab, concurso, now }: { category: string; search: string; tab: string; concurso: any; now: string }) {
@@ -269,7 +271,15 @@ export default async function ConcursoPage({ searchParams }: PageProps) {
 
         {/* Prêmios */}
         <div className="border-t border-yellow-400/20 pt-3">
-          <p className="text-[10px] text-yellow-300/50 mb-2 font-semibold uppercase tracking-wide">Premiação</p>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[10px] text-yellow-300/50 font-semibold uppercase tracking-wide">Premiação</p>
+            <Link
+              href="/concurso/como-funciona"
+              className="text-[10px] font-semibold text-yellow-400 hover:text-yellow-300 transition-colors"
+            >
+              Como funciona →
+            </Link>
+          </div>
           <div className="flex flex-wrap gap-2">
             {PREMIOS.map((p) => (
               <div key={p.pos} className="px-2 py-1 rounded bg-yellow-400/10 border border-yellow-400/20">
@@ -278,10 +288,14 @@ export default async function ConcursoPage({ searchParams }: PageProps) {
               </div>
             ))}
           </div>
+          <p className="mt-1.5 text-[10px] text-yellow-300/40">
+            Regra percentual válida com 300+ inscritos; abaixo disso vale a tabela fixa (1º R$ 8.000 ·
+            2º R$ 5.000 · 3º R$ 3.000 · 4º–5º R$ 2.000).
+          </p>
           <div className="mt-3 flex items-start gap-2 rounded-lg bg-yellow-400/10 border border-yellow-400/20 px-3 py-2">
             <Mail size={14} className="text-yellow-400 shrink-0 mt-0.5" />
             <p className="text-[11px] text-yellow-300/70 leading-relaxed">
-              Ao fim do concurso, quem ficar no <span className="font-semibold text-yellow-400">topo do ranking (top 5%)</span> receberá
+              Ao fim do concurso, quem ficar entre os <span className="font-semibold text-yellow-400">melhores colocados do ranking</span> receberá
               um email com os detalhes de como resgatar o prêmio em dinheiro. Mantenha o email da sua conta atualizado.
             </p>
           </div>

@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { Trophy, Users } from "lucide-react";
 import LoginForm from "@/components/auth/LoginForm";
 import ConfirmarInscricao from "@/components/concurso/ConfirmarInscricao";
@@ -133,6 +134,13 @@ export default async function ConcursoEntrar() {
 
         {/* Form de login/cadastro */}
         <LoginForm next="/concurso/entrar" theme="concurso" />
+
+        <p className="text-center text-xs text-muted-foreground">
+          Primeira vez?{" "}
+          <Link href="/concurso/como-funciona" className="text-yellow-400 hover:underline">
+            Veja como o concurso funciona
+          </Link>
+        </p>
       </div>
     </div>
   );

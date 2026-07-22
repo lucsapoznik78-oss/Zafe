@@ -45,13 +45,13 @@ export default async function InicioPage() {
   const inicio = data?.concurso.periodo_inicio;
   const fim = data?.concurso.periodo_fim;
 
-  // Distribuição de R$ 20.000 — deve espelhar o DEFAULT de `concursos.premios`
-  // (migration 050): 8k + 5k + 3k + 2×2k.
+  // Regra percentual (300+ inscritos) — ver lib/concurso-premios.ts e
+  // /concurso/como-funciona. Abaixo de 300 vale a tabela fixa da migration 050.
   const premios = [
-    { pos: "1º", valor: "R$ 8.000" },
-    { pos: "2º", valor: "R$ 5.000" },
-    { pos: "3º", valor: "R$ 3.000" },
-    { pos: "4º–5º", valor: "R$ 2.000" },
+    { pos: "1º", valor: "30% — R$ 6.000" },
+    { pos: "2º", valor: "5% — R$ 1.000" },
+    { pos: "Top 1%", valor: "45% divididos" },
+    { pos: "Top 2%", valor: "20% divididos" },
   ];
 
   return (
@@ -108,7 +108,7 @@ export default async function InicioPage() {
             ))}
           </div>
 
-          <div className="mt-8">
+          <div className="mt-8 flex flex-wrap items-center gap-4">
             <Link
               href="/concurso"
               className="group inline-flex items-center gap-2 rounded-2xl bg-yellow-400 px-7 py-3.5 text-base font-black text-black transition-colors hover:bg-primary/90"
@@ -116,6 +116,12 @@ export default async function InicioPage() {
               <Trophy size={18} />
               Entrar no Concurso
               <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
+            </Link>
+            <Link
+              href="/concurso/como-funciona"
+              className="text-sm font-semibold text-yellow-400 hover:text-yellow-300 transition-colors"
+            >
+              Como funciona →
             </Link>
           </div>
         </div>
