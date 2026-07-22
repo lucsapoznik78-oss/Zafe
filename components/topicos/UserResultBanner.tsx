@@ -16,6 +16,8 @@ interface Bet {
 interface Props {
   bets: Bet[];
   resolution: string | null;
+  /** Mercados multi: label do resultado vencedor (substitui SIM/NÃO) */
+  winningLabel?: string | null;
 }
 
 /** Anima um valor de 0 até `target` com ease-out (~1.2s) */
@@ -81,7 +83,7 @@ function WinBanner({
         </p>
         <p className="text-xs text-muted-foreground mt-0.5">
           Investiu {formatCurrency(totalInvested)}
-          {side ? ` no ${side.toUpperCase()}` : ""} · lucro líquido{" "}
+          {side ? ` em ${side}` : ""} · lucro líquido{" "}
           {formatCurrency(profit > 0 ? profit : totalPayout - totalInvested)}
         </p>
       </div>
@@ -107,15 +109,18 @@ function LossBanner({ totalLost, resolution, betIds }: { totalLost: number; reso
       <div>
         <p className="text-nao font-bold text-base">Você perdeu {formatCurrency(totalLost)}</p>
         <p className="text-xs text-muted-foreground mt-0.5">
-          O resultado foi {resolution?.toUpperCase()} — boa sorte na próxima!
+          O resultado foi {resolution} — boa sorte na próxima!
         </p>
       </div>
     </div>
   );
 }
 
-export default function UserResultBanner({ bets, resolution }: Props) {
+export default function UserResultBanner({ bets, resolution, winningLabel }: Props) {
   if (!bets || bets.length === 0) return null;
+
+  // Texto do resultado: label do outcome (multi) ou SIM/NÃO (binário)
+  const resultText = winningLabel ?? (resolution ? resolution.toUpperCase() : null);
 
   const wonBets = bets.filter((b) => b.status === "won");
   const lostBets = bets.filter((b) => b.status === "lost");
@@ -135,7 +140,7 @@ export default function UserResultBanner({ bets, resolution }: Props) {
         totalPayout={totalPayout}
         totalInvested={totalInvested}
         profit={profit}
-        side={wonBets[0]?.side}
+        side={winningLabel ?? (wonBets[0]?.side ? wonBets[0].side.toUpperCase() : undefined)}
         betIds={wonBets.map((b) => b.id).join("_")}
       />
     );
@@ -158,7 +163,7 @@ export default function UserResultBanner({ bets, resolution }: Props) {
   return (
     <LossBanner
       totalLost={totalLost}
-      resolution={resolution}
+      resolution={resultText}
       betIds={lostBets.map((b) => b.id).join("_")}
     />
   );

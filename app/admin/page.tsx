@@ -3,7 +3,6 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import AdminQueue from "@/components/admin/AdminQueue";
 import AdminResolve from "@/components/admin/AdminResolve";
-import AdminCopaResolve from "@/components/admin/AdminCopaResolve";
 import AdminStats from "@/components/admin/AdminStats";
 import AdminActiveTopics from "@/components/admin/AdminActiveTopics";
 import OracleLog from "@/components/admin/OracleLog";
@@ -114,18 +113,6 @@ export default async function AdminPage() {
   const ligaTopics = (allActiveTopics ?? []).filter(t => !t.concurso_id);
   const concursoTopics = (allActiveTopics ?? []).filter(t => t.concurso_id);
 
-  // Copa: partidas já disputadas que o oráculo não fechou (manual). Inclui as
-  // em revisão e as ainda agendadas/adiadas cujo kickoff já passou.
-  const { data: copaMatchesRaw } = await admin
-    .from("copa_matches")
-    .select("*")
-    .in("status", ["scheduled", "postponed", "under_review"])
-    .lt("kickoff_at", new Date().toISOString())
-    .not("home_team", "is", null)
-    .not("away_team", "is", null)
-    .order("kickoff_at", { ascending: true });
-  const copaMatchesDue = copaMatchesRaw ?? [];
-
   const walletBalance  = (wallets ?? []).reduce((s, w: any) => s + (w.balance ?? 0), 0);
   const betsLocked     = (activeBets ?? []).reduce((s, b: any) => s + (b.amount ?? 0), 0);
   const ordersEscrow   = (openOrders ?? []).reduce((s, o: any) => s + parseFloat(o.price) * (parseFloat(o.quantity) - parseFloat(o.filled_qty ?? 0)), 0);
@@ -157,7 +144,6 @@ export default async function AdminPage() {
       />
       <AdminQueue topics={pending ?? []} />
       <AdminResolve topics={[]} allResolving={resolvingWithOutcomes} />
-      <AdminCopaResolve matches={copaMatchesDue} />
 
       {/* Liga */}
       <div>

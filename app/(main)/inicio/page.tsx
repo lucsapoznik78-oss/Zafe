@@ -31,7 +31,6 @@ async function getConcurso() {
 
 const MODULES = [
   { href: "/liga", label: "Liga", desc: "Preveja esporte e e-sports com Z$ virtual", Icon: Swords },
-  { href: "/copa", label: "Copa", desc: "Mata-mata de palpites por rodada", Icon: Trophy },
   { href: "/comunidade", label: "Comunidade", desc: "Eventos criados e resolvidos por previsores", Icon: Globe2 },
   { href: "/games", label: "Games", desc: "Desafios rápidos e ao vivo", Icon: Gamepad2 },
   { href: "/privadas", label: "Privadas", desc: "Aposte com amigos em grupos fechados", Icon: Lock },

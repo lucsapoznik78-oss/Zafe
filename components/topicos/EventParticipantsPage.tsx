@@ -18,7 +18,8 @@ interface EventParticipantsPageProps {
 interface BetRow {
   id: string;
   user_id: string;
-  side: BetSide;
+  side: BetSide | null;
+  outcome_id?: string | null;
   amount: number;
   status: string;
   locked_odds?: number | string | null;
@@ -116,7 +117,7 @@ export async function EventParticipantsPage({
   const isUUID = /^[0-9a-f-]{36}$/.test(id);
   const topicQuery = admin
     .from("topics")
-    .select("id, slug, title, description, category, status, closes_at, is_private, creator_id");
+    .select("id, slug, title, description, category, status, closes_at, is_private, creator_id, market_type");
 
   // Concurso filtra por concurso_id
   if (pillar === "concurso" && concursoId) {
@@ -171,10 +172,17 @@ export async function EventParticipantsPage({
   }
 
   const isConcurso = pillar === "concurso";
+  const isMulti = !isConcurso && topic.market_type === "multi";
   const betTable = isConcurso ? "concurso_bets" : "bets";
   const selectFields = isConcurso
     ? "id, user_id, side, amount, status, potential_payout, created_at"
-    : "id, user_id, side, amount, status, locked_odds, potential_payout, created_at";
+    : "id, user_id, side, outcome_id, amount, status, locked_odds, potential_payout, created_at";
+
+  // Mercados multi: labels dos resultados (bets têm outcome_id, side NULL)
+  const { data: topicOutcomes } = isMulti
+    ? await admin.from("topic_outcomes").select("id, label, position").eq("topic_id", topic.id).order("position")
+    : { data: [] };
+  const outcomeLabel = new Map((topicOutcomes ?? []).map((o: any) => [o.id, o.label]));
 
   let betQuery = (admin as any)
     .from(betTable)
@@ -258,7 +266,7 @@ export async function EventParticipantsPage({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+      <div className={`grid grid-cols-1 gap-3 ${isMulti ? "sm:grid-cols-3" : "sm:grid-cols-4"}`}>
         <div className="bg-card border border-border rounded-xl p-4">
           <p className="text-xs text-muted-foreground mb-1">Usuários</p>
           <p className="text-xl font-bold text-white">{grouped.length}</p>
@@ -267,17 +275,42 @@ export async function EventParticipantsPage({
           <p className="text-xs text-muted-foreground mb-1">Entradas</p>
           <p className="text-xl font-bold text-white">{bets.length}</p>
         </div>
-        <div className="bg-card border border-border rounded-xl p-4">
-          <p className="text-xs text-muted-foreground mb-1">SIM</p>
-          <p className={`text-xl font-bold ${isConcurso ? "text-yellow-400" : "text-sim"}`}>{isConcurso ? "ZC$" : "Z$"} {formatZ(totalSim)}</p>
-        </div>
-        <div className="bg-card border border-border rounded-xl p-4">
-          <p className="text-xs text-muted-foreground mb-1">NÃO</p>
-          <p className={`text-xl font-bold ${isConcurso ? "text-yellow-400" : "text-nao"}`}>{isConcurso ? "ZC$" : "Z$"} {formatZ(totalNao)}</p>
-        </div>
+        {isMulti ? (
+          <div className="bg-card border border-border rounded-xl p-4">
+            <p className="text-xs text-muted-foreground mb-1">Volume total</p>
+            <p className="text-xl font-bold text-primary">Z$ {formatZ(bets.reduce((s, b) => s + Number(b.amount), 0))}</p>
+          </div>
+        ) : (
+          <>
+            <div className="bg-card border border-border rounded-xl p-4">
+              <p className="text-xs text-muted-foreground mb-1">SIM</p>
+              <p className={`text-xl font-bold ${isConcurso ? "text-yellow-400" : "text-sim"}`}>{isConcurso ? "ZC$" : "Z$"} {formatZ(totalSim)}</p>
+            </div>
+            <div className="bg-card border border-border rounded-xl p-4">
+              <p className="text-xs text-muted-foreground mb-1">NÃO</p>
+              <p className={`text-xl font-bold ${isConcurso ? "text-yellow-400" : "text-nao"}`}>{isConcurso ? "ZC$" : "Z$"} {formatZ(totalNao)}</p>
+            </div>
+          </>
+        )}
       </div>
 
-      {totalVolume > 0 && (
+      {isMulti && (topicOutcomes ?? []).length > 0 && (
+        <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-center gap-4 flex-wrap">
+          {(topicOutcomes ?? []).map((o: any) => {
+            const vol = bets
+              .filter((b) => b.outcome_id === o.id)
+              .reduce((s, b) => s + Number(b.amount), 0);
+            if (vol === 0) return null;
+            return (
+              <span key={o.id} className="text-xs text-primary font-semibold">
+                {o.label} · Z$ {formatZ(vol)}
+              </span>
+            );
+          })}
+        </div>
+      )}
+
+      {!isMulti && totalVolume > 0 && (
         <div className="bg-card border border-border rounded-xl overflow-hidden">
           <div className="flex h-2">
             <div className="bg-sim" style={{ width: `${(totalSim / totalVolume) * 100}%` }} />
@@ -338,22 +371,27 @@ export async function EventParticipantsPage({
                       )}
                     </div>
                   </div>
-                  <div className="text-right shrink-0">
-                    <p className={`text-xs font-semibold ${isConcurso ? "text-yellow-400" : "text-sim"}`}>SIM {isConcurso ? "ZC$" : "Z$"} {formatZ(participant.simTotal)}</p>
-                    <p className={`text-xs font-semibold mt-0.5 ${isConcurso ? "text-yellow-400" : "text-nao"}`}>NÃO {isConcurso ? "ZC$" : "Z$"} {formatZ(participant.naoTotal)}</p>
-                  </div>
+                  {!isMulti && (
+                    <div className="text-right shrink-0">
+                      <p className={`text-xs font-semibold ${isConcurso ? "text-yellow-400" : "text-sim"}`}>SIM {isConcurso ? "ZC$" : "Z$"} {formatZ(participant.simTotal)}</p>
+                      <p className={`text-xs font-semibold mt-0.5 ${isConcurso ? "text-yellow-400" : "text-nao"}`}>NÃO {isConcurso ? "ZC$" : "Z$"} {formatZ(participant.naoTotal)}</p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="divide-y divide-border/30">
                   {participant.bets.map((bet) => {
                     const isSim = bet.side === "sim";
                     const pct = entryPercent(bet);
+                    const pickLabel = isMulti
+                      ? (bet.outcome_id ? outcomeLabel.get(bet.outcome_id) ?? "—" : "—")
+                      : (bet.side ?? "").toUpperCase();
 
                     return (
                       <div key={bet.id} className="px-4 py-3 grid grid-cols-1 md:grid-cols-[1fr_auto_auto_auto] gap-2 md:gap-4 md:items-center">
                         <div className="flex items-center gap-2 min-w-0">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-black ${isSim ? "bg-sim/15 text-sim" : "bg-nao/15 text-nao"}`}>
-                            {bet.side.toUpperCase()}
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-black ${isMulti ? "bg-primary/15 text-primary" : isSim ? "bg-sim/15 text-sim" : "bg-nao/15 text-nao"}`}>
+                            {pickLabel}
                           </span>
                           <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${STATUS_CLASS[bet.status] ?? "bg-zinc-500/15 text-zinc-300"}`}>
                             {STATUS_LABEL[bet.status] ?? bet.status}

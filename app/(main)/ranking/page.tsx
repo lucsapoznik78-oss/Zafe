@@ -4,11 +4,11 @@ import { createAdminClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Ranking",
-  description: "Veja os melhores previsores do Zafe. Ranking de acertos, lucros e performance na liga de previsões.",
+  description: "Veja os melhores previsores do Zafe. Ranking geral por saldo em Z$.",
   alternates: { canonical: "/ranking" },
   openGraph: {
     title: "Ranking — Zafe",
-    description: "Veja os melhores previsores do Zafe. Ranking de acertos, lucros e performance.",
+    description: "Veja os melhores previsores do Zafe. Ranking geral por saldo em Z$.",
     type: "website",
   },
   twitter: {
@@ -20,67 +20,44 @@ export const metadata: Metadata = {
 import { formatCurrency } from "@/lib/utils";
 import { Trophy, TrendingUp, Medal, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
-import RankingFilters from "@/components/ranking/RankingFilters";
 
-const MIN_BETS = 1;
 const PER_PAGE = 50;
 
 interface PageProps {
-  searchParams: Promise<{ periodo?: string; page?: string }>;
+  searchParams: Promise<{ page?: string }>;
 }
 
 export default async function RankingPage({ searchParams }: PageProps) {
-  const { periodo = "todos", page: pageStr = "1" } = await searchParams;
+  const { page: pageStr = "1" } = await searchParams;
   const page = Math.max(1, parseInt(pageStr) || 1);
   const supabase = createAdminClient();
 
-  const desde: string | null =
-    periodo === "semana"
-      ? new Date(Date.now() - 7  * 24 * 60 * 60 * 1000).toISOString()
-      : periodo === "mes"
-      ? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
-      : null;
+  const [{ data: wallets }, { data: bets }] = await Promise.all([
+    supabase
+      .from("wallets")
+      .select("user_id, balance")
+      .order("balance", { ascending: false }),
+    supabase
+      .from("bets")
+      .select("user_id, status")
+      .in("status", ["won", "lost"]),
+  ]);
 
-  let query = supabase
-    .from("bets")
-    .select("user_id, amount, potential_payout, status")
-    .in("status", ["won", "lost", "matched", "pending"]);
-
-  if (desde) {
-    query = query.gte("created_at", desde);
-  }
-
-  const { data: bets } = await query;
-
-  const statsMap = new Map<string, {
-    wins: number; losses: number; pendentes: number;
-    lucro: number; volume: number;
-  }>();
-
+  // Stats de acerto (secundário — não afeta a ordenação)
+  const statsMap = new Map<string, { wins: number; losses: number }>();
   for (const bet of bets ?? []) {
-    const s = statsMap.get(bet.user_id) ?? { wins: 0, losses: 0, pendentes: 0, lucro: 0, volume: 0 };
-    s.volume += bet.amount;
-    if (bet.status === "won") {
-      s.wins++;
-      s.lucro += (bet.potential_payout ?? 0) - bet.amount;
-    } else if (bet.status === "lost") {
-      s.losses++;
-      s.lucro -= bet.amount;
-    } else {
-      s.pendentes++;
-    }
+    const s = statsMap.get(bet.user_id) ?? { wins: 0, losses: 0 };
+    if (bet.status === "won") s.wins++;
+    else s.losses++;
     statsMap.set(bet.user_id, s);
   }
 
-  const allUserIds = Array.from(statsMap.entries())
-    .filter(([, s]) => s.wins + s.losses + s.pendentes >= MIN_BETS)
-    .sort((a, b) => b[1].lucro - a[1].lucro || b[1].volume - a[1].volume)
-    .map(([id]) => id);
-
-  const totalPages = Math.max(1, Math.ceil(allUserIds.length / PER_PAGE));
+  const allWallets = wallets ?? [];
+  const totalPages = Math.max(1, Math.ceil(allWallets.length / PER_PAGE));
   const currentPage = Math.min(page, totalPages);
   const offset = (currentPage - 1) * PER_PAGE;
-  const userIds = allUserIds.slice(offset, offset + PER_PAGE);
+  const pageWallets = allWallets.slice(offset, offset + PER_PAGE);
+  const userIds = pageWallets.map((w) => w.user_id);
 
   const { data: profiles } = userIds.length > 0
     ? await supabase
@@ -91,47 +68,40 @@ export default async function RankingPage({ searchParams }: PageProps) {
 
   const profileMap = new Map((profiles ?? []).map((p: any) => [p.id, p]));
 
-  const ranking = userIds
-    .map((id, index) => {
-      const s = statsMap.get(id)!;
-      const p = profileMap.get(id);
-      const total = s.wins + s.losses;
-      return {
-        pos: offset + index + 1,
-        id,
-        username: p?.username ?? "—",
-        full_name: p?.full_name ?? "—",
-        wins: s.wins,
-        losses: s.losses,
-        total,
-        pendentes: s.pendentes,
-        winRate: total > 0 ? (s.wins / total) * 100 : 0,
-        lucro: s.lucro,
-        volume: s.volume,
-      };
-    });
+  const ranking = pageWallets.map((w, index) => {
+    const p = profileMap.get(w.user_id);
+    const s = statsMap.get(w.user_id) ?? { wins: 0, losses: 0 };
+    const total = s.wins + s.losses;
+    return {
+      pos: offset + index + 1,
+      id: w.user_id,
+      username: p?.username ?? "—",
+      full_name: p?.full_name ?? "—",
+      saldo: Number(w.balance ?? 0),
+      wins: s.wins,
+      total,
+      winRate: total > 0 ? (s.wins / total) * 100 : 0,
+    };
+  });
 
-  const buildPageHref = (p: number) =>
-    `/ranking?${new URLSearchParams({ periodo, page: String(p) })}`;
+  const buildPageHref = (p: number) => `/ranking?page=${p}`;
 
   return (
     <div className="py-6 max-w-3xl mx-auto space-y-5">
       <div>
         <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
           <Trophy size={22} className="text-primary" />
-          Ranking de Preditores
+          Ranking Geral
         </h1>
         <p className="text-muted-foreground text-sm mt-0.5">
-          Ordenado por lucro líquido em Z$
+          Ordenado por saldo em Z$
         </p>
       </div>
-
-      <RankingFilters periodo={periodo} />
 
       {ranking.length === 0 ? (
         <div className="bg-card border border-border rounded-xl p-12 text-center space-y-2">
           <Trophy size={32} className="text-muted-foreground mx-auto" />
-          <p className="text-white font-semibold">Nenhum preditor ainda</p>
+          <p className="text-white font-semibold">Nenhum previsor ainda</p>
           <p className="text-sm text-muted-foreground">
             Faça pelo menos um palpite para entrar no ranking.
           </p>
@@ -170,30 +140,20 @@ export default async function RankingPage({ searchParams }: PageProps) {
                       <span className="text-xs text-muted-foreground ml-1">({r.wins}/{r.total})</span>
                     </p>
                   ) : (
-                    <p className="text-sm font-semibold text-muted-foreground">
-                      {r.pendentes} em aberto
-                    </p>
+                    <p className="text-sm font-semibold text-muted-foreground">—</p>
                   )}
                 </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Volume</p>
-                  <p className="text-sm font-semibold text-white">{formatCurrency(r.volume)}</p>
-                </div>
-                <div className="w-24">
-                  <p className="text-xs text-muted-foreground">Lucro líquido</p>
-                  <p className={`text-sm font-bold ${r.lucro >= 0 ? "text-sim" : "text-nao"}`}>
-                    {r.lucro >= 0 ? "+" : ""}{formatCurrency(r.lucro)}
-                  </p>
+                <div className="w-28">
+                  <p className="text-xs text-muted-foreground">Saldo</p>
+                  <p className="text-sm font-bold text-primary">{formatCurrency(r.saldo)}</p>
                 </div>
               </div>
 
               <div className="sm:hidden shrink-0 text-right">
                 <p className="text-xs text-muted-foreground">
-                  {r.total > 0 ? `${r.winRate.toFixed(0)}% acerto` : `${r.pendentes} em aberto`}
+                  {r.total > 0 ? `${r.winRate.toFixed(0)}% acerto` : "—"}
                 </p>
-                <p className={`text-sm font-bold ${r.lucro >= 0 ? "text-sim" : "text-nao"}`}>
-                  {r.lucro >= 0 ? "+" : ""}{formatCurrency(r.lucro)}
-                </p>
+                <p className="text-sm font-bold text-primary">{formatCurrency(r.saldo)}</p>
               </div>
 
               <TrendingUp size={14} className="text-muted-foreground shrink-0 hidden sm:block" />

@@ -79,7 +79,6 @@ export default function Navbar() {
         <nav className="hidden md:flex items-center gap-1">
           {[
             { href: "/liga", label: "Liga" },
-            { href: "/copa", label: "Copa" },
             { href: "/comunidade", label: "Comunidade" },
             { href: "/games", label: "Games" },
             { href: "/privadas", label: "Privadas" },

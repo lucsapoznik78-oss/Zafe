@@ -61,7 +61,7 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
             .eq("topic_id", topicId).eq("user_id", user.id)
         : Promise.resolve({ data: null }),
       admin.from("bets")
-        .select("id, side, amount, status, locked_odds, created_at, user_id")
+        .select("id, side, outcome_id, amount, status, locked_odds, created_at, user_id")
         .eq("topic_id", topicId)
         .in("status", ["pending", "matched", "partial", "won", "lost", "refunded", "exited"])
         .order("amount", { ascending: false })
@@ -161,7 +161,13 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
       {/* Banner resultado próprio (ganhou/perdeu) */}
       {finalizedBets.length > 0 && (
         <div className="mb-4">
-          <UserResultBanner bets={finalizedBets} resolution={topic.resolution} />
+          <UserResultBanner
+            bets={finalizedBets}
+            resolution={topic.resolution}
+            winningLabel={isMulti && topic.winning_outcome_id
+              ? (topicOutcomes ?? []).find((o: any) => o.id === topic.winning_outcome_id)?.label ?? null
+              : null}
+          />
         </div>
       )}
 
@@ -361,7 +367,7 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
           <TopicInsights topicId={topicId} />
 
           {/* Distribuição final (só quando resolvido) */}
-          {topic.status === "resolved" && topic.resolution && (
+          {!isMulti && topic.status === "resolved" && topic.resolution && (
             <ResolutionBreakdown
               totalVolume={totalVolume}
               totalSim={totalSim}
@@ -383,7 +389,13 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
                 Ver histórico completo de participantes →
               </Link>
             </div>
-            <ParticipantsList bets={allBetsWithProfiles} totalSim={totalSim} totalNao={totalNao} />
+            <ParticipantsList
+              bets={allBetsWithProfiles}
+              totalSim={totalSim}
+              totalNao={totalNao}
+              marketType={isMulti ? "multi" : "binary"}
+              outcomes={(topicOutcomes ?? []).map((o: any) => ({ id: o.id, label: o.label }))}
+            />
           </div>
 
           {/* Regras */}
@@ -421,11 +433,13 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
             )}
           </div>
 
-          <MercadoSecundario
-            topicId={topicId}
-            isActive={!isClosed}
-            userBets={activeBets as { id: string; side: "sim" | "nao"; amount: number; status: string }[]}
-          />
+          {!isMulti && (
+            <MercadoSecundario
+              topicId={topicId}
+              isActive={!isClosed}
+              userBets={activeBets as { id: string; side: "sim" | "nao"; amount: number; status: string }[]}
+            />
+          )}
 
           <div className="bg-card border border-border rounded-xl p-4 text-xs text-muted-foreground space-y-2">
             <p className="font-semibold text-white text-sm">Como funciona</p>

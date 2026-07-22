@@ -34,7 +34,7 @@ export default function TermosPage() {
         </p>
         <p>
           Z$ é distribuído via bônus de boas-vindas (1.000 Z$), bônus semanal de engajamento e como prêmio
-          nos eventos da zona grátis (Liga, Copa, Comunidade, Games e Privadas). Palpites não-correspondidos
+          nos eventos da zona grátis (Liga, Comunidade, Games e Privadas). Palpites não-correspondidos
           (sem contrapartida) são reembolsados integralmente em Z$ quando o evento é encerrado.
         </p>
       </section>

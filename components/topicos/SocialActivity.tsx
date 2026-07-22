@@ -33,7 +33,7 @@ export default async function SocialActivity({ topicId, currentUserId }: Props) 
   // Apostas dos amigos neste tópico
   const { data: friendBets } = await admin
     .from("bets")
-    .select("id, user_id, side, amount, status, locked_odds")
+    .select("id, user_id, side, outcome_id, amount, status, locked_odds")
     .eq("topic_id", topicId)
     .in("user_id", friendIds)
     .in("status", ["pending", "matched", "partial", "won", "lost"])
@@ -59,13 +59,20 @@ export default async function SocialActivity({ topicId, currentUserId }: Props) 
   const commentUserIds = [...new Set((comments ?? []).map((c: any) => c.user_id))];
   const { data: commentBets } = commentUserIds.length
     ? await admin.from("bets")
-        .select("user_id, side")
+        .select("user_id, side, outcome_id")
         .eq("topic_id", topicId)
         .in("user_id", commentUserIds)
         .in("status", ["pending", "matched", "partial", "won", "lost"])
         .limit(20)
     : { data: [] };
-  const commentBetMap = new Map((commentBets ?? []).map((b: any) => [b.user_id, b.side]));
+  const commentBetMap = new Map((commentBets ?? []).map((b: any) => [b.user_id, b]));
+
+  // Labels dos outcomes (mercados multi — bets têm outcome_id e side NULL)
+  const hasMultiBets = [...(friendBets ?? []), ...(commentBets ?? [])].some((b: any) => b.outcome_id);
+  const { data: topicOutcomes } = hasMultiBets
+    ? await admin.from("topic_outcomes").select("id, label").eq("topic_id", topicId)
+    : { data: [] };
+  const outcomeLabel = new Map((topicOutcomes ?? []).map((o: any) => [o.id, o.label]));
 
   const hasFriendBets = (friendBets ?? []).length > 0;
   const hasComments   = (comments ?? []).length > 0;
@@ -86,40 +93,46 @@ export default async function SocialActivity({ topicId, currentUserId }: Props) 
             {(friendBets ?? []).map((bet: any) => {
               const profile = profileMap.get(bet.user_id);
               const name    = profile?.full_name ?? profile?.username ?? "Usuário";
+              const isMulti = !!bet.outcome_id;
               const isSim   = bet.side === "sim";
+              const pickLabel = isMulti
+                ? (outcomeLabel.get(bet.outcome_id) ?? "—")
+                : (bet.side ?? "").toUpperCase();
               return (
                 <div key={bet.id} className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
-                    <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${isSim ? "bg-sim" : "bg-nao"}`} />
+                    <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${isMulti ? "bg-primary" : isSim ? "bg-sim" : "bg-nao"}`} />
                     <Link
                       href={`/u/${profile?.username}`}
                       className="text-xs text-white font-medium hover:text-primary transition-colors truncate"
                     >
                       {name}
                     </Link>
-                    <span className={`text-[10px] font-bold shrink-0 ${isSim ? "text-sim" : "text-nao"}`}>
-                      {bet.side.toUpperCase()}
+                    <span className={`text-[10px] font-bold shrink-0 ${isMulti ? "text-primary" : isSim ? "text-sim" : "text-nao"}`}>
+                      {pickLabel}
                     </span>
                     <span className="text-[10px] text-muted-foreground shrink-0">{fmt(parseFloat(bet.amount))}</span>
                   </div>
-                  <div className="flex gap-1 shrink-0">
-                    <Link
-                      href={`/liga/${topicId}?side=${bet.side}`}
-                      className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-colors ${
-                        isSim
-                          ? "bg-sim/15 text-sim hover:bg-sim/25"
-                          : "bg-nao/15 text-nao hover:bg-nao/25"
-                      }`}
-                    >
-                      Concordar
-                    </Link>
-                    <Link
-                      href={`/liga/${topicId}?side=${bet.side === "sim" ? "nao" : "sim"}`}
-                      className="px-2 py-0.5 rounded text-[10px] font-semibold bg-muted text-muted-foreground hover:text-white transition-colors"
-                    >
-                      Discordar
-                    </Link>
-                  </div>
+                  {!isMulti && (
+                    <div className="flex gap-1 shrink-0">
+                      <Link
+                        href={`/liga/${topicId}?side=${bet.side}`}
+                        className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-colors ${
+                          isSim
+                            ? "bg-sim/15 text-sim hover:bg-sim/25"
+                            : "bg-nao/15 text-nao hover:bg-nao/25"
+                        }`}
+                      >
+                        Concordar
+                      </Link>
+                      <Link
+                        href={`/liga/${topicId}?side=${bet.side === "sim" ? "nao" : "sim"}`}
+                        className="px-2 py-0.5 rounded text-[10px] font-semibold bg-muted text-muted-foreground hover:text-white transition-colors"
+                      >
+                        Discordar
+                      </Link>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -140,18 +153,22 @@ export default async function SocialActivity({ topicId, currentUserId }: Props) 
           <div className="space-y-2.5">
             {(comments ?? []).map((c: any) => {
               const name = c.profiles?.full_name ?? c.profiles?.username ?? "Usuário";
-              const side = commentBetMap.get(c.user_id);
+              const cBet = commentBetMap.get(c.user_id);
+              const side = cBet?.side ?? null;
+              const cLabel = cBet?.outcome_id
+                ? (outcomeLabel.get(cBet.outcome_id) ?? null)
+                : (side ? side.toUpperCase() : null);
               return (
                 <div key={c.id} className="flex gap-2">
                   <div className={`w-0.5 shrink-0 rounded-full mt-0.5 ${
-                    side === "sim" ? "bg-sim" : side === "nao" ? "bg-nao" : "bg-border"
+                    cBet?.outcome_id ? "bg-primary" : side === "sim" ? "bg-sim" : side === "nao" ? "bg-nao" : "bg-border"
                   }`} />
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 mb-0.5">
                       <span className="text-[11px] font-semibold text-white">{name}</span>
-                      {side && (
-                        <span className={`text-[9px] font-bold ${side === "sim" ? "text-sim" : "text-nao"}`}>
-                          {side.toUpperCase()}
+                      {cLabel && (
+                        <span className={`text-[9px] font-bold ${cBet?.outcome_id ? "text-primary" : side === "sim" ? "text-sim" : "text-nao"}`}>
+                          {cLabel}
                         </span>
                       )}
                       <span className="text-[10px] text-muted-foreground">
