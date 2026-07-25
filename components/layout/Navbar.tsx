@@ -10,6 +10,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
 import { formatCurrency } from "@/lib/utils";
 import { isPremium } from "@/lib/premium";
+import { CONCURSO_ENABLED } from "@/lib/flags";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -100,14 +101,16 @@ export default function Navbar() {
 
         <div className="flex items-center gap-1.5 sm:gap-3">
           {/* Porta do mundo PAGO — destacada, separada da zona grátis */}
-          <Link
-            href="/concurso"
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors"
-          >
-            <Trophy size={14} />
-            <span>Concurso</span>
-            <span className="hidden lg:inline font-semibold text-prize-text">· Prêmio R$</span>
-          </Link>
+          {CONCURSO_ENABLED && (
+            <Link
+              href="/concurso"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors"
+            >
+              <Trophy size={14} />
+              <span>Concurso</span>
+              <span className="hidden lg:inline font-semibold text-prize-text">· Prêmio R$</span>
+            </Link>
+          )}
 
           <div className="relative group">
             <button type="button" className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-md bg-primary/10 text-primary text-xs sm:text-sm font-medium cursor-default">

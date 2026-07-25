@@ -1,4 +1,5 @@
 import { Scale } from "lucide-react";
+import { CONCURSO_ENABLED } from "@/lib/flags";
 
 export default function DiferenteDeBet() {
   return (
@@ -22,18 +23,22 @@ export default function DiferenteDeBet() {
             compete contra outros previsores.
           </p>
 
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            O Concurso se enquadra como{" "}
-            <span className="text-white font-medium">fantasy sport pelo Art. 49 da Lei 14.790/2023</span>{" "}
-            — prêmio fixo definido na abertura, independente do número de inscritos,
-            sobre eventos reais de esporte e e-sports. Não somos uma casa de jogos e
-            não pretendemos ser.
-          </p>
+          {CONCURSO_ENABLED && (
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              O Concurso se enquadra como{" "}
+              <span className="text-white font-medium">fantasy sport pelo Art. 49 da Lei 14.790/2023</span>{" "}
+              — prêmio fixo definido na abertura, independente do número de inscritos,
+              sobre eventos reais de esporte e e-sports. Não somos uma casa de jogos e
+              não pretendemos ser.
+            </p>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             {[
-              { label: "Z$ é virtual", sub: "Na zona grátis não há depósito nem valor real" },
-              { label: "Prêmio fixo (Art. 49)", sub: "Definido na abertura, independe de inscritos" },
+              { label: "Z$ é virtual", sub: "Sem depósito, sem valor real, sem saque" },
+              ...(CONCURSO_ENABLED
+                ? [{ label: "Prêmio fixo (Art. 49)", sub: "Definido na abertura, independe de inscritos" }]
+                : []),
               { label: "Só esporte e e-sports", sub: "Eventos reais e verificáveis" },
               { label: "Transparência total", sub: "Probabilidades visíveis e auditáveis" },
             ].map((item) => (

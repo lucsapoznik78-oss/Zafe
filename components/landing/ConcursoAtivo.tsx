@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Trophy, Users, Calendar, Medal } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { CONCURSO_ENABLED } from "@/lib/flags";
 
 async function getConcursoData() {
   try {
@@ -31,6 +32,7 @@ async function getConcursoData() {
 }
 
 export default async function ConcursoAtivo() {
+  if (!CONCURSO_ENABLED) return null;
   const data = await getConcursoData();
 
   // Sem concurso ativo (ou erro na query) esconde a seção — antes tinha

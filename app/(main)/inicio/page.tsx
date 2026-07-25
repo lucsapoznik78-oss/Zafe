@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import DailyBonusCard from "@/components/inicio/DailyBonusCard";
 import { createAdminClient } from "@/lib/supabase/server";
+import { CONCURSO_ENABLED } from "@/lib/flags";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -38,7 +39,7 @@ const MODULES = [
 ];
 
 export default async function InicioPage() {
-  const data = await getConcurso();
+  const data = CONCURSO_ENABLED ? await getConcurso() : null;
   const titulo = data?.concurso.titulo ?? "Concurso Zafe";
   const premioTotal = Number(data?.concurso.premiacao_total ?? 20000);
   const inscritos = data?.inscritos ?? 0;
@@ -60,6 +61,7 @@ export default async function InicioPage() {
       <DailyBonusCard />
 
       {/* ─────────── HERÓI: CONCURSO (mundo pago) ─────────── */}
+      {CONCURSO_ENABLED && (
       <section className="relative overflow-hidden rounded-3xl border border-yellow-400/30 bg-gradient-to-br from-yellow-400/15 via-yellow-500/5 to-black p-6 sm:p-10">
         <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-yellow-400/20 blur-3xl" />
         <div className="relative">
@@ -126,20 +128,25 @@ export default async function InicioPage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* ─────────── divisor ─────────── */}
-      <div className="flex items-center gap-4">
-        <div className="h-px flex-1 bg-border" />
-        <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-          ou jogue de graça
-        </span>
-        <div className="h-px flex-1 bg-border" />
-      </div>
+      {CONCURSO_ENABLED && (
+        <div className="flex items-center gap-4">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            ou jogue de graça
+          </span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+      )}
 
       {/* ─────────── ZONA GRÁTIS ─────────── */}
       <section>
         <div className="mb-5">
-          <h2 className="text-xl font-black text-white">Zona grátis</h2>
+          <h2 className="text-xl font-black text-white">
+            {CONCURSO_ENABLED ? "Zona grátis" : "Módulos"}
+          </h2>
           <p className="text-sm text-muted-foreground">
             Tudo com Z$ virtual — sem dinheiro, só habilidade. Esporte e e-sports.
           </p>

@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { Trophy } from "lucide-react";
+import { CONCURSO_ENABLED } from "@/lib/flags";
 
 export default function ConcursoBanner() {
+  if (!CONCURSO_ENABLED) return null;
   return (
     <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 flex items-center justify-between gap-4">
       <div className="flex items-center gap-3">

@@ -1,7 +1,15 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { CONCURSO_ENABLED } from "@/lib/flags";
 
 export async function middleware(request: NextRequest) {
+  // Concurso desligado (sem CNPJ/PIX): ninguém acessa o mundo pago direto por
+  // link/anúncio. As páginas /concurso vão pra home; a API /api/concurso segue
+  // fora daqui (prefixo diferente) e é inócua enquanto o PIX não está configurado.
+  if (!CONCURSO_ENABLED && request.nextUrl.pathname.startsWith("/concurso")) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(

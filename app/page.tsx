@@ -15,16 +15,23 @@ import PorQueConfiar from "@/components/landing/PorQueConfiar";
 import DiferenteDeBet from "@/components/landing/DiferenteDeBet";
 import CtaFinal from "@/components/landing/CtaFinal";
 import LandingFooter from "@/components/landing/LandingFooter";
+import { CONCURSO_ENABLED } from "@/lib/flags";
+
+const META_DESC = CONCURSO_ENABLED
+  ? "Compete prevendo o que vai acontecer. Receba 1.000 Z$ grátis ao criar conta e dispute o prêmio mensal com os melhores previsores do Brasil."
+  : "Compete prevendo esporte e e-sports. Receba 1.000 Z$ grátis ao criar conta e suba no ranking dos melhores previsores do Brasil. Sem depósito, sem cartão.";
+
+const META_SHARE_DESC = CONCURSO_ENABLED
+  ? "Compete prevendo o que vai acontecer. Prêmio mensal em PIX pros melhores. Sem depósito, sem cartão."
+  : "Compete prevendo esporte e e-sports com Z$ virtual. Sem depósito, sem cartão.";
 
 export const metadata: Metadata = {
   title: "Zafe — A liga das previsões",
-  description:
-    "Compete prevendo o que vai acontecer. Receba 1.000 Z$ grátis ao criar conta e dispute o prêmio mensal com os melhores previsores do Brasil.",
+  description: META_DESC,
   alternates: { canonical: "/" },
   openGraph: {
     title: "Zafe — A liga das previsões",
-    description:
-      "Compete prevendo o que vai acontecer. Prêmio mensal em PIX pros melhores. Sem depósito, sem cartão.",
+    description: META_SHARE_DESC,
     type: "website",
     siteName: "Zafe",
     url: "https://www.zafe.app.br",
@@ -33,8 +40,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Zafe — A liga das previsões",
-    description:
-      "Compete prevendo o que vai acontecer. Prêmio mensal em PIX pros melhores. Sem depósito, sem cartão.",
+    description: META_SHARE_DESC,
   },
 };
 

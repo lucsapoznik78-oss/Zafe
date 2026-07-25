@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Gift, Trophy, Check } from "lucide-react";
+import { CONCURSO_ENABLED } from "@/lib/flags";
 
 export default function EntrarCards() {
   return (
@@ -7,14 +8,16 @@ export default function EntrarCards() {
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-10">
           <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">
-            Por onde você quer começar
+            {CONCURSO_ENABLED ? "Por onde você quer começar" : "Comece a jogar grátis"}
           </h2>
           <p className="text-muted-foreground text-sm">
-            Jogue de graça no site ou dispute o prêmio em dinheiro do concurso.
+            {CONCURSO_ENABLED
+              ? "Jogue de graça no site ou dispute o prêmio em dinheiro do concurso."
+              : "Fantasy game de esporte e e-sports com Z$ virtual. Sem depósito, sem cartão."}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className={CONCURSO_ENABLED ? "grid grid-cols-1 sm:grid-cols-2 gap-4" : "max-w-md mx-auto"}>
           {/* Site — grátis, Z$ */}
           <div className="bg-card border border-border rounded-2xl p-6 flex flex-col gap-4 hover:border-primary/30 transition-colors">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -46,6 +49,7 @@ export default function EntrarCards() {
           </div>
 
           {/* Concurso — R$, 18+, CPF */}
+          {CONCURSO_ENABLED && (
           <div className="bg-yellow-400/5 border border-yellow-400/30 rounded-2xl p-6 flex flex-col gap-4 hover:border-yellow-400/50 transition-colors">
             <div className="w-10 h-10 rounded-xl bg-yellow-400/15 flex items-center justify-center">
               <Trophy size={20} className="text-yellow-400" />
@@ -74,6 +78,7 @@ export default function EntrarCards() {
               Entrar no concurso
             </Link>
           </div>
+          )}
         </div>
       </div>
     </section>
