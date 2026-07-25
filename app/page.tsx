@@ -15,7 +15,7 @@ import PorQueConfiar from "@/components/landing/PorQueConfiar";
 import DiferenteDeBet from "@/components/landing/DiferenteDeBet";
 import CtaFinal from "@/components/landing/CtaFinal";
 import LandingFooter from "@/components/landing/LandingFooter";
-import { CONCURSO_ENABLED } from "@/lib/flags";
+import { CONCURSO_ENABLED, HOME_PATH } from "@/lib/flags";
 
 const META_DESC = CONCURSO_ENABLED
   ? "Compete prevendo o que vai acontecer. Receba 1.000 Z$ grátis ao criar conta e dispute o prêmio mensal com os melhores previsores do Brasil."
@@ -50,7 +50,7 @@ export default async function LandingPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (user) redirect("/inicio");
+  if (user) redirect(HOME_PATH);
 
   return (
     <div className="min-h-screen bg-black text-white">

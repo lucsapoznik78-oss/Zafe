@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { CONCURSO_ENABLED } from "@/lib/flags";
+import { CONCURSO_ENABLED, HOME_PATH } from "@/lib/flags";
 
 export async function middleware(request: NextRequest) {
   // Concurso desligado (sem CNPJ/PIX): ninguém acessa o mundo pago direto por
@@ -52,7 +52,7 @@ export async function middleware(request: NextRequest) {
   }
 
   if (authed && pathname === "/login") {
-    return NextResponse.redirect(new URL("/inicio", request.url));
+    return NextResponse.redirect(new URL(HOME_PATH, request.url));
   }
 
   // Rotas protegidas: uma única leitura do perfil cobre o gate de admin e o
@@ -98,14 +98,16 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/liga", request.url));
     }
 
-    // Cadastro incompleto: toda conta precisa de CPF (validado + único) antes de
-    // usar o produto — vale para email/senha E Google. O CPF entra pela rota
+    // Cadastro incompleto: o CPF (validado + único) só é OBRIGATÓRIO enquanto o
+    // Concurso (mundo pago, R$/PIX, 18+) está ativo. Com o Concurso oculto a
+    // zona grátis é 100% Z$ virtual e não precisa de CPF — ninguém é travado
+    // nesse muro só para navegar/prever de graça. O CPF entra pela rota
     // autenticada /api/perfil/completar (nunca no user_metadata, migration 051).
     // Admins (founders/seed) ficam de fora pra não travarem o painel.
     const isCadastroGate =
       pathname.startsWith("/completar-cadastro") ||
       pathname.startsWith("/api/perfil/completar");
-    if (!profile?.cpf && !profile?.is_admin && !isCadastroGate && !isPauseExempt) {
+    if (CONCURSO_ENABLED && !profile?.cpf && !profile?.is_admin && !isCadastroGate && !isPauseExempt) {
       if (pathname.startsWith("/api")) {
         return NextResponse.json({ error: "Cadastro incompleto" }, { status: 403 });
       }

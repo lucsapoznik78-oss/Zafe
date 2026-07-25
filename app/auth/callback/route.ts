@@ -1,11 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { HOME_PATH } from "@/lib/flags";
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/inicio";
-  const safeNext = next.startsWith("/") ? next : "/inicio";
+  const next = searchParams.get("next") ?? HOME_PATH;
+  const safeNext = next.startsWith("/") ? next : HOME_PATH;
 
   const redirectResponse = NextResponse.redirect(`${origin}${safeNext}`);
 

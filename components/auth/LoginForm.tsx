@@ -14,6 +14,7 @@ import Link from "next/link";
 import { TERMS_VERSION } from "@/lib/terms";
 import { formatarCPF, validarCPF } from "@/lib/cpf";
 import { formatarTelefone, formatarDataBR, dataBRparaISO } from "@/lib/masks";
+import { HOME_PATH } from "@/lib/flags";
 
 const labelClass = "text-[11px] font-bold uppercase tracking-wider text-muted-foreground";
 const hintClass = "text-[11px] font-bold uppercase tracking-wider";
@@ -62,7 +63,7 @@ function limparTentativas() {
 export default function LoginForm({ next, theme }: { next?: string; theme?: "concurso" }) {
   const router = useRouter();
   const supabase = createClient();
-  const redirectTo = next && next.startsWith("/") ? next : "/inicio";
+  const redirectTo = next && next.startsWith("/") ? next : HOME_PATH;
   const isConcurso = theme === "concurso";
 
   // Cores dinâmicas baseadas no tema

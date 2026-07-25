@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import CompletarCadastro from "@/components/auth/CompletarCadastro";
+import { HOME_PATH } from "@/lib/flags";
 
 interface Props {
   searchParams: Promise<{ next?: string }>;
@@ -20,7 +21,7 @@ export default async function CompletarCadastroPage({ searchParams }: Props) {
     .single();
 
   // Já tem CPF → cadastro completo, não precisa do gate.
-  if (profile?.cpf) redirect(next && next.startsWith("/") ? next : "/inicio");
+  if (profile?.cpf) redirect(next && next.startsWith("/") ? next : HOME_PATH);
 
   const isGoogle = user.app_metadata?.provider === "google";
   // Nome do Google (metadata) > nome já salvo no perfil (desde que não seja o

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Loader2, User, Mail, Phone, CreditCard, Calendar, Gift } from "lucide-react";
 import { formatarCPF, validarCPF } from "@/lib/cpf";
 import { formatarTelefone, formatarDataBR, dataBRparaISO } from "@/lib/masks";
+import { CONCURSO_ENABLED, HOME_PATH } from "@/lib/flags";
 
 interface Props {
   isGoogle: boolean;
@@ -40,7 +41,7 @@ function Field({
 
 export default function CompletarCadastro({ isGoogle, email, initialFullName, needsBirthDate, next }: Props) {
   const router = useRouter();
-  const destino = next && next.startsWith("/") ? next : "/inicio";
+  const destino = next && next.startsWith("/") ? next : HOME_PATH;
 
   const [fullName, setFullName] = useState(initialFullName);
   const [phone, setPhone] = useState("");
@@ -253,6 +254,18 @@ export default function CompletarCadastro({ isGoogle, email, initialFullName, ne
         >
           {loading ? <Loader2 size={16} className="animate-spin" /> : "Começar a prever"}
         </Button>
+
+        {/* Zona grátis não exige CPF — quem só quer jogar de graça pode entrar
+            sem completar. O CPF é pedido de novo se/quando o Concurso ligar. */}
+        {!CONCURSO_ENABLED && (
+          <button
+            type="button"
+            onClick={() => router.push(destino)}
+            className="w-full text-sm text-muted-foreground hover:text-white transition-colors"
+          >
+            Visitar o site sem completar agora
+          </button>
+        )}
       </form>
     </div>
   );
