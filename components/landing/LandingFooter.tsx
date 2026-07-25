@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CONCURSO_ENABLED } from "@/lib/flags";
 
 const links = [
   { label: "Termos de Uso", href: "/termos" },
@@ -29,10 +30,12 @@ export default function LandingFooter() {
 
         <div className="pt-2 border-t border-border/30 space-y-2 text-[11px] text-muted-foreground/50 leading-relaxed">
           <p>
-            A Zafe é um fantasy game de habilidade de esporte e e-sports. A zona
-            grátis usa Z$, moeda virtual sem valor monetário real. O Concurso se
-            enquadra como fantasy sport pelo Art. 49 da Lei 14.790/2023, com prêmio
-            fixo definido na abertura. Concurso restrito a maiores de 18 anos.
+            A Zafe é um fantasy game de habilidade de esporte e e-sports, nos
+            termos do fantasy sport pelo Art. 49 da Lei 14.790/2023. A zona grátis
+            usa Z$, moeda virtual sem valor monetário real.
+            {CONCURSO_ENABLED
+              ? " O Concurso tem prêmio fixo definido na abertura e é restrito a maiores de 18 anos."
+              : ""}
           </p>
           <p>© {new Date().getFullYear()} Zafe. Todos os direitos reservados.</p>
         </div>

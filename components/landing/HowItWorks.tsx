@@ -1,4 +1,5 @@
 import { Gift, Target, Trophy } from "lucide-react";
+import { CONCURSO_ENABLED } from "@/lib/flags";
 
 const steps = [
   {
@@ -15,13 +16,21 @@ const steps = [
     title: "Palpite no que você acompanha",
     body: "Esporte e e-sports. Centenas de eventos abertos toda semana. Diga SIM ou NÃO e aloque seus Z$ na previsão.",
   },
-  {
-    icon: Trophy,
-    color: "text-yellow-400",
-    bg: "bg-yellow-400/10",
-    title: "Top do mês ganha em PIX",
-    body: "Os melhores previsores do mês ganham prêmio em dinheiro real via PIX. Critério: maior acurácia nas previsões. Quanto mais você acerta, mais você sobe.",
-  },
+  CONCURSO_ENABLED
+    ? {
+        icon: Trophy,
+        color: "text-yellow-400",
+        bg: "bg-yellow-400/10",
+        title: "Top do mês ganha em PIX",
+        body: "Os melhores previsores do mês ganham prêmio em dinheiro real via PIX. Critério: maior acurácia nas previsões. Quanto mais você acerta, mais você sobe.",
+      }
+    : {
+        icon: Trophy,
+        color: "text-yellow-400",
+        bg: "bg-yellow-400/10",
+        title: "Suba no ranking",
+        body: "Cada acerto melhora sua acurácia e te leva mais alto no ranking dos melhores previsores do Brasil. Quanto mais você acerta, mais você sobe.",
+      },
 ];
 
 export default function HowItWorks() {
