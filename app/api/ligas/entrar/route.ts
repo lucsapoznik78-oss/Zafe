@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -27,14 +27,19 @@ export async function POST(request: Request) {
     .eq("user_id", user.id)
     .single();
 
+  // liga_members é service-role-only (audit F-09). A autorização é a checagem
+  // de `is_public = true` acima: sem ela no banco, a policy `auth.uid() IS NOT
+  // NULL` deixava qualquer logado se inserir em liga PRIVADA pelo PostgREST.
+  const admin = createAdminClient();
+
   if (existing) {
     if (existing.status === "active") return NextResponse.json({ error: "Você já é membro desta liga" }, { status: 409 });
     // Reactivate if declined
-    await supabase.from("liga_members").update({ status: "active", joined_at: new Date().toISOString() }).eq("id", existing.id);
+    await admin.from("liga_members").update({ status: "active", joined_at: new Date().toISOString() }).eq("id", existing.id);
     return NextResponse.json({ success: true });
   }
 
-  await supabase.from("liga_members").insert({
+  await admin.from("liga_members").insert({
     liga_id,
     user_id: user.id,
     invited_by: user.id,

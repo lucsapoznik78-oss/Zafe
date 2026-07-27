@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -37,7 +37,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Usuário não é membro ativo desta liga" }, { status: 404 });
   }
 
-  await supabase.from("ligas").update({ creator_id: new_creator_id }).eq("id", liga_id);
+  // ligas é service-role-only (audit F-09). A autorização é a checagem de
+  // criador atual acima mais a de que o novo criador é membro ativo; só
+  // creator_id é alterado.
+  await createAdminClient().from("ligas").update({ creator_id: new_creator_id }).eq("id", liga_id);
 
   return NextResponse.json({ success: true });
 }

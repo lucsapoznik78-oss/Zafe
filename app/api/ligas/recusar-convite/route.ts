@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -8,7 +8,10 @@ export async function POST(request: Request) {
 
   const { member_id } = await request.json();
 
-  const { error } = await supabase
+  // liga_members é service-role-only (audit F-09), e como em /sair isto corrige
+  // um bug: sem policy de DELETE, a RLS negava o delete do client do usuário e
+  // o convite continuava lá. Os três .eq() são a autorização e não podem sair.
+  const { error } = await createAdminClient()
     .from("liga_members")
     .delete()
     .eq("id", member_id)

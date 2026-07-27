@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -21,7 +21,13 @@ export async function POST(request: Request) {
     if (!membership) return NextResponse.json({ error: "Você não é membro da liga pai" }, { status: 403 });
   }
 
-  const { data: liga, error } = await supabase.from("ligas").insert({
+  // ligas/liga_members são service-role-only (audit F-09): a policy antiga
+  // (`auth.uid() IS NOT NULL`) deixava qualquer logado inserir linha com
+  // creator_id/user_id alheio. creator_id vem daqui, nunca do request, e a
+  // checagem de membro da liga pai acima é a autorização para sub-liga.
+  const admin = createAdminClient();
+
+  const { data: liga, error } = await admin.from("ligas").insert({
     name: name.trim(),
     description: description?.trim() ?? null,
     creator_id: user.id,
@@ -33,7 +39,7 @@ export async function POST(request: Request) {
   if (error) return NextResponse.json({ error: "Erro ao criar liga" }, { status: 500 });
 
   // Criador entra automaticamente como membro ativo
-  await supabase.from("liga_members").insert({
+  await admin.from("liga_members").insert({
     liga_id: liga.id,
     user_id: user.id,
     invited_by: user.id,

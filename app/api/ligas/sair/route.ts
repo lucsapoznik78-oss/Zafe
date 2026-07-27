@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -34,7 +34,12 @@ export async function POST(req: Request) {
     );
   }
 
-  await supabase.from("liga_members").delete().eq("id", membership.id);
+  // liga_members é service-role-only (audit F-09). Isto também CORRIGE um bug:
+  // liga_members nunca teve policy de DELETE, então este delete com o client do
+  // usuário era negado pela RLS e a rota respondia success sem remover nada —
+  // sair da liga não funcionava. A autorização é a checagem de membro ativo e
+  // de não-criador acima, e o delete é escopado no próprio membership.id.
+  await createAdminClient().from("liga_members").delete().eq("id", membership.id);
 
   return NextResponse.json({ success: true });
 }

@@ -20,7 +20,13 @@ export async function POST(request: Request) {
 
   if (!membership) return NextResponse.json({ error: "Você não faz parte desta liga" }, { status: 403 });
 
-  const { error } = await supabase.from("liga_members").insert({
+  // liga_members é service-role-only (audit F-09). A autorização é a checagem
+  // de membro ativo acima; `status: "pending"` e `invited_by` vêm daqui, então
+  // o convidado ainda precisa aceitar. O erro tratado abaixo é a unique
+  // constraint (liga_id, user_id), que continua valendo com service role.
+  const admin = createAdminClient();
+
+  const { error } = await admin.from("liga_members").insert({
     liga_id,
     user_id: friend_id,
     invited_by: user.id,
@@ -31,7 +37,7 @@ export async function POST(request: Request) {
 
   // Notificação é para outro usuário (friend_id), então usa client admin —
   // a RLS de notifications só permite inserir a própria linha.
-  await createAdminClient().from("notifications").insert({
+  await admin.from("notifications").insert({
     user_id: friend_id,
     type: "bet_invite",
     payload: { liga_id, inviter_id: user.id, type: "liga_invite" },
