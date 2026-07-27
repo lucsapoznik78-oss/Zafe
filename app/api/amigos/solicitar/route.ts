@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -22,7 +22,10 @@ export async function POST(request: Request) {
   const { data: requesterProfile } = await supabase
     .from("profiles").select("full_name, username").eq("id", user.id).single();
 
-  await supabase.from("notifications").insert({
+  // A notificação é para OUTRO usuário (addressee_id) e a RLS de notifications
+  // é `auth.uid() = user_id`, então com o client do usuário este insert era
+  // negado e a solicitação de amizade nunca notificava ninguém.
+  await createAdminClient().from("notifications").insert({
     user_id: addressee_id,
     type: "friend_request",
     title: "Nova solicitação de amizade",

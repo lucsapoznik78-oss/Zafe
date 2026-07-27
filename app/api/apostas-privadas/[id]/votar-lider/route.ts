@@ -43,8 +43,18 @@ export async function POST(
 
   if (!candidate) return NextResponse.json({ error: "Candidato inválido" }, { status: 400 });
 
-  // Upsert do voto
-  await supabase.from("leader_votes").upsert({
+  // Tudo daqui para baixo usa service role, por três motivos:
+  //  1. `leader_votes` só tem policy de SELECT, então este upsert com o client
+  //     do usuário era negado pela RLS e o voto nunca era gravado;
+  //  2. a policy de leitura é `voter_id = auth.uid()`, então a contagem de
+  //     votos abaixo só via o PRÓPRIO voto e `allVoted` só fechava em lado de
+  //     um único membro;
+  //  3. topic_sides e topics passaram a ser service-role-only (audit F-09).
+  // A autorização é a checagem de participante/fase/candidato acima, e o voto
+  // é gravado sempre com voter_id = user.id.
+  const admin = createAdminClient();
+
+  await admin.from("leader_votes").upsert({
     topic_id: topicId,
     side: me.side,
     voter_id: user.id,
@@ -53,14 +63,14 @@ export async function POST(
   }, { onConflict: "topic_id,side,voter_id" });
 
   // Verificar se todos do lado já votaram → eleger imediatamente
-  const { data: membersSide } = await supabase
+  const { data: membersSide } = await admin
     .from("topic_participants")
     .select("user_id")
     .eq("topic_id", topicId)
     .eq("side", me.side)
     .eq("status", "accepted");
 
-  const { data: votesSide } = await supabase
+  const { data: votesSide } = await admin
     .from("leader_votes")
     .select("voter_id")
     .eq("topic_id", topicId)
@@ -69,10 +79,6 @@ export async function POST(
   const allVoted = (membersSide?.length ?? 0) === (votesSide?.length ?? 0);
 
   if (allVoted) {
-    // Estas duas escrevem em topic_sides e topics, que passaram a ser
-    // service-role-only (audit F-09). A autorização é a checagem de
-    // participante/fase/candidato acima, e só rodam quando todo o lado votou.
-    const admin = createAdminClient();
     await elegerLider(admin, topicId, me.side as "A" | "B");
     await checkLideresEleitos(admin, topicId);
   }

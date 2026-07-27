@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -43,7 +43,10 @@ export async function POST(request: Request) {
 
   if (error) return NextResponse.json({ error: "Erro ao criar convite" }, { status: 500 });
 
-  await supabase.from("notifications").insert({
+  // A notificação é para OUTRO usuário (invitee_id) e a RLS de notifications
+  // é `auth.uid() = user_id`, então com o client do usuário este insert era
+  // negado e o convidado nunca era avisado do convite.
+  await createAdminClient().from("notifications").insert({
     user_id: invitee_id,
     type: "bet_invite",
     payload: { inviter_id: user.id, topic_id, amount: valor },
