@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import CompletarCadastro from "@/components/auth/CompletarCadastro";
 import { HOME_PATH } from "@/lib/flags";
 
@@ -14,7 +14,10 @@ export default async function CompletarCadastroPage({ searchParams }: Props) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
+  // `cpf`/`birth_date` deixaram de ser legíveis com o client do usuário (audit
+  // F-06: a policy de profiles é USING(true), então esse SELECT expunha a PII de
+  // todos os usuários). O escopo aqui é o próprio `user.id`, vindo do getUser().
+  const { data: profile } = await createAdminClient()
     .from("profiles")
     .select("cpf, birth_date, full_name, username")
     .eq("id", user.id)

@@ -39,7 +39,7 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  const publicRoutes = ["/login", "/auth/callback", "/auth/confirm", "/api/auth/username", "/api/auth/email-exists", "/historico", "/termos", "/jogo-responsavel", "/api/cron", "/api/push", "/api/concurso/pagamento/webhook", "/api/landing", "/r/", "/sitemap.xml", "/robots.txt", "/google", "/liga", "/ranking", "/u/", "/concurso", "/comunidade", "/games", "/banido"];
+  const publicRoutes = ["/login", "/auth/callback", "/auth/confirm", "/api/auth/username", "/api/auth/email-exists", "/api/auth/2fa-contexto", "/historico", "/termos", "/jogo-responsavel", "/api/cron", "/api/push", "/api/concurso/pagamento/webhook", "/api/landing", "/r/", "/sitemap.xml", "/robots.txt", "/google", "/liga", "/ranking", "/u/", "/concurso", "/comunidade", "/games", "/banido"];
   const isPublicRoute = pathname === "/" || publicRoutes.some((r) => pathname.startsWith(r));
 
   // Email não confirmado (signups por senha) conta como não autenticado para
@@ -67,7 +67,10 @@ export async function middleware(request: NextRequest) {
   if (authed && !isPublicRoute) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("is_admin, banned, self_excluded_until, cooloff_until, cpf")
+      // `has_cpf` (coluna gerada, migration 065) em vez do `cpf` em si: a policy
+      // de leitura de profiles é USING(true), então o SELECT de `cpf` para
+      // `authenticated` vazava o CPF de todos os usuários (audit F-06).
+      .select("is_admin, banned, self_excluded_until, cooloff_until, has_cpf")
       .eq("id", user?.id)
       .single();
 
@@ -107,7 +110,7 @@ export async function middleware(request: NextRequest) {
     const isCadastroGate =
       pathname.startsWith("/completar-cadastro") ||
       pathname.startsWith("/api/perfil/completar");
-    if (CONCURSO_ENABLED && !profile?.cpf && !profile?.is_admin && !isCadastroGate && !isPauseExempt) {
+    if (CONCURSO_ENABLED && !profile?.has_cpf && !profile?.is_admin && !isCadastroGate && !isPauseExempt) {
       if (pathname.startsWith("/api")) {
         return NextResponse.json({ error: "Cadastro incompleto" }, { status: 403 });
       }

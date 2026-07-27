@@ -110,6 +110,9 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
   const [twoFaMethod, setTwoFaMethod] = useState<"email" | "sms">("email");
   const [otp, setOtp] = useState("");
   const [pendingUserId, setPendingUserId] = useState<string | null>(null);
+  // Telefone do 2FA por SMS. Vem da rota /api/auth/2fa-contexto enquanto a sessão
+  // ainda existe, porque o `verifyOtp({ phone })` acontece DEPOIS do signOut.
+  const [twoFaPhone, setTwoFaPhone] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -145,17 +148,17 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
       limparTentativas();
       setShowResend(false);
 
-      // Verifica se o usuário tem 2FA ativo
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("two_fa_enabled, two_fa_method, phone")
-        .eq("id", data.user.id)
-        .single();
+      // Verifica se o usuário tem 2FA ativo. Via rota server (service role):
+      // `phone` não é mais legível pelo client do usuário (audit F-06).
+      const profile = await fetch("/api/auth/2fa-contexto")
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null);
 
       if (profile?.two_fa_enabled) {
         // Tem 2FA — faz logout temporário e pede verificação
         setPendingUserId(data.user.id);
         setTwoFaMethod(profile.two_fa_method ?? "email");
+        setTwoFaPhone(profile.phone ?? "");
         await supabase.auth.signOut();
         await sendOtp(profile.two_fa_method ?? "email", data.user.email ?? email, profile.phone ?? "");
         setStep("verify-otp");
@@ -285,13 +288,11 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
 
     let verifyResult;
     if (twoFaMethod === "sms") {
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("phone")
-        .eq("id", pendingUserId ?? "")
-        .single();
-      const phoneNumber = profileData?.phone ?? "";
-      const formatted = phoneNumber.startsWith("+") ? phoneNumber : `+55${phoneNumber}`;
+      // Este ponto do fluxo é DEPOIS do signOut temporário, então o client aqui é
+      // anônimo — a consulta que existia antes já vinha vazia e o verifyOtp saía
+      // com o telefone "+55". O número agora vem do estado, capturado enquanto a
+      // sessão ainda existia.
+      const formatted = twoFaPhone.startsWith("+") ? twoFaPhone : `+55${twoFaPhone}`;
       verifyResult = await supabase.auth.verifyOtp({ phone: formatted, token: otp, type: "sms" });
     } else {
       verifyResult = await supabase.auth.verifyOtp({ email, token: otp, type: "email" });

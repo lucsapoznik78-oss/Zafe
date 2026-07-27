@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import PerfilTabs from "@/components/perfil/PerfilTabs";
 
@@ -9,7 +9,9 @@ export default async function PerfilPage() {
   if (!user) redirect("/login");
 
   const [{ data: profile }, { data: wallet }, { data: bets }, { data: referrals }, { count: betsWonTotal }, { data: gamesStats }] = await Promise.all([
-    supabase.from("profiles").select("*").eq("id", user.id).single(),
+    // `select("*")` traz telefone e endereço, que deixaram de ser legíveis com o
+    // client do usuário (audit F-06). Escopado no próprio `user.id` do getUser().
+    createAdminClient().from("profiles").select("*").eq("id", user.id).single(),
     supabase.from("wallets").select("*").eq("user_id", user.id).single(),
     supabase
       .from("bets")
