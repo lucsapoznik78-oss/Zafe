@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { executePalpitar } from "@/lib/apostar";
@@ -9,7 +9,10 @@ export async function POST(request: Request, { params }: { params: { id: string 
   if (!user) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
   const { side, amount } = await request.json();
-  const res = await executePalpitar(supabase, user.id, params.id, side, amount);
+  // executePalpitar escreve em wallets/bets/transactions, que passaram a ser
+  // service-role-only (audit F-01/F-07/F-08). A identidade já foi verificada
+  // acima e `user.id` é passado explicitamente — não vem do corpo da request.
+  const res = await executePalpitar(createAdminClient(), user.id, params.id, side, amount);
 
   if (res.status === 200) {
     revalidatePath("/liga");

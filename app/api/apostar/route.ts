@@ -113,8 +113,14 @@ export async function POST(request: Request) {
     estimatedOdds = side === "sim" ? simOdds : naoOdds;
   }
 
+  // Admin client para TODA escrita de dinheiro (audit F-01/F-07/F-08).
+  // `user.id` já veio de auth.getUser() e valor/prazo/saldo foram validados
+  // acima, então o admin não afasta nenhuma checagem — só tira a necessidade de
+  // o navegador ter permissão de escrita em wallets/bets/transactions.
+  const admin = createAdminClient();
+
   // Debitar saldo (trava otimista via CAS)
-  const debit = await debitBalance(supabase, user.id, amount);
+  const debit = await debitBalance(admin, user.id, amount);
   if (!debit.ok) {
     return NextResponse.json(
       { error: debit.reason === "insufficient" ? "Saldo insuficiente" : "Erro ao debitar saldo. Tente novamente." },
@@ -141,18 +147,18 @@ export async function POST(request: Request) {
     betPayload.side = side;
   }
 
-  const { data: bet, error: betError } = await supabase
+  const { data: bet, error: betError } = await admin
     .from("bets")
     .insert(betPayload)
     .select()
     .single();
 
   if (betError) {
-    await creditBalance(supabase, user.id, amount);
+    await creditBalance(admin, user.id, amount);
     return NextResponse.json({ error: "Erro ao registrar palpite" }, { status: 500 });
   }
 
-  await supabase.from("transactions").insert({
+  await admin.from("transactions").insert({
     user_id: user.id,
     type: "bet_placed",
     amount,
@@ -164,9 +170,6 @@ export async function POST(request: Request) {
   });
 
   // ── Matching automático parimutuel ──────────────────────────────
-  // Admin client: o RLS barra updates em bets de outros usuários, em
-  // topic_outcomes e o insert em notifications com o client do usuário.
-  const admin = createAdminClient();
   if (isMulti) {
     // Multi: matched imediatamente (pool parimutuel com N lados)
     await admin.from("bets").update({ status: "matched" }).eq("id", bet.id);
