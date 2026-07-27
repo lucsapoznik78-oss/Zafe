@@ -37,7 +37,13 @@ export async function POST(request: Request) {
   const suffix = Math.random().toString(36).slice(2, 6);
   const slug = baseSlug ? `${baseSlug}-${suffix}` : suffix;
 
-  const { data, error } = await supabase.from("topics").insert({
+  // Escrita em topics é service-role-only (audit F-09): a policy antiga só
+  // exigia "estar logado", então dava para POSTar direto no PostgREST com
+  // status "active" e creator_id alheio, furando a moderação e a validação de
+  // categoria do Art. 49. creator_id e status vêm daqui, nunca do request.
+  const admin = createAdminClient();
+
+  const { data, error } = await admin.from("topics").insert({
     creator_id: user.id,
     title: title.trim(),
     description: description.trim(),
@@ -53,7 +59,6 @@ export async function POST(request: Request) {
   if (error) return NextResponse.json({ error: "Erro ao criar tópico" }, { status: 500 });
 
   if (isMulti && data) {
-    const admin = createAdminClient();
     const labels: string[] = (outcomes ?? []).map((o: string) => o.trim()).filter(Boolean);
     await admin.from("topic_outcomes").insert(
       labels.map((label, i) => ({ topic_id: data.id, label, position: i }))

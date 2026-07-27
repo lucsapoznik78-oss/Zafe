@@ -1,7 +1,7 @@
 /**
  * Juiz confirma ou recusa disponibilidade após ser aprovado pelos 2 líderes
  */
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { checkJuizesConfirmados } from "@/lib/private-bets";
 
@@ -28,24 +28,31 @@ export async function POST(
 
   if (!nom) return NextResponse.json({ error: "Nomeação não encontrada" }, { status: 404 });
 
+  // judge_nominations/topics/topic_sides passaram a ser service-role-only
+  // (audit F-09). A autorização é o filtro acima (judge_user_id = user.id e
+  // status both_approved), que garante que quem responde é o próprio juiz.
+  // O admin também é necessário para notificar os LÍDERES: o RLS de
+  // notifications barra inserir para outro user_id.
+  const admin = createAdminClient();
+
   if (new Date(nom.availability_deadline) < new Date()) {
     // Prazo expirado — auto-recusa tratada pelo cron, mas se chegou aqui recusa mesmo
-    await supabase.from("judge_nominations").update({ status: "declined" }).eq("id", nomination_id);
+    await admin.from("judge_nominations").update({ status: "declined" }).eq("id", nomination_id);
     return NextResponse.json({ error: "Prazo de confirmação expirado" }, { status: 400 });
   }
 
   if (disponivel) {
-    await supabase.from("judge_nominations").update({ status: "active" }).eq("id", nomination_id);
-    await checkJuizesConfirmados(supabase, topicId);
+    await admin.from("judge_nominations").update({ status: "active" }).eq("id", nomination_id);
+    await checkJuizesConfirmados(admin, topicId);
     return NextResponse.json({ success: true, confirmado: true });
   } else {
     // Recusa → notificar líderes para propor substituto
-    await supabase.from("judge_nominations").update({ status: "declined" }).eq("id", nomination_id);
+    await admin.from("judge_nominations").update({ status: "declined" }).eq("id", nomination_id);
 
-    const { data: sides } = await supabase
+    const { data: sides } = await admin
       .from("topic_sides").select("leader_id").eq("topic_id", topicId);
 
-    const { data: judgeProfile } = await supabase
+    const { data: judgeProfile } = await admin
       .from("profiles").select("username").eq("id", user.id).single();
 
     const notifs = (sides ?? [])
@@ -59,11 +66,11 @@ export async function POST(
       }));
 
     if (notifs.length > 0) {
-      await supabase.from("notifications").insert(notifs);
+      await admin.from("notifications").insert(notifs);
     }
 
     // Voltar para negociação
-    await supabase.from("topics").update({
+    await admin.from("topics").update({
       private_phase: "judge_negotiation",
     }).eq("id", topicId);
 

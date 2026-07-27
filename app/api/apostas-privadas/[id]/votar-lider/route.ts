@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { elegerLider, checkLideresEleitos } from "@/lib/private-bets";
 
@@ -69,8 +69,12 @@ export async function POST(
   const allVoted = (membersSide?.length ?? 0) === (votesSide?.length ?? 0);
 
   if (allVoted) {
-    await elegerLider(supabase, topicId, me.side as "A" | "B");
-    await checkLideresEleitos(supabase, topicId);
+    // Estas duas escrevem em topic_sides e topics, que passaram a ser
+    // service-role-only (audit F-09). A autorização é a checagem de
+    // participante/fase/candidato acima, e só rodam quando todo o lado votou.
+    const admin = createAdminClient();
+    await elegerLider(admin, topicId, me.side as "A" | "B");
+    await checkLideresEleitos(admin, topicId);
   }
 
   return NextResponse.json({ success: true, all_voted: allVoted });

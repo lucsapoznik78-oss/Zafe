@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 export async function PATCH(
@@ -24,7 +24,11 @@ export async function PATCH(
   const { title, description, category, closes_at } = await req.json();
   if (!title || !closes_at) return NextResponse.json({ error: "Campos obrigatórios" }, { status: 400 });
 
-  await supabase
+  // Escrita em topics é service-role-only (audit F-09). As checagens de dono e
+  // de status "pending" acima são a autorização; sem elas no banco, qualquer
+  // logado dava PATCH em qualquer evento — inclusive esticando closes_at de um
+  // evento cujo resultado já é conhecido. Só estes 4 campos são atualizados.
+  await createAdminClient()
     .from("topics")
     .update({ title, description, category, closes_at })
     .eq("id", id);

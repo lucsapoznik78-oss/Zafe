@@ -2,7 +2,7 @@
  * Líder aceita ou rejeita uma nomeação de juiz
  * Se rejeitar e não tiver substituto → rejeição ignorada (aceite automático)
  */
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { checkJuizesConfirmados } from "@/lib/private-bets";
 
@@ -56,6 +56,14 @@ export async function POST(
 
   const approvalField = mySide === "A" ? "leader_a_approved" : "leader_b_approved";
 
+  // judge_nominations passou a ser service-role-only (audit F-09) — antes
+  // qualquer logado alterava a aprovação de juiz de qualquer aposta, o que
+  // decide o resultado. A autorização é a checagem de líder/fase/vez acima.
+  // O admin também é necessário para notificar o juiz e o outro líder (o RLS
+  // de notifications barra inserir para outro user_id) e para os dois SELECTs
+  // abaixo, que sem service role poderiam vir vazios e falhar em aberto.
+  const admin = createAdminClient();
+
   if (aceitar || !substituto_id) {
     // Aceita (ou rejeição ignorada por falta de substituto)
     const update: any = { [approvalField]: true };
@@ -69,7 +77,7 @@ export async function POST(
       update.availability_deadline = new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString();
 
       // Notificar o juiz para confirmar disponibilidade
-      await supabase.from("notifications").insert({
+      await admin.from("notifications").insert({
         user_id: nom.judge_user_id,
         type: "bet_invite",
         title: "Você foi escolhido como juiz!",
@@ -78,17 +86,17 @@ export async function POST(
       });
     }
 
-    await supabase.from("judge_nominations").update(update).eq("id", nomination_id);
+    await admin.from("judge_nominations").update(update).eq("id", nomination_id);
 
   } else {
     // Rejeição com substituto
-    await supabase.from("judge_nominations").update({
+    await admin.from("judge_nominations").update({
       [approvalField]: false,
       status: "rejected",
     }).eq("id", nomination_id);
 
     // Verificar que substituto não é participante
-    const { data: isParticipant } = await supabase
+    const { data: isParticipant } = await admin
       .from("topic_participants")
       .select("id")
       .eq("topic_id", topicId)
@@ -100,7 +108,7 @@ export async function POST(
     }
 
     const responseDeadline = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-    await supabase.from("judge_nominations").insert({
+    await admin.from("judge_nominations").insert({
       topic_id: topicId,
       judge_user_id: substituto_id,
       proposed_by_side: mySide,
@@ -113,11 +121,11 @@ export async function POST(
 
     // Notificar o outro líder
     const otherSide = mySide === "A" ? "B" : "A";
-    const { data: otherLeader } = await supabase
+    const { data: otherLeader } = await admin
       .from("topic_sides").select("leader_id").eq("topic_id", topicId).eq("side", otherSide).single();
 
     if (otherLeader?.leader_id) {
-      await supabase.from("notifications").insert({
+      await admin.from("notifications").insert({
         user_id: otherLeader.leader_id,
         type: "bet_invite",
         title: "Juiz rejeitado — novo proposto",
@@ -129,7 +137,7 @@ export async function POST(
 
   // Verificar se já há 3 juízes com both_approved → confirmar disponibilidade
   // (checkJuizesConfirmados vai verificar se há 3 'active')
-  await checkJuizesConfirmados(supabase, topicId);
+  await checkJuizesConfirmados(admin, topicId);
 
   return NextResponse.json({ success: true });
 }
