@@ -22,14 +22,14 @@ const steps = [
         color: "text-yellow-400",
         bg: "bg-yellow-400/10",
         title: "Top do mês ganha em PIX",
-        body: "Os melhores previsores do mês ganham prêmio em dinheiro real via PIX. Critério: maior acurácia nas previsões. Quanto mais você acerta, mais você sobe.",
+        body: "Os melhores previsores do mês ganham prêmio em dinheiro real via PIX. O critério é o saldo: quem termina o mês com mais ZC$ fica na frente. Cada palpite certo aumenta seu saldo, cada erro diminui.",
       }
     : {
         icon: Trophy,
         color: "text-yellow-400",
         bg: "bg-yellow-400/10",
         title: "Suba no ranking",
-        body: "Cada acerto melhora sua acurácia e te leva mais alto no ranking dos melhores previsores do Brasil. Quanto mais você acerta, mais você sobe.",
+        body: "Quem termina o mês com mais Z$ fica na frente no ranking dos melhores previsores do Brasil. Cada palpite certo aumenta seu saldo, cada erro diminui.",
       },
 ];
 

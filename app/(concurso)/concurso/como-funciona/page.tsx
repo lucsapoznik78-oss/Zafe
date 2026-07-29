@@ -256,8 +256,8 @@ export default function ComoFuncionaPage() {
       </div>
 
       <p className="text-[10px] text-muted-foreground/50 text-center leading-relaxed">
-        Se o concurso tiver menos de 500 inscritos, a edição será cancelada e todos os participantes
-        serão reembolsados.
+        A premiação é fixa, definida na abertura da edição, e será paga integralmente
+        independentemente do número de inscritos ou do valor arrecadado.
       </p>
     </div>
   );

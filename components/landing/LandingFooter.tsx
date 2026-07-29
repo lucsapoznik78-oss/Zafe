@@ -6,7 +6,7 @@ const links = [
   { label: "Como funciona", href: "/liga" },
   { label: "Histórico de resoluções", href: "/historico" },
   { label: "Ranking", href: "/ranking" },
-  { label: "Contato", href: "mailto:contato@zafe.com.br" },
+  { label: "Contato", href: "mailto:contato@zafe.app.br" },
 ];
 
 export default function LandingFooter() {

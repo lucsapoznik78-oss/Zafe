@@ -31,7 +31,8 @@ interface PageProps {
 }
 
 // Distribuição percentual da premiação — ver lib/concurso-premios.ts e
-// /concurso/como-funciona. Com <500 inscritos a edição é cancelada e reembolsada.
+// /concurso/como-funciona. O total é fixo, definido na abertura e independente
+// do número de inscritos (Art. 49 da Lei 14.790/2023).
 const PREMIOS = [
   { pos: "1º", valor: "30% — R$ 6.000" },
   { pos: "2º", valor: "5% — R$ 1.000" },
@@ -107,8 +108,8 @@ function ConcursoEmBreve({ concurso }: { concurso: any }) {
           </div>
           <p className="mt-1.5 text-[10px] text-yellow-300/40">
             Valores previstos para a edição de estreia, ainda sujeitos a confirmação
-            na abertura. Se o concurso tiver menos de 500 inscritos, a edição será
-            cancelada e todos os participantes serão reembolsados.
+            na abertura. A premiação é fixa e será paga integralmente, independentemente
+            do número de inscritos.
           </p>
         </div>
       </div>
@@ -386,8 +387,8 @@ export default async function ConcursoPage({ searchParams }: PageProps) {
             ))}
           </div>
           <p className="mt-1.5 text-[10px] text-yellow-300/40">
-            Se o concurso tiver menos de 500 inscritos, a edição será cancelada e todos os
-            participantes serão reembolsados.
+            A premiação é fixa, definida na abertura desta edição, e será paga integralmente
+            independentemente do número de inscritos.
           </p>
           <div className="mt-3 flex items-start gap-2 rounded-lg bg-yellow-400/10 border border-yellow-400/20 px-3 py-2">
             <Mail size={14} className="text-yellow-400 shrink-0 mt-0.5" />
