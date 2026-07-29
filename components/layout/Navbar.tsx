@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, Wallet, Info, Star, Trophy, MessageSquare } from "lucide-react";
+import { LogOut, Wallet, Info, Star, Trophy, MessageSquare, Users } from "lucide-react";
 import NotificationBell from "@/components/layout/NotificationBell";
 import PushSetup from "@/components/layout/PushSetup";
 import SoundMenu from "@/components/layout/SoundMenu";
@@ -83,6 +83,7 @@ export default function Navbar() {
             { href: "/comunidade", label: "Comunidade" },
             { href: "/games", label: "Games" },
             { href: "/privadas", label: "Privadas" },
+            { href: "/amigos", label: "Amigos" },
             { href: "/ranking", label: "Ranking" },
           ].map((item) => (
             <Link
@@ -167,6 +168,10 @@ export default function Navbar() {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => window.location.href = "/privadas"} className="md:hidden">
                 <span className="text-sm">Privadas</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => window.location.href = "/amigos"}>
+                <Users size={14} className="mr-2 text-primary" />
+                <span className="text-sm">Amigos e grupos</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => window.location.href = "/premium"}>
                 <Star size={14} className="mr-2 text-yellow-400" />
