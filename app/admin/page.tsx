@@ -137,19 +137,6 @@ export default async function AdminPage() {
         <span className="ml-auto px-2 py-1 bg-primary/20 text-primary text-xs font-bold rounded">ADMIN</span>
       </div>
 
-      <AdminStats
-        passiveTotal={passiveTotal}
-        walletBalance={walletBalance}
-        betsLocked={betsLocked}
-        pendingCount={pending?.length ?? 0}
-        toResolveCount={allResolving?.length ?? 0}
-        totalUsers={totalUsers ?? 0}
-        newUsersWeek={newUsersWeek ?? 0}
-        totalBets={totalBets ?? 0}
-        volumeTotal={volumeTotal}
-        activeUsers30d={activeUsers30d ?? 0}
-        concursoUsers={concursoParticipantes.length}
-      />
       <Link
         href="/admin/canal"
         className="flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3 hover:border-primary/40 transition-colors"
@@ -166,6 +153,19 @@ export default async function AdminPage() {
         )}
       </Link>
 
+      <AdminStats
+        passiveTotal={passiveTotal}
+        walletBalance={walletBalance}
+        betsLocked={betsLocked}
+        pendingCount={pending?.length ?? 0}
+        toResolveCount={allResolving?.length ?? 0}
+        totalUsers={totalUsers ?? 0}
+        newUsersWeek={newUsersWeek ?? 0}
+        totalBets={totalBets ?? 0}
+        volumeTotal={volumeTotal}
+        activeUsers30d={activeUsers30d ?? 0}
+        concursoUsers={concursoParticipantes.length}
+      />
       <AdminQueue topics={pending ?? []} />
       <AdminResolve topics={[]} allResolving={resolvingWithOutcomes} />
 
