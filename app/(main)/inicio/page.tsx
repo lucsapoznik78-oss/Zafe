@@ -138,11 +138,11 @@ export default async function InicioPage() {
       )}
 
       {/* ─────────── divisor ─────────── */}
-      {CONCURSO_ABERTO && (
+      {CONCURSO_ENABLED && (
         <div className="flex items-center gap-4">
           <div className="h-px flex-1 bg-border" />
           <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            ou jogue de graça
+            {CONCURSO_ABERTO ? "ou jogue de graça" : "enquanto isso, jogue de graça"}
           </span>
           <div className="h-px flex-1 bg-border" />
         </div>
@@ -152,7 +152,7 @@ export default async function InicioPage() {
       <section>
         <div className="mb-5">
           <h2 className="text-xl font-black text-white">
-            {CONCURSO_ABERTO ? "Zona grátis" : "Módulos"}
+            {CONCURSO_ENABLED ? "Zona grátis" : "Módulos"}
           </h2>
           <p className="text-sm text-muted-foreground">
             Tudo com Z$ virtual — sem dinheiro, só habilidade. Esporte e e-sports.

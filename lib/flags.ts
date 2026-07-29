@@ -18,8 +18,7 @@ export const CONCURSO_ESTREIA_CURTO = "Setembro";
 // como home — divulgar o Concurso não pode reativar essas travas.
 export const CONCURSO_ABERTO = CONCURSO_ENABLED && !CONCURSO_EM_BREVE;
 
-// Home padrão pós-login. Com o Concurso aberto, cai no hub /inicio (herói pago
-// + grade de módulos). Enquanto ele não abre, a Liga é o produto principal, então
-// a entrada vai direto pra /liga — o hub /inicio segue acessível, só não é o
-// destino padrão.
-export const HOME_PATH = CONCURSO_ABERTO ? "/inicio" : "/liga";
+// Home padrão pós-login: o hub /inicio — Concurso no topo, zona grátis embaixo.
+// Vale também na fase de anúncio: é justamente ali que o usuário logado descobre
+// que o Concurso estreia em setembro.
+export const HOME_PATH = "/inicio";
