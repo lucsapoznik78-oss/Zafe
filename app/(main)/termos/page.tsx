@@ -240,7 +240,7 @@ export default function TermosPage() {
         <h3 className="text-sm font-semibold text-white pt-1">8.6. Encarregado (DPO)</h3>
         <p>
           Encarregado pelo tratamento de dados pessoais, nos termos do art. 41 da LGPD:{" "}
-          <strong className="text-white">[NOME COMPLETO DO ENCARREGADO]</strong>. Contato para exercício
+          <strong className="text-white">Luc Sapoznik</strong>. Contato para exercício
           de direitos, dúvidas e reclamações:{" "}
           <a href="mailto:contato@zafe.app.br" className="text-primary hover:underline">
             contato@zafe.app.br
