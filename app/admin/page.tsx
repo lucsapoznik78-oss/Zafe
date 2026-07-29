@@ -1,6 +1,8 @@
 export const dynamic = "force-dynamic";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import Link from "next/link";
+import { MessagesSquare } from "lucide-react";
 import AdminQueue from "@/components/admin/AdminQueue";
 import AdminResolve from "@/components/admin/AdminResolve";
 import AdminStats from "@/components/admin/AdminStats";
@@ -25,6 +27,12 @@ export default async function AdminPage() {
   const orphanedUsers = authUsers.filter((u) => !profileIdSet.has(u.id));
 
   // Concurso ativo + participantes inscritos
+  // Canal do Usuário: conversas com mensagem ainda não lida pela equipe.
+  const { count: canalPendentes } = await admin
+    .from("support_threads")
+    .select("id", { count: "exact", head: true })
+    .eq("unread_admin", true);
+
   const { data: concursoAtivo } = await admin
     .from("concursos")
     .select("id, titulo, periodo_inicio, periodo_fim")
@@ -142,6 +150,22 @@ export default async function AdminPage() {
         activeUsers30d={activeUsers30d ?? 0}
         concursoUsers={concursoParticipantes.length}
       />
+      <Link
+        href="/admin/canal"
+        className="flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3 hover:border-primary/40 transition-colors"
+      >
+        <MessagesSquare className="w-5 h-5 text-primary shrink-0" />
+        <div className="min-w-0">
+          <p className="text-sm font-bold text-white">Canal do Usuário</p>
+          <p className="text-xs text-muted-foreground">Mensagens dos usuários para a equipe</p>
+        </div>
+        {(canalPendentes ?? 0) > 0 && (
+          <span className="ml-auto px-2 py-1 rounded-full bg-primary text-white text-xs font-bold shrink-0">
+            {canalPendentes}
+          </span>
+        )}
+      </Link>
+
       <AdminQueue topics={pending ?? []} />
       <AdminResolve topics={[]} allResolving={resolvingWithOutcomes} />
 

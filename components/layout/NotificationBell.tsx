@@ -13,7 +13,7 @@ interface Notification {
   body: string;
   read: boolean;
   created_at: string;
-  data?: { topic_id?: string; side?: string; is_private?: boolean };
+  data?: { topic_id?: string; side?: string; is_private?: boolean; url?: string };
 }
 
 export default function NotificationBell() {
@@ -61,6 +61,8 @@ export default function NotificationBell() {
     friend_request: "👋",
     bet_invite: "🎯",
     judge_invite: "⚖️",
+    support_reply: "💬",
+    support_message: "📨",
   };
 
   return (
@@ -102,11 +104,15 @@ export default function NotificationBell() {
             ) : (
               notifications.map((n) => {
                 const isPrivate = n.type === "judge_invite" || n.data?.side != null || n.data?.is_private;
-                const href = n.data?.topic_id
-                  ? isPrivate
-                    ? `/privadas/${n.data.topic_id}`
-                    : `/liga/${n.data.topic_id}`
-                  : null;
+                // `data.url` é o destino explícito (ex.: Canal do Usuário);
+                // sem ele, cai na derivação por topic_id.
+                const href = n.data?.url
+                  ? n.data.url
+                  : n.data?.topic_id
+                    ? isPrivate
+                      ? `/privadas/${n.data.topic_id}`
+                      : `/liga/${n.data.topic_id}`
+                    : null;
                 return (
                   <div
                     key={n.id}

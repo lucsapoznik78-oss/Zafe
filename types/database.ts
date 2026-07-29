@@ -43,7 +43,9 @@ export type NotificationType =
   | "friend_request"
   | "bet_won"
   | "judge_invite"
-  | "trade_executed";
+  | "trade_executed"
+  | "support_reply"
+  | "support_message";
 
 export interface Profile {
   id: string;
@@ -205,6 +207,28 @@ export interface TopicStats {
 export interface TopicWithStats extends Topic {
   stats?: TopicStats;
   creator?: Profile;
+}
+
+export type SupportThreadStatus = "aberto" | "respondido" | "fechado";
+
+export interface SupportThread {
+  id: string;
+  user_id: string;
+  subject: string;
+  status: SupportThreadStatus;
+  last_message_at: string;
+  unread_user: boolean;
+  unread_admin: boolean;
+  created_at: string;
+}
+
+export interface SupportMessage {
+  id: string;
+  thread_id: string;
+  sender_id: string;
+  from_admin: boolean;
+  message: string;
+  created_at: string;
 }
 
 export interface UserStats {

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, Wallet, Info, Star, Trophy } from "lucide-react";
+import { LogOut, Wallet, Info, Star, Trophy, MessageSquare } from "lucide-react";
 import NotificationBell from "@/components/layout/NotificationBell";
 import PushSetup from "@/components/layout/PushSetup";
 import SoundMenu from "@/components/layout/SoundMenu";
@@ -160,6 +160,10 @@ export default function Navbar() {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => window.location.href = "/meus-topicos"}>
                 <span className="text-sm">Minhas Posições</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => window.location.href = "/canal"}>
+                <MessageSquare size={14} className="mr-2 text-primary" />
+                <span className="text-sm">Canal do Usuário</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => window.location.href = "/privadas"} className="md:hidden">
                 <span className="text-sm">Privadas</span>
