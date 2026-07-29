@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CONCURSO_ENABLED } from "@/lib/flags";
+import { CONCURSO_ABERTO } from "@/lib/flags";
 
 export default function CtaFinal() {
   return (
@@ -14,7 +14,7 @@ export default function CtaFinal() {
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
-            href={CONCURSO_ENABLED ? "/concurso/entrar" : "/login"}
+            href={CONCURSO_ABERTO ? "/concurso/entrar" : "/login"}
             className="px-8 py-3.5 rounded-xl bg-primary text-white font-bold text-base hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
             Criar conta grátis

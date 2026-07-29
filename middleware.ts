@@ -1,9 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { CONCURSO_ENABLED, HOME_PATH } from "@/lib/flags";
+import { CONCURSO_ABERTO, CONCURSO_ENABLED, HOME_PATH } from "@/lib/flags";
 
 export async function middleware(request: NextRequest) {
-  // Concurso desligado (sem CNPJ/PIX): ninguém acessa o mundo pago direto por
+  // Kill switch: com o Concurso desligado ninguém acessa o mundo pago direto por
   // link/anúncio. As páginas /concurso vão pra home; a API /api/concurso segue
   // fora daqui (prefixo diferente) e é inócua enquanto o PIX não está configurado.
   if (!CONCURSO_ENABLED && request.nextUrl.pathname.startsWith("/concurso")) {
@@ -101,16 +101,16 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/liga", request.url));
     }
 
-    // Cadastro incompleto: o CPF (validado + único) só é OBRIGATÓRIO enquanto o
-    // Concurso (mundo pago, R$/PIX, 18+) está ativo. Com o Concurso oculto a
-    // zona grátis é 100% Z$ virtual e não precisa de CPF — ninguém é travado
-    // nesse muro só para navegar/prever de graça. O CPF entra pela rota
-    // autenticada /api/perfil/completar (nunca no user_metadata, migration 051).
-    // Admins (founders/seed) ficam de fora pra não travarem o painel.
+    // Cadastro incompleto: o CPF (validado + único) só é OBRIGATÓRIO quando o
+    // Concurso (mundo pago, R$/PIX, 18+) está ABERTO. Enquanto ele é só um
+    // anúncio de estreia, a zona grátis é 100% Z$ virtual e não precisa de CPF —
+    // ninguém é travado nesse muro só para navegar/prever de graça. O CPF entra
+    // pela rota autenticada /api/perfil/completar (nunca no user_metadata,
+    // migration 051). Admins (founders/seed) ficam de fora pra não travarem o painel.
     const isCadastroGate =
       pathname.startsWith("/completar-cadastro") ||
       pathname.startsWith("/api/perfil/completar");
-    if (CONCURSO_ENABLED && !profile?.has_cpf && !profile?.is_admin && !isCadastroGate && !isPauseExempt) {
+    if (CONCURSO_ABERTO && !profile?.has_cpf && !profile?.is_admin && !isCadastroGate && !isPauseExempt) {
       if (pathname.startsWith("/api")) {
         return NextResponse.json({ error: "Cadastro incompleto" }, { status: 403 });
       }

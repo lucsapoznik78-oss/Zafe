@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Trophy } from "lucide-react";
-import { CONCURSO_ENABLED } from "@/lib/flags";
+import { CONCURSO_ABERTO, CONCURSO_ENABLED, CONCURSO_ESTREIA } from "@/lib/flags";
 
 export default function ConcursoBanner() {
   if (!CONCURSO_ENABLED) return null;
@@ -13,9 +13,13 @@ export default function ConcursoBanner() {
           <Trophy size={18} className="text-prize" />
         </div>
         <div>
-          <p className="text-sm font-semibold text-white">Concurso Mensal</p>
+          <p className="text-sm font-semibold text-white">
+            Concurso Mensal{CONCURSO_ABERTO ? "" : ` · estreia em ${CONCURSO_ESTREIA}`}
+          </p>
           <p className="text-xs text-muted-foreground mt-0.5">
-            É aqui que vale de verdade — prêmio em dinheiro via PIX para os melhores previsores
+            {CONCURSO_ABERTO
+              ? "É aqui que vale de verdade — prêmio em dinheiro via PIX para os melhores previsores"
+              : "Ainda não começou: nenhuma inscrição aberta e nenhum prêmio em disputa até a estreia"}
           </p>
         </div>
       </div>
@@ -23,7 +27,7 @@ export default function ConcursoBanner() {
         href="/concurso"
         className="flex-shrink-0 px-3 py-1.5 rounded-md bg-primary text-white text-xs font-semibold hover:bg-primary/90 transition-colors"
       >
-        Participar
+        {CONCURSO_ABERTO ? "Participar" : "Saiba mais"}
       </Link>
     </div>
   );

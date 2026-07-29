@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Loader2, User, Mail, Phone, CreditCard, Calendar, Gift } from "lucide-react";
 import { formatarCPF, validarCPF } from "@/lib/cpf";
 import { formatarTelefone, formatarDataBR, dataBRparaISO } from "@/lib/masks";
-import { CONCURSO_ENABLED, HOME_PATH } from "@/lib/flags";
+import { CONCURSO_ABERTO, HOME_PATH } from "@/lib/flags";
 
 interface Props {
   isGoogle: boolean;
@@ -256,8 +256,9 @@ export default function CompletarCadastro({ isGoogle, email, initialFullName, ne
         </Button>
 
         {/* Zona grátis não exige CPF — quem só quer jogar de graça pode entrar
-            sem completar. O CPF é pedido de novo se/quando o Concurso ligar. */}
-        {!CONCURSO_ENABLED && (
+            sem completar. O CPF volta a ser obrigatório quando o Concurso ABRIR
+            (18+/PIX); enquanto ele é só um anúncio de estreia, não trava ninguém. */}
+        {!CONCURSO_ABERTO && (
           <button
             type="button"
             onClick={() => router.push(destino)}

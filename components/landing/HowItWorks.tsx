@@ -1,5 +1,5 @@
 import { Gift, Target, Trophy } from "lucide-react";
-import { CONCURSO_ENABLED } from "@/lib/flags";
+import { CONCURSO_ABERTO } from "@/lib/flags";
 
 const steps = [
   {
@@ -16,7 +16,7 @@ const steps = [
     title: "Palpite no que você acompanha",
     body: "Esporte e e-sports. Centenas de eventos abertos toda semana. Diga SIM ou NÃO e aloque seus Z$ na previsão.",
   },
-  CONCURSO_ENABLED
+  CONCURSO_ABERTO
     ? {
         icon: Trophy,
         color: "text-yellow-400",

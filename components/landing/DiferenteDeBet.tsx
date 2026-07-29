@@ -1,5 +1,5 @@
 import { Scale } from "lucide-react";
-import { CONCURSO_ENABLED } from "@/lib/flags";
+import { CONCURSO_ABERTO } from "@/lib/flags";
 
 export default function DiferenteDeBet() {
   return (
@@ -23,7 +23,7 @@ export default function DiferenteDeBet() {
             compete contra outros previsores.
           </p>
 
-          {CONCURSO_ENABLED && (
+          {CONCURSO_ABERTO && (
             <p className="text-sm text-muted-foreground leading-relaxed">
               O Concurso se enquadra como{" "}
               <span className="text-white font-medium">fantasy sport pelo Art. 49 da Lei 14.790/2023</span>{" "}
@@ -36,7 +36,7 @@ export default function DiferenteDeBet() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             {[
               { label: "Z$ é virtual", sub: "Sem depósito, sem valor real, sem saque" },
-              ...(CONCURSO_ENABLED
+              ...(CONCURSO_ABERTO
                 ? [{ label: "Prêmio fixo (Art. 49)", sub: "Definido na abertura, independe de inscritos" }]
                 : []),
               { label: "Só esporte e e-sports", sub: "Eventos reais e verificáveis" },

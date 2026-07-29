@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CONCURSO_ENABLED } from "@/lib/flags";
+import { CONCURSO_ABERTO } from "@/lib/flags";
 
 export default function Hero() {
   return (
@@ -19,7 +19,7 @@ export default function Hero() {
 
         {/* Sub */}
         <p className="text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto">
-          {CONCURSO_ENABLED
+          {CONCURSO_ABERTO
             ? "Não é cassino. É um fantasy game de habilidade: jogue grátis com Z$ ou entre no Concurso e dispute prêmio em dinheiro real pros melhores do mês."
             : "Não é cassino. É um fantasy game de habilidade: jogue grátis com Z$ virtual e suba no ranking dos melhores previsores do Brasil."}
         </p>

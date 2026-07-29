@@ -14,12 +14,15 @@ import { Suspense } from "react";
 import LegalFooter from "@/components/layout/LegalFooter";
 import EnrollButton from "@/components/concurso/EnrollButton";
 import RankingList from "@/components/concurso/RankingList";
+import { CONCURSO_ABERTO, CONCURSO_ESTREIA } from "@/lib/flags";
 
 const EVENT_LIST_LIMIT = 200;
 
 export const metadata: Metadata = {
   title: "Concurso — Zafe Liga",
-  description: "Compita com palpites virtuais (ZC$) e ganhe prêmios reais em dinheiro.",
+  description: CONCURSO_ABERTO
+    ? "Compita com palpites virtuais (ZC$) e ganhe prêmios reais em dinheiro."
+    : `O Concurso Zafe ainda não começou — a primeira edição valendo é a de ${CONCURSO_ESTREIA}.`,
   alternates: { canonical: "/concurso" },
 };
 
@@ -35,6 +38,92 @@ const PREMIOS = [
   { pos: "Top 1%", valor: "45% divididos" },
   { pos: "Top 2%", valor: "20% divididos" },
 ];
+
+// Pré-lançamento: o Concurso é divulgado, mas ainda não começou. Nenhuma
+// inscrição, palpite ou prêmio vale antes da estreia, e a tela precisa dizer
+// isso sem ambiguidade — daí nenhum CTA de participação aqui.
+function ConcursoEmBreve({ concurso }: { concurso: any }) {
+  const inicio = concurso?.periodo_inicio;
+  const fim = concurso?.periodo_fim;
+
+  return (
+    <div className="py-6 space-y-5">
+      <div className="rounded-xl border border-yellow-400/30 bg-yellow-400/5 p-5 space-y-4">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-400 text-black text-xs font-extrabold uppercase tracking-wide">
+          <Calendar size={12} />
+          Estreia em {CONCURSO_ESTREIA}
+        </span>
+
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <Trophy size={18} className="text-yellow-400" />
+            <h1 className="text-lg font-bold text-yellow-400">
+              {concurso?.titulo ?? "Concurso Liga Zafe"}
+            </h1>
+          </div>
+          {inicio && fim && (
+            <p className="flex items-center gap-1 text-xs text-yellow-300/50">
+              <Calendar size={11} />
+              {format(new Date(inicio), "dd/MM", { locale: ptBR })} –{" "}
+              {format(new Date(fim), "dd/MM/yyyy", { locale: ptBR })}
+            </p>
+          )}
+        </div>
+
+        <div className="flex items-start gap-2 rounded-lg bg-yellow-400/10 border border-yellow-400/30 px-3 py-3">
+          <AlertCircle size={16} className="text-yellow-400 shrink-0 mt-0.5" />
+          <div className="text-xs text-yellow-100/80 leading-relaxed space-y-1.5">
+            <p className="font-bold text-yellow-300">O Concurso ainda não começou.</p>
+            <p>
+              A primeira edição valendo é a de {CONCURSO_ESTREIA}. Até lá não existe
+              concurso válido: as inscrições não estão abertas, não há palpite que
+              conte para o ranking e nenhum prêmio está em disputa.
+            </p>
+            <p>
+              Enquanto isso, a Liga segue liberada e 100% grátis, com Z$ virtual.
+            </p>
+          </div>
+        </div>
+
+        <div className="border-t border-yellow-400/20 pt-3">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[10px] text-yellow-300/50 font-semibold uppercase tracking-wide">
+              Premiação prevista
+            </p>
+            <Link
+              href="/concurso/como-funciona"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-400 text-black text-xs font-extrabold uppercase tracking-wide hover:bg-yellow-300 transition-colors"
+            >
+              Como funciona →
+            </Link>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {PREMIOS.map((p) => (
+              <div key={p.pos} className="px-2 py-1 rounded bg-yellow-400/10 border border-yellow-400/20">
+                <span className="text-[10px] text-yellow-400 font-bold">{p.pos}</span>
+                <span className="text-[10px] text-yellow-300/60 ml-1">{p.valor}</span>
+              </div>
+            ))}
+          </div>
+          <p className="mt-1.5 text-[10px] text-yellow-300/40">
+            Valores previstos para a edição de estreia, ainda sujeitos a confirmação
+            na abertura. Se o concurso tiver menos de 500 inscritos, a edição será
+            cancelada e todos os participantes serão reembolsados.
+          </p>
+        </div>
+      </div>
+
+      <Link
+        href="/liga"
+        className="inline-block px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-white border border-border hover:border-primary/40 transition-all"
+      >
+        ← Jogar na Liga (Z$)
+      </Link>
+
+      <LegalFooter />
+    </div>
+  );
+}
 
 async function EventosConcurso({ category, search, tab, concurso, now }: { category: string; search: string; tab: string; concurso: any; now: string }) {
   const supabase = await createClient();
@@ -157,13 +246,21 @@ export default async function ConcursoPage({ searchParams }: PageProps) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
+  // Edição corrente ou, enquanto o Concurso não abre, a próxima agendada — é
+  // ela que a página anuncia. A participação continua barrada pelas rotas de
+  // inscrição/palpite, que só aceitam concurso com status 'ativo' em curso.
   const { data: concurso } = await admin
     .from("concursos")
     .select("*")
-    .eq("status", "ativo")
-    .lte("periodo_inicio", now)
+    .in("status", ["ativo", "agendado"])
     .gte("periodo_fim", now)
-    .single();
+    .order("periodo_inicio", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (!CONCURSO_ABERTO) {
+    return <ConcursoEmBreve concurso={concurso} />;
+  }
 
   if (!concurso) {
     return (

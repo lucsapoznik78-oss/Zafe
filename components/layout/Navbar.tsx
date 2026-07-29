@@ -10,7 +10,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
 import { formatCurrency } from "@/lib/utils";
 import { isPremium } from "@/lib/premium";
-import { CONCURSO_ENABLED, HOME_PATH } from "@/lib/flags";
+import { CONCURSO_ABERTO, CONCURSO_ENABLED, CONCURSO_ESTREIA_CURTO, HOME_PATH } from "@/lib/flags";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -108,7 +108,9 @@ export default function Navbar() {
             >
               <Trophy size={14} />
               <span>Concurso</span>
-              <span className="hidden lg:inline font-semibold text-prize-text">· Prêmio R$</span>
+              <span className="hidden lg:inline font-semibold text-prize-text">
+                {CONCURSO_ABERTO ? "· Prêmio R$" : `· ${CONCURSO_ESTREIA_CURTO}`}
+              </span>
             </Link>
           )}
 

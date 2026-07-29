@@ -10,6 +10,7 @@ import ReentrarButton from "@/components/concurso/ReentrarButton";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { Metadata } from "next";
+import { CONCURSO_ABERTO } from "@/lib/flags";
 
 function mesLabel(periodoInicio: string): string {
   const s = format(new Date(periodoInicio), "MMMM", { locale: ptBR });
@@ -22,6 +23,12 @@ export const metadata: Metadata = {
 };
 
 export default async function ConcursoEntrar() {
+  // Concurso ainda não aberto: não existe inscrição a fazer, então a porta do
+  // mundo pago devolve pro anúncio em vez de pedir KYC/CPF por nada.
+  if (!CONCURSO_ABERTO) {
+    redirect("/concurso");
+  }
+
   const supabase = await createClient();
   const {
     data: { user },

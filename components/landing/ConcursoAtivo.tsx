@@ -3,20 +3,22 @@ import Link from "next/link";
 import { Trophy, Users, Calendar, Medal } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CONCURSO_ENABLED } from "@/lib/flags";
+import { CONCURSO_ABERTO, CONCURSO_ENABLED, CONCURSO_ESTREIA } from "@/lib/flags";
 
 async function getConcursoData() {
   try {
     const admin = createAdminClient();
     const now = new Date().toISOString();
 
+    // Edição corrente ou, enquanto o Concurso não abre, a próxima agendada.
     const { data: concurso } = await admin
       .from("concursos")
       .select("*")
-      .eq("status", "ativo")
-      .lte("periodo_inicio", now)
+      .in("status", ["ativo", "agendado"])
       .gte("periodo_fim", now)
-      .single();
+      .order("periodo_inicio", { ascending: true })
+      .limit(1)
+      .maybeSingle();
 
     if (!concurso) return null;
 
@@ -59,10 +61,12 @@ export default async function ConcursoAtivo() {
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-8">
           <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">
-            Concurso em andamento
+            {CONCURSO_ABERTO ? "Concurso em andamento" : "O Concurso está chegando"}
           </h2>
           <p className="text-muted-foreground text-sm">
-            Inscreva-se agora e dispute o prêmio deste mês.
+            {CONCURSO_ABERTO
+              ? "Inscreva-se agora e dispute o prêmio deste mês."
+              : `Ainda não começou. A primeira edição valendo é a de ${CONCURSO_ESTREIA}.`}
           </p>
         </div>
 
@@ -81,7 +85,7 @@ export default async function ConcursoAtivo() {
                     {format(new Date(inicio), "dd/MM", { locale: ptBR })} –{" "}
                     {format(new Date(fim), "dd/MM/yyyy", { locale: ptBR })}
                   </span>
-                  {inscritos > 0 && (
+                  {CONCURSO_ABERTO && inscritos > 0 && (
                     <span className="flex items-center gap-1">
                       <Users size={11} />
                       {inscritos.toLocaleString("pt-BR")} participante{inscritos !== 1 ? "s" : ""}
@@ -91,7 +95,9 @@ export default async function ConcursoAtivo() {
               </div>
             </div>
             <div className="text-left sm:text-right shrink-0">
-              <p className="text-xs text-yellow-400/60 mb-0.5">Prêmio total</p>
+              <p className="text-xs text-yellow-400/60 mb-0.5">
+                {CONCURSO_ABERTO ? "Prêmio total" : "Prêmio total previsto"}
+              </p>
               <p className="text-2xl font-black text-yellow-400">
                 R$ {Number(premioTotal).toLocaleString("pt-BR")}
               </p>
@@ -119,13 +125,15 @@ export default async function ConcursoAtivo() {
           {/* CTA */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 pt-1">
             <Link
-              href="/concurso/entrar"
+              href={CONCURSO_ABERTO ? "/concurso/entrar" : "/concurso"}
               className="px-5 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-colors"
             >
-              Inscrever-se grátis
+              {CONCURSO_ABERTO ? "Inscrever-se grátis" : "Ver o Concurso"}
             </Link>
             <p className="text-xs text-yellow-400/50">
-              Inscrição automática ao criar conta. Você recebe ZC$ 1.000 pra competir.
+              {CONCURSO_ABERTO
+                ? "Inscrição automática ao criar conta. Você recebe ZC$ 1.000 pra competir."
+                : "As inscrições ainda não abriram — nada do que você fizer hoje conta pro Concurso."}
             </p>
           </div>
         </div>

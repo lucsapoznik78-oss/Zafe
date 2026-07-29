@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import DailyBonusCard from "@/components/inicio/DailyBonusCard";
 import { createAdminClient } from "@/lib/supabase/server";
-import { CONCURSO_ENABLED } from "@/lib/flags";
+import { CONCURSO_ABERTO, CONCURSO_ENABLED, CONCURSO_ESTREIA } from "@/lib/flags";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -15,9 +15,12 @@ async function getConcurso() {
   try {
     const admin = createAdminClient();
     const now = new Date().toISOString();
+    // Edição corrente ou, enquanto o Concurso não abre, a próxima agendada —
+    // é ela que o herói anuncia.
     const { data: concurso } = await admin
       .from("concursos").select("*")
-      .eq("status", "ativo").lte("periodo_inicio", now).gte("periodo_fim", now)
+      .in("status", ["ativo", "agendado"]).gte("periodo_fim", now)
+      .order("periodo_inicio", { ascending: true }).limit(1)
       .maybeSingle();
     if (!concurso) return null;
     const { count } = await admin
@@ -66,21 +69,23 @@ export default async function InicioPage() {
         <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-yellow-400/20 blur-3xl" />
         <div className="relative">
           <div className="inline-flex items-center gap-2 rounded-full border border-yellow-400/40 bg-yellow-400/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-yellow-300">
-            <Crown size={13} /> Mundo principal · Prêmio em R$
+            <Crown size={13} />
+            {CONCURSO_ABERTO ? "Mundo principal · Prêmio em R$" : `Em breve · Estreia em ${CONCURSO_ESTREIA}`}
           </div>
 
           <h1 className="mt-4 text-4xl sm:text-5xl font-black leading-tight text-white">
             {titulo}
           </h1>
           <p className="mt-2 max-w-xl text-sm sm:text-base text-yellow-100/70">
-            O fantasy game de esporte e e-sports onde os melhores previsores
-            levam dinheiro de verdade por PIX. Prêmio fixo, anunciado na abertura.
+            {CONCURSO_ABERTO
+              ? "O fantasy game de esporte e e-sports onde os melhores previsores levam dinheiro de verdade por PIX. Prêmio fixo, anunciado na abertura."
+              : `O Concurso ainda não começou. A primeira edição valendo é a de ${CONCURSO_ESTREIA} — até lá não há inscrição aberta, palpite que conte nem prêmio em disputa.`}
           </p>
 
           <div className="mt-6 flex flex-wrap items-end gap-x-8 gap-y-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-yellow-400/60">
-                Prêmio total
+                {CONCURSO_ABERTO ? "Prêmio total" : "Prêmio total previsto"}
               </p>
               <p className="text-5xl font-black text-yellow-400">
                 R$ {premioTotal.toLocaleString("pt-BR")}
@@ -94,10 +99,12 @@ export default async function InicioPage() {
                   {format(new Date(fim), "dd/MM/yyyy", { locale: ptBR })}
                 </span>
               )}
-              <span className="flex items-center gap-1.5">
-                <Users size={12} />
-                {inscritos.toLocaleString("pt-BR")} previsor{inscritos !== 1 ? "es" : ""} na disputa
-              </span>
+              {CONCURSO_ABERTO && (
+                <span className="flex items-center gap-1.5">
+                  <Users size={12} />
+                  {inscritos.toLocaleString("pt-BR")} previsor{inscritos !== 1 ? "es" : ""} na disputa
+                </span>
+              )}
             </div>
           </div>
 
@@ -116,7 +123,7 @@ export default async function InicioPage() {
               className="group inline-flex items-center gap-2 rounded-2xl bg-yellow-400 px-7 py-3.5 text-base font-black text-black transition-colors hover:bg-primary/90"
             >
               <Trophy size={18} />
-              Entrar no Concurso
+              {CONCURSO_ABERTO ? "Entrar no Concurso" : "Ver o Concurso"}
               <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
             </Link>
             <Link
@@ -131,7 +138,7 @@ export default async function InicioPage() {
       )}
 
       {/* ─────────── divisor ─────────── */}
-      {CONCURSO_ENABLED && (
+      {CONCURSO_ABERTO && (
         <div className="flex items-center gap-4">
           <div className="h-px flex-1 bg-border" />
           <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
@@ -145,7 +152,7 @@ export default async function InicioPage() {
       <section>
         <div className="mb-5">
           <h2 className="text-xl font-black text-white">
-            {CONCURSO_ENABLED ? "Zona grátis" : "Módulos"}
+            {CONCURSO_ABERTO ? "Zona grátis" : "Módulos"}
           </h2>
           <p className="text-sm text-muted-foreground">
             Tudo com Z$ virtual — sem dinheiro, só habilidade. Esporte e e-sports.
