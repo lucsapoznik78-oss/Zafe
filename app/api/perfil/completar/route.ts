@@ -1,7 +1,8 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { validarCPF } from "@/lib/cpf";
-import { TERMS_VERSION } from "@/lib/terms";
+import { LEGAL_DOCS, DOCS_OBRIGATORIOS } from "@/lib/legal";
+import { recordAcceptance } from "@/lib/legal-trail";
 
 // Completar cadastro (gate pós-login) — o "Finalize seu cadastro" do fluxo
 // Google e de qualquer conta que ainda não tenha CPF. Coleta nome completo,
@@ -65,7 +66,7 @@ export async function POST(request: Request) {
 
   // Aceite dos termos (contas Google não passam pelo form de signup)
   if (!prof?.terms_version) {
-    update.terms_version = TERMS_VERSION;
+    update.terms_version = LEGAL_DOCS.termos.version;
     update.terms_accepted_at = new Date().toISOString();
   }
 
@@ -84,6 +85,16 @@ export async function POST(request: Request) {
     }
     console.error("[perfil/completar]", error);
     return NextResponse.json({ error: "Erro ao salvar seus dados" }, { status: 500 });
+  }
+
+  // Trilha probatória do aceite (IP + user-agent + hash do texto). Não pode
+  // derrubar o cadastro: os dados já foram salvos.
+  for (const doc of DOCS_OBRIGATORIOS) {
+    try {
+      await recordAcceptance({ userId: user.id, document: doc, action: "signup", req: request });
+    } catch (e) {
+      console.error("[perfil/completar] aceite", doc, e);
+    }
   }
 
   return NextResponse.json({ success: true });

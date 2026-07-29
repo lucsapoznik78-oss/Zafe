@@ -11,7 +11,7 @@ import {
   Calendar, Gift, Lock, Check, X,
 } from "lucide-react";
 import Link from "next/link";
-import { TERMS_VERSION } from "@/lib/terms";
+import { LEGAL_DOCS } from "@/lib/legal";
 import { formatarCPF, validarCPF } from "@/lib/cpf";
 import { formatarTelefone, formatarDataBR, dataBRparaISO } from "@/lib/masks";
 import { HOME_PATH } from "@/lib/flags";
@@ -91,7 +91,6 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
   const [birthDate, setBirthDate] = useState("");
   const [refCode, setRefCode] = useState("");
   const [usernameStatus, setUsernameStatus] = useState<"idle" | "checking" | "free" | "taken">("idle");
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -207,12 +206,6 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
         setLoading(false);
         return;
       }
-      if (!acceptedTerms) {
-        setError("Você precisa concordar com os Termos de Uso para criar a conta.");
-        setLoading(false);
-        return;
-      }
-
       // Código de indicação: vai num cookie (mesmo canal do link /r/[code]);
       // o ReferralActivator registra no primeiro acesso logado.
       if (refCode.trim()) {
@@ -229,7 +222,11 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
             phone: phoneClean,
             cpf: cpfClean,
             birth_date: birthISO,
-            terms_version: TERMS_VERSION,
+            // Versões mostradas no formulário. O aceite com valor probatório
+            // (IP, user-agent, hash do texto) é gravado server-side em
+            // /auth/confirm; isto aqui é o que a tela dizia no momento do clique.
+            terms_version: LEGAL_DOCS.termos.version,
+            politica_version: LEGAL_DOCS.politica.version,
           },
         },
       });
@@ -463,6 +460,23 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
     </button>
   );
 
+  // Aceite por clique (CDC art. 46 — oportunidade real de conhecer o conteúdo).
+  // Fica imediatamente abaixo do botão que cria a conta, não no rodapé da página,
+  // e acompanha também o botão do Google, que é uma via de cadastro.
+  const avisoAceite = (
+    <p className="text-sm sm:text-xs text-muted-foreground leading-relaxed text-center">
+      Ao clicar, você concorda com os{" "}
+      <Link href="/termos" target="_blank" rel="noopener" className="text-primary underline">
+        Termos de Uso
+      </Link>{" "}
+      e com a{" "}
+      <Link href="/politica" target="_blank" rel="noopener" className="text-primary underline">
+        Política de Privacidade
+      </Link>
+      .
+    </p>
+  );
+
   const iconInputClass = `${inputFocusClass} pl-10 h-11`;
 
   // Email e senha aparecem nos dois modos, mas em posições diferentes do form
@@ -517,6 +531,7 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
       {isConcurso && (
         <>
           {googleButton}
+          {avisoAceite}
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-border" />
@@ -668,20 +683,6 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
                 />
               </Field>
             </div>
-            <label className="flex items-start gap-2.5 text-xs text-muted-foreground cursor-pointer pt-1">
-              <input
-                type="checkbox"
-                checked={acceptedTerms}
-                onChange={(e) => setAcceptedTerms(e.target.checked)}
-                className="mt-0.5 accent-primary"
-              />
-              <span>
-                Ao me cadastrar, concordo com os{" "}
-                <Link href="/termos" target="_blank" className="text-primary hover:underline">Termos de Uso</Link>
-                {" "}e a{" "}
-                <Link href="/termos" target="_blank" className="text-primary hover:underline">Política de Privacidade</Link>.
-              </span>
-            </label>
           </>
         )}
 
@@ -707,6 +708,8 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
           {loading ? <Loader2 size={16} className="animate-spin" /> : mode === "login" ? "Entrar" : "Criar conta"}
         </Button>
 
+        {mode === "cadastro" && avisoAceite}
+
         {mode === "login" && (
           <button
             type="button"
@@ -729,6 +732,7 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
             </div>
           </div>
           {googleButton}
+          {avisoAceite}
         </>
       )}
     </div>

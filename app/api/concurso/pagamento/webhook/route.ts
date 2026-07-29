@@ -58,6 +58,7 @@ export async function POST(request: Request) {
     provider: config.provider,
     providerPaymentId,
     payerCpf,
+    origin: new URL(request.url).origin,
   });
 
   // Sempre 200 para o provedor não reentregar; o estado real fica na razão.

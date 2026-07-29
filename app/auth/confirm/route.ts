@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { HOME_PATH } from "@/lib/flags";
+import { recordSignupAcceptances } from "@/lib/legal-trail";
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -34,12 +35,23 @@ export async function GET(request: NextRequest) {
     }
   );
 
-  const { error } = await supabase.auth.verifyOtp({
+  const { data, error } = await supabase.auth.verifyOtp({
     token_hash,
     type: type as "signup" | "email_change" | "recovery" | "invite" | "magiclink",
   });
 
-  if (!error) return successRedirect;
+  if (error) return errorRedirect;
 
-  return errorRedirect;
+  // Trilha probatória do aceite feito no formulário de cadastro: este é o
+  // primeiro request server-side com sessão, onde existem IP e user-agent
+  // reais. No-op para contas antigas (recuperação de senha, troca de email).
+  if (data.user) {
+    try {
+      await recordSignupAcceptances(data.user.id, request);
+    } catch (e) {
+      console.error("[auth/confirm] aceite", e);
+    }
+  }
+
+  return successRedirect;
 }

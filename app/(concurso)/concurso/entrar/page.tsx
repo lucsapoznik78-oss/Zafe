@@ -7,6 +7,7 @@ import { Trophy, Users } from "lucide-react";
 import LoginForm from "@/components/auth/LoginForm";
 import ConfirmarInscricao from "@/components/concurso/ConfirmarInscricao";
 import ReentrarButton from "@/components/concurso/ReentrarButton";
+import AvisoAntesDePagar from "@/components/concurso/AvisoAntesDePagar";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { Metadata } from "next";
@@ -40,7 +41,9 @@ export default async function ConcursoEntrar() {
   // Busca concurso ativo
   const { data: concurso } = await admin
     .from("concursos")
-    .select("id, titulo, saldo_inicial, premiacao_total, periodo_inicio, periodo_fim")
+    .select(
+      "id, titulo, saldo_inicial, premiacao_total, periodo_inicio, periodo_fim, valor_inscricao_centavos"
+    )
     .eq("status", "ativo")
     .lte("periodo_inicio", now)
     .gte("periodo_fim", now)
@@ -78,10 +81,20 @@ export default async function ConcursoEntrar() {
 
     // Verificado em uma temporada anterior → reentrada com 1 clique (sem refazer KYC).
     const jaVerificado = !!(perfil?.kyc_verified && perfil.cpf && perfil.birth_date);
+
+    // Informação prévia destacada, acima do CTA — só quando a edição é paga.
+    const aviso = concurso.valor_inscricao_centavos > 0 && (
+      <AvisoAntesDePagar
+        valorCentavos={concurso.valor_inscricao_centavos}
+        fimEm={concurso.periodo_fim}
+      />
+    );
+
     if (jaVerificado) {
       return (
         <div className="min-h-[calc(100vh-56px)] flex flex-col items-center justify-center py-8 px-4">
-          <div className="w-full max-w-sm">
+          <div className="w-full max-w-sm space-y-4">
+            {aviso}
             <ReentrarButton
               saldoInicial={concurso.saldo_inicial}
               mesLabel={mesLabel(concurso.periodo_inicio)}
@@ -94,7 +107,8 @@ export default async function ConcursoEntrar() {
     // Logado mas não inscrito — pede confirmação explícita (re-autenticação + identificação)
     return (
       <div className="min-h-[calc(100vh-56px)] flex flex-col items-center justify-center py-8 px-4">
-        <div className="w-full max-w-sm">
+        <div className="w-full max-w-sm space-y-4">
+          {aviso}
           <ConfirmarInscricao
             titulo={concurso.titulo}
             saldoInicial={concurso.saldo_inicial}
@@ -121,7 +135,10 @@ export default async function ConcursoEntrar() {
                 {concurso?.titulo ?? "Concurso Liga Zafe"}
               </p>
               <p className="text-[10px] text-yellow-400/60">
-                Inscrição grátis · ZC$ {(concurso?.saldo_inicial ?? 500).toLocaleString("pt-BR")} de presente
+                {concurso?.valor_inscricao_centavos
+                  ? `Inscrição ${(concurso.valor_inscricao_centavos / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`
+                  : "Inscrição grátis"}{" "}
+                · ZC$ {(concurso?.saldo_inicial ?? 500).toLocaleString("pt-BR")} para competir
               </p>
             </div>
           </div>

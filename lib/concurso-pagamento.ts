@@ -13,6 +13,7 @@
  */
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { recordAcceptance } from "@/lib/legal-trail";
 
 export type PixProvider = "mercadopago" | "pagarme" | "stripe";
 
@@ -168,7 +169,13 @@ export type ConfirmarResult =
  */
 export async function confirmarPagamentoEInscrever(
   admin: SupabaseClient,
-  params: { provider: string; providerPaymentId: string; payerCpf?: string | null }
+  params: {
+    provider: string;
+    providerPaymentId: string;
+    payerCpf?: string | null;
+    /** Origin da própria Zafe, usado para arquivar a versão vigente do regulamento. */
+    origin: string;
+  }
 ): Promise<ConfirmarResult> {
   const { provider, providerPaymentId, payerCpf } = params;
 
@@ -230,6 +237,24 @@ export async function confirmarPagamentoEInscrever(
     console.error("[concurso-pagamento] inscrever pós-pagamento falhou", error);
     return { ok: false, reason: "enroll_failed" };
   }
+
+  // Aceite do regulamento da edição, só depois do claim pending→paid. Sem IP nem
+  // user-agent: este código roda no webhook do provedor, não num request do
+  // usuário. O ato fica provado pelo pagamento em si (CPF do pagador conferido
+  // acima), registrado no metadata.
+  try {
+    await recordAcceptance({
+      userId: pagamento.user_id,
+      document: "regulamento_concurso",
+      action: "contest_entry",
+      origin: params.origin,
+      contestEdition: pagamento.concurso_id,
+      metadata: { pagamento_id: pagamento.id, provider, provider_payment_id: providerPaymentId },
+    });
+  } catch (e) {
+    console.error("[concurso-pagamento] aceite pós-pagamento falhou", e);
+  }
+
   return { ok: true, status: result.status === "already_enrolled" ? "already" : "enrolled" };
 }
 

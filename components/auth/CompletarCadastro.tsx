@@ -48,7 +48,6 @@ export default function CompletarCadastro({ isGoogle, email, initialFullName, ne
   const [cpf, setCpf] = useState("");
   const [birthDate, setBirthDate] = useState("");
   const [refCode, setRefCode] = useState("");
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -80,11 +79,6 @@ export default function CompletarCadastro({ isGoogle, email, initialFullName, ne
       }
       birthISO = iso;
     }
-    if (!acceptedTerms) {
-      setError("Você precisa concordar com os Termos de Uso para continuar.");
-      return;
-    }
-
     setLoading(true);
     const res = await fetch("/api/perfil/completar", {
       method: "POST",
@@ -230,21 +224,6 @@ export default function CompletarCadastro({ isGoogle, email, initialFullName, ne
           </Field>
         </div>
 
-        <label className="flex items-start gap-2.5 text-xs text-muted-foreground cursor-pointer pt-1">
-          <input
-            type="checkbox"
-            checked={acceptedTerms}
-            onChange={(e) => setAcceptedTerms(e.target.checked)}
-            className="mt-0.5 accent-primary"
-          />
-          <span>
-            Ao me cadastrar, concordo com os{" "}
-            <Link href="/termos" target="_blank" className="text-primary hover:underline">Termos de Uso</Link>
-            {" "}e a{" "}
-            <Link href="/termos" target="_blank" className="text-primary hover:underline">Política de Privacidade</Link>.
-          </span>
-        </label>
-
         {error && <p className="text-destructive text-sm">{error}</p>}
 
         <Button
@@ -254,6 +233,18 @@ export default function CompletarCadastro({ isGoogle, email, initialFullName, ne
         >
           {loading ? <Loader2 size={16} className="animate-spin" /> : "Começar a prever"}
         </Button>
+
+        <p className="text-sm sm:text-xs text-muted-foreground leading-relaxed text-center">
+          Ao clicar, você concorda com os{" "}
+          <Link href="/termos" target="_blank" rel="noopener" className="text-primary underline">
+            Termos de Uso
+          </Link>{" "}
+          e com a{" "}
+          <Link href="/politica" target="_blank" rel="noopener" className="text-primary underline">
+            Política de Privacidade
+          </Link>
+          .
+        </p>
 
         {/* Zona grátis não exige CPF — quem só quer jogar de graça pode entrar
             sem completar. O CPF volta a ser obrigatório quando o Concurso ABRIR

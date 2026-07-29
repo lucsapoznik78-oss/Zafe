@@ -48,7 +48,10 @@ const PASSOS = [
 
 export default function ComoFuncionaPage() {
   return (
-    <div className="py-10 max-w-3xl mx-auto space-y-10 px-4">
+    <div
+      data-legal-doc="regulamento_concurso"
+      className="py-10 max-w-3xl mx-auto space-y-10 px-4"
+    >
       {/* Header */}
       <div>
         <Link

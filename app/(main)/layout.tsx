@@ -1,8 +1,10 @@
+import { Suspense } from "react";
 import Navbar from "@/components/layout/Navbar";
 import MobileNav from "@/components/layout/MobileNav";
 import ReferralActivator from "@/components/layout/ReferralActivator";
 import PendingPickActivator from "@/components/layout/PendingPickActivator";
 import WelcomeModal from "@/components/onboarding/WelcomeModal";
+import ReaceiteGate from "@/components/legal/ReaceiteGate";
 
 export default function MainLayout({
   children,
@@ -19,6 +21,9 @@ export default function MainLayout({
       <ReferralActivator />
       <PendingPickActivator />
       <WelcomeModal />
+      <Suspense fallback={null}>
+        <ReaceiteGate />
+      </Suspense>
     </div>
   );
 }

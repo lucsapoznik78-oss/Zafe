@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { CONCURSO_ABERTO, CONCURSO_ENABLED, HOME_PATH } from "@/lib/flags";
+import { LEGAL_DOCS } from "@/lib/legal";
 
 export async function middleware(request: NextRequest) {
   // Kill switch: com o Concurso desligado ninguém acessa o mundo pago direto por
@@ -10,7 +11,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  let supabaseResponse = NextResponse.next({ request });
+  // Server Components não enxergam o pathname. O gate de re-aceite precisa dele
+  // para não se montar em cima das próprias páginas legais — senão o modal
+  // bloqueia justamente o texto que ele pede para o usuário ler.
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-pathname", request.nextUrl.pathname);
+  const nextRequest = { headers: requestHeaders };
+
+  let supabaseResponse = NextResponse.next({ request: nextRequest });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -24,7 +32,7 @@ export async function middleware(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
-          supabaseResponse = NextResponse.next({ request });
+          supabaseResponse = NextResponse.next({ request: nextRequest });
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           );
@@ -39,7 +47,7 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  const publicRoutes = ["/login", "/auth/callback", "/auth/confirm", "/api/auth/username", "/api/auth/email-exists", "/api/auth/2fa-contexto", "/historico", "/termos", "/jogo-responsavel", "/api/cron", "/api/push", "/api/concurso/pagamento/webhook", "/api/landing", "/r/", "/sitemap.xml", "/robots.txt", "/google", "/liga", "/ranking", "/u/", "/concurso", "/comunidade", "/games", "/banido"];
+  const publicRoutes = ["/login", "/auth/callback", "/auth/confirm", "/api/auth/username", "/api/auth/email-exists", "/api/auth/2fa-contexto", "/historico", "/termos", "/politica", "/jogo-responsavel", "/api/cron", "/api/push", "/api/concurso/pagamento/webhook", "/api/landing", "/r/", "/sitemap.xml", "/robots.txt", "/google", "/liga", "/ranking", "/u/", "/concurso", "/comunidade", "/games", "/banido"];
   const isPublicRoute = pathname === "/" || publicRoutes.some((r) => pathname.startsWith(r));
 
   // Email não confirmado (signups por senha) conta como não autenticado para
@@ -118,6 +126,14 @@ export async function middleware(request: NextRequest) {
       url.searchParams.set("next", pathname);
       return NextResponse.redirect(url);
     }
+  }
+
+  // Versão vigente do documento legal servido nesta rota. Permite verificar de
+  // fora (curl / auditoria) qual texto estava no ar em determinada data, sem
+  // depender do HTML.
+  const docVigente = Object.values(LEGAL_DOCS).find((d) => d.route === pathname);
+  if (docVigente) {
+    supabaseResponse.headers.set("X-Document-Version", docVigente.version);
   }
 
   return supabaseResponse;

@@ -1,6 +1,7 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { validarCPF } from "@/lib/cpf";
+import { recordAcceptance } from "@/lib/legal-trail";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -99,6 +100,20 @@ export async function POST(request: Request) {
   }
   if (result.status === "already_enrolled") {
     return NextResponse.json({ error: "Você já está inscrito neste concurso" }, { status: 400 });
+  }
+
+  // Aceite do regulamento desta edição, gravado só depois da inscrição existir.
+  // Não pode derrubar a resposta: a inscrição já está feita.
+  try {
+    await recordAcceptance({
+      userId: user.id,
+      document: "regulamento_concurso",
+      action: "contest_entry",
+      req: request,
+      contestEdition: concurso.id,
+    });
+  } catch (e) {
+    console.error("[concurso/inscrever] aceite", e);
   }
 
   return NextResponse.json({ success: true, balance: Number(result.balance) });
