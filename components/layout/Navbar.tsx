@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, Wallet, Info, Star, Trophy, MessageSquare, Users } from "lucide-react";
+import { LogOut, Wallet, Info, Star, Trophy, MessageSquare, Users, LifeBuoy } from "lucide-react";
 import NotificationBell from "@/components/layout/NotificationBell";
 import PushSetup from "@/components/layout/PushSetup";
 import SoundMenu from "@/components/layout/SoundMenu";
@@ -176,6 +176,10 @@ export default function Navbar() {
               <DropdownMenuItem onClick={() => window.location.href = "/premium"}>
                 <Star size={14} className="mr-2 text-yellow-400" />
                 <span className="text-sm">Premium</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => window.location.href = "/ajuda"}>
+                <LifeBuoy size={14} className="mr-2 text-primary" />
+                <span className="text-sm">Ajuda e Transparência</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-border" />
               <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive">

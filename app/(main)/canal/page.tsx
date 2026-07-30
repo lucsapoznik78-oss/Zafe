@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { Suspense } from "react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import CanalUsuario from "@/components/canal/CanalUsuario";
@@ -27,6 +28,14 @@ export default async function CanalPage() {
       <Suspense fallback={null}>
         <CanalUsuario />
       </Suspense>
+
+      <p className="text-xs text-muted-foreground">
+        Antes de escrever, talvez a resposta já esteja em{" "}
+        <Link href="/ajuda" className="text-primary hover:underline">
+          Ajuda e Transparência
+        </Link>{" "}
+        — histórico de resoluções, Termos e jogo responsável.
+      </p>
     </div>
   );
 }
