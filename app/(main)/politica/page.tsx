@@ -192,8 +192,8 @@ export default function PoliticaPage() {
           Encarregado pelo tratamento de dados pessoais, nos termos do art. 41 da LGPD:{" "}
           <strong className="text-white">Luc Sapoznik</strong>. Contato para exercício
           de direitos, dúvidas e reclamações:{" "}
-          <a href="mailto:contato@zafe.app.br" className="text-primary hover:underline">
-            contato@zafe.app.br
+          <a href="mailto:contato@zafe.app" className="text-primary hover:underline">
+            contato@zafe.app
           </a>
           . Você também pode peticionar diretamente à ANPD.
         </p>

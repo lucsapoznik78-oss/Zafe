@@ -15,7 +15,7 @@ export default function BanidoPage() {
           Se você acredita que isso é um engano, entre em contato com o suporte.
         </p>
         <a
-          href="mailto:suporte@zafe.app.br"
+          href="mailto:contato@zafe.app"
           className="inline-block px-5 py-2.5 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary/90 transition-colors"
         >
           Falar com o suporte

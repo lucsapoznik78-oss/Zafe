@@ -188,8 +188,8 @@ export default function TermosPage() {
         <p>
           Para dúvidas, suporte, defesa nos termos da seção 7 ou solicitações relacionadas à
           privacidade:{" "}
-          <a href="mailto:contato@zafe.app.br" className="text-primary hover:underline">
-            contato@zafe.app.br
+          <a href="mailto:contato@zafe.app" className="text-primary hover:underline">
+            contato@zafe.app
           </a>
           .
         </p>
