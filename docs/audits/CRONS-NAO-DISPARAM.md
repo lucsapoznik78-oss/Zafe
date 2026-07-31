@@ -87,6 +87,18 @@ Não resolve sozinho a hipótese 2; se o SSO for a causa, ainda precisa da
 diário que chama as tarefas em sequência. Barato, mas amontoa tudo num horário
 só e um erro no meio derruba o resto.
 
+## O plano B também está quebrado
+
+`.github/workflows/cron.yml` existe justamente como escotilha manual
+(`workflow_dispatch` only — o `schedule:` foi removido de propósito, porque dois
+agendadores causavam payout duplo). Mas os 6 `curl` apontam para
+`https://zafe-rho.vercel.app/...`, um alias que hoje devolve **404**.
+
+Então não é só o gatilho automático: o jeito de disparar à mão pelo GitHub
+também não funciona. Trocar por `https://www.zafe.app.br` é uma linha por step —
+não foi feito aqui porque a escolha entre A, B e C muda o que este workflow deve
+ser. Registrado em `ISSUES-ABERTAS.md`.
+
 ## O que fica pendente independentemente da correção
 
 O incidente de 2026-06-15 (`AUDIT-REPORT2.md`) foi `CRON_SECRET` ausente

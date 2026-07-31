@@ -1,5 +1,18 @@
 # Rate limiting
 
+> **Estado em 2026-07-31 — leia antes de confiar em qualquer coisa abaixo.**
+>
+> `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN` **não existem na
+> Vercel**. Sem elas `getRedis()` devolve `null` e `checkRateLimit()` devolve
+> `{ ok: true }` incondicionalmente: a Camada 2 inteira está no ar mas **nunca
+> limitou uma única requisição**. O código desta página está correto; a
+> infraestrutura que ele precisa não foi criada. Criar o banco na Upstash e
+> adicionar as duas variáveis é o que liga tudo.
+>
+> Idem para o CAPTCHA: o cliente já manda o token, mas
+> `NEXT_PUBLIC_TURNSTILE_SITE_KEY` não existe e o toggle no Supabase está
+> desligado.
+
 ## O fato que determina o desenho
 
 A autenticação da Zafe é **100% client-side**. O browser fala direto com
@@ -25,6 +38,8 @@ Duas consequências práticas:
    Supabase já enxerga o IP real do usuário.
 
 ## Camada 1 — Vercel WAF (teto geral, feito no painel)
+
+> **Ainda não criada.** Nada abaixo está no ar.
 
 Não existe em código. É um teto bruto contra varredura e scraping, deliberadamente
 generoso: **600 requisições por IP a cada 60 segundos**.
@@ -71,7 +86,7 @@ compatível com o runtime Edge.
 | `concurso/inscrever`, `concurso/reentrar`, `concurso/pagamento/criar`, `referral/registrar`, `bonus-diario`, `apostas-privadas/criar`, `apostas-privadas/*/aceitar` | 10 / 1 min | conta | **fail-closed** |
 | `apostar`, `games/palpitar`, `concurso/palpitar`, `{liga,comunidade}/*/palpitar` | 30 / 1 min | conta | **fail-closed** |
 | `{liga,topicos}/*/ordem` (livro de ofertas) | 60 / 1 min | conta | **fail-closed** |
-| `perfil/completar` (oráculo de CPF) | 5 / 10 min | conta | **fail-closed** |
+| `perfil/completar`, `kyc` (oráculo de CPF) | 5 / 10 min | conta | **fail-closed** |
 | `auth/email-exists`, `auth/username` | 20 / 1 min | IP | fail-open |
 
 Nada mais é limitado no Redis. As rotas de polling (`status`, `carteira`,
@@ -102,43 +117,130 @@ usuários. O escopo atual cabe com folga.
 - **Sem `UPSTASH_REDIS_REST_URL`/`TOKEN` o módulo é inerte** e libera tudo. O
   deploy não quebra enquanto o Redis não existir.
 
+### Kill switch (`lib/killswitch.ts`)
+
+Interruptor para desligar a Camada 2 inteira **sem deploy**. O cenário que o
+justifica: o Upstash degrada, as policies `failClosed` passam a devolver 503 em
+toda escrita de dinheiro, e o rate limit vira o incidente.
+
+Store: **Vercel → Edge Config → `zafe-flags`**
+(`ecfg_hd55diie0tmhvrulw7g6fpw0gzpp`), chave `ratelimit_disabled`.
+
+- Desliga **só** com o booleano `true`. A string `"true"` digitada no painel não
+  desarma nada — um typo não pode derrubar a proteção.
+- Propagação ≤ 10s (cache de 10s em escopo de módulo). Sem redeploy.
+- **Falha ao ler o interruptor devolve `false`** (proteção ligada). O contrário
+  converteria todo fail-closed em fail-open a cada soluço de rede.
+- Segunda escotilha: env var `RATELIMIT_DISABLED=1`, que curto-circuita antes de
+  qualquer rede. Mas **na Vercel env var só vale depois de um redeploy** — é o
+  plano B, não o interruptor.
+
+Por que Edge Config e não uma chave no Redis: domínio de falha independente. Ler
+o interruptor do mesmo Redis que caiu não funciona.
+
+A leitura só acontece nas rotas que têm policy — `policyFor()` é regex pura e
+roda antes (`middleware.ts`), então navegação comum nunca paga por ela.
+
 ### Variáveis de ambiente
 
 Criar em **Vercel → Settings → Environment Variables** (nunca no repositório,
 nunca em `.env` commitado):
 
-| Nome | Onde obter | Escopo |
-|---|---|---|
-| `UPSTASH_REDIS_REST_URL` | Upstash → database → REST API | Production, Preview |
-| `UPSTASH_REDIS_REST_TOKEN` | idem | Production, Preview |
+| Nome | Onde obter | Escopo | Estado |
+|---|---|---|---|
+| `UPSTASH_REDIS_REST_URL` | Upstash → database → REST API | Production, Preview | **ausente** |
+| `UPSTASH_REDIS_REST_TOKEN` | idem | Production, Preview | **ausente** |
+| `EDGE_CONFIG` | Vercel → Edge Config → `zafe-flags` → Tokens | Production, Preview | configurada |
+| `RATELIMIT_DISABLED` | `1` para desligar; criar só durante incidente | Production | não criada |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare → Turnstile → site | Production, Preview | **ausente** |
 
-Use **bancos separados** para Production e Preview: com o mesmo banco, um teste
-em preview consome a cota de produção e os contadores se misturam.
+Use **bancos separados** do Upstash para Production e Preview: com o mesmo banco,
+um teste em preview consome a cota de produção e os contadores se misturam.
+
+`SUPABASE_ACCESS_TOKEN` (usado por `scripts/configurar-auth.mjs`) vive **só no
+`.env.local`, nunca na Vercel** — é um token de conta inteira, com poder de apagar
+projeto.
 
 ## Camada 3 — Supabase (painel, precisa ser feito por humano)
 
-### CAPTCHA — a ordem importa
+### CAPTCHA — cliente pronto, interruptor desligado
 
-Ligar CAPTCHA no painel **torna `options.captchaToken` obrigatório em todas as
-chamadas de auth**. Existem 7 call sites: `components/auth/LoginForm.tsx`
-(`signInWithPassword`, `signUp`, `resend`, `signInWithOtp` ×2, `verifyOtp` ×2) e
-`app/(auth)/redefinir-senha/page.tsx`.
+Ligar CAPTCHA no painel **torna `options.captchaToken` obrigatório**. São
+exatamente **6 call sites, todos em `components/auth/LoginForm.tsx`** — o
+`verifyCaptcha` do GoTrue envolve só `/signup`, `/recover`, `/resend`,
+`/magiclink`, `/otp`, `/token`, `/sso`:
 
-Sequência correta:
+| Chamada | Endpoint |
+|---|---|
+| `signInWithPassword` | `/token?grant_type=password` |
+| `signUp` | `/signup` |
+| `resend({ type: "signup" })` | `/resend` |
+| `signInWithOtp({ phone })` | `/otp` |
+| `signInWithOtp({ email })` | `/otp` |
+| `resetPasswordForEmail` | `/recover` |
 
-1. Criar o site em Cloudflare Turnstile (ou hCaptcha) e pegar site key + secret.
-2. Subir o **cliente enviando o token** primeiro (com o CAPTCHA ainda desligado
-   no painel — o Supabase ignora o token extra).
-3. Só então: **Authentication → Settings → Bot and Abuse Protection → Enable
-   CAPTCHA**, colar o secret.
+**Não precisam** (e a doc anterior errava ao listá-los): `verifyOtp` (`/verify`
+não passa pelo middleware), `signInWithOAuth` (é redirect), `updateUser` em
+`redefinir-senha/page.tsx` (`PUT /user`, autenticado) e `exchangeCodeForSession`
+(`grant_type=pkce`, isento).
 
-Invertido, o login quebra para todos os usuários entre o passo 3 e o deploy do
-cliente.
+> `refresh_token` também é isento. É isso que garante que **ligar o CAPTCHA não
+> desloga ninguém** — só autenticações novas quebram.
+
+Implementado em `components/auth/useCaptcha.tsx` (Cloudflare Turnstile via
+`@marsidev/react-turnstile`). **Inerte sem `NEXT_PUBLIC_TURNSTILE_SITE_KEY`**:
+o widget não renderiza e `obterToken()` resolve `undefined`, então o payload é
+idêntico ao de antes. É por isso que o código já está em produção com o toggle
+do Supabase desligado.
+
+O detalhe que o hook resolve: o token do Turnstile é de **uso único** e um submit
+pode bater em dois endpoints protegidos (`signInWithPassword` e, com 2FA ligado,
+`signInWithOtp`). `obterToken()` consome o token e já reseta o widget. Sem isso,
+um segundo submit depois de senha errada reenviaria o token gasto, o GoTrue
+devolveria `captcha_failed`, e o formulário diria "Email ou senha inválidos" para
+quem digitou a senha certa.
+
+Sequência para ativar (a ordem é o que importa — invertida, o login quebra para
+todo mundo):
+
+1. Cloudflare → Turnstile → novo site. Hostnames `zafe.app.br`, `localhost`,
+   `vercel.app`. Modo Managed. (Chave de teste `1x00000000000000000000AA` no dev.)
+2. Vercel → `NEXT_PUBLIC_TURNSTILE_SITE_KEY` em Production + Preview, e redeploy.
+3. **Portão de verificação:** em produção, exercitar os 5 fluxos e conferir no
+   DevTools que cada POST leva `gotrue_meta_security.captcha_token`. Não avançar
+   sem ter visto nos cinco.
+4. Só então ligar o toggle:
+   `node scripts/configurar-auth.mjs --captcha <secret> --aplicar`.
+5. Re-testar os 5 fluxos.
+
+Rollback é o toggle, não um deploy — segundos. Essa assimetria é a razão da ordem.
 
 ### Leaked password protection
 
-Authentication → Providers → Email → **Prevent use of leaked passwords** (checa
-contra o HaveIBeenPwned). É gratuito e não exige mudança de código.
+`password_hibp_enabled` (checa contra o HaveIBeenPwned). **Exige plano Pro** — no
+Free o `PATCH` é aceito e o valor silenciosamente ignorado. O campo já está em
+`scripts/configurar-auth.mjs`, e a releitura pós-`PATCH` reporta `✗` enquanto o
+projeto estiver no Free. No dia do upgrade é só rodar o script de novo.
+
+### Config versionada do Auth
+
+`scripts/configurar-auth.mjs` traz os limites nativos do GoTrue (que só existem
+num painel) para o controle de versão. **Dry run é o padrão**; escrever exige
+`--aplicar`. Alvos: `rate_limit_otp` 60, `rate_limit_verify` 240,
+`rate_limit_anonymous_users` 1 + provider desligado, `rate_limit_email_sent` 30,
+`rate_limit_sms_sent` 10, `password_hibp_enabled` true.
+
+Todos esses limites são **por hora e para o projeto inteiro** — não por IP nem
+por usuário. Fora do objeto de propósito: `rate_limit_token_refresh` (escala com
+abas abertas; apertar sob CGNAT desloga gente), `password_min_length` (subir para
+8 sem mexer no cliente produz erro cru em inglês) e
+`password_required_characters` (o NIST SP 800-63B desaconselha).
+
+**`rate_limit_email_sent` só significa algo com SMTP customizado.** No provedor
+nativo o teto é 2 emails/hora no projeto inteiro e o campo é ignorado — o script
+detecta e avisa. A Zafe manda email em signup, reenvio, recuperação e OTP, e o
+middleware trata email não confirmado como não autenticado: com o nativo, o
+terceiro cadastro de cada hora não recebe o email e a pessoa não consegue entrar.
 
 ### Limites nativos (referência)
 
@@ -158,12 +260,10 @@ está.
 ## O que isto NÃO resolve
 
 - **Credential stuffing.** Sem auth no servidor, não há limite por conta no
-  login. Mitigação atual: CAPTCHA + limite nativo do Supabase. O
-  `localStorage` em `LoginForm.tsx:33-61` é cosmético — some com um F5 ou uma
-  aba anônima.
-- **Enumeração de CPF.** O limite de 5/10min reduz o alcance, mas a correção de
-  verdade é **uniformizar a mensagem de erro** de `/api/perfil/completar`, que
-  hoje distingue 400 "CPF inválido" de 409 "CPF já cadastrado em outra conta".
+  login. Mitigação: CAPTCHA + limite nativo do Supabase — e o CAPTCHA está
+  desligado. O contador em `localStorage` do `LoginForm.tsx` **não é controle de
+  segurança**: mora no navegador do atacante e some com um F5, uma aba anônima
+  ou um `delete` no console. É freio de UX contra clique repetido.
 - **Farming de indicação.** `/api/referral/registrar` paga Z$ 50 dos dois lados
   e o caminho "amigo" não tem a dedup por IP que o caminho "streamer" tem.
   Isso é regra de negócio, não volume — limite de requisições não resolve.
@@ -172,6 +272,17 @@ está.
   `PIX_PROVIDER` não está configurado. **Precisa ser resolvido antes de o PIX
   entrar no ar** — rate limit não substitui verificação de assinatura, e essa
   rota é justamente a que não pode ser limitada.
+  → `docs/audits/ISSUES-ABERTAS.md`
+
+### O que deixou de estar nesta lista
+
+**Enumeração de CPF — fechada.** `/api/perfil/completar` e `/api/kyc` devolviam
+400 "CPF inválido" e 409 "CPF já cadastrado", o que dava para varrer. Hoje os
+dois caminhos devolvem o mesmo **422** com a mesma string (`ERRO_CPF` em
+`lib/cpf.ts`), e o teste de dígito foi movido para junto do `SELECT` de
+unicidade — os dois fazem o mesmo trabalho, então nem o relógio separa um do
+outro. `components/kyc/CpfForm.tsx` valida o dígito no cliente, então o usuário
+honesto nunca chega à mensagem genérica.
 
 ## Observabilidade
 
@@ -183,3 +294,17 @@ está.
 - **Logs da Vercel:** `[ratelimit] Redis indisponível` indica queda do Upstash.
   Se aparecer, as rotas de dinheiro estão devolvendo 503 (fail-closed) — é
   incidente, não ruído.
+
+**O que o plano Hobby não dá, para não perder tempo procurando:** Log Drains são
+pagos e a retenção de log de runtime é de **1 hora** — qualquer coisa que
+aconteça de madrugada some antes de alguém olhar. Não existe alerta gratuito
+sobre log. O free tier do Upstash também não alerta sobre valor de chave; só
+manda email quando a cota já estourou. Alerta de verdade, no Hobby, precisa ser
+contador no próprio Redis lido por um cron que já existe.
+
+## Estado dos crons
+
+Ortogonal a rate limit, mas registrado aqui porque foi descoberto na mesma
+auditoria: os **19 crons declarados em `vercel.json` nunca dispararam**. As rotas
+funcionam (invocação manual com o `CRON_SECRET` responde 200 e escreve), o
+gatilho é que está morto. Ver `docs/audits/CRONS-NAO-DISPARAM.md`.

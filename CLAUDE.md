@@ -30,6 +30,7 @@ UI strings, emails, push, and marketing must say "previsão/palpite/previsor" (n
 npm run dev        # dev server at localhost:3000
 npm run build      # production build (also the de-facto type check)
 npm run lint       # ESLint
+npm test           # vitest run
 ```
 
 ### Deploy workflow — ALWAYS commit + push + `vercel --prod`
@@ -47,9 +48,10 @@ Don't wait to be asked to commit/push/deploy; it's the expected end of every tas
 
 Any schema change MUST ship with a new numbered SQL migration in `supabase/migrations/` (continue the `001…` sequence). Migrations are applied manually in the Supabase SQL editor — there is no migration CLI. Always create the migration file as part of the change; never alter schema only ad-hoc in the dashboard.
 
-- No test framework is configured.
-- Migrations are plain SQL in `supabase/migrations/` (numbered `001`–`026`), applied manually in the Supabase SQL editor — there is no migration CLI workflow.
+- Tests: **Vitest**, `environment: "node"`, `include: ["lib/**/__tests__/**/*.test.ts"]`. Unit tests only — external services (Upstash, Edge Config) are mocked; there is no jsdom/component-test setup.
+- Migrations are plain SQL in `supabase/migrations/`, numbered sequentially (currently past `060`), applied manually in the Supabase SQL editor — there is no migration CLI workflow.
 - Seed scripts: `scripts/seed-eventos.mjs`, `scripts/seed-topics.js`.
+- Ops scripts: `scripts/configurar-auth.mjs` (Supabase Auth config via Management API — dry run by default, `--aplicar` to write), `scripts/publicar-legal.mjs`.
 
 ## Architecture
 
@@ -99,7 +101,9 @@ Single `balance` field per user, mutated only through `adjustBalance()`: optimis
 
 ### Crons (vercel.json)
 
-15 daily/weekly crons: market close + resolve + order matching, event replenishment, weekly Z$ bonus, contest lifecycle (`criar-concurso-mensal`, `atualizar-ranking-concurso`, `finalizar-concurso`), private-bet invite timeout, news agent, and 4 comunidade crons (close, abandoned, contestations, snapshots). All POST, all guarded by `verifyCronAuth`.
+19 daily/weekly crons: market close + resolve + order matching, event replenishment, weekly Z$ bonus, contest lifecycle (`criar-concurso-mensal`, `atualizar-ranking-concurso`, `finalizar-concurso`), private-bet invite timeout, news agent, and 4 comunidade crons (close, abandoned, contestations, snapshots). All POST, all guarded by `verifyCronAuth`.
+
+> **They have never fired.** Registered and enabled since 2026-03-31 with `CRON_SECRET` present, but no cron-shaped writes exist in the DB; manual invocation of the same routes works. Markets are not being closed or resolved on a schedule. See `docs/audits/CRONS-NAO-DISPARAM.md`.
 
 ### Notifications
 
