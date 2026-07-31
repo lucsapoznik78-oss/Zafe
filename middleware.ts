@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest, type NextFetchEvent } from "next/server
 import { CONCURSO_ABERTO, CONCURSO_ENABLED, HOME_PATH } from "@/lib/flags";
 import { LEGAL_DOCS } from "@/lib/legal";
 import { checkRateLimit, policyFor } from "@/lib/ratelimit";
+import { rateLimitDesligado } from "@/lib/killswitch";
 
 export async function middleware(request: NextRequest, event: NextFetchEvent) {
   // Kill switch: com o Concurso desligado ninguém acessa o mundo pago direto por
@@ -52,8 +53,11 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
   // como chave — IP é fallback só onde ainda não há sessão. Antes dos gates de
   // auth/ban/pausa porque o custo de uma varredura não deve depender de o
   // atacante estar logado ou não.
+  // A ordem dos dois testes importa: `policyFor` é regex pura e roda primeiro,
+  // então a leitura do kill switch só acontece nas poucas rotas que têm
+  // política — uma navegação comum nunca paga por ela.
   const policy = policyFor(pathname);
-  if (policy) {
+  if (policy && !(await rateLimitDesligado())) {
     const identifier = user ? `user:${user.id}` : `ip:${request.ip ?? "desconhecido"}`;
     const rl = await checkRateLimit(policy, identifier);
     if (!rl.ok) {
