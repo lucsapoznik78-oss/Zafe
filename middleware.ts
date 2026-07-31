@@ -1,9 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, type NextRequest, type NextFetchEvent } from "next/server";
 import { CONCURSO_ABERTO, CONCURSO_ENABLED, HOME_PATH } from "@/lib/flags";
 import { LEGAL_DOCS } from "@/lib/legal";
+import { checkRateLimit, policyFor } from "@/lib/ratelimit";
 
-export async function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest, event: NextFetchEvent) {
   // Kill switch: com o Concurso desligado ninguém acessa o mundo pago direto por
   // link/anúncio. As páginas /concurso vão pra home; a API /api/concurso segue
   // fora daqui (prefixo diferente) e é inócua enquanto o PIX não está configurado.
@@ -46,6 +47,30 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
+
+  // Rate limit (Camada 2). Fica depois do getUser() para poder usar a conta
+  // como chave — IP é fallback só onde ainda não há sessão. Antes dos gates de
+  // auth/ban/pausa porque o custo de uma varredura não deve depender de o
+  // atacante estar logado ou não.
+  const policy = policyFor(pathname);
+  if (policy) {
+    const identifier = user ? `user:${user.id}` : `ip:${request.ip ?? "desconhecido"}`;
+    const rl = await checkRateLimit(policy, identifier);
+    if (!rl.ok) {
+      if (rl.reason === "unavailable") {
+        return NextResponse.json(
+          { error: "Serviço temporariamente indisponível. Tente novamente em instantes." },
+          { status: 503, headers: { "Retry-After": "30" } }
+        );
+      }
+      return NextResponse.json(
+        { error: "Muitas requisições. Aguarde um momento e tente de novo." },
+        { status: 429, headers: { "Retry-After": String(rl.retryAfter) } }
+      );
+    }
+    // A escrita do contador não precisa segurar a resposta.
+    if (rl.pending) event.waitUntil(rl.pending);
+  }
 
   const publicRoutes = ["/login", "/auth/callback", "/auth/confirm", "/api/auth/username", "/api/auth/email-exists", "/api/auth/2fa-contexto", "/historico", "/termos", "/politica", "/ajuda", "/jogo-responsavel", "/api/cron", "/api/push", "/api/concurso/pagamento/webhook", "/api/landing", "/r/", "/sitemap.xml", "/robots.txt", "/google", "/liga", "/ranking", "/u/", "/concurso", "/comunidade", "/games", "/banido"];
   const isPublicRoute = pathname === "/" || publicRoutes.some((r) => pathname.startsWith(r));
