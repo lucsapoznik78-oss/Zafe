@@ -59,9 +59,40 @@ vi.mock("@upstash/ratelimit", () => {
   return { Ratelimit };
 });
 
-vi.mock("@upstash/redis", () => ({ Redis: class {} }));
+/**
+ * O Redis falso dos contadores é separado do `fake` acima: aquele simula a
+ * janela deslizante do @upstash/ratelimit, este simula os comandos crus que
+ * registrarBloqueio/lerBloqueios usam.
+ */
+const contadores = {
+  store: new Map<string, number>(),
+  incrs: 0,
+  mgets: 0,
+  falhar: false,
+};
 
-const { checkRateLimit, policyFor } = await import("@/lib/ratelimit");
+vi.mock("@upstash/redis", () => ({
+  Redis: class {
+    async incr(chave: string) {
+      contadores.incrs++;
+      if (contadores.falhar) throw new Error("Redis indisponível");
+      const n = (contadores.store.get(chave) ?? 0) + 1;
+      contadores.store.set(chave, n);
+      return n;
+    }
+    async expire() {
+      return 1;
+    }
+    async mget(...chaves: string[]) {
+      contadores.mgets++;
+      return chaves.map((c) => contadores.store.get(c) ?? null);
+    }
+  },
+}));
+
+const { checkRateLimit, policyFor, registrarBloqueio, lerBloqueios } = await import(
+  "@/lib/ratelimit"
+);
 
 const DINHEIRO = { prefix: "t:money", limit: 3, window: "1 m" as const, failClosed: true };
 const LEITURA = { prefix: "t:read", limit: 3, window: "1 m" as const, failClosed: false };
@@ -69,6 +100,10 @@ const LEITURA = { prefix: "t:read", limit: 3, window: "1 m" as const, failClosed
 beforeEach(() => {
   fake.store.clear();
   fake.falhar = false;
+  contadores.store.clear();
+  contadores.incrs = 0;
+  contadores.mgets = 0;
+  contadores.falhar = false;
 });
 
 describe("checkRateLimit", () => {
@@ -166,5 +201,43 @@ describe("policyFor", () => {
       expect(p!.limit).toBe(5);
       expect(p!.window).toBe("10 m");
     }
+  });
+});
+
+describe("contadores de bloqueio", () => {
+  it("registrarBloqueio separa 429 de 503 e agrega por hora e prefixo", async () => {
+    await registrarBloqueio("rl:money:palpite", "limited");
+    await registrarBloqueio("rl:money:palpite", "limited");
+    await registrarBloqueio("rl:money:palpite", "unavailable");
+
+    const hora = new Date().toISOString().slice(0, 13);
+    expect(contadores.store.get(`rl:429:${hora}:rl:money:palpite`)).toBe(2);
+    expect(contadores.store.get(`rl:503:${hora}:rl:money:palpite`)).toBe(1);
+  });
+
+  it("falha do Redis no contador não propaga — a resposta de 429 não pode quebrar", async () => {
+    contadores.falhar = true;
+    await expect(registrarBloqueio("rl:money:palpite", "limited")).resolves.toBeUndefined();
+  });
+
+  it("lerBloqueios soma as 24 horas do dia com um único MGET", async () => {
+    const hoje = new Date().toISOString().slice(0, 10);
+    contadores.store.set(`rl:429:${hoje}T03:rl:pii:enum`, 10);
+    contadores.store.set(`rl:429:${hoje}T17:rl:pii:enum`, 5);
+    contadores.store.set(`rl:503:${hoje}T04:rl:money:ordem`, 3);
+
+    const r = await lerBloqueios(hoje);
+    expect(r).not.toBeNull();
+    expect(r!.bloqueios["rl:pii:enum"]).toBe(15);
+    expect(r!.indisponivel["rl:money:ordem"]).toBe(3);
+    // Uma leitura só: KEYS varreria o banco inteiro e bloquearia o Redis.
+    expect(contadores.mgets).toBe(1);
+  });
+
+  it("lerBloqueios não confunde outro dia com o pedido", async () => {
+    contadores.store.set("rl:429:2020-01-01T03:rl:pii:enum", 99);
+    const r = await lerBloqueios("2026-07-30");
+    expect(r!.bloqueios).toEqual({});
+    expect(r!.indisponivel).toEqual({});
   });
 });

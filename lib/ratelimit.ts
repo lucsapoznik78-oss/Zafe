@@ -72,13 +72,14 @@ export const POLICIES: Array<{ pattern: RegExp; policy: Policy }> = [
     policy: { prefix: "rl:money:ordem", limit: 60, window: "1 m", failClosed: true },
   },
 
-  // PII — o CPF é um oráculo de enumeração: respostas distinguíveis entre
-  // "inválido" (400) e "já cadastrado em outra conta" (409) permitem varrer
-  // CPFs para descobrir quem tem conta na Zafe. O limite reduz o alcance da
-  // varredura; a correção de verdade é uniformizar a mensagem de erro.
+  // PII — consulta de CPF. As respostas já são indistinguíveis (as duas rotas
+  // devolvem o mesmo 422 com a mesma string, ver ERRO_CPF em lib/cpf.ts), então
+  // isto não é mais o remédio principal contra enumeração — é o teto de volume
+  // que sobra: 5/10min torna uma varredura de CPFs inviável mesmo se um caminho
+  // vazar por outro meio no futuro.
   //
-  // As duas rotas entram juntas: fazem a mesma consulta de CPF contra a mesma
-  // tabela, então limitar só uma deixa a outra como oráculo aberto do lado.
+  // As duas rotas entram juntas: fazem a mesma consulta contra a mesma tabela,
+  // então limitar só uma deixa a outra como porta aberta do lado.
   {
     pattern: /^\/api\/(perfil\/completar|kyc)$/,
     policy: { prefix: "rl:pii:cpf", limit: 5, window: "10 m", failClosed: true },
@@ -168,3 +169,92 @@ export async function checkRateLimit(
     return policy.failClosed ? { ok: false, reason: "unavailable" } : { ok: true };
   }
 }
+
+/**
+ * Contador horário de bloqueios, para que exista um número a olhar depois.
+ *
+ * O log da Vercel não serve para isso no plano Hobby: a retenção de runtime é de
+ * 1 hora e Log Drains são pagos, então um pico de madrugada some antes de
+ * alguém acordar. O contador vive no Redis e sobrevive 26h.
+ *
+ * A chave é determinística (`rl:429:<YYYY-MM-DDTHH>:<prefix>`) justamente para
+ * que a leitura possa reconstruir as 24 chaves do dia e usar `MGET`. Nunca
+ * `KEYS` — é O(N) sobre o banco inteiro e bloqueia o Redis.
+ *
+ * Só é chamada no bloqueio, que é raro por construção: mesmo um ataque de 10 mil
+ * requisições custa 20 mil comandos contra a cota de 500 mil/mês. E é exatamente
+ * o tráfego que vale pagar para enxergar.
+ *
+ * Devolve uma promessa para o chamador passar ao `event.waitUntil()` — a
+ * contagem nunca deve atrasar a resposta de 429.
+ */
+export function registrarBloqueio(
+  prefix: string,
+  motivo: "limited" | "unavailable"
+): Promise<unknown> | undefined {
+  const client = getRedis();
+  if (!client) return undefined;
+  const hora = new Date().toISOString().slice(0, 13); // YYYY-MM-DDTHH
+  const chave = `rl:${motivo === "unavailable" ? "503" : "429"}:${hora}:${prefix}`;
+  return client
+    .incr(chave)
+    .then(() => client.expire(chave, 26 * 60 * 60))
+    .catch(() => {
+      // Se o Redis caiu, o contador é a menor das perdas — e no caso
+      // `unavailable` ele já caiu por definição.
+    });
+}
+
+/** Prefixos observados, mais o pseudo-prefixo do 503. */
+const PREFIXOS = [...new Set(POLICIES.map(({ policy }) => policy.prefix))];
+
+/**
+ * Soma as 24 horas de um dia para cada prefixo. As chaves são reconstruídas
+ * deterministicamente e lidas com um `MGET` — nunca `KEYS`, que varre o banco
+ * inteiro e bloqueia o Redis enquanto roda.
+ *
+ * @param dia `YYYY-MM-DD`. Sem Redis devolve `null` (não zero — a diferença
+ * entre "nenhum bloqueio" e "não sei" importa para quem lê o alerta).
+ */
+export async function lerBloqueios(
+  dia: string
+): Promise<{ bloqueios: Record<string, number>; indisponivel: Record<string, number> } | null> {
+  const client = getRedis();
+  if (!client) return null;
+
+  const horas = Array.from({ length: 24 }, (_, h) => `${dia}T${String(h).padStart(2, "0")}`);
+  // O prefixo tem `:` dentro, então não dá para recuperá-lo cortando a chave
+  // depois. A lista paralela guarda a origem de cada posição.
+  const alvos = PREFIXOS.flatMap((prefixo) =>
+    (["429", "503"] as const).flatMap((tipo) =>
+      horas.map((hora) => ({ prefixo, tipo, chave: `rl:${tipo}:${hora}:${prefixo}` }))
+    )
+  );
+
+  const valores = await client.mget<(number | null)[]>(...alvos.map((a) => a.chave));
+
+  const bloqueios: Record<string, number> = {};
+  const indisponivel: Record<string, number> = {};
+  alvos.forEach(({ prefixo, tipo }, i) => {
+    const n = Number(valores[i] ?? 0);
+    if (!n) return;
+    const destino = tipo === "503" ? indisponivel : bloqueios;
+    destino[prefixo] = (destino[prefixo] ?? 0) + n;
+  });
+
+  return { bloqueios, indisponivel };
+}
+
+/**
+ * Acima de quantos bloqueios num dia vale acordar alguém.
+ *
+ * São chutes calibrados pelo custo do falso positivo, não por dado — não existe
+ * dado ainda. Rever depois de uma semana de contagem real.
+ */
+export const LIMIARES: Record<string, number> = {
+  "rl:money:critical": 200,
+  "rl:money:palpite": 200,
+  "rl:money:ordem": 200,
+  "rl:pii:cpf": 200,
+  "rl:pii:enum": 500,
+};

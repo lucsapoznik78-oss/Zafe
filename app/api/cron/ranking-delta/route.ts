@@ -1,10 +1,15 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { verifyCronAuth } from "@/lib/cron-auth";
+import { alertarRateLimit } from "@/lib/ratelimit-alerta";
 
 // Cron diário: compara a posição de cada previsor no ranking geral com o
 // snapshot anterior (ranking_positions) e notifica quem SUBIU. Mesma lógica
 // de cálculo da página /ranking (período "todos", lucro > volume).
+//
+// Carona: a verificação diária dos contadores de rate limit roda no fim daqui.
+// O plano Hobby limita o número de crons, então criar um só para isso custaria
+// um slot de algo que fecha ou resolve mercado.
 
 const MIN_BETS = 1;
 
@@ -39,7 +44,12 @@ export async function POST(request: Request) {
     .map(([id]) => id);
 
   if (ranked.length === 0) {
-    return NextResponse.json({ success: true, notified: 0, ranked: 0 });
+    return NextResponse.json({
+      success: true,
+      notified: 0,
+      ranked: 0,
+      ratelimit: await alertarRateLimit(admin),
+    });
   }
 
   const { data: previous } = await admin
@@ -78,5 +88,10 @@ export async function POST(request: Request) {
     await admin.from("ranking_positions").upsert(rows.slice(i, i + 500), { onConflict: "user_id" });
   }
 
-  return NextResponse.json({ success: true, notified: notifications.length, ranked: ranked.length });
+  return NextResponse.json({
+    success: true,
+    notified: notifications.length,
+    ranked: ranked.length,
+    ratelimit: await alertarRateLimit(admin),
+  });
 }

@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest, type NextFetchEvent } from "next/server";
 import { CONCURSO_ABERTO, CONCURSO_ENABLED, HOME_PATH } from "@/lib/flags";
 import { LEGAL_DOCS } from "@/lib/legal";
-import { checkRateLimit, policyFor } from "@/lib/ratelimit";
+import { checkRateLimit, policyFor, registrarBloqueio } from "@/lib/ratelimit";
 import { rateLimitDesligado } from "@/lib/killswitch";
 
 export async function middleware(request: NextRequest, event: NextFetchEvent) {
@@ -61,7 +61,32 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
     const identifier = user ? `user:${user.id}` : `ip:${request.ip ?? "desconhecido"}`;
     const rl = await checkRateLimit(policy, identifier);
     if (!rl.ok) {
-      if (rl.reason === "unavailable") {
+      const unavailable = rl.reason === "unavailable";
+      // O `identifier` NÃO entra no log. IP é dado pessoal (LGPD art. 5º, II) e
+      // `user:<uuid>` é diretamente identificável; o log da Vercel é visível a
+      // quem tiver acesso ao projeto e seria repassado literalmente a qualquer
+      // drain futuro. `tipoChave` guarda o único bit que importa para triagem:
+      // tráfego pré-auth ou de conta logada.
+      const linha = JSON.stringify({
+        evt: "ratelimit",
+        motivo: rl.reason,
+        policy: policy.prefix,
+        rota: pathname,
+        tipoChave: user ? "user" : "ip",
+        limite: policy.limit,
+        janela: policy.window,
+        retryAfter: unavailable ? 30 : rl.retryAfter,
+        ts: new Date().toISOString(),
+      });
+      // `unavailable` é incidente (o Redis caiu e escritas de dinheiro estão
+      // sendo recusadas); `limited` é o sistema funcionando como projetado.
+      if (unavailable) console.error(linha);
+      else console.warn(linha);
+
+      const contagem = registrarBloqueio(policy.prefix, rl.reason);
+      if (contagem) event.waitUntil(contagem);
+
+      if (unavailable) {
         return NextResponse.json(
           { error: "Serviço temporariamente indisponível. Tente novamente em instantes." },
           { status: 503, headers: { "Retry-After": "30" } }

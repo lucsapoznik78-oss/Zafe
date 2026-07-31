@@ -299,8 +299,50 @@ honesto nunca chega à mensagem genérica.
 pagos e a retenção de log de runtime é de **1 hora** — qualquer coisa que
 aconteça de madrugada some antes de alguém olhar. Não existe alerta gratuito
 sobre log. O free tier do Upstash também não alerta sobre valor de chave; só
-manda email quando a cota já estourou. Alerta de verdade, no Hobby, precisa ser
-contador no próprio Redis lido por um cron que já existe.
+manda email quando a cota já estourou.
+
+### Log estruturado
+
+Todo bloqueio emite uma linha JSON no `middleware.ts`: `console.warn` para
+`limited` (sistema funcionando) e `console.error` para `unavailable` (o Redis
+caiu e escritas de dinheiro estão sendo recusadas — é incidente).
+
+```json
+{"evt":"ratelimit","motivo":"limited","policy":"rl:money:palpite",
+ "rota":"/api/apostar","tipoChave":"user","limite":30,"janela":"1 m",
+ "retryAfter":42,"ts":"..."}
+```
+
+**O `identifier` nunca entra no log.** IP é dado pessoal (LGPD art. 5º, II) e
+`user:<uuid>` é diretamente identificável; o log é visível a quem tem acesso ao
+projeto e seria repassado literalmente a qualquer drain futuro. `tipoChave`
+guarda o único bit útil para triagem: tráfego pré-auth ou de conta logada.
+
+### Contadores e alerta
+
+Como o log some em 1 hora, o número que sobrevive fica no Redis:
+`registrarBloqueio()` faz `INCR` de `rl:{429|503}:<YYYY-MM-DDTHH>:<prefixo>` com
+`EXPIRE` de 26h, passado ao `event.waitUntil()` — nunca atrasa a resposta. Só é
+chamado no bloqueio, que é raro: mesmo um ataque de 10 mil requisições custa 20
+mil comandos contra a cota de 500 mil/mês.
+
+`lerBloqueios(dia)` reconstrói as 24 chaves de cada prefixo e lê com um `MGET`.
+**Nunca `KEYS`** — é O(N) sobre o banco inteiro e bloqueia o Redis.
+
+`lib/ratelimit-alerta.ts` roda de carona no cron diário
+`/api/cron/ranking-delta` (05:30 UTC), olha **o dia anterior** (às 05:30 o dia
+corrente tem 5h de amostra) e notifica os admins via `notifications` +
+web push, com idempotência por marcador. Fica em módulo separado porque
+`lib/ratelimit.ts` entra no bundle do middleware, que roda em toda requisição.
+
+Limiares em `LIMIARES` (`lib/ratelimit.ts`): 200 bloqueios/dia nos prefixos de
+dinheiro e no de CPF, 500 em `rl:pii:enum`. São chutes calibrados pelo custo do
+falso positivo — não existe dado ainda. Para o 503 **não há limiar: qualquer
+ocorrência alerta.**
+
+> Depende de duas coisas que hoje não existem: o Upstash (sem ele
+> `lerBloqueios` devolve `null`, que é diferente de zero) e os crons
+> (`docs/audits/CRONS-NAO-DISPARAM.md`).
 
 ## Estado dos crons
 
