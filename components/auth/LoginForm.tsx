@@ -15,6 +15,7 @@ import { LEGAL_DOCS } from "@/lib/legal";
 import { formatarCPF, validarCPF } from "@/lib/cpf";
 import { formatarTelefone, formatarDataBR, dataBRparaISO } from "@/lib/masks";
 import { HOME_PATH } from "@/lib/flags";
+import { useCaptcha, comCaptcha } from "./useCaptcha";
 
 const labelClass = "text-[11px] font-bold uppercase tracking-wider text-muted-foreground";
 const hintClass = "text-[11px] font-bold uppercase tracking-wider";
@@ -30,9 +31,16 @@ function Field({ icon, children }: { icon: React.ReactNode; children: React.Reac
   );
 }
 
-// Rate-limit client-side de login: após várias tentativas falhas, impõe um
-// cooldown crescente. Não substitui proteção server-side, mas freia força-bruta
-// trivial direto do browser (o endpoint do Supabase tem o seu próprio limite).
+// Freio de UX contra clique repetido — NÃO é controle de segurança.
+//
+// Mora no localStorage do próprio atacante: some com F5 numa aba anônima, com
+// um `delete` no console, ou simplesmente não existe para quem fala com
+// `supabase.co/auth/v1/token` via curl, sem passar por esta tela. Serve para
+// que um humano frustrado pare de martelar o botão, e nada além disso.
+//
+// O controle de verdade contra credential stuffing é o Turnstile (useCaptcha)
+// somado aos limites nativos do GoTrue (scripts/configurar-auth.mjs), porque a
+// autenticação é client-side e nunca passa pela Vercel.
 const LOCK_KEY = "zafe_login_attempts";
 const MAX_ATTEMPTS = 5;
 
@@ -113,6 +121,8 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
   // ainda existe, porque o `verifyOtp({ phone })` acontece DEPOIS do signOut.
   const [twoFaPhone, setTwoFaPhone] = useState("");
 
+  const { widget: captcha, obterToken } = useCaptcha();
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -128,7 +138,11 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
         return;
       }
 
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+        options: comCaptcha({}, await obterToken()),
+      });
       if (signInError || !data.user) {
         const naoConfirmado =
           (signInError as any)?.code === "email_not_confirmed" ||
@@ -215,7 +229,7 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
       const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
-        options: {
+        options: comCaptcha({
           data: {
             full_name: fullName.trim(),
             username,
@@ -228,7 +242,7 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
             terms_version: LEGAL_DOCS.termos.version,
             politica_version: LEGAL_DOCS.politica.version,
           },
-        },
+        }, await obterToken()),
       });
       if (signUpError) {
         setError(signUpError.message);
@@ -259,7 +273,11 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
     setLoading(true);
     setError("");
     setSuccess("");
-    const { error: resendError } = await supabase.auth.resend({ type: "signup", email });
+    const { error: resendError } = await supabase.auth.resend({
+      type: "signup",
+      email,
+      options: comCaptcha({}, await obterToken()),
+    });
     if (resendError) {
       setError("Não foi possível reenviar agora. Aguarde alguns minutos e tente de novo.");
     } else {
@@ -270,11 +288,15 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
   }
 
   async function sendOtp(method: "email" | "sms", emailAddr: string, phoneNumber: string) {
+    // Segundo endpoint protegido do MESMO submit (o primeiro foi o
+    // signInWithPassword). `obterToken` já devolve um token novo aqui — o
+    // anterior foi consumido e o widget resetado.
+    const options = comCaptcha({}, await obterToken());
     if (method === "sms" && phoneNumber) {
       const formatted = phoneNumber.startsWith("+") ? phoneNumber : `+55${phoneNumber}`;
-      await supabase.auth.signInWithOtp({ phone: formatted });
+      await supabase.auth.signInWithOtp({ phone: formatted, options });
     } else {
-      await supabase.auth.signInWithOtp({ email: emailAddr });
+      await supabase.auth.signInWithOtp({ email: emailAddr, options });
     }
   }
 
@@ -327,9 +349,13 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
     } catch {
       // Se a checagem falhar, cai no fluxo antigo (envia mesmo assim).
     }
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/confirm?next=/redefinir-senha`,
-    });
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+      email,
+      comCaptcha(
+        { redirectTo: `${window.location.origin}/auth/confirm?next=/redefinir-senha` },
+        await obterToken()
+      )
+    );
     if (resetError) {
       setError(resetError.message);
     } else {
@@ -379,6 +405,10 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
               </p>
             )}
             {error && <p className="text-destructive text-sm">{error}</p>}
+
+            {/* handleReset chama resetPasswordForEmail, que é um dos endpoints
+                protegidos — o widget precisa existir também nesta subárvore. */}
+            {captcha}
 
             <Button type="submit" disabled={loading} className={btnClass}>
               {loading ? <Loader2 size={16} className="animate-spin" /> : "Enviar link"}
@@ -699,6 +729,10 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
             Reenviar email de confirmação
           </button>
         )}
+
+        {/* Cobre login, cadastro e o reenvio de confirmação acima — todos os
+            três batem em endpoint protegido a partir desta subárvore. */}
+        {captcha}
 
         <Button
           type="submit"
