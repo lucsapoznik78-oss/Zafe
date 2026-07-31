@@ -7,7 +7,8 @@
 > `{ ok: true }` incondicionalmente: a Camada 2 inteira está no ar mas **nunca
 > limitou uma única requisição**. O código desta página está correto; a
 > infraestrutura que ele precisa não foi criada. Criar o banco na Upstash e
-> adicionar as duas variáveis é o que liga tudo.
+> adicionar as duas variáveis é o que liga tudo. A Camada 1 (WAF) está no ar,
+> mas em modo Log — conta, não bloqueia.
 >
 > Idem para o CAPTCHA: o cliente já manda o token, mas
 > `NEXT_PUBLIC_TURNSTILE_SITE_KEY` não existe e o toggle no Supabase está
@@ -39,7 +40,11 @@ Duas consequências práticas:
 
 ## Camada 1 — Vercel WAF (teto geral, feito no painel)
 
-> **Ainda não criada.** Nada abaixo está no ar.
+> **No ar em modo Log desde 2026-07-31.** Regra `rule_teto_por_ip_Gnyluz`,
+> `firewallEnabled: true`. Não bloqueia nada ainda — só conta.
+>
+> Ao contrário do que se esperava, a ação **Rate Limit do WAF funciona no plano
+> Hobby**. Não é preciso esperar o upgrade.
 
 Não existe em código. É um teto bruto contra varredura e scraping, deliberadamente
 generoso: **600 requisições por IP a cada 60 segundos**.
@@ -53,21 +58,26 @@ derruba usuários legítimos em bloco.
 A chave é **IP, não JA4**. JA4 é um fingerprint de TLS: todo Chrome no Android
 compartilha o mesmo, o que agruparia usuários legítimos no mesmo balde.
 
-Passos no painel (Vercel → projeto `zafe` → Firewall):
+A regra, como está gravada (`GET /v1/security/firewall/config/active`):
 
-1. **Configure → Rate Limit → Add Rule.**
-2. Condição: `Request Path` `starts with` `/`.
-3. Chave (`Rate limit by`): **IP Address**.
-4. Limite: **600** requisições / janela de **60s**.
-5. Ação: **Log** (não Deny).
-6. Salvar e **deployar as regras** (o painel exige publicar).
-7. Deixar em Log por ~1 semana, olhar o gráfico em Firewall → Observability e
-   só então trocar para **Deny** — se algum IP legítimo de CGNAT estourar 600,
-   é melhor descobrir no log do que no suporte.
+```json
+{ "name": "Teto por IP",
+  "conditionGroup": [{ "conditions": [{ "type": "path", "op": "pre", "value": "/" }] }],
+  "action": { "mitigate": { "action": "log",
+    "rateLimit": { "algo": "fixed_window", "window": 60, "limit": 600,
+                   "keys": ["ip"], "action": "log" } } } }
+```
 
-Limites do plano Hobby, para não perder tempo: **1 regra de rate limit por
-projeto**, no máximo 3 regras de firewall no total, e janela fixa entre 10s e
-10min (não é sliding window).
+**Como promover para bloqueio.** Trocar os dois `"action": "log"` por `"deny"` —
+nunca só um; o de fora decide o que acontece com a requisição, o de dentro o que
+acontece ao estourar o contador. Critério, e não antes: **uma semana em Log**, e
+promover só se o percentil 99 de req/60s por IP legítimo ficar abaixo de 300, ou
+seja, metade do teto. Sem essa medição, promover é chutar — e o custo do erro é
+derrubar um IP de CGNAT inteiro (uma cidade atrás de um NAT da Vivo).
+
+Duas limitações do Hobby que valem saber antes de desenhar a segunda regra:
+**janela fixa** (não é sliding window, então o dobro do limite passa na virada) e
+poucas regras por projeto.
 
 ## Camada 2 — Aplicação (`lib/ratelimit.ts` + `middleware.ts`)
 
@@ -286,8 +296,9 @@ honesto nunca chega à mensagem genérica.
 
 ## Observabilidade
 
-- **Vercel → Firewall → Observability:** requisições limitadas por regra e por
-  IP (é o que valida o número de 600 antes de trocar Log por Deny).
+- **Vercel → Firewall → Observability:** requisições que cruzaram a regra
+  `Teto por IP`, por IP. É exatamente o dado que decide se 600 é o número certo
+  antes de trocar Log por Deny.
 - **Upstash → Console → database → Usage:** comandos/mês. Alerta mental em 400k
   de 500k. Se aproximar, o candidato a cortar é o livro de ofertas (60/min é o
   limite mais caro).
