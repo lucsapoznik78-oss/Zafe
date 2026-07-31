@@ -127,6 +127,22 @@ usuários. O escopo atual cabe com folga.
 - **Sem `UPSTASH_REDIS_REST_URL`/`TOKEN` o módulo é inerte** e libera tudo. O
   deploy não quebra enquanto o Redis não existir.
 
+### Como verificar que está mesmo limitando
+
+```
+node scripts/carga-ratelimit.mjs <url-de-preview>
+```
+
+Dispara N requisições sequenciais e confere que o 429 aparece na requisição
+esperada, com `Retry-After` coerente. Fica fora do `npm test`: gasta cota da
+Upstash e precisa de um deploy no ar. **Recusa rodar contra produção** — os
+contadores são compartilhados e o teste bloquearia usuários reais.
+
+É o único jeito de exercitar o caminho real middleware → Upstash. Os unitários
+rodam com o `@upstash/ratelimit` mockado: provam a lógica de decisão e não
+provam que as env vars chegaram no runtime Edge. Rodado em 2026-07-31 contra um
+preview: 25 de 25 devolveram 200, que é o sintoma exato de módulo inerte.
+
 ### Kill switch (`lib/killswitch.ts`)
 
 Interruptor para desligar a Camada 2 inteira **sem deploy**. O cenário que o
