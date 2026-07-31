@@ -175,7 +175,9 @@ export default function TopicInsights({ topicId }: { topicId: string }) {
 
       <p className="text-[10px] text-muted-foreground/70 border-t border-border/40 pt-3">
         Conteúdo informativo gerado por IA para você formar sua própria opinião.
-        Não é recomendação de palpite.
+        Não é recomendação de palpite. Como é gerado por IA, algumas informações
+        podem estar incorretas ou desatualizadas — confira nas fontes oficiais
+        antes de decidir.
       </p>
     </div>
   );
