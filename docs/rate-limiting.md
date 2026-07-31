@@ -268,6 +268,13 @@ detecta e avisa. A Zafe manda email em signup, reenvio, recuperação e OTP, e o
 middleware trata email não confirmado como não autenticado: com o nativo, o
 terceiro cadastro de cada hora não recebe o email e a pessoa não consegue entrar.
 
+Não está machucando ninguém **hoje**: em 2026-07-31, `auth.users` tem 56 contas,
+1 não confirmada e **0 cadastros nos últimos 30 dias**. É problema de lançamento,
+não incidente em curso — mas morde no primeiro dia de tráfego, e a hora de
+configurar o Resend é antes disso, não durante. Confirmar se `smtp_host` está
+preenchido exige `SUPABASE_ACCESS_TOKEN` no `.env.local` e um
+`node scripts/configurar-auth.mjs` (dry run).
+
 ### Limites nativos (referência)
 
 `/auth/v1/token` já é limitado pelo Supabase em **1800 req/h por IP**, com burst
