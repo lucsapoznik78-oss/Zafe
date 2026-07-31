@@ -1,6 +1,6 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
-import { validarCPF } from "@/lib/cpf";
+import { validarCPF, ERRO_CPF } from "@/lib/cpf";
 import { LEGAL_DOCS, DOCS_OBRIGATORIOS } from "@/lib/legal";
 import { recordAcceptance } from "@/lib/legal-trail";
 
@@ -25,10 +25,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Informe um telefone válido com DDD" }, { status: 400 });
   }
 
+  // O veredito sobre o CPF fica lá embaixo, junto da checagem de unicidade —
+  // ver o comentário no ponto da decisão.
   const cpfLimpo = String(body?.cpf ?? "").replace(/\D/g, "");
-  if (!validarCPF(cpfLimpo)) {
-    return NextResponse.json({ error: "CPF inválido" }, { status: 400 });
-  }
 
   if (!body?.acceptedTerms) {
     return NextResponse.json({ error: "Você precisa aceitar os Termos de Uso" }, { status: 400 });
@@ -70,18 +69,25 @@ export async function POST(request: Request) {
     update.terms_accepted_at = new Date().toISOString();
   }
 
-  // CPF único (índice parcial profiles_cpf_unique fecha a corrida TOCTOU).
+  // Veredito sobre o CPF: dígito e unicidade conferidos juntos e julgados numa
+  // resposta só. Separar os dois casos (400 "inválido" vs 409 "já cadastrado")
+  // transformava a rota num oráculo de enumeração de CPF; retornar cedo no
+  // dígito inválido, sem tocar no banco, reabriria a mesma distinção pelo
+  // relógio. O índice parcial profiles_cpf_unique é que fecha o TOCTOU.
+  const cpfValido = validarCPF(cpfLimpo);
   const { data: cpfTaken } = await admin
     .from("profiles").select("id").eq("cpf", cpfLimpo).neq("id", user.id).limit(1);
-  if (cpfTaken && cpfTaken.length > 0) {
-    return NextResponse.json({ error: "CPF já cadastrado em outra conta" }, { status: 409 });
+  if (!cpfValido || (cpfTaken && cpfTaken.length > 0)) {
+    return NextResponse.json({ error: ERRO_CPF }, { status: 422 });
   }
 
   const { error } = await admin.from("profiles").update(update).eq("id", user.id);
   if (error) {
     // 23505 = violação do índice UNIQUE de cpf (corrida de dois cadastros).
+    // Mesmo veredito do caminho acima — quem perde a corrida não pode receber
+    // uma resposta distinguível.
     if ((error as { code?: string }).code === "23505") {
-      return NextResponse.json({ error: "CPF já cadastrado em outra conta" }, { status: 409 });
+      return NextResponse.json({ error: ERRO_CPF }, { status: 422 });
     }
     console.error("[perfil/completar]", error);
     return NextResponse.json({ error: "Erro ao salvar seus dados" }, { status: 500 });

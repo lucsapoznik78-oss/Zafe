@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ShieldCheck, Loader2 } from "lucide-react";
-import { formatarCPF } from "@/lib/cpf";
+import { formatarCPF, validarCPF } from "@/lib/cpf";
 
 interface Props {
   onSuccess?: () => void;
@@ -14,6 +14,11 @@ export default function CpfForm({ onSuccess }: Props) {
   const [cpf, setCpf] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Dígito verificador conferido no cliente para que um erro de digitação não
+  // vire uma requisição — a resposta do servidor é deliberadamente genérica
+  // (não distingue "inválido" de "já cadastrado"), então ela não ajudaria.
+  const cpfValido = validarCPF(cpf);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setCpf(formatarCPF(e.target.value));
@@ -62,13 +67,16 @@ export default function CpfForm({ onSuccess }: Props) {
           inputMode="numeric"
           className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50 transition-colors"
         />
+        {cpf.replace(/\D/g, "").length === 11 && !cpfValido && (
+          <p className="text-destructive text-xs mt-1.5">CPF inválido. Confira os números.</p>
+        )}
       </div>
 
       {error && <p className="text-destructive text-xs">{error}</p>}
 
       <button
         type="submit"
-        disabled={loading || cpf.replace(/\D/g, "").length < 11}
+        disabled={loading || !cpfValido}
         className="w-full py-2.5 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         {loading ? <Loader2 size={14} className="animate-spin mx-auto" /> : "Verificar CPF"}

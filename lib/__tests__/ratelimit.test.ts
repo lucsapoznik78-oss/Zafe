@@ -156,10 +156,15 @@ describe("policyFor", () => {
     }
   });
 
-  it("o oráculo de CPF tem janela longa e é fail-closed", () => {
-    const p = policyFor("/api/perfil/completar")!;
-    expect(p.failClosed).toBe(true);
-    expect(p.limit).toBe(5);
-    expect(p.window).toBe("10 m");
+  it("o oráculo de CPF tem janela longa e é fail-closed nas DUAS rotas", () => {
+    // /api/kyc consulta o mesmo CPF na mesma tabela que /api/perfil/completar.
+    // Se só uma estiver na política, a outra é um oráculo sem limite nenhum.
+    for (const rota of ["/api/perfil/completar", "/api/kyc"]) {
+      const p = policyFor(rota);
+      expect(p, `sem política para ${rota}`).not.toBeNull();
+      expect(p!.failClosed).toBe(true);
+      expect(p!.limit).toBe(5);
+      expect(p!.window).toBe("10 m");
+    }
   });
 });

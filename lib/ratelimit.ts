@@ -76,8 +76,11 @@ export const POLICIES: Array<{ pattern: RegExp; policy: Policy }> = [
   // "inválido" (400) e "já cadastrado em outra conta" (409) permitem varrer
   // CPFs para descobrir quem tem conta na Zafe. O limite reduz o alcance da
   // varredura; a correção de verdade é uniformizar a mensagem de erro.
+  //
+  // As duas rotas entram juntas: fazem a mesma consulta de CPF contra a mesma
+  // tabela, então limitar só uma deixa a outra como oráculo aberto do lado.
   {
-    pattern: /^\/api\/perfil\/completar$/,
+    pattern: /^\/api\/(perfil\/completar|kyc)$/,
     policy: { prefix: "rl:pii:cpf", limit: 5, window: "10 m", failClosed: true },
   },
 
