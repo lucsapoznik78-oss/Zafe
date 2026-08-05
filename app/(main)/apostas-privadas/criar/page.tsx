@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import { permanentRedirect } from "next/navigation";
 
 export default function ApostaPrivadasCriarRedirect() {
-  redirect("/privadas/criar");
+  permanentRedirect("/privadas/criar");
 }

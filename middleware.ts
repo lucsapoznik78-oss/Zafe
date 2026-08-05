@@ -5,6 +5,18 @@ import { LEGAL_DOCS } from "@/lib/legal";
 import { checkRateLimit, policyFor, registrarBloqueio } from "@/lib/ratelimit";
 import { rateLimitDesligado } from "@/lib/killswitch";
 
+// Primeiro segmento de cada rota que realmente existe em `app/` (incluindo os
+// route groups). Usado só para distinguir URL inexistente de rota protegida —
+// ver o bloco de soft-404 mais abaixo. Ao criar uma pasta nova em `app/`,
+// acrescente o segmento aqui, senão a página passa a devolver 404.
+const ROTAS_CONHECIDAS = new Set([
+  "admin", "ajuda", "amigos", "api", "apostas-privadas", "auth", "banido",
+  "canal", "completar-cadastro", "comunidade", "concurso", "contato", "criar",
+  "games", "historico", "inicio", "jogo-responsavel", "liga", "ligas", "login",
+  "meus-topicos", "paginas", "perfil", "politica", "portfolio", "premium",
+  "privadas", "r", "ranking", "redefinir-senha", "termos", "topicos", "u",
+]);
+
 export async function middleware(request: NextRequest, event: NextFetchEvent) {
   // Kill switch: com o Concurso desligado ninguém acessa o mundo pago direto por
   // link/anúncio. As páginas /concurso vão pra home; a API /api/concurso segue
@@ -101,8 +113,22 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
     if (rl.pending) event.waitUntil(rl.pending);
   }
 
-  const publicRoutes = ["/login", "/auth/callback", "/auth/confirm", "/api/auth/username", "/api/auth/email-exists", "/api/auth/2fa-contexto", "/historico", "/termos", "/politica", "/ajuda", "/jogo-responsavel", "/api/cron", "/api/push", "/api/concurso/pagamento/webhook", "/api/landing", "/r/", "/sitemap.xml", "/robots.txt", "/google", "/liga", "/ranking", "/u/", "/concurso", "/comunidade", "/games", "/banido"];
+  const publicRoutes = ["/login", "/auth/callback", "/auth/confirm", "/api/auth/username", "/api/auth/email-exists", "/api/auth/2fa-contexto", "/historico", "/termos", "/politica", "/ajuda", "/jogo-responsavel", "/contato", "/paginas", "/apostas-privadas", "/api/cron", "/api/push", "/api/concurso/pagamento/webhook", "/api/landing", "/r/", "/sitemap.xml", "/robots.txt", "/google", "/liga", "/ranking", "/u/", "/concurso", "/comunidade", "/games", "/banido"];
+  // `/apostas-privadas/*` entra em publicRoutes só porque virou stub de
+  // redirect 308 para `/privadas/*`: se continuasse protegida, o crawler
+  // levaria 307 para /login e nunca veria o sinal de consolidação. O destino
+  // (`/privadas/*`) segue exigindo login normalmente.
   const isPublicRoute = pathname === "/" || publicRoutes.some((r) => pathname.startsWith(r));
+
+  // Soft-404: sem isto, QUALQUER URL inexistente cai no redirect para /login
+  // abaixo e devolve 200 com a tela de login. Para o Google isso é uma página
+  // válida — o site inteiro vira conteúdo duplicado e as URLs lixo entram no
+  // índice. Rota desconhecida agora passa direto e o Next renderiza
+  // `app/not-found.tsx` com 404 de verdade.
+  const primeiroSegmento = pathname.split("/")[1] ?? "";
+  if (primeiroSegmento && !ROTAS_CONHECIDAS.has(primeiroSegmento)) {
+    return NextResponse.next({ request: nextRequest });
+  }
 
   // Email não confirmado (signups por senha) conta como não autenticado para
   // rotas protegidas. Logins via OAuth (Google) já vêm com email_confirmed_at.

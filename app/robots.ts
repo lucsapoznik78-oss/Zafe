@@ -7,9 +7,15 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: ["/", "/liga/", "/concurso", "/ranking", "/u/", "/historico", "/termos"],
+        allow: [
+          "/", "/liga/", "/concurso", "/ranking", "/u/", "/historico", "/termos",
+          "/politica", "/ajuda", "/jogo-responsavel", "/contato", "/paginas",
+        ],
+        // `/apostas-privadas/` saiu do disallow de propósito: virou stub de
+        // redirect 308 para `/privadas/*`, e bloquear o crawl impede o Google
+        // de ver o redirect e consolidar as URLs antigas.
         disallow: [
-          "/admin/", "/perfil", "/apostas-privadas/", "/privadas/",
+          "/admin/", "/perfil", "/privadas/",
           "/criar/", "/amigos/", "/portfolio/", "/notificacoes/",
           "/concurso/entrar", "/liga/criar", "/premium",
         ],

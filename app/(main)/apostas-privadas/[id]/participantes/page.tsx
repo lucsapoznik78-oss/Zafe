@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import { redirect } from "next/navigation";
+import { permanentRedirect } from "next/navigation";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -8,5 +8,5 @@ interface PageProps {
 
 export default async function ApostasPrivadasParticipantesRedirect({ params }: PageProps) {
   const { id } = await params;
-  redirect(`/privadas/${id}/participantes`);
+  permanentRedirect(`/privadas/${id}/participantes`);
 }

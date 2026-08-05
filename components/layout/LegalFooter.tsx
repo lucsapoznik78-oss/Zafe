@@ -24,6 +24,15 @@ export default function LegalFooter() {
         </Link>
         {" "}— pausa, autoexclusão e canais de ajuda.
       </p>
+      <p>
+        <Link href="/contato" className="underline hover:text-muted-foreground transition-colors">
+          Contato e identificação
+        </Link>
+        {" · "}
+        <Link href="/paginas" className="underline hover:text-muted-foreground transition-colors">
+          Todas as páginas
+        </Link>
+      </p>
     </div>
   );
 }
