@@ -1,0 +1,14 @@
+# Coletor de micro-influencers Zafe — dependências 100% gratuitas.
+# NENHUMA dependência exige assinatura, chave paga ou cartão de crédito.
+
+# Google Sheets (service account gratuita)
+gspread==6.1.2
+google-auth==2.34.0
+
+# Leitura de .env
+python-dotenv==1.0.1
+
+# Automação de navegador OPCIONAL (fonte gratuita Modash).
+# Só é necessária se você usar --source modash. O modo --source csv não precisa dela.
+# Após instalar, rode uma vez: python -m playwright install chromium
+playwright==1.47.0

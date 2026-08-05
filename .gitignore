@@ -38,3 +38,20 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 supabase/.temp/
+
+# Scripts de captação (Python) — segredos (NUNCA commitar)
+zafe-coletor-*.json
+.env
+service-account.json
+
+# Ambientes virtuais Python
+.venv/
+venv/
+__pycache__/
+
+# Saída dos coletores: dado de prospecção, muda a cada rodada e não é código.
+# O que vale versionar é o script que gera, não o CSV gerado.
+scripts/**/*.csv
+!scripts/**/*.exemplo.csv
+scripts/painel/inbox/
+zafe_contact/outbox/
