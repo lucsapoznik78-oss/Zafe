@@ -1,6 +1,12 @@
-// Content-Security-Policy — publicada em Report-Only primeiro (audit F-16).
-// Só depois de alguns dias sem violação no relatório ela vira bloqueante
-// (trocar a chave para "Content-Security-Policy" abaixo).
+// Content-Security-Policy — BLOQUEANTE (audit F-16).
+// Ficou em Report-Only por um tempo, mas sem `report-uri` nenhum relatório era
+// coletado em lugar nenhum, então a fase de observação nunca produziria dado e a
+// política não protegia nada. Auditoria manual do que o browser carrega antes de
+// virar a chave: nenhum iframe, nenhuma tag de terceiro (GTM/gtag), nenhum worker
+// externo (só /sw.js, coberto por worker-src 'self'), e os hosts externos do
+// repo (espn, pandascore, api-sports, resend, firecrawl, thesportsdb, wikidata)
+// são todos chamados server-side pelos oráculos, não pelo browser. Os links de
+// wa.me/twitter/instagram são navegação, que a CSP não restringe.
 // 'unsafe-inline' em script-src é temporário: o Next injeta scripts inline no
 // App Router; remover exige nonce via middleware.
 const csp = [
@@ -54,7 +60,7 @@ const nextConfig = {
       {
         source: "/:path*",
         headers: [
-          { key: "Content-Security-Policy-Report-Only", value: csp },
+          { key: "Content-Security-Policy", value: csp },
           { key: "X-Frame-Options", value: "DENY" },
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
