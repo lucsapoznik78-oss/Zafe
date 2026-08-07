@@ -90,7 +90,9 @@ All modules share ONE Z$ wallet. No platform commission anywhere — 100% of poo
 
 ### Wallet (`lib/wallet.ts`) — critical invariants
 
-Single `balance` field per user, mutated only through `adjustBalance()`: optimistic compare-and-set (`.eq("balance", current)` + `.select()` to verify a row changed), up to 5 retries, never negative. Z$ conservation: sum of all wallets must equal total issued. Every Z$ code path must use these helpers — never raw `update` on `wallets`. Primary market debits at bet creation; the order book (`lib/order-matching.ts`, FIFO price-time, `COMMISSION_RATE = 0`) validates balance at order creation but debits only at trade execution.
+Single `balance` field per user, mutated only through `adjustBalance()`: optimistic compare-and-set (`.eq("balance", current)` + `.select()` to verify a row changed), up to 5 retries, never negative. Z$ conservation: sum of all wallets must equal total issued.
+
+> **Exceção contabilizada — Modo Escalação.** Escalação é o único módulo que **emite** Z$ (pontos viram saldo em `escalacao_pagar_card`). A invariante não é abandonada, é reescrita: `SUM(wallets.balance) + SUM(potes abertos) − SUM(escalacao_emissao.z_liquido) = constante`. Toda entrada e todo prêmio passam por `escalacao_emissao`, e cada card carrega um disjuntor (`teto_emissao_z`) que recusa o pagamento inteiro se o total a emitir estourar o limite declarado na abertura. Detalhes e proibições em `modules/escalacao/COMPLIANCE.md`. Every Z$ code path must use these helpers — never raw `update` on `wallets`. Primary market debits at bet creation; the order book (`lib/order-matching.ts`, FIFO price-time, `COMMISSION_RATE = 0`) validates balance at order creation but debits only at trade execution.
 
 ### Event resolution — 4-layer oracle pipeline (`lib/oracles/index.ts`)
 

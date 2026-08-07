@@ -18,6 +18,13 @@ export const CONCURSO_ESTREIA_CURTO = "Setembro";
 // como home — divulgar o Concurso não pode reativar essas travas.
 export const CONCURSO_ABERTO = CONCURSO_ENABLED && !CONCURSO_EM_BREVE;
 
+// Modo Escalação (fantasy de escalação em Z$, zona grátis). Opt-IN, ao
+// contrário do Concurso: enquanto ninguém definir NEXT_PUBLIC_ESCALACAO_ENABLED,
+// o modo não existe para o usuário. É o que permite o schema e o painel de
+// apuração viverem em produção sem nenhuma superfície pública.
+export const ESCALACAO_ENABLED =
+  process.env.NEXT_PUBLIC_ESCALACAO_ENABLED === "true";
+
 // Home padrão pós-login: o hub /inicio — Concurso no topo, zona grátis embaixo.
 // Vale também na fase de anúncio: é justamente ali que o usuário logado descobre
 // que o Concurso estreia em setembro.
