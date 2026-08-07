@@ -1,567 +1,257 @@
-// Os manuais entregaram os próprios testes de aceite.
+// Os nove manuais de 7/ago/2026 são tabelas de uma página. Não trazem exemplos
+// apurados, então os casos abaixo são derivados linha a linha das tabelas — e
+// existem para travar as DUAS decisões de leitura que os documentos deixam
+// implícitas, que são justamente onde um erro vira Z$ emitido a mais:
 //
-// Cada um dos quatro documentos publicados termina com uma seção de "exemplos
-// apurados", itemizada linha a linha e com o total impresso. São 24 casos, e
-// eles cobrem a faixa inteira das tabelas — do −10,1 de uma derrota rápida ao
-// 176,5 de um título de stop.
+//   1. linha marcada "(bonus)" SOMA; linhas não marcadas da mesma dimensão são
+//      EXCLUSIVAS entre si. "Vitória +30" e "Vitória por nocaute +50" são o
+//      mesmo desfecho, então um nocaute vale 50 — não 80.
+//   2. as fases de surf/tênis (quartas, semi, vice, campeão) são um degrau só,
+//      o mais alto alcançado. Somar as quatro pagaria +215 de bônus a um campeão.
 //
-// O motor está certo quando os 24 reproduzem no décimo. Não é tolerância: é
-// igualdade exata. Se um destes falhar, o breakdown que o Art. 34 obriga a
-// mostrar ao usuário vai divergir do manual que o regulamento manda seguir —
-// e isso é exposição jurídica, não bug de arredondamento.
+// Os pontos são Z$ diretos: +30 aqui é +30 Z$ na carteira do usuário.
 
 import { describe, expect, it } from "vitest";
 import { aplicarReservas, pontuarEvento, pontuarMes, type EventoStats } from "../scoring";
-import { boxeV1, f1V1, surfV1, ufcV1 } from "../rulesets";
+import { RULESETS } from "../rulesets";
+import {
+  boxeV1,
+  f1V1,
+  futebolV1,
+  nbaV1,
+  nflV1,
+  surfV1,
+  tenisV1,
+  ufcV1,
+  valorantV1,
+} from "../rulesets";
 import { parseRuleset } from "../rules";
-import type { Ruleset } from "../rules";
+import type { Ruleset, StatMap } from "../rules";
 
-function total(rs: Ruleset, ev: Omit<EventoStats, "eventoKey">): number {
-  return pontuarEvento(rs, { eventoKey: "t", ...ev }).total;
+function total(rs: Ruleset, stats: StatMap): number {
+  return pontuarEvento(rs, { eventoKey: "t", stats }).total;
 }
 
 // ------------------------------------------------------------
-// UFC §12
+// UFC e boxe
 // ------------------------------------------------------------
-describe("UFC v1 — os seis exemplos apurados do §12", () => {
-  it("A · nocaute no 1º round com Performance of the Night → 86,3", () => {
-    expect(
-      total(ufcV1, {
-        stats: {
-          resultado: "vitoria",
-          metodo: "ko",
-          round_fim: 1,
-          sig_conectados: 14,
-          sig_sofridos: 9,
-          knockdowns: 1,
-          potn: true,
-        },
-      })
-    ).toBe(86.3);
+describe("UFC v1", () => {
+  it("vitória por decisão → +30", () => {
+    expect(total(ufcV1, { resultado: "vitoria" })).toBe(30);
   });
 
-  it("B · finalização no 2º round, domínio no solo → 80,8", () => {
-    // 6min20 de controle = 380s → 3 blocos COMPLETOS de 2 min, não 3,17.
-    expect(
-      total(ufcV1, {
-        stats: {
-          resultado: "vitoria",
-          metodo: "finalizacao",
-          round_fim: 2,
-          sig_conectados: 22,
-          sig_sofridos: 18,
-          quedas: 3,
-          tentativas_finalizacao: 2,
-          controle_seg: 380,
-        },
-      })
-    ).toBe(80.8);
+  it("vitória por nocaute → +50, NÃO 80", () => {
+    expect(total(ufcV1, { resultado: "vitoria_ko" })).toBe(50);
   });
 
-  it("C · decisão unânime numa guerra de 3 rounds, com Fight of the Night → 70,7", () => {
-    expect(
-      total(ufcV1, {
-        stats: {
-          resultado: "vitoria",
-          metodo: "decisao_unanime",
-          round_fim: 3,
-          sig_conectados: 96,
-          sig_sofridos: 81,
-          knockdowns: 1,
-          quedas: 1,
-          controle_seg: 60,
-          fotn: true,
-        },
-      })
-    ).toBe(70.7);
+  it("vitória por finalização → +50", () => {
+    expect(total(ufcV1, { resultado: "vitoria_finalizacao" })).toBe(50);
   });
 
-  it("C · o minuto de controle aparece no breakdown valendo zero", () => {
-    // O manual imprime "1min de controle · 0 bloco completo · 0". A linha de
-    // zero ponto não é ruído: sem ela o usuário acha que a regra foi esquecida.
-    const r = pontuarEvento(ufcV1, {
-      eventoKey: "t",
-      stats: { resultado: "vitoria", metodo: "decisao_unanime", controle_seg: 60 },
-    });
-    const l = r.linhas.find((x) => x.rotulo === "Tempo de controle");
-    expect(l).toBeDefined();
-    expect(l!.pontos).toBe(0);
+  it("nocaute em luta de cinturão → 50 + 20 de bônus = +70", () => {
+    expect(total(ufcV1, { resultado: "vitoria_ko", cinturao: true })).toBe(70);
   });
 
-  it("D · derrota por nocaute no 1º round → −10,1", () => {
-    // O caso que prova por que `quando` precisa ser uma LISTA: o lutador perdeu
-    // por KO no round 1 e NÃO leva nem o bônus de método nem o de velocidade.
-    expect(
-      total(ufcV1, {
-        stats: {
-          resultado: "derrota",
-          metodo: "ko",
-          round_fim: 1,
-          tempo_seg: 90,
-          sig_conectados: 5,
-          sig_sofridos: 16,
-        },
-      })
-    ).toBe(-10.1);
+  it("derrota por nocaute → −20 (e não −30)", () => {
+    expect(total(ufcV1, { resultado: "derrota_ko" })).toBe(-20);
   });
 
-  it("E · derrota por decisão dividida numa luta boa → 22,5", () => {
-    expect(
-      total(ufcV1, {
-        stats: {
-          resultado: "derrota",
-          metodo: "decisao_dividida",
-          sig_conectados: 71,
-          sig_sofridos: 78,
-          quedas: 2,
-          tentativas_finalizacao: 1,
-          controle_seg: 240,
-          fotn: true,
-        },
-      })
-    ).toBe(22.5);
+  it("no contest → 0", () => {
+    expect(total(ufcV1, { resultado: "no_contest" })).toBe(0);
   });
 
-  it("F · nocaute em 22 segundos em luta de cinturão → 104,1", () => {
-    expect(
-      total(ufcV1, {
-        stats: {
-          resultado: "vitoria",
-          metodo: "ko",
-          round_fim: 1,
-          tempo_seg: 22,
-          cinturao: true,
-          sig_conectados: 4,
-          sig_sofridos: 1,
-          knockdowns: 1,
-          potn: true,
-        },
-      })
-    ).toBe(104.1);
+  it("duas lutas no mês SOMAM", () => {
+    const eventos: EventoStats[] = [
+      { eventoKey: "ufc-330", stats: { resultado: "vitoria_ko" } },
+      { eventoKey: "ufc-fn-22", stats: { resultado: "derrota" } },
+    ];
+    expect(pontuarMes(ufcV1, eventos).total).toBe(40);
   });
+});
 
-  it("§9 — duas lutas no mesmo mês somam", () => {
-    const luta = { stats: { resultado: "vitoria", metodo: "decisao_unanime" } };
-    const r = pontuarMes(ufcV1, [
-      { eventoKey: "ufc-331", ...luta },
-      { eventoKey: "ufc-332", ...luta },
-    ]);
-    expect(r.total).toBe(64);
+describe("Boxe v1", () => {
+  it("é o UFC sem finalização", () => {
+    expect(total(boxeV1, { resultado: "vitoria_ko", cinturao: true })).toBe(70);
+    expect(total(boxeV1, { resultado: "derrota" })).toBe(-10);
+    expect(boxeV1.stats.find((s) => s.key === "resultado")!.opcoes).not.toContain(
+      "vitoria_finalizacao"
+    );
   });
 });
 
 // ------------------------------------------------------------
-// Surf §14
+// Fórmula 1
 // ------------------------------------------------------------
-// A unidade de ocorrência é a bateria. As notas das ondas foram escolhidas para
-// somar exatamente os somatórios que o manual imprime e conter exatamente os
-// bônus de nota que ele lista.
-describe("Surf v1 — os seis exemplos apurados do §14", () => {
-  const bateria = (ordem: number, ondas: number[], avancou: boolean, extra = {}) => ({
-    ordem,
-    contexto: { surfistas: 2, vagas: 1 },
-    stats: {
-      avancou,
-      somatorio: Math.round(ondas.reduce((a, b) => a + b, 0) * 100) / 100,
-      ondas,
-      ...extra,
-    },
+describe("Fórmula 1 v1", () => {
+  it("vitória com pole → 50 + 10 = +60", () => {
+    expect(total(f1V1, { resultado: "vitoria", pole: true })).toBe(60);
   });
 
-  it("A · campeão do stop, cinco baterias vencidas → 176,5", () => {
-    // 77,21 × 0,55 = 42,4655 → 42,5. Uma multiplicação, um arredondamento.
-    expect(
-      total(surfV1, {
-        stats: { entrou_agua: true, colocacao: "campeao" },
-        ocorrencias: [
-          bateria(1, [7.0, 6.1], true),   // 13,10
-          bateria(2, [8.2, 6.3], true),   // 14,50 · 8
-          bateria(3, [8.17, 7.0], true),  // 15,17 · 8
-          bateria(4, [9.0, 7.84], true),  // 16,84 · 9
-          bateria(5, [9.6, 8.0], true),   // 17,60 · 9 · 8
-        ],
-      })
-    ).toBe(176.5);
+  it("pódio → +30 · top 10 → +15 · classificado → +5 · abandono → −10", () => {
+    expect(total(f1V1, { resultado: "podio" })).toBe(30);
+    expect(total(f1V1, { resultado: "top10" })).toBe(15);
+    expect(total(f1V1, { resultado: "classificado" })).toBe(5);
+    expect(total(f1V1, { resultado: "abandono" })).toBe(-10);
   });
 
-  it("B · semifinalista → 89,9", () => {
-    expect(
-      total(surfV1, {
-        stats: { entrou_agua: true, colocacao: "semifinal" },
-        ocorrencias: [
-          bateria(1, [6.5, 5.5], true),   // 12,00
-          bateria(2, [7.0, 6.4], true),   // 13,40
-          bateria(3, [8.74, 7.16], true), // 15,90 · 8
-          bateria(4, [6.0, 5.2], false),  // 11,20
-        ],
-      })
-    ).toBe(89.9);
-  });
-
-  it("C · onda 10 na estreia, eliminado nas oitavas → 44,9", () => {
-    expect(
-      total(surfV1, {
-        stats: { entrou_agua: true, colocacao: "outros" },
-        ocorrencias: [
-          bateria(1, [10.0, 7.5], true),  // 17,50 · 10
-          bateria(2, [5.0, 4.6], false),  // 9,60
-        ],
-      })
-    ).toBe(44.9);
-  });
-
-  it("D · eliminado na primeira bateria → 2,9", () => {
-    // O −8 do §2 sai de um limiar sobre a SOMA dos avanços das baterias, que o
-    // rollup do motor produz a partir dos booleanos. Não há campo redundante.
-    expect(
-      total(surfV1, {
-        stats: { entrou_agua: true },
-        ocorrencias: [bateria(1, [4.9, 4.0], false)], // 8,90
-      })
-    ).toBe(2.9);
-  });
-
-  it("E · bateria perfeita nas quartas, perdeu a semifinal → 142,7", () => {
-    // Duas notas 10,00 na MESMA bateria: +12 cada, e ainda o +25 de somatório
-    // 20,00 por cima. É o caso que obriga o stat a poder ser uma LISTA.
-    expect(
-      total(surfV1, {
-        stats: { entrou_agua: true, colocacao: "semifinal" },
-        ocorrencias: [
-          bateria(1, [7.0, 5.4], true),    // 12,40
-          bateria(2, [8.2, 5.8], true),    // 14,00 · 8
-          bateria(3, [10.0, 10.0], true),  // 20,00 · 10 · 10 · perfeita
-          bateria(4, [7.1, 6.0], false),   // 13,10
-        ],
-      })
-    ).toBe(142.7);
-  });
-
-  it("F · interferência e eliminação nas oitavas → 19,3", () => {
-    expect(
-      total(surfV1, {
-        stats: { entrou_agua: true },
-        ocorrencias: [
-          bateria(1, [7.6, 6.6], true),                          // 14,20
-          bateria(2, [3.4, 3.0], false, { interferencia: true }), // 6,40
-        ],
-      })
-    ).toBe(19.3);
-  });
-
-  it("§2 — a fórmula de avanço lê o formato da bateria, não uma tabela", () => {
-    const um = (surfistas: number, vagas: number) =>
-      pontuarEvento(surfV1, {
-        eventoKey: "t",
-        stats: {},
-        ocorrencias: [{ ordem: 1, contexto: { surfistas, vagas }, stats: { avancou: true } }],
-      }).total;
-    expect(um(2, 1)).toBe(12);
-    expect(um(3, 1)).toBe(18);
-    expect(um(3, 2)).toBe(9);
-    expect(um(4, 2)).toBe(12);
-  });
-
-  it("§9 — só o stop designado conta no mês", () => {
-    const stop = (k: string, colocacao: string) => ({
-      eventoKey: k,
-      stats: { entrou_agua: true, colocacao },
-    });
-    const r = pontuarMes(surfV1, [stop("wsl-stop8", "campeao"), stop("wsl-stop9", "quartas")], {
-      eventoDesignado: "wsl-stop9",
-    });
-    expect(r.total).toBe(14); // 6 + 8, e não os 46 do stop que não foi designado
+  it("o mês é a MÉDIA das corridas, não a soma", () => {
+    // Sem isso, novembro (4 GPs) valeria 4× dezembro (1 GP) e ninguém escalaria
+    // piloto fora do mês cheio.
+    const eventos: EventoStats[] = [
+      { eventoKey: "gp-1", stats: { resultado: "vitoria" } }, // 50
+      { eventoKey: "gp-2", stats: { resultado: "abandono" } }, // −10
+    ];
+    expect(pontuarMes(f1V1, eventos).total).toBe(20);
   });
 });
 
 // ------------------------------------------------------------
-// F1 §13
+// Surf e tênis — os gêmeos de progressão em chave
 // ------------------------------------------------------------
-describe("Fórmula 1 v1 — os sete exemplos apurados do §13", () => {
-  it("A · pole, vitória e volta mais rápida → 92", () => {
+describe("Surf v1", () => {
+  it("campeão do stop: entrou 5 + 5 baterias × 15 + campeão 90 = +170", () => {
     expect(
-      total(f1V1, {
-        stats: {
-          pole: true,
-          q3: true,
-          completou: true,
-          posicao: 1,
-          posicoes_ganhas: 0,
-          volta_rapida: true,
-          venceu_duelo_corrida: true,
-          venceu_duelo_quali: true,
-        },
-      })
-    ).toBe(92);
+      total(surfV1, { entrou_chave: true, baterias_vencidas: 5, fase: "campeao" })
+    ).toBe(170);
   });
 
-  it("B · recuperação: largou em 16º, terminou em 7º → 69", () => {
+  it("as fases NÃO se acumulam — o campeão leva 90, não 25+40+60+90", () => {
+    const campeao = total(surfV1, { entrou_chave: true, baterias_vencidas: 0, fase: "campeao" });
+    expect(campeao).toBe(95);
+  });
+
+  it("eliminado na primeira bateria: 5 − 5 = 0", () => {
     expect(
-      total(f1V1, {
-        stats: {
-          q3: false,
-          completou: true,
-          posicao: 7,
-          posicoes_ganhas: 9,
-          venceu_duelo_corrida: true,
-          venceu_duelo_quali: true,
-        },
+      total(surfV1, {
+        entrou_chave: true,
+        baterias_vencidas: 0,
+        fase: "nenhuma",
+        eliminado_primeira: true,
       })
-    ).toBe(69);
+    ).toBe(0);
   });
 
-  it("C · largou em 3º e abandonou → 4", () => {
+  it("semifinalista: 5 + 4×15 + 40 = +105", () => {
     expect(
-      total(f1V1, {
-        stats: {
-          q3: true,
-          nao_classificado: true,
-          venceu_duelo_corrida: false,
-          venceu_duelo_quali: true,
-        },
-      })
-    ).toBe(4);
+      total(surfV1, { entrou_chave: true, baterias_vencidas: 4, fase: "semifinal" })
+    ).toBe(105);
   });
 
-  it("D · fundo de grid: largou em 19º, terminou em 14º → 48", () => {
-    // Doze vezes o piloto de ponta do exemplo C. Não é ruído — é o duelo com o
-    // companheiro fazendo as vinte vagas do grid continuarem escaláveis.
+  it("só o stop DESIGNADO conta no mês", () => {
+    const eventos: EventoStats[] = [
+      { eventoKey: "wsl-stop9", stats: { entrou_chave: true, baterias_vencidas: 5, fase: "campeao" } },
+      { eventoKey: "wsl-stop10", stats: { entrou_chave: true, baterias_vencidas: 0, fase: "nenhuma" } },
+    ];
+    expect(pontuarMes(surfV1, eventos, { eventoDesignado: "wsl-stop9" }).total).toBe(170);
+    expect(pontuarMes(surfV1, eventos, { eventoDesignado: "wsl-stop10" }).total).toBe(5);
+  });
+});
+
+describe("Tênis v1", () => {
+  it("mesma tabela do surf, rodada no lugar de bateria", () => {
     expect(
-      total(f1V1, {
-        stats: {
-          q3: false,
-          completou: true,
-          posicao: 14,
-          posicoes_ganhas: 5,
-          venceu_duelo_corrida: true,
-          venceu_duelo_quali: true,
-        },
-      })
-    ).toBe(48);
-  });
-
-  it("E · largou em 2º, terminou em 5º com penalidade de tempo → 27", () => {
+      total(tenisV1, { entrou_chave: true, rodadas_vencidas: 5, fase: "campeao" })
+    ).toBe(170);
     expect(
-      total(f1V1, {
-        stats: {
-          q3: true,
-          completou: true,
-          posicao: 5,
-          posicoes_perdidas: 3,
-          penalidades_tempo: 1,
-          venceu_duelo_corrida: false,
-          venceu_duelo_quali: true,
-        },
-      })
-    ).toBe(27);
-  });
-
-  it("F · fim de semana com sprint: 2º no sprint, venceu o GP saindo do 4º → 91", () => {
-    expect(
-      total(f1V1, {
-        stats: {
-          q3: true,
-          sprint_pos: 2,
-          completou: true,
-          posicao: 1,
-          posicoes_ganhas: 3,
-          venceu_duelo_corrida: true,
-          venceu_duelo_quali: true,
-        },
-      })
-    ).toBe(91);
-  });
-
-  it("G · a média de novembro, o mês de quatro GPs → 41,0", () => {
-    // 164 ÷ 4. É a decisão estrutural do manual de F1: sem a média, um piloto
-    // escalado em novembro (4 GPs) valeria quatro vezes um de dezembro (1 GP).
-    const mexico: EventoStats = {
-      eventoKey: "gp-mexico", // 5º → 48
-      stats: {
-        q3: true,
-        completou: true,
-        posicao: 5,
-        posicoes_ganhas: 1,
-        venceu_duelo_corrida: true,
-      },
-    };
-    const interlagos: EventoStats = {
-      eventoKey: "gp-sao-paulo", // abandono → 12
-      stats: { nao_classificado: true, venceu_duelo_corrida: true, venceu_duelo_quali: true },
-    };
-    const lasVegas: EventoStats = {
-      eventoKey: "gp-las-vegas", // vitória → 71
-      stats: {
-        q3: true,
-        completou: true,
-        posicao: 1,
-        posicoes_ganhas: 2,
-        venceu_duelo_corrida: true,
-      },
-    };
-    const catar: EventoStats = {
-      eventoKey: "gp-catar", // 9º → 33
-      stats: {
-        q3: true,
-        completou: true,
-        posicao: 9,
-        posicoes_perdidas: 1,
-        venceu_duelo_corrida: true,
-      },
-    };
-
-    const corridas = [mexico, interlagos, lasVegas, catar];
-    expect(corridas.map((c) => pontuarEvento(f1V1, c).total)).toEqual([48, 12, 71, 33]);
-    expect(pontuarMes(f1V1, corridas).total).toBe(41); // 164 ÷ 4
-  });
-
-  it("§5 — o teto de +30 nas posições ganhas", () => {
-    // Um piloto que larga em último por penalidade de motor e recupera 15
-    // posições leva 30, não 45: informação pública com semanas de antecedência
-    // não pode render mais que vencer a corrida.
-    const r = pontuarEvento(f1V1, { eventoKey: "t", stats: { posicoes_ganhas: 15 } });
-    expect(r.total).toBe(30);
-  });
-
-  it("§7 — a volta mais rápida só conta no top 10", () => {
-    const fora = total(f1V1, { stats: { completou: true, posicao: 11, volta_rapida: true } });
-    const dentro = total(f1V1, { stats: { completou: true, posicao: 10, volta_rapida: true } });
-    expect(fora).toBe(11);    // 5 + 6, sem os 7
-    expect(dentro).toBe(20);  // 5 + 8 + 7
+      total(tenisV1, { entrou_chave: true, rodadas_vencidas: 0, eliminado_primeira: true })
+    ).toBe(0);
   });
 });
 
 // ------------------------------------------------------------
-// Boxe §13
+// Futebol
 // ------------------------------------------------------------
-describe("Boxe v1 — os seis exemplos apurados do §13", () => {
-  it("A · nocaute no 2º round numa luta de cinturão → 105,2", () => {
-    expect(
-      total(boxeV1, {
-        stats: {
-          resultado: "vitoria",
-          metodo: "ko",
-          round_fim: 2,
-          knockdowns: 2,
-          golpes_conectados: 44,
-          golpes_sofridos: 16,
-          cinturao: true,
-          potn: true,
-        },
-      })
-    ).toBe(105.2);
+describe("Futebol v1", () => {
+  it("atacante marca 2 e o time vence: 50+50+30 = +130", () => {
+    expect(total(futebolV1, { resultado: "vitoria", gols: 2 })).toBe(130);
   });
 
-  it("B · decisão unânime numa luta técnica de 12 rounds → 79,8", () => {
-    expect(
-      total(boxeV1, {
-        stats: {
-          resultado: "vitoria",
-          metodo: "decisao_unanime",
-          knockdowns: 1,
-          golpes_conectados: 204,
-          golpes_sofridos: 108,
-          fotn: true,
-        },
-      })
-    ).toBe(79.8);
+  it("goleiro sem sofrer gol na vitória: 30 + 20 = +50", () => {
+    expect(total(futebolV1, { resultado: "vitoria", sem_sofrer_gol: true })).toBe(50);
   });
 
-  it("C · nocaute em 48 segundos → 80,6", () => {
-    // 4 × −0,065 = −0,26 → −0,3. Meio para LONGE do zero: a penalidade
-    // arredonda com o mesmo critério do bônus.
-    expect(
-      total(boxeV1, {
-        stats: {
-          resultado: "vitoria",
-          metodo: "ko",
-          round_fim: 1,
-          tempo_seg: 48,
-          knockdowns: 1,
-          golpes_conectados: 9,
-          golpes_sofridos: 4,
-        },
-      })
-    ).toBe(80.6);
+  it("expulso na derrota: −10 − 20 = −30", () => {
+    expect(total(futebolV1, { resultado: "derrota", cartao_vermelho: true })).toBe(-30);
   });
 
-  it("D · derrota por nocaute no 3º round, dois knockdowns sofridos → −10,1", () => {
-    expect(
-      total(boxeV1, {
-        stats: {
-          resultado: "derrota",
-          metodo: "ko",
-          round_fim: 3,
-          knockdowns_sofridos: 2,
-          golpes_conectados: 24,
-          golpes_sofridos: 48,
-        },
-      })
-    ).toBe(-10.1);
+  it("gol contra no empate: 10 − 20 = −10", () => {
+    expect(total(futebolV1, { resultado: "empate", gols_contra: 1 })).toBe(-10);
   });
 
-  it("E · derrota numa guerra de 12 rounds, com Fight of the Night → 25,1", () => {
-    expect(
-      total(boxeV1, {
-        stats: {
-          resultado: "derrota",
-          metodo: "decisao_unanime",
-          knockdowns: 1,
-          golpes_conectados: 156,
-          golpes_sofridos: 180,
-          fotn: true,
-        },
-      })
-    ).toBe(25.1);
+  it("assistência é bônus e soma: empate + 1 assistência = +35", () => {
+    expect(total(futebolV1, { resultado: "empate", assistencias: 1 })).toBe(35);
   });
 
-  it("F · vitória por decisão dividida apertada em 10 rounds → 49,4", () => {
-    expect(
-      total(boxeV1, {
-        stats: {
-          resultado: "vitoria",
-          metodo: "decisao_dividida",
-          golpes_conectados: 150,
-          golpes_sofridos: 140,
-        },
-      })
-    ).toBe(49.4);
+  it("não relacionado → 0", () => {
+    expect(total(futebolV1, { resultado: "nao_jogou" })).toBe(0);
   });
 });
 
 // ------------------------------------------------------------
-// Teto e piso do evento
+// NBA, NFL, Valorant
 // ------------------------------------------------------------
-describe("clamp do evento (surf §7, regra geral do modo)", () => {
-  it("teto de +180", () => {
+describe("NBA v1", () => {
+  it("triple-double na vitória com MVP: 30 + 50 + 20 = +100", () => {
+    expect(total(nbaV1, { resultado: "vitoria", duplo: "triple_double", mvp: true })).toBe(100);
+  });
+
+  it("triple-double NÃO paga também o double-double", () => {
+    // Todo triple-double é um double-double. Somar os dois pagaria +70 por uma
+    // coisa só.
+    expect(total(nbaV1, { resultado: "derrota", duplo: "triple_double" })).toBe(40);
+    expect(total(nbaV1, { resultado: "derrota", duplo: "double_double" })).toBe(10);
+  });
+
+  it("não jogou → 0", () => {
+    expect(total(nbaV1, { resultado: "nao_jogou", duplo: "nenhum" })).toBe(0);
+  });
+});
+
+describe("NFL v1", () => {
+  it("2 touchdowns na vitória: 30 + 100 = +130", () => {
+    expect(total(nflV1, { resultado: "vitoria", touchdowns: 2 })).toBe(130);
+  });
+
+  it("QB: 3 passes para TD e 1 interceptação na vitória: 30 + 60 − 20 = +70", () => {
+    expect(total(nflV1, { resultado: "vitoria", passes_td: 3, turnovers: 1 })).toBe(70);
+  });
+
+  it("kicker com 2 field goals na derrota: −10 + 20 = +10", () => {
+    expect(total(nflV1, { resultado: "derrota", jogadas_decisivas: 2 })).toBe(10);
+  });
+});
+
+describe("Valorant v1", () => {
+  it("MVP com ace e clutch na vitória: 30 + 50 + 20 + 15 = +115", () => {
+    expect(total(valorantV1, { resultado: "vitoria", mvp: true, aces: 1, clutches: 1 })).toBe(115);
+  });
+
+  it("reserva que não jogou → 0", () => {
+    expect(total(valorantV1, { resultado: "nao_jogou" })).toBe(0);
+  });
+});
+
+// ------------------------------------------------------------
+// Sem clamp
+// ------------------------------------------------------------
+describe("os manuais simplificados não têm teto nem piso por evento", () => {
+  it("um campeão de stop não é cortado", () => {
     const r = pontuarEvento(surfV1, {
       eventoKey: "t",
-      stats: { entrou_agua: true, colocacao: "campeao" },
-      ocorrencias: Array.from({ length: 8 }, (_, i) => ({
-        ordem: i + 1,
-        contexto: { surfistas: 3, vagas: 1 },
-        stats: { avancou: true, somatorio: 20, ondas: [10, 10] },
-      })),
+      stats: { entrou_chave: true, baterias_vencidas: 5, fase: "campeao" },
     });
-    expect(r.bruto).toBeGreaterThan(180);
-    expect(r.total).toBe(180);
-    expect(r.clampado).toBe("teto");
+    expect(r.clampado).toBeNull();
+    expect(r.total).toBe(r.bruto);
   });
 
-  it("piso de −25", () => {
-    const r = pontuarEvento(ufcV1, {
-      eventoKey: "t",
-      stats: {
-        resultado: "derrota",
-        desqualificado: true,
-        nao_bateu_peso: true,
-        pontos_descontados: 2,
-        sig_sofridos: 40,
-      },
-    });
-    expect(r.bruto).toBeLessThan(-25);
-    expect(r.total).toBe(-25);
-    expect(r.clampado).toBe("piso");
+  it("a proteção da economia é o disjuntor por card, não o clamp por evento", () => {
+    // `escalacao_card.teto_emissao_z` recusa o pagamento INTEIRO se a emissão
+    // estourar o limite declarado na abertura. É o que transforma um bug de
+    // pontuação em alerta em vez de moeda emitida.
+    for (const rs of Object.values(RULESETS)) {
+      expect(rs.tetoEvento).toBeGreaterThanOrEqual(9999);
+      expect(rs.pisoEvento).toBeLessThanOrEqual(-9999);
+    }
   });
 });
 
@@ -627,24 +317,20 @@ describe("aplicarReservas", () => {
 });
 
 // ------------------------------------------------------------
-// Os rulesets são válidos contra o schema
+// Os nove rulesets são válidos contra o schema
 // ------------------------------------------------------------
 describe("rulesets publicados", () => {
-  it.each([
-    ["ufc.v1", ufcV1],
-    ["surf.v1", surfV1],
-    ["f1.v1", f1V1],
-    ["boxe.v1", boxeV1],
-  ])("%s passa no schema zod (é o que o banco vai validar)", (_nome, rs) => {
+  const todos = Object.entries(RULESETS);
+
+  it("são nove — um por manual", () => {
+    expect(todos).toHaveLength(9);
+  });
+
+  it.each(todos)("%s passa no schema zod (é o que o banco vai validar)", (_nome, rs) => {
     expect(() => parseRuleset(JSON.parse(JSON.stringify(rs)))).not.toThrow();
   });
 
-  it.each([
-    ["ufc.v1", ufcV1],
-    ["surf.v1", surfV1],
-    ["f1.v1", f1V1],
-    ["boxe.v1", boxeV1],
-  ])("%s: toda regra referencia um stat declarado", (_nome, rs) => {
+  it.each(todos)("%s: toda regra referencia um stat declarado", (_nome, rs) => {
     const declarados = new Set(rs.stats.map((s) => s.key));
     const usados: string[] = [];
     const daExpr = (e: unknown): void => {
@@ -664,10 +350,14 @@ describe("rulesets publicados", () => {
     expect([...new Set(usados)].filter((k) => !declarados.has(k))).toEqual([]);
   });
 
-  it("o alvo de calibragem dos quatro manuais cai na faixa de 33 a 36 (UFC §11)", () => {
-    for (const rs of [ufcV1, surfV1, f1V1, boxeV1]) {
-      expect(rs.evAlvo).toBeGreaterThanOrEqual(33);
-      expect(rs.evAlvo).toBeLessThanOrEqual(36);
+  it.each(todos)("%s: todo valor de lookup está entre as opções do stat", (_nome, rs) => {
+    for (const r of rs.regras) {
+      if (r.tipo !== "lookup") continue;
+      const decl = rs.stats.find((s) => s.key === r.stat)!;
+      const opcoes = new Set(decl.opcoes ?? []);
+      // Chave do mapa que não é opção do select nunca seria alcançada pelo
+      // apurador — a regra existiria e jamais pontuaria.
+      expect(Object.keys(r.mapa).filter((k) => !opcoes.has(k))).toEqual([]);
     }
   });
 });

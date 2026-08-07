@@ -41,7 +41,9 @@ precisa estar escrita.**
 
 `games_score_event` produz pontos que **nunca** entram na economia Z$. Os pontos
 da Escalação **entram**: no pagamento do card, `pontos_total ÷ pontos_por_z` vira
-saldo na carteira. Ou seja, **Escalação EMITE Z$**.
+saldo na carteira. Ou seja, **Escalação EMITE Z$**. Com `pontos_por_z = 1` (os
+manuais de 7/ago/2026 pontuam direto em Z$), a paridade é 1 para 1 — o que torna
+o disjuntor `teto_emissao_z` mais importante, não menos.
 
 A invariante da plataforma não é abandonada — é **reescrita**:
 

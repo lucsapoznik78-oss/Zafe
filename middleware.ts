@@ -12,7 +12,8 @@ import { rateLimitDesligado } from "@/lib/killswitch";
 const ROTAS_CONHECIDAS = new Set([
   "admin", "ajuda", "amigos", "api", "apostas-privadas", "auth", "banido",
   "canal", "completar-cadastro", "comunidade", "concurso", "contato", "criar",
-  "games", "historico", "inicio", "jogo-responsavel", "liga", "ligas", "login",
+  "escalacao", "games", "historico", "inicio", "jogo-responsavel", "liga",
+  "ligas", "login",
   "meus-topicos", "paginas", "perfil", "politica", "portfolio", "premium",
   "privadas", "r", "ranking", "redefinir-senha", "termos", "topicos", "u",
 ]);
@@ -113,7 +114,7 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
     if (rl.pending) event.waitUntil(rl.pending);
   }
 
-  const publicRoutes = ["/login", "/auth/callback", "/auth/confirm", "/api/auth/username", "/api/auth/email-exists", "/api/auth/2fa-contexto", "/historico", "/termos", "/politica", "/ajuda", "/jogo-responsavel", "/contato", "/paginas", "/apostas-privadas", "/api/cron", "/api/push", "/api/concurso/pagamento/webhook", "/api/landing", "/r/", "/sitemap.xml", "/robots.txt", "/google", "/liga", "/ranking", "/u/", "/concurso", "/comunidade", "/games", "/banido"];
+  const publicRoutes = ["/login", "/auth/callback", "/auth/confirm", "/api/auth/username", "/api/auth/email-exists", "/api/auth/2fa-contexto", "/historico", "/termos", "/politica", "/ajuda", "/jogo-responsavel", "/contato", "/paginas", "/apostas-privadas", "/api/cron", "/api/push", "/api/concurso/pagamento/webhook", "/api/landing", "/r/", "/sitemap.xml", "/robots.txt", "/google", "/liga", "/ranking", "/u/", "/concurso", "/comunidade", "/games", "/escalacao", "/banido"];
   // `/apostas-privadas/*` entra em publicRoutes só porque virou stub de
   // redirect 308 para `/privadas/*`: se continuasse protegida, o crawler
   // levaria 307 para /login e nunca veria o sinal de consolidação. O destino

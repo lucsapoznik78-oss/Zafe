@@ -47,9 +47,12 @@ Confira antes de publicar:
       (`n_times_previsto × pontos_médios ÷ pontos_por_z`). Se o total a pagar
       estourar, `escalacao_pagar_card()` recusa o pagamento **por inteiro** e
       devolve `{ok:false, reason:'teto_emissao'}`. Isso é bom: significa que um bug
-      de pontuação virou alerta em vez de moeda.
-- [ ] **`pontos_por_z`** — 1,7 (neutra) · 2,1 (sink) · 1,4 (inflação). Decisão
-      pendente do dono; sem ela definida, não abra a primeira Convocação.
+      de pontuação virou alerta em vez de moeda. É a única coluna de dinheiro que
+      o T6 **não** congela: publicado o card, ela ainda pode subir se a adesão
+      real passar da prevista.
+- [ ] **`pontos_por_z` = 1.** Os manuais de 7/ago/2026 pontuam direto em Z$: "+30"
+      na tabela é +30 Z$ na carteira. A coluna continua existindo para permitir
+      emitir um card com câmbio diferente sem migration.
 - [ ] **Ruleset por esporte.** O botão `esporte.vN` fixa a versão do manual neste
       card. A FK composta `(card_id, esporte_key, regra_id)` torna
       **estruturalmente impossível** guardar um score calculado com ruleset que
@@ -133,8 +136,8 @@ republicar o ranking).
 - CAS em `pago_em IS NULL` + claim por time em `premio_pago_em IS NULL`:
   chamar duas vezes não paga duas vezes.
 - Recusa por inteiro se a emissão total passar de `teto_emissao_z`.
-- Prêmio clampa em 0 — o piso −25 é por atleta, o total do time pode ficar negativo,
-  mas ninguém sai devendo.
+- Prêmio clampa em 0 — atleta pode pontuar negativo (derrota, abandono, cartão
+  vermelho) e o total do time pode ficar negativo, mas ninguém sai devendo.
 - Toda entrada e todo prêmio passam por `escalacao_emissao`. É a contabilidade da
   exceção à conservação de Z$ (`modules/escalacao/COMPLIANCE.md`).
 
@@ -148,7 +151,7 @@ republicar o ranking).
 | "ruleset X.vN já foi publicado" | T5. Emenda de manual = **nova versão**, válida do card seguinte. Nunca edite a versão que vigorou. |
 | "a escalação de X fechou em … e não pode mais mudar" | T2. O prazo passou. Comparação é de timestamp, não de status — vale mesmo com os crons mortos. |
 | Preview não mostra uma regra | O stat não foi preenchido, ou a guarda (`quando`) não bateu. Regra que não pontua não vira linha. |
-| Total bate no teto/piso | Clamp do evento (+180 / −25). O preview mostra o bruto ao lado. |
+| Total bate no teto/piso | Clamp do evento (`teto_evento`/`piso_evento` do ruleset). Os nove manuais de 7/ago/2026 **não** impõem clamp — quem protege a economia é o `teto_emissao_z` do card. O preview mostra o bruto ao lado. |
 | Pagamento recusado com `teto_emissao` | **Não aumente o teto.** Confira a pontuação primeiro — o disjuntor abriu por algum motivo. |
 
 ## Cancelar um card

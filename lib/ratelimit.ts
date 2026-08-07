@@ -58,6 +58,10 @@ export const POLICIES: Array<{ pattern: RegExp; policy: Policy }> = [
     pattern: /^\/api\/apostas-privadas\/[^/]+\/aceitar$/,
     policy: { prefix: "rl:money:critical", limit: 10, window: "1 m", failClosed: true },
   },
+  {
+    pattern: /^\/api\/escalacao\/inscrever$/,
+    policy: { prefix: "rl:money:critical", limit: 10, window: "1 m", failClosed: true },
+  },
 
   // Dinheiro — palpites (débito imediato de Z$/ZC$).
   {
