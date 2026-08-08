@@ -2,8 +2,9 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Star, X } from "lucide-react";
+import { Check, Loader2, Plus, Search, X } from "lucide-react";
 
+import FotoAtleta, { corDoEsporte } from "@/components/escalacao/FotoAtleta";
 import type { AtletaDoPool, CardPublico, MeuTime } from "@/lib/escalacao/publico";
 
 interface Props {
@@ -11,63 +12,101 @@ interface Props {
   pool: AtletaDoPool[];
   nomeDoEsporte: Record<string, string>;
   time: MeuTime | null;
+  /** Convocação fechada: o campo vira só exibição. */
+  somenteLeitura?: boolean;
 }
 
-export default function MontarTime({ card, pool, nomeDoEsporte, time }: Props) {
-  const router = useRouter();
-  const porId = useMemo(() => new Map(pool.map((a) => [a.card_atleta_id, a])), [pool]);
+/**
+ * Distribui os titulares em linhas de no máximo 4, com a linha mais larga no
+ * meio — é o que faz o campo parecer uma formação e não uma grade.
+ * 10 → 3-4-3 · 11 → 4-4-3 · 12 → 4-4-4.
+ */
+function linhasDoCampo(n: number): number[] {
+  const q = Math.max(1, Math.ceil(n / 4));
+  const linhas = Array.from({ length: q }, () => Math.floor(n / q));
+  let resto = n % q;
+  const meio = (q - 1) / 2;
+  const ordem = linhas
+    .map((_, i) => i)
+    .sort((a, b) => Math.abs(a - meio) - Math.abs(b - meio));
+  for (const i of ordem) {
+    if (resto <= 0) break;
+    linhas[i] += 1;
+    resto -= 1;
+  }
+  return linhas;
+}
 
-  const [titulares, setTitulares] = useState<string[]>(
-    () => (time?.slots ?? []).filter((s) => s.papel === "titular").map((s) => s.card_atleta_id)
+type Alvo = { papel: "titular" | "reserva"; idx: number };
+
+export default function MontarTime({
+  card,
+  pool,
+  nomeDoEsporte,
+  time,
+  somenteLeitura = false,
+}: Props) {
+  const router = useRouter();
+  const porId = useMemo(
+    () => new Map(pool.map((a) => [a.card_atleta_id, a])),
+    [pool]
   );
-  const [reservas, setReservas] = useState<string[]>(
-    () => (time?.slots ?? []).filter((s) => s.papel === "reserva").map((s) => s.card_atleta_id)
-  );
+
+  // Slots de tamanho fixo com buracos: é isso que torna um slot endereçável
+  // ("trocar o 3º titular") em vez de uma lista que só cresce no fim.
+  const [titulares, setTitulares] = useState<(string | null)[]>(() => {
+    const v = Array<string | null>(card.n_titulares).fill(null);
+    for (const s of time?.slots ?? []) {
+      if (s.papel === "titular" && s.ordem <= card.n_titulares) v[s.ordem - 1] = s.card_atleta_id;
+    }
+    return v;
+  });
+  const [reservas, setReservas] = useState<(string | null)[]>(() => {
+    const v = Array<string | null>(card.n_reservas).fill(null);
+    for (const s of time?.slots ?? []) {
+      if (s.papel === "reserva" && s.ordem <= card.n_reservas) v[s.ordem - 1] = s.card_atleta_id;
+    }
+    return v;
+  });
+
   const [nome, setNome] = useState(time?.nome ?? "");
-  const [esporteAberto, setEsporteAberto] = useState<string>(pool[0]?.esporte_key ?? "");
+  const [alvo, setAlvo] = useState<Alvo | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
   const [enviando, setEnviando] = useState<"salvar" | "inscrever" | null>(null);
 
-  const inscrito = time?.status && time.status !== "rascunho";
-  const escalados = new Set([...titulares, ...reservas]);
+  const inscrito = !!time?.status && time.status !== "rascunho";
+  const escalados = useMemo(
+    () => new Set([...titulares, ...reservas].filter(Boolean) as string[]),
+    [titulares, reservas]
+  );
 
-  // Art. 10 § único: o teto conta só os titulares, salvo se o card disser o
-  // contrário. Mesma conta do trigger T1 — aqui é só para não deixar o usuário
-  // montar algo que o banco vai recusar.
-  function usadosNoEsporte(esporte: string): number {
-    const conta = card.teto_conta_reservas ? [...titulares, ...reservas] : titulares;
-    return conta.filter((id) => porId.get(id)?.esporte_key === esporte).length;
+  /**
+   * Mesma conta do trigger T1 (Art. 10 § único): o teto olha só os titulares,
+   * salvo se o card disser o contrário. Aqui é só para não deixar o usuário
+   * montar algo que o banco vai recusar.
+   */
+  function usadosNoEsporte(esporte: string, ignorar?: Alvo): number {
+    const lista: Array<string | null> = card.teto_conta_reservas
+      ? [...titulares, ...reservas]
+      : [...titulares];
+    if (ignorar) {
+      const base = ignorar.papel === "titular" ? 0 : titulares.length;
+      const i = base + ignorar.idx;
+      if (ignorar.papel === "titular" || card.teto_conta_reservas) lista[i] = null;
+    }
+    return lista.filter((id) => id && porId.get(id)?.esporte_key === esporte).length;
   }
 
-  function alternar(id: string, papel: "titular" | "reserva") {
+  function definir(alvoSlot: Alvo, id: string | null) {
+    const setLista = alvoSlot.papel === "titular" ? setTitulares : setReservas;
+    setLista((atual) => {
+      const proximo = [...atual];
+      proximo[alvoSlot.idx] = id;
+      return proximo;
+    });
     setErro(null);
     setAviso(null);
-    const lista = papel === "titular" ? titulares : reservas;
-    const setLista = papel === "titular" ? setTitulares : setReservas;
-    const limite = papel === "titular" ? card.n_titulares : card.n_reservas;
-
-    if (lista.includes(id)) {
-      setLista(lista.filter((x) => x !== id));
-      return;
-    }
-    if (escalados.has(id)) {
-      setErro("Esse atleta já está no seu time.");
-      return;
-    }
-    if (lista.length >= limite) {
-      setErro(`Você já tem ${limite} ${papel === "titular" ? "titulares" : "reservas"}.`);
-      return;
-    }
-    const esporte = porId.get(id)?.esporte_key ?? "";
-    const contaNoTeto = papel === "titular" || card.teto_conta_reservas;
-    if (contaNoTeto && usadosNoEsporte(esporte) >= card.teto_por_esporte) {
-      setErro(
-        `Máximo de ${card.teto_por_esporte} atletas de ${nomeDoEsporte[esporte] ?? esporte}.`
-      );
-      return;
-    }
-    setLista([...lista, id]);
   }
 
   async function salvar(): Promise<boolean> {
@@ -77,7 +116,12 @@ export default function MontarTime({ card, pool, nomeDoEsporte, time }: Props) {
     const res = await fetch("/api/escalacao/time", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ card_id: card.id, nome, titulares, reservas }),
+      body: JSON.stringify({
+        card_id: card.id,
+        nome,
+        titulares: titulares.filter(Boolean),
+        reservas: reservas.filter(Boolean),
+      }),
     });
     const json = await res.json();
     setEnviando(null);
@@ -108,132 +152,401 @@ export default function MontarTime({ card, pool, nomeDoEsporte, time }: Props) {
     router.refresh();
   }
 
-  const completo = titulares.length === card.n_titulares && reservas.length === card.n_reservas;
-  const esportes = Array.from(new Set(pool.map((a) => a.esporte_key)));
-  const doEsporte = pool.filter((a) => a.esporte_key === esporteAberto);
+  const preenchidos = escalados.size;
+  const total = card.n_titulares + card.n_reservas;
+  const completo = preenchidos === total;
+  const linhas = linhasDoCampo(card.n_titulares);
+
+  // Índice do primeiro slot de cada linha, para fatiar `titulares` sem contador.
+  let corrido = 0;
+  const faixas = linhas.map((qtd) => {
+    const inicio = corrido;
+    corrido += qtd;
+    return { inicio, qtd };
+  });
 
   return (
     <div className="space-y-4">
-      <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-sm font-semibold text-white">Seu time</h2>
+      <div className="rounded-2xl border border-border bg-card overflow-hidden">
+        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border">
+          {somenteLeitura ? (
+            <h2 className="text-sm font-semibold text-white truncate">
+              {nome || "Seu time"}
+            </h2>
+          ) : (
+            <input
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+              maxLength={40}
+              placeholder="Nome do time"
+              aria-label="Nome do time"
+              className="flex-1 min-w-0 bg-transparent text-sm font-semibold text-white placeholder:text-muted-foreground/70 focus:outline-none"
+            />
+          )}
           <span
-            className={`text-[11px] ${completo ? "text-sim" : "text-muted-foreground"}`}
+            className={`text-[11px] font-semibold shrink-0 ${
+              completo ? "text-sim" : "text-muted-foreground"
+            }`}
           >
-            {titulares.length}/{card.n_titulares} titulares ·{" "}
-            {reservas.length}/{card.n_reservas} reservas
+            {preenchidos}/{total}
           </span>
         </div>
 
-        <input
-          value={nome}
-          onChange={(e) => setNome(e.target.value)}
-          maxLength={40}
-          placeholder="Nome do time (opcional)"
-          className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-white"
-        />
+        <Campo>
+          {faixas.map(({ inicio, qtd }, li) => (
+            <div key={li} className="flex justify-center gap-2 sm:gap-4">
+              {Array.from({ length: qtd }, (_, k) => inicio + k).map((idx) => (
+                <Slot
+                  key={idx}
+                  atleta={titulares[idx] ? porId.get(titulares[idx]!) : undefined}
+                  nomeDoEsporte={nomeDoEsporte}
+                  somenteLeitura={somenteLeitura}
+                  onAbrir={() => setAlvo({ papel: "titular", idx })}
+                  onLimpar={() => definir({ papel: "titular", idx }, null)}
+                />
+              ))}
+            </div>
+          ))}
+        </Campo>
 
-        <Escalados
-          rotulo="Titulares"
-          ids={titulares}
-          porId={porId}
-          nomeDoEsporte={nomeDoEsporte}
-          onRemover={(id) => alternar(id, "titular")}
-        />
-        <Escalados
-          rotulo="Reservas (entram na ordem, se um titular não competir)"
-          ids={reservas}
-          porId={porId}
-          nomeDoEsporte={nomeDoEsporte}
-          onRemover={(id) => alternar(id, "reserva")}
-        />
-
-        {erro && <p className="text-xs text-nao">{erro}</p>}
-        {aviso && <p className="text-xs text-sim">{aviso}</p>}
-
-        <div className="flex gap-2">
-          <button
-            onClick={salvar}
-            disabled={enviando !== null}
-            className="flex-1 py-2 bg-input border border-border text-white font-bold text-sm rounded-lg hover:bg-input/70 disabled:opacity-50 transition-colors"
-          >
-            {enviando === "salvar" ? (
-              <Loader2 size={14} className="animate-spin mx-auto" />
-            ) : (
-              "Salvar"
-            )}
-          </button>
-          {!inscrito && (
-            <button
-              onClick={inscrever}
-              disabled={enviando !== null || !completo}
-              className="flex-1 py-2 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
-            >
-              {enviando === "inscrever" ? (
-                <Loader2 size={14} className="animate-spin mx-auto" />
-              ) : (
-                `Inscrever · ${card.entrada_z} Z$`
-              )}
-            </button>
-          )}
-        </div>
-        <p className="text-[11px] text-muted-foreground">
-          {inscrito
-            ? "Você já está inscrito. Dá para trocar de atleta até o fechamento."
-            : `A entrada de ${card.entrada_z} Z$ é debitada na inscrição. Depois disso você ainda pode trocar de atleta até o fechamento.`}
-        </p>
+        {card.n_reservas > 0 && (
+          <div className="px-4 py-3 border-t border-border">
+            <p className="text-[11px] text-muted-foreground mb-2">
+              Banco — entram na ordem, se um titular não competir
+            </p>
+            <div className="flex gap-2 sm:gap-4">
+              {reservas.map((id, idx) => (
+                <Slot
+                  key={idx}
+                  atleta={id ? porId.get(id) : undefined}
+                  nomeDoEsporte={nomeDoEsporte}
+                  numero={idx + 1}
+                  somenteLeitura={somenteLeitura}
+                  onAbrir={() => setAlvo({ papel: "reserva", idx })}
+                  onLimpar={() => definir({ papel: "reserva", idx }, null)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-        <h2 className="text-sm font-semibold text-white">Atletas disponíveis</h2>
-        <div className="flex flex-wrap gap-1.5">
-          {esportes.map((e) => (
+      {!somenteLeitura && (
+        <>
+          <div className="flex flex-wrap gap-1.5">
+            {Array.from(new Set(pool.map((a) => a.esporte_key))).map((e) => {
+              const usados = usadosNoEsporte(e);
+              return (
+                <span
+                  key={e}
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-medium bg-gradient-to-b ring-1 ${corDoEsporte(
+                    e
+                  )}`}
+                >
+                  {nomeDoEsporte[e] ?? e} {usados}/{card.teto_por_esporte}
+                </span>
+              );
+            })}
+          </div>
+
+          {erro && <p className="text-xs text-nao">{erro}</p>}
+          {aviso && <p className="text-xs text-sim">{aviso}</p>}
+
+          <div className="flex gap-2">
             <button
-              key={e}
-              onClick={() => setEsporteAberto(e)}
-              className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
-                e === esporteAberto
-                  ? "bg-primary text-white"
-                  : "bg-input text-muted-foreground hover:text-white"
-              }`}
+              onClick={salvar}
+              disabled={enviando !== null}
+              className="flex-1 py-2.5 bg-input border border-border text-white font-bold text-sm rounded-xl hover:bg-input/70 disabled:opacity-50 transition-colors"
             >
-              {nomeDoEsporte[e] ?? e} · {usadosNoEsporte(e)}/{card.teto_por_esporte}
+              {enviando === "salvar" ? (
+                <Loader2 size={14} className="animate-spin mx-auto" />
+              ) : (
+                "Salvar"
+              )}
             </button>
-          ))}
+            {!inscrito && (
+              <button
+                onClick={inscrever}
+                disabled={enviando !== null || !completo}
+                className="flex-1 py-2.5 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/90 disabled:opacity-50 transition-colors"
+              >
+                {enviando === "inscrever" ? (
+                  <Loader2 size={14} className="animate-spin mx-auto" />
+                ) : (
+                  `Inscrever · ${card.entrada_z} Z$`
+                )}
+              </button>
+            )}
+          </div>
+
+          <p className="text-[11px] text-muted-foreground">
+            {inscrito
+              ? "Você já está inscrito. Dá para trocar de atleta até o fechamento."
+              : `A entrada de ${card.entrada_z} Z$ é debitada na inscrição. Depois disso você ainda pode trocar de atleta até o fechamento.`}
+          </p>
+        </>
+      )}
+
+      {alvo && (
+        <Seletor
+          alvo={alvo}
+          card={card}
+          pool={pool}
+          nomeDoEsporte={nomeDoEsporte}
+          escalados={escalados}
+          atualId={(alvo.papel === "titular" ? titulares : reservas)[alvo.idx]}
+          usadosNoEsporte={(e) => usadosNoEsporte(e, alvo)}
+          onEscolher={(id) => {
+            definir(alvo, id);
+            setAlvo(null);
+          }}
+          onFechar={() => setAlvo(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+/** O gramado. Linhas de campo em CSS puro — nenhuma imagem para carregar. */
+function Campo({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="relative bg-gradient-to-b from-emerald-800 to-emerald-950 px-3 py-6">
+      {/* faixas do corte da grama */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 opacity-[0.07] bg-[repeating-linear-gradient(180deg,#fff_0_28px,transparent_28px_56px)]"
+      />
+      {/* marcação: linha de fundo, meio-campo e círculo central */}
+      <div aria-hidden="true" className="absolute inset-3 rounded-lg border border-white/20" />
+      <div aria-hidden="true" className="absolute left-3 right-3 top-1/2 h-px bg-white/20" />
+      <div
+        aria-hidden="true"
+        className="absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/20"
+      />
+      <div className="relative space-y-5">{children}</div>
+    </div>
+  );
+}
+
+function Slot({
+  atleta,
+  nomeDoEsporte,
+  numero,
+  somenteLeitura,
+  onAbrir,
+  onLimpar,
+}: {
+  atleta?: AtletaDoPool;
+  nomeDoEsporte: Record<string, string>;
+  numero?: number;
+  somenteLeitura: boolean;
+  onAbrir: () => void;
+  onLimpar: () => void;
+}) {
+  if (!atleta) {
+    return (
+      <button
+        onClick={somenteLeitura ? undefined : onAbrir}
+        disabled={somenteLeitura}
+        aria-label={numero ? `Escolher a ${numero}ª reserva` : "Escolher atleta"}
+        className="w-[70px] sm:w-[84px] flex flex-col items-center gap-1 group disabled:opacity-50"
+      >
+        <span className="h-12 w-12 rounded-full border-2 border-dashed border-white/40 flex items-center justify-center text-white/50 group-hover:border-white/80 group-hover:text-white transition-colors">
+          <Plus size={16} />
+        </span>
+        <span className="text-[10px] text-white/60 leading-tight">
+          {numero ? `${numero}ª reserva` : "Escalar"}
+        </span>
+      </button>
+    );
+  }
+
+  return (
+    <div className="w-[70px] sm:w-[84px] flex flex-col items-center gap-1">
+      <button
+        onClick={somenteLeitura ? undefined : onAbrir}
+        disabled={somenteLeitura}
+        aria-label={`Trocar ${atleta.nome}`}
+        className="relative"
+      >
+        <FotoAtleta
+          nome={atleta.nome}
+          esporte={atleta.esporte_key}
+          fotoUrl={atleta.foto_url}
+        />
+        {!somenteLeitura && (
+          <span
+            role="button"
+            tabIndex={0}
+            aria-label={`Tirar ${atleta.nome} do time`}
+            onClick={(e) => {
+              e.stopPropagation();
+              onLimpar();
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                e.stopPropagation();
+                onLimpar();
+              }
+            }}
+            className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-black/80 border border-white/20 flex items-center justify-center text-white/70 hover:text-nao hover:border-nao/50 transition-colors"
+          >
+            <X size={11} />
+          </span>
+        )}
+      </button>
+      <span className="w-full text-center text-[10px] font-semibold text-white leading-tight truncate">
+        {atleta.nome}
+      </span>
+      <span className="w-full text-center text-[9px] text-white/60 leading-tight truncate">
+        {atleta.clube ?? nomeDoEsporte[atleta.esporte_key] ?? atleta.esporte_key}
+      </span>
+    </div>
+  );
+}
+
+function Seletor({
+  alvo,
+  card,
+  pool,
+  nomeDoEsporte,
+  escalados,
+  atualId,
+  usadosNoEsporte,
+  onEscolher,
+  onFechar,
+}: {
+  alvo: Alvo;
+  card: CardPublico;
+  pool: AtletaDoPool[];
+  nomeDoEsporte: Record<string, string>;
+  escalados: Set<string>;
+  atualId: string | null;
+  usadosNoEsporte: (esporte: string) => number;
+  onEscolher: (id: string) => void;
+  onFechar: () => void;
+}) {
+  const esportes = useMemo(
+    () => Array.from(new Set(pool.map((a) => a.esporte_key))),
+    [pool]
+  );
+  const [filtro, setFiltro] = useState<string>("todos");
+  const [busca, setBusca] = useState("");
+
+  // A reserva só conta no teto quando o card diz que conta — mesma regra do T1.
+  const contaNoTeto = alvo.papel === "titular" || card.teto_conta_reservas;
+
+  const lista = pool.filter((a) => {
+    if (filtro !== "todos" && a.esporte_key !== filtro) return false;
+    if (!busca) return true;
+    return a.nome.toLowerCase().includes(busca.toLowerCase().trim());
+  });
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm"
+      onClick={onFechar}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Escolher atleta"
+        onClick={(e) => e.stopPropagation()}
+        className="w-full sm:max-w-lg max-h-[85vh] flex flex-col bg-card border border-border rounded-t-2xl sm:rounded-2xl"
+      >
+        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border">
+          <h3 className="text-sm font-semibold text-white">
+            {alvo.papel === "titular"
+              ? "Escolher titular"
+              : `Escolher ${alvo.idx + 1}ª reserva`}
+          </h3>
+          <button
+            onClick={onFechar}
+            aria-label="Fechar"
+            className="text-muted-foreground hover:text-white transition-colors"
+          >
+            <X size={18} />
+          </button>
         </div>
 
-        <ul className="divide-y divide-border">
-          {doEsporte.map((a) => {
-            const escalado = escalados.has(a.card_atleta_id);
-            return (
-              <li key={a.card_atleta_id} className="flex items-center gap-2 py-1.5">
-                <span
-                  className={`flex-1 text-sm ${escalado ? "text-muted-foreground" : "text-white"}`}
-                >
-                  {a.nome}
-                  {a.genero === "f" && (
-                    <span className="ml-1.5 text-[10px] text-muted-foreground">fem</span>
-                  )}
+        <div className="px-4 py-3 space-y-2 border-b border-border">
+          <div className="relative">
+            <Search
+              size={14}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            />
+            <input
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              placeholder="Buscar atleta"
+              aria-label="Buscar atleta"
+              className="w-full bg-input border border-border rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder:text-muted-foreground"
+            />
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            <Aba ativa={filtro === "todos"} onClick={() => setFiltro("todos")}>
+              Todos
+            </Aba>
+            {esportes.map((e) => (
+              <Aba key={e} ativa={filtro === e} onClick={() => setFiltro(e)}>
+                {nomeDoEsporte[e] ?? e}
+                <span className="ml-1 opacity-60">
+                  {usadosNoEsporte(e)}/{card.teto_por_esporte}
                 </span>
+              </Aba>
+            ))}
+          </div>
+        </div>
+
+        <ul className="flex-1 overflow-y-auto divide-y divide-border">
+          {lista.length === 0 && (
+            <li className="px-4 py-6 text-center text-xs text-muted-foreground">
+              Nenhum atleta encontrado.
+            </li>
+          )}
+          {lista.map((a) => {
+            const selecionado = a.card_atleta_id === atualId;
+            const jaEscalado = escalados.has(a.card_atleta_id) && !selecionado;
+            const noTeto =
+              contaNoTeto && usadosNoEsporte(a.esporte_key) >= card.teto_por_esporte;
+            const bloqueado = jaEscalado || (noTeto && !selecionado);
+
+            return (
+              <li key={a.card_atleta_id}>
                 <button
-                  onClick={() => alternar(a.card_atleta_id, "titular")}
-                  className={`px-2 py-1 rounded text-[11px] font-medium transition-colors ${
-                    titulares.includes(a.card_atleta_id)
-                      ? "bg-primary text-white"
-                      : "bg-input text-muted-foreground hover:text-white"
+                  onClick={() => !bloqueado && onEscolher(a.card_atleta_id)}
+                  disabled={bloqueado}
+                  className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${
+                    bloqueado ? "opacity-40 cursor-not-allowed" : "hover:bg-white/5"
                   }`}
                 >
-                  Titular
-                </button>
-                <button
-                  onClick={() => alternar(a.card_atleta_id, "reserva")}
-                  className={`px-2 py-1 rounded text-[11px] font-medium transition-colors ${
-                    reservas.includes(a.card_atleta_id)
-                      ? "bg-primary text-white"
-                      : "bg-input text-muted-foreground hover:text-white"
-                  }`}
-                >
-                  Reserva
+                  <FotoAtleta
+                    nome={a.nome}
+                    esporte={a.esporte_key}
+                    fotoUrl={a.foto_url}
+                    tamanho="sm"
+                  />
+                  <span className="flex-1 min-w-0">
+                    <span className="block text-sm text-white truncate">
+                      {a.nome}
+                      {a.genero === "f" && (
+                        <span className="ml-1.5 text-[10px] text-muted-foreground">fem</span>
+                      )}
+                    </span>
+                    <span className="block text-[11px] text-muted-foreground truncate">
+                      {[a.clube, a.posicao, nomeDoEsporte[a.esporte_key] ?? a.esporte_key]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </span>
+                  </span>
+                  {selecionado && <Check size={15} className="text-sim shrink-0" />}
+                  {jaEscalado && (
+                    <span className="text-[10px] text-muted-foreground shrink-0">no time</span>
+                  )}
+                  {!jaEscalado && noTeto && !selecionado && (
+                    <span className="text-[10px] text-muted-foreground shrink-0">teto</span>
+                  )}
                 </button>
               </li>
             );
@@ -244,51 +557,23 @@ export default function MontarTime({ card, pool, nomeDoEsporte, time }: Props) {
   );
 }
 
-function Escalados({
-  rotulo,
-  ids,
-  porId,
-  nomeDoEsporte,
-  onRemover,
+function Aba({
+  ativa,
+  onClick,
+  children,
 }: {
-  rotulo: string;
-  ids: string[];
-  porId: Map<string, AtletaDoPool>;
-  nomeDoEsporte: Record<string, string>;
-  onRemover: (id: string) => void;
+  ativa: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-1">
-      <p className="text-[11px] text-muted-foreground">{rotulo}</p>
-      {ids.length === 0 ? (
-        <p className="text-xs text-muted-foreground/60">Nenhum ainda.</p>
-      ) : (
-        <ul className="space-y-1">
-          {ids.map((id, i) => {
-            const a = porId.get(id);
-            return (
-              <li
-                key={id}
-                className="flex items-center gap-2 bg-input rounded-lg px-2.5 py-1.5"
-              >
-                <Star size={11} className="text-muted-foreground shrink-0" />
-                <span className="text-[11px] text-muted-foreground w-4 shrink-0">{i + 1}</span>
-                <span className="flex-1 text-sm text-white truncate">{a?.nome ?? "—"}</span>
-                <span className="text-[10px] text-muted-foreground shrink-0">
-                  {nomeDoEsporte[a?.esporte_key ?? ""] ?? a?.esporte_key}
-                </span>
-                <button
-                  onClick={() => onRemover(id)}
-                  aria-label={`Tirar ${a?.nome ?? "atleta"} do time`}
-                  className="text-muted-foreground hover:text-nao transition-colors"
-                >
-                  <X size={13} />
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </div>
+    <button
+      onClick={onClick}
+      className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+        ativa ? "bg-primary text-white" : "bg-input text-muted-foreground hover:text-white"
+      }`}
+    >
+      {children}
+    </button>
   );
 }

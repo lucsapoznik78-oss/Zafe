@@ -10,6 +10,7 @@ export interface CardPublico {
   id: string;
   titulo: string;
   mes: string;
+  modo: "mix" | "fixo";
   status: string;
   n_titulares: number;
   n_reservas: number;
@@ -19,6 +20,9 @@ export interface CardPublico {
   abre_em: string;
   fecha_em: string;
 }
+
+const COLUNAS_CARD =
+  "id, titulo, mes, modo, status, n_titulares, n_reservas, teto_por_esporte, teto_conta_reservas, entrada_z, abre_em, fecha_em";
 
 export interface EsporteDoCard {
   esporte_key: string;
@@ -33,6 +37,10 @@ export interface AtletaDoPool {
   nome: string;
   esporte_key: string;
   genero: string;
+  /** Curadoria progressiva (migration 079): sem foto a UI desenha as iniciais. */
+  foto_url: string | null;
+  clube: string | null;
+  posicao: string | null;
 }
 
 export interface SlotDoTime {
@@ -51,21 +59,37 @@ export interface MeuTime {
 }
 
 /**
- * O card de mix mais recente que já saiu do rascunho. O modo fixo ainda não
- * estreou (Art. 15 depende de decisão de produto), então a página pública só
- * conhece o mix.
+ * Todas as Convocações vigentes, uma por modo. O usuário escolhe entre elas com
+ * as abas do topo — o mix (vários esportes) e cada card de modo fixo (uma
+ * competição só).
+ *
+ * A policy já esconde rascunho, então "vigente" aqui é o card mais recente de
+ * cada modo. Ordenado com o mix primeiro porque é o carro-chefe e é o único que
+ * existe hoje; dentro do fixo, o mais recente na frente.
  */
-export async function getCardVigente(supabase: SupabaseClient): Promise<CardPublico | null> {
+export async function getCardsVigentes(supabase: SupabaseClient): Promise<CardPublico[]> {
   const { data } = await supabase
     .from("escalacao_card")
-    .select(
-      "id, titulo, mes, status, n_titulares, n_reservas, teto_por_esporte, teto_conta_reservas, entrada_z, abre_em, fecha_em"
-    )
-    .eq("modo", "mix")
+    .select(COLUNAS_CARD)
     .order("mes", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  return (data as CardPublico | null) ?? null;
+    .limit(20);
+
+  const cards = (data ?? []) as unknown as CardPublico[];
+  // Um por (modo, título): o índice único do schema já garante um card de mix
+  // por mês e um de fixo por competição por mês, então o primeiro de cada grupo
+  // na ordem acima é o vigente.
+  const vistos = new Set<string>();
+  const vigentes = cards.filter((c) => {
+    const chave = `${c.modo}:${c.titulo}`;
+    if (vistos.has(chave)) return false;
+    vistos.add(chave);
+    return true;
+  });
+
+  return vigentes.sort((a, b) => {
+    if (a.modo !== b.modo) return a.modo === "mix" ? -1 : 1;
+    return b.mes.localeCompare(a.mes);
+  });
 }
 
 /** Resume uma regra do DSL numa linha legível. Genérico: nasce do JSONB. */
@@ -138,21 +162,29 @@ export async function getPool(
 ): Promise<AtletaDoPool[]> {
   const { data } = await supabase
     .from("escalacao_card_atleta")
-    .select("id, esporte_key, escalacao_atleta(nome, genero)")
+    .select("id, esporte_key, escalacao_atleta(nome, genero, foto_url, clube, posicao)")
     .eq("card_id", cardId);
+
+  type Rel = {
+    nome: string;
+    genero: string;
+    foto_url: string | null;
+    clube: string | null;
+    posicao: string | null;
+  };
 
   return (data ?? [])
     .map((linha) => {
-      const rel = linha.escalacao_atleta as unknown as
-        | { nome: string; genero: string }
-        | { nome: string; genero: string }[]
-        | null;
+      const rel = linha.escalacao_atleta as unknown as Rel | Rel[] | null;
       const a = Array.isArray(rel) ? rel[0] : rel;
       return {
         card_atleta_id: linha.id as string,
         esporte_key: linha.esporte_key as string,
         nome: a?.nome ?? "",
         genero: a?.genero ?? "misto",
+        foto_url: a?.foto_url ?? null,
+        clube: a?.clube ?? null,
+        posicao: a?.posicao ?? null,
       };
     })
     .filter((a) => a.nome)

@@ -1,13 +1,14 @@
 export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Trophy, Users } from "lucide-react";
 
 import MontarTime from "@/components/escalacao/MontarTime";
 import LegalFooter from "@/components/layout/LegalFooter";
 import {
-  getCardVigente,
+  getCardsVigentes,
   getEsportesDoCard,
   getMeuTime,
   getPool,
@@ -31,7 +32,11 @@ const FMT_DATA = new Intl.DateTimeFormat("pt-BR", {
   timeZone: "America/Sao_Paulo",
 });
 
-export default async function EscalacaoPage() {
+export default async function EscalacaoPage({
+  searchParams,
+}: {
+  searchParams: { c?: string };
+}) {
   if (!ESCALACAO_ENABLED) notFound();
 
   const supabase = await createClient();
@@ -39,8 +44,8 @@ export default async function EscalacaoPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const card = await getCardVigente(supabase);
-  if (!card) {
+  const cards = await getCardsVigentes(supabase);
+  if (cards.length === 0) {
     return (
       <div className="py-10 text-center space-y-2">
         <h1 className="text-xl font-bold text-white">Escalação</h1>
@@ -50,6 +55,8 @@ export default async function EscalacaoPage() {
       </div>
     );
   }
+
+  const card = cards.find((c) => c.id === searchParams.c) ?? cards[0];
 
   const [esportes, pool, time, ranking] = await Promise.all([
     getEsportesDoCard(supabase, card.id),
@@ -63,14 +70,37 @@ export default async function EscalacaoPage() {
 
   return (
     <div className="py-6 space-y-5">
-      <header className="space-y-1">
+      <header className="space-y-2">
         <h1 className="text-xl font-bold text-white flex items-center gap-2">
-          <Users size={20} className="text-primary" /> {card.titulo}
+          <Users size={20} className="text-primary" /> Escalação
         </h1>
+
+        {/* Seletor de Convocação. O mix junta vários esportes; cada card de modo
+            fixo é uma competição só. Some quando só existe uma. */}
+        {cards.length > 1 && (
+          <nav className="flex flex-wrap gap-1.5" aria-label="Convocações">
+            {cards.map((c) => (
+              <Link
+                key={c.id}
+                href={`/escalacao?c=${c.id}`}
+                aria-current={c.id === card.id ? "page" : undefined}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                  c.id === card.id
+                    ? "bg-primary text-white"
+                    : "bg-input text-muted-foreground hover:text-white"
+                }`}
+              >
+                {c.modo === "mix" ? "Mix" : c.titulo}
+              </Link>
+            ))}
+          </nav>
+        )}
+
+        <p className="text-sm font-semibold text-white">{card.titulo}</p>
         <p className="text-xs text-muted-foreground">
           Escale {card.n_titulares} titulares e {card.n_reservas} reservas entre atletas de{" "}
-          {esportes.map((e) => e.nome).join(", ")}. No máximo {card.teto_por_esporte} por esporte.
-          Cada atleta pontua pelo que fizer de verdade, e 1 ponto = 1 Z$.
+          {esportes.map((e) => e.nome).join(", ")}. No máximo {card.teto_por_esporte} por
+          esporte. Cada atleta pontua pelo que fizer de verdade, e 1 ponto = 1 Z$.
         </p>
         <p className="text-xs text-muted-foreground">
           {aberto ? "Fecha em " : "Fechou em "}
@@ -87,6 +117,17 @@ export default async function EscalacaoPage() {
         <p className="text-sm text-muted-foreground bg-card border border-border rounded-xl p-4">
           Entre na sua conta para montar o time.
         </p>
+      )}
+
+      {/* Fechada: quem escalou continua vendo o próprio campo, agora só leitura. */}
+      {!aberto && time && (
+        <MontarTime
+          card={card}
+          pool={pool}
+          nomeDoEsporte={nomeDoEsporte}
+          time={time}
+          somenteLeitura
+        />
       )}
 
       {!aberto && (
