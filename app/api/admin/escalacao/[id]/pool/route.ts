@@ -1,12 +1,22 @@
 /**
  * POST /api/admin/escalacao/[id]/pool — importa o pool publicado do card.
  *
- * Body: { csv: string } com uma linha por atleta:
- *   esporte,competicao_slug,nome,genero,referencia
+ * Body: { csv: string } com uma linha por atleta. Dois formatos aceitos:
+ *
+ *   com header (recomendado):
+ *     esporte,competicao_slug,nome,clube,posicao,foto_url,genero,referencia
+ *
+ *   legado (5 campos posicionais, sem header):
+ *     esporte,competicao_slug,nome,genero,referencia
+ *
+ * `clube`, `posicao` e `foto_url` são opcionais. A UI da escalação usa as três
+ * para renderizar o card estilo Cartola (migration 079). foto_url precisa ser
+ * absoluta (http/https) — o CHECK constraint no banco recusa outros valores.
  *
  * Cria o atleta no cadastro permanente se ele ainda não existir (chave: slug
  * derivado do nome + esporte) e o inclui no pool deste card. Reimportar é
- * idempotente: atleta já no pool é ignorado, não duplicado.
+ * idempotente: atleta já no pool é ignorado, não duplicado; se o atleta já
+ * existe, clube/posicao/foto_url são atualizados quando vierem preenchidos.
  */
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
@@ -54,10 +64,32 @@ export async function POST(request: Request, { params }: RouteParams) {
   const erros: string[] = [];
   let importados = 0;
 
-  const linhas = csv.split("\n").map((l) => l.trim()).filter(Boolean);
+  const linhasBrutas = csv.split("\n").map((l) => l.trim()).filter(Boolean);
+  // Se a primeira linha começa com "esporte", tratamos como header e usamos a
+  // ordem das colunas dela. Senão, cai no formato legado posicional de 5 campos.
+  const primeira = linhasBrutas[0]?.split(",").map((c) => c.trim()) ?? [];
+  const temHeader = primeira[0] === "esporte";
+  const header = temHeader
+    ? primeira
+    : ["esporte", "competicao_slug", "nome", "genero", "referencia"];
+  const linhas = temHeader ? linhasBrutas.slice(1) : linhasBrutas;
+
   for (const [i, linha] of linhas.entries()) {
-    const [esporte, compSlug, nome, genero, referencia] = linha.split(",").map((c) => c.trim());
-    const numero = i + 1;
+    const partes = linha.split(",").map((c) => c.trim());
+    const linhaObj: Record<string, string> = Object.fromEntries(
+      header.map((h, j) => [h, partes[j] ?? ""])
+    );
+    const {
+      esporte,
+      competicao_slug: compSlug,
+      nome,
+      clube,
+      posicao,
+      foto_url: fotoUrl,
+      genero,
+      referencia,
+    } = linhaObj;
+    const numero = i + 1 + (temHeader ? 1 : 0);
 
     const regraId = regraPorEsporte.get(esporte);
     if (!regraId) {
@@ -75,6 +107,9 @@ export async function POST(request: Request, { params }: RouteParams) {
     }
 
     const slug = slugificar(nome, esporte);
+    // foto_url precisa ser absoluta — o CHECK no banco recusa outros valores,
+    // e enviar string vazia é distinto de NULL para PostgREST. Normaliza aqui.
+    const fotoNorm = fotoUrl && /^https?:\/\//.test(fotoUrl) ? fotoUrl : null;
     const { data: atleta, error: erroAtleta } = await admin
       .from("escalacao_atleta")
       .upsert(
@@ -85,6 +120,9 @@ export async function POST(request: Request, { params }: RouteParams) {
           competicao_id: competicaoId ?? null,
           genero: genero === "m" || genero === "f" ? genero : "misto",
           external_ref: referencia || null,
+          clube: clube || null,
+          posicao: posicao || null,
+          foto_url: fotoNorm,
         },
         { onConflict: "slug" }
       )
