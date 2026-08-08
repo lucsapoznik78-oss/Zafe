@@ -113,10 +113,25 @@ export default async function EscalacaoPage({
         <MontarTime card={card} pool={pool} nomeDoEsporte={nomeDoEsporte} time={time} />
       )}
 
+      {/* Deslogado vê o campo vazio, não um parágrafo. É a vitrine do modo: quem
+          chega pelo link (ou pela busca) precisa entender em um olhar que aqui se
+          monta um time, não se lê um regulamento. */}
       {aberto && !user && (
-        <p className="text-sm text-muted-foreground bg-card border border-border rounded-xl p-4">
-          Entre na sua conta para montar o time.
-        </p>
+        <div className="space-y-3">
+          <MontarTime
+            card={card}
+            pool={pool}
+            nomeDoEsporte={nomeDoEsporte}
+            time={null}
+            somenteLeitura
+          />
+          <Link
+            href="/login"
+            className="block w-full py-2.5 bg-primary text-white font-bold text-sm rounded-xl text-center hover:bg-primary/90 transition-colors"
+          >
+            Entrar para escalar
+          </Link>
+        </div>
       )}
 
       {/* Fechada: quem escalou continua vendo o próprio campo, agora só leitura. */}
