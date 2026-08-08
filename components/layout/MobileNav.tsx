@@ -2,11 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, User, Trophy, FlaskConical, Gamepad2 } from "lucide-react";
+import { Home, User, Trophy, FlaskConical, Gamepad2, Users } from "lucide-react";
+
+import { ESCALACAO_ENABLED } from "@/lib/flags";
 
 const navItems = [
   { href: "/liga",        label: "Liga",       icon: Home },
   { href: "/comunidade", label: "Comunidade", icon: FlaskConical },
+  ...(ESCALACAO_ENABLED
+    ? [{ href: "/escalacao", label: "Escalação", icon: Users }]
+    : []),
   { href: "/games",      label: "Games",      icon: Gamepad2 },
   { href: "/ranking",    label: "Ranking",    icon: Trophy },
   { href: "/perfil",     label: "Perfil",     icon: User },

@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import DailyBonusCard from "@/components/inicio/DailyBonusCard";
 import { createAdminClient } from "@/lib/supabase/server";
-import { CONCURSO_ABERTO, CONCURSO_ENABLED, CONCURSO_ESTREIA } from "@/lib/flags";
+import { CONCURSO_ABERTO, CONCURSO_ENABLED, CONCURSO_ESTREIA, ESCALACAO_ENABLED } from "@/lib/flags";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -36,6 +36,9 @@ async function getConcurso() {
 const MODULES = [
   { href: "/liga", label: "Liga", desc: "Preveja esporte e e-sports com Z$ virtual", Icon: Swords },
   { href: "/comunidade", label: "Comunidade", desc: "Eventos criados e resolvidos por previsores", Icon: Globe2 },
+  ...(ESCALACAO_ENABLED
+    ? [{ href: "/escalacao", label: "Escalação", desc: "Monte um time de atletas reais e pontue com eles", Icon: Users }]
+    : []),
   { href: "/games", label: "Games", desc: "Desafios rápidos e ao vivo", Icon: Gamepad2 },
   { href: "/privadas", label: "Privadas", desc: "Aposte com amigos em grupos fechados", Icon: Lock },
   { href: "/ranking", label: "Ranking", desc: "Os melhores previsores do Brasil", Icon: BarChart3 },

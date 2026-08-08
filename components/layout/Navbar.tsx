@@ -10,7 +10,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
 import { formatCurrency } from "@/lib/utils";
 import { isPremium } from "@/lib/premium";
-import { CONCURSO_ABERTO, CONCURSO_ENABLED, CONCURSO_ESTREIA_CURTO, HOME_PATH } from "@/lib/flags";
+import { CONCURSO_ABERTO, CONCURSO_ENABLED, CONCURSO_ESTREIA_CURTO, ESCALACAO_ENABLED, HOME_PATH } from "@/lib/flags";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -81,6 +81,7 @@ export default function Navbar() {
           {[
             { href: "/liga", label: "Liga" },
             { href: "/comunidade", label: "Comunidade" },
+            ...(ESCALACAO_ENABLED ? [{ href: "/escalacao", label: "Escalação" }] : []),
             { href: "/games", label: "Games" },
             { href: "/privadas", label: "Privadas" },
             { href: "/amigos", label: "Amigos" },
