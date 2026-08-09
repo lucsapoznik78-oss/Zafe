@@ -9,7 +9,7 @@ export const CONCURSO_ENABLED =
 // válida é a de setembro/2026 — não existe concurso valendo antes disso, e
 // nenhuma inscrição, palpite ou prêmio conta até lá. Enquanto isto for true,
 // toda a copy do Concurso fala no futuro.
-export const CONCURSO_EM_BREVE = true;
+export const CONCURSO_EM_BREVE = false;
 export const CONCURSO_ESTREIA = "setembro de 2026";
 export const CONCURSO_ESTREIA_CURTO = "Setembro";
 
