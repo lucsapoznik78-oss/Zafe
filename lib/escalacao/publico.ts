@@ -6,6 +6,26 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+/**
+ * O desenho do time do modo fixo (migration 081). NULL no mix, onde qualquer
+ * atleta serve em qualquer slot.
+ *
+ * O índice do slot — achatando `linhas` na ordem — é o `ordem` do titular. É por
+ * isso que a UI e a API trafegam arrays com buracos em vez de listas compactas.
+ * `pos: null` = slot livre (o FLEX da NFL, o quinto do Valorant).
+ */
+export interface SlotFormacao {
+  rotulo: string;
+  pos: string[] | null;
+}
+
+export interface Formacao {
+  layout: "campo" | "quadra" | "lista";
+  resumo: string;
+  linhas: SlotFormacao[][];
+  banco: SlotFormacao[];
+}
+
 export interface CardPublico {
   id: string;
   titulo: string;
@@ -16,13 +36,15 @@ export interface CardPublico {
   n_reservas: number;
   teto_por_esporte: number;
   teto_conta_reservas: boolean;
+  teto_por_clube: number | null;
+  formacao: Formacao | null;
   entrada_z: number;
   abre_em: string;
   fecha_em: string;
 }
 
 const COLUNAS_CARD =
-  "id, titulo, mes, modo, status, n_titulares, n_reservas, teto_por_esporte, teto_conta_reservas, entrada_z, abre_em, fecha_em";
+  "id, titulo, mes, modo, status, n_titulares, n_reservas, teto_por_esporte, teto_conta_reservas, teto_por_clube, formacao, entrada_z, abre_em, fecha_em";
 
 export interface EsporteDoCard {
   esporte_key: string;

@@ -14,11 +14,14 @@ import { z } from "zod";
 import { ESCALACAO_ENABLED } from "@/lib/flags";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 
+// Os arrays vêm COM buracos: `null` é um slot vazio da formação, e a posição no
+// array é o slot. Compactar aqui jogaria um zagueiro no lugar do goleiro — o
+// índice do array é o contrato com `escalacao_card.formacao` (ver 081).
 const schema = z.object({
   card_id: z.string().uuid(),
   nome: z.string().trim().max(40).optional(),
-  titulares: z.array(z.string().uuid()).max(30),
-  reservas: z.array(z.string().uuid()).max(10),
+  titulares: z.array(z.string().uuid().nullable()).max(30),
+  reservas: z.array(z.string().uuid().nullable()).max(10),
 });
 
 const MOTIVOS: Record<string, string> = {

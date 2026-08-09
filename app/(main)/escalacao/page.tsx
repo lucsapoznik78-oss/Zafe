@@ -90,7 +90,7 @@ export default async function EscalacaoPage({
                     : "bg-input text-muted-foreground hover:text-white"
                 }`}
               >
-                {c.modo === "mix" ? "Mix" : c.titulo}
+                {c.modo === "mix" ? "Mix" : c.titulo.split(" — ")[0]}
               </Link>
             ))}
           </nav>
@@ -98,9 +98,23 @@ export default async function EscalacaoPage({
 
         <p className="text-sm font-semibold text-white">{card.titulo}</p>
         <p className="text-xs text-muted-foreground">
-          Escale {card.n_titulares} titulares e {card.n_reservas} reservas entre atletas de{" "}
-          {esportes.map((e) => e.nome).join(", ")}. No máximo {card.teto_por_esporte} por
-          esporte. Cada atleta pontua pelo que fizer de verdade, e 1 ponto = 1 Z$.
+          {card.modo === "mix" ? (
+            <>
+              Escale {card.n_titulares} titulares e {card.n_reservas} reservas entre atletas
+              de {esportes.map((e) => e.nome).join(", ")}. No máximo{" "}
+              {card.teto_por_esporte} por esporte.
+            </>
+          ) : (
+            <>
+              Escale {card.n_titulares} titulares e {card.n_reservas} reservas de{" "}
+              {esportes.map((e) => e.nome).join(", ")}. Cada posição só aceita quem joga
+              nela
+              {card.teto_por_clube !== null &&
+                `, e no máximo ${card.teto_por_clube} do mesmo clube`}
+              .
+            </>
+          )}{" "}
+          Cada atleta pontua pelo que fizer de verdade, e 1 ponto = 1 Z$.
         </p>
         <p className="text-xs text-muted-foreground">
           {aberto ? "Fecha em " : "Fechou em "}
