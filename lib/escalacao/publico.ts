@@ -86,8 +86,8 @@ export interface MeuTime {
  * competição só).
  *
  * A policy já esconde rascunho, então "vigente" aqui é o card mais recente de
- * cada modo. Ordenado com o mix primeiro porque é o carro-chefe e é o único que
- * existe hoje; dentro do fixo, o mais recente na frente.
+ * cada modo. Ordenado com o mix primeiro porque é o carro-chefe; dentro do fixo,
+ * o de prazo mais curto na frente.
  */
 export async function getCardsVigentes(supabase: SupabaseClient): Promise<CardPublico[]> {
   const { data } = await supabase
@@ -110,7 +110,9 @@ export async function getCardsVigentes(supabase: SupabaseClient): Promise<CardPu
 
   return vigentes.sort((a, b) => {
     if (a.modo !== b.modo) return a.modo === "mix" ? -1 : 1;
-    return b.mes.localeCompare(a.mes);
+    // Entre os cards de fixo, o que fecha antes vem primeiro: a aba mais à
+    // esquerda é a que o usuário ainda dá tempo de perder.
+    return a.fecha_em.localeCompare(b.fecha_em) || a.titulo.localeCompare(b.titulo, "pt-BR");
   });
 }
 
