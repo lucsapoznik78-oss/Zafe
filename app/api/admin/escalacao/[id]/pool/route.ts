@@ -37,6 +37,15 @@ function slugificar(nome: string, esporte: string): string {
   return `${esporte}-${base}`;
 }
 
+/** "Pivô" → "PIVO", " ala-armador " → "ALA-ARMADOR". */
+function normalizarPosicao(bruta: string): string {
+  return bruta
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toUpperCase();
+}
+
 export async function POST(request: Request, { params }: RouteParams) {
   const { id: cardId } = await params;
   const guarda = await exigirAdmin();
@@ -60,6 +69,26 @@ export async function POST(request: Request, { params }: RouteParams) {
 
   const { data: competicoes } = await admin.from("escalacao_competicao").select("id, slug");
   const competicaoPorSlug = new Map((competicoes ?? []).map((c) => [c.slug, c.id]));
+
+  // No modo fixo cada slot da formação exige uma posição, comparada por igualdade
+  // exata no banco (081). Um CSV que escreve "Goleiro" onde a formação diz "GOL"
+  // importaria sem erro e produziria um pool inteiro que não serve em slot nenhum
+  // — o admin só descobriria abrindo a página e não achando ninguém. Então o
+  // vocabulário aceito sai da própria formação e a divergência vira erro de linha.
+  const { data: card } = await admin
+    .from("escalacao_card")
+    .select("formacao")
+    .eq("id", cardId)
+    .single();
+  const formacao = card?.formacao as {
+    linhas?: Array<Array<{ pos: string[] | null }>>;
+    banco?: Array<{ pos: string[] | null }>;
+  } | null;
+  const posicoesAceitas = new Set(
+    [...(formacao?.linhas ?? []).flat(), ...(formacao?.banco ?? [])].flatMap(
+      (s) => s.pos ?? []
+    )
+  );
 
   const erros: string[] = [];
   let importados = 0;
@@ -106,6 +135,19 @@ export async function POST(request: Request, { params }: RouteParams) {
       continue;
     }
 
+    const posicaoNorm = posicao ? normalizarPosicao(posicao) : null;
+    if (posicaoNorm && posicoesAceitas.size > 0 && !posicoesAceitas.has(posicaoNorm)) {
+      erros.push(
+        `linha ${numero}: posição "${posicao}" não existe na formação deste card ` +
+          `(aceita: ${[...posicoesAceitas].join(", ")})`
+      );
+      continue;
+    }
+    if (!posicaoNorm && posicoesAceitas.size > 0) {
+      erros.push(`linha ${numero}: "${nome}" sem posição — no modo fixo ela é obrigatória`);
+      continue;
+    }
+
     const slug = slugificar(nome, esporte);
     // foto_url precisa ser absoluta — o CHECK no banco recusa outros valores,
     // e enviar string vazia é distinto de NULL para PostgREST. Normaliza aqui.
@@ -121,7 +163,7 @@ export async function POST(request: Request, { params }: RouteParams) {
           genero: genero === "m" || genero === "f" ? genero : "misto",
           external_ref: referencia || null,
           clube: clube || null,
-          posicao: posicao || null,
+          posicao: posicaoNorm,
           foto_url: fotoNorm,
         },
         { onConflict: "slug" }

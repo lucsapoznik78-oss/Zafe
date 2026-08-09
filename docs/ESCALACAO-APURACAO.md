@@ -63,9 +63,10 @@ Confira antes de publicar:
 Card → "Pool do card". Cole o CSV, uma linha por atleta:
 
 ```
-esporte,competicao_slug,nome,genero,referencia
-ufc,ufc,Islam Makhachev,m,
-surf,wsl-ct,Gabriel Medina,m,
+esporte,competicao_slug,nome,clube,posicao,foto_url,genero,referencia
+ufc,ufc,Islam Makhachev,,,,m,
+surf,wsl-ct,Gabriel Medina,,,,m,
+futebol,brasileirao,Hugo Souza,Corinthians,GOL,,m,
 ```
 
 - O `esporte` precisa estar entre os esportes do card. O `regra_id` sai **do card**,
@@ -74,6 +75,24 @@ surf,wsl-ct,Gabriel Medina,m,
   pool é ignorado, não duplicado.
 - Erros vêm linha a linha; as linhas boas entram mesmo assim.
 - Depois de `fecha_em` o pool congela (trigger T4, Art. 22).
+
+### No modo fixo, `posicao` e `clube` são obrigatórios
+
+Cada slot da formação exige uma posição e o teto por clube conta pelo campo
+`clube` — sem eles o card não tem como validar nada. O importador normaliza
+(tira acento, joga pra maiúscula: `Pivô` → `PIVO`) e **recusa a linha** se a
+posição não estiver na formação do card, listando as aceitas. Um pool que entra
+sem posição seria um pool em que nenhum slot acha ninguém.
+
+| Card | Posições aceitas | `clube` é | Teto |
+|---|---|---|---|
+| Brasileirão | `GOL` `LAT` `ZAG` `MEI` `ATA` | o clube | 3 |
+| NFL | `QB` `RB` `WR` `TE` `K` `DEF` | a franquia | 2 |
+| NBA | `ARM` `ALA` `PIVO` `ALA-ARM` `ALA-PIVO` | a franquia | 2 |
+| Valorant | `DUELISTA` `INICIADOR` `SENTINELA` `CONTROLADOR` | a organização | 2 |
+
+O slot `FLEX` (NFL e Valorant) aceita qualquer um — é `pos: null` na formação.
+No mix não existe formação e a coluna `posicao` é só informativa.
 
 ## 3. Publicar
 
