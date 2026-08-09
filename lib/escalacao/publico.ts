@@ -41,6 +41,8 @@ export interface CardPublico {
   entrada_z: number;
   abre_em: string;
   fecha_em: string;
+  /** Esportes do card, na ordem do catálogo. Preenchido por `getCardsVigentes`. */
+  esportes: string[];
 }
 
 const COLUNAS_CARD =
@@ -108,12 +110,41 @@ export async function getCardsVigentes(supabase: SupabaseClient): Promise<CardPu
     return true;
   });
 
-  return vigentes.sort((a, b) => {
+  vigentes.sort((a, b) => {
     if (a.modo !== b.modo) return a.modo === "mix" ? -1 : 1;
     // Entre os cards de fixo, o que fecha antes vem primeiro: a aba mais à
     // esquerda é a que o usuário ainda dá tempo de perder.
     return a.fecha_em.localeCompare(b.fecha_em) || a.titulo.localeCompare(b.titulo, "pt-BR");
   });
+
+  // Os esportes de todos os cards de uma vez: o seletor pinta cada Convocação com
+  // a cor do esporte, e um SELECT por card seria uma consulta por aba.
+  const { data: esportes } = await supabase
+    .from("escalacao_card_esporte")
+    .select("card_id, esporte_key")
+    .in("card_id", vigentes.map((c) => c.id));
+  for (const c of vigentes) {
+    c.esportes = (esportes ?? [])
+      .filter((e) => e.card_id === c.id)
+      .map((e) => e.esporte_key as string);
+  }
+
+  return vigentes;
+}
+
+/**
+ * `card_id → status` dos times do usuário. É o que deixa o seletor mostrar de
+ * relance em quais Convocações ele já entrou — e quantas ainda faltam.
+ */
+export async function getMeusTimes(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<Record<string, string>> {
+  const { data } = await supabase
+    .from("escalacao_time")
+    .select("card_id, status")
+    .eq("user_id", userId);
+  return Object.fromEntries((data ?? []).map((t) => [t.card_id as string, t.status as string]));
 }
 
 /** Resume uma regra do DSL numa linha legível. Genérico: nasce do JSONB. */

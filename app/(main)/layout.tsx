@@ -4,7 +4,9 @@ import MobileNav from "@/components/layout/MobileNav";
 import ReferralActivator from "@/components/layout/ReferralActivator";
 import PendingPickActivator from "@/components/layout/PendingPickActivator";
 import WelcomeModal from "@/components/onboarding/WelcomeModal";
+import AnuncioEscalacao from "@/components/escalacao/AnuncioEscalacao";
 import ReaceiteGate from "@/components/legal/ReaceiteGate";
+import { ESCALACAO_ENABLED } from "@/lib/flags";
 
 export default function MainLayout({
   children,
@@ -21,6 +23,7 @@ export default function MainLayout({
       <ReferralActivator />
       <PendingPickActivator />
       <WelcomeModal />
+      {ESCALACAO_ENABLED && <AnuncioEscalacao />}
       <Suspense fallback={null}>
         <ReaceiteGate />
       </Suspense>

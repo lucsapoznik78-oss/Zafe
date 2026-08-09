@@ -5,12 +5,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Trophy, Users } from "lucide-react";
 
+import ComoFunciona from "@/components/escalacao/ComoFunciona";
 import MontarTime from "@/components/escalacao/MontarTime";
+import SeletorConvocacoes from "@/components/escalacao/SeletorConvocacoes";
 import LegalFooter from "@/components/layout/LegalFooter";
 import {
   getCardsVigentes,
   getEsportesDoCard,
   getMeuTime,
+  getMeusTimes,
   getPool,
   getRanking,
 } from "@/lib/escalacao/publico";
@@ -58,11 +61,12 @@ export default async function EscalacaoPage({
 
   const card = cards.find((c) => c.id === searchParams.c) ?? cards[0];
 
-  const [esportes, pool, time, ranking] = await Promise.all([
+  const [esportes, pool, time, ranking, meusTimes] = await Promise.all([
     getEsportesDoCard(supabase, card.id),
     getPool(supabase, card.id),
     user ? getMeuTime(supabase, card.id, user.id) : Promise.resolve(null),
     getRanking(supabase, card.id),
+    user ? getMeusTimes(supabase, user.id) : Promise.resolve({}),
   ]);
 
   const nomeDoEsporte = Object.fromEntries(esportes.map((e) => [e.esporte_key, e.nome]));
@@ -70,58 +74,48 @@ export default async function EscalacaoPage({
 
   return (
     <div className="py-6 space-y-5">
-      <header className="space-y-2">
-        <h1 className="text-xl font-bold text-white flex items-center gap-2">
-          <Users size={20} className="text-primary" /> Escalação
-        </h1>
+      <header className="space-y-3">
+        <div className="space-y-1">
+          <h1 className="text-xl font-bold text-white flex items-center gap-2">
+            <Users size={20} className="text-primary" /> Escalação
+          </h1>
+          <p className="text-xs text-muted-foreground">
+            Monte um time de atletas reais. Cada um pontua pelo que fizer de verdade na
+            competição, e <strong className="text-white">1 ponto = 1 Z$</strong>.
+          </p>
+        </div>
 
-        {/* Seletor de Convocação. O mix junta vários esportes; cada card de modo
-            fixo é uma competição só. Some quando só existe uma. */}
-        {cards.length > 1 && (
-          <nav className="flex flex-wrap gap-1.5" aria-label="Convocações">
-            {cards.map((c) => (
-              <Link
-                key={c.id}
-                href={`/escalacao?c=${c.id}`}
-                aria-current={c.id === card.id ? "page" : undefined}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                  c.id === card.id
-                    ? "bg-primary text-white"
-                    : "bg-input text-muted-foreground hover:text-white"
-                }`}
-              >
-                {c.modo === "mix" ? "Mix" : c.titulo.split(" — ")[0]}
-              </Link>
-            ))}
-          </nav>
-        )}
+        {/* O mix junta vários esportes; cada card de modo fixo é uma competição só.
+            Lado a lado — e não em abas — porque a pergunta que a página precisa
+            responder de cara é "quantos times eu posso ter?". */}
+        <SeletorConvocacoes cards={cards} atual={card.id} meusTimes={meusTimes} />
 
-        <p className="text-sm font-semibold text-white">{card.titulo}</p>
-        <p className="text-xs text-muted-foreground">
-          {card.modo === "mix" ? (
-            <>
-              Escale {card.n_titulares} titulares e {card.n_reservas} reservas entre atletas
-              de {esportes.map((e) => e.nome).join(", ")}. No máximo{" "}
-              {card.teto_por_esporte} por esporte.
-            </>
-          ) : (
-            <>
-              Escale {card.n_titulares} titulares e {card.n_reservas} reservas de{" "}
-              {esportes.map((e) => e.nome).join(", ")}. Cada posição só aceita quem joga
-              nela
-              {card.teto_por_clube !== null &&
-                `, e no máximo ${card.teto_por_clube} do mesmo clube`}
-              .
-            </>
-          )}{" "}
-          Cada atleta pontua pelo que fizer de verdade, e 1 ponto = 1 Z$.
-        </p>
-        <p className="text-xs text-muted-foreground">
-          {aberto ? "Fecha em " : "Fechou em "}
-          <strong className="text-white">{FMT_DATA.format(new Date(card.fecha_em))}</strong> ·
-          entrada de <strong className="text-white">{card.entrada_z} Z$</strong>
-        </p>
+        <div className="rounded-xl border border-border bg-card p-3 space-y-2">
+          <p className="text-sm font-semibold text-white">{card.titulo}</p>
+          <div className="flex flex-wrap gap-1.5">
+            <Chip>
+              {card.n_titulares} titulares + {card.n_reservas}{" "}
+              {card.n_reservas === 1 ? "reserva" : "reservas"}
+            </Chip>
+            <Chip>
+              {card.modo === "mix"
+                ? `máx. ${card.teto_por_esporte} por esporte`
+                : "posição fixa por vaga"}
+            </Chip>
+            {card.teto_por_clube !== null && (
+              <Chip>máx. {card.teto_por_clube} do mesmo clube</Chip>
+            )}
+            <Chip destaque>{card.entrada_z} Z$ de entrada</Chip>
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            {esportes.map((e) => e.nome).join(", ")} ·{" "}
+            {aberto ? "fecha em " : "fechou em "}
+            <strong className="text-white">{FMT_DATA.format(new Date(card.fecha_em))}</strong>
+          </p>
+        </div>
       </header>
+
+      <ComoFunciona cards={cards} />
 
       {aberto && user && (
         <MontarTime card={card} pool={pool} nomeDoEsporte={nomeDoEsporte} time={time} />
@@ -208,5 +202,17 @@ export default async function EscalacaoPage({
 
       <LegalFooter />
     </div>
+  );
+}
+
+function Chip({ children, destaque }: { children: React.ReactNode; destaque?: boolean }) {
+  return (
+    <span
+      className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+        destaque ? "bg-primary/20 text-primary" : "bg-input text-muted-foreground"
+      }`}
+    >
+      {children}
+    </span>
   );
 }
