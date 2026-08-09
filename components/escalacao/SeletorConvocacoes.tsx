@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Check, Plus, PencilLine } from "lucide-react";
 
-import { corDoEsporte } from "@/components/escalacao/FotoAtleta";
+import { corDoEsporte } from "@/lib/escalacao/cores";
 import type { CardPublico } from "@/lib/escalacao/publico";
 
 /**

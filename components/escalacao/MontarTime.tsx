@@ -4,7 +4,8 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Loader2, Plus, Search, X } from "lucide-react";
 
-import FotoAtleta, { corDoEsporte } from "@/components/escalacao/FotoAtleta";
+import FotoAtleta from "@/components/escalacao/FotoAtleta";
+import { corDoEsporte } from "@/lib/escalacao/cores";
 import type {
   AtletaDoPool,
   CardPublico,
