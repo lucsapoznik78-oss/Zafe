@@ -333,8 +333,16 @@ export default async function ConcursoPage({ searchParams }: PageProps) {
             </div>
           </div>
 
-          {/* Status do usuário */}
-          {user ? (
+          {/* Status do usuário — enquanto o concurso está 'agendado' (antes do
+              periodo_inicio) mostramos só o aviso "ainda não começou". O CTA de
+              inscrição volta automaticamente quando o concurso vira 'ativo'. */}
+          {concurso.status === "agendado" ? (
+            <div className="shrink-0 text-right">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-yellow-400/20 border border-yellow-400/30 text-[10px] font-bold text-yellow-400">
+                <AlertCircle size={11} /> O Concurso ainda não começou
+              </span>
+            </div>
+          ) : user ? (
             enrolled ? (
               <div className="text-right shrink-0">
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 mb-1 rounded-full bg-yellow-400/20 border border-yellow-400/30 text-[10px] font-bold text-yellow-400">
