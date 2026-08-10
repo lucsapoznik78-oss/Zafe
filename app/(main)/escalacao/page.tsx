@@ -140,8 +140,20 @@ export default async function EscalacaoPage({
 
       <ComoFunciona cards={cards} />
 
+      {/* `key={card.id}` não é cosmético. Trocar de Convocação é navegação de
+          cliente, e o React reaproveita a instância de `MontarTime` quando só as
+          props mudam — os `useState` de titulares/reservas não reinicializam.
+          Como Brasileirão e NFL têm os mesmos 11 titulares, o campo parecia
+          certo enquanto o banco continuava com os 3 slots do card anterior, e o
+          save morria em `too_many` no banco. A chave força remontagem. */}
       {aberto && user && (
-        <MontarTime card={card} pool={pool} nomeDoEsporte={nomeDoEsporte} time={time} />
+        <MontarTime
+          key={card.id}
+          card={card}
+          pool={pool}
+          nomeDoEsporte={nomeDoEsporte}
+          time={time}
+        />
       )}
 
       {/* Deslogado vê o campo vazio, não um parágrafo. É a vitrine do modo: quem
@@ -150,6 +162,7 @@ export default async function EscalacaoPage({
       {aberto && !user && (
         <div className="space-y-3">
           <MontarTime
+            key={card.id}
             card={card}
             pool={pool}
             nomeDoEsporte={nomeDoEsporte}
@@ -168,6 +181,7 @@ export default async function EscalacaoPage({
       {/* Fechada: quem escalou continua vendo o próprio campo, agora só leitura. */}
       {!aberto && time && (
         <MontarTime
+          key={card.id}
           card={card}
           pool={pool}
           nomeDoEsporte={nomeDoEsporte}

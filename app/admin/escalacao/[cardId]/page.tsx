@@ -114,12 +114,20 @@ export default async function CardPage({ params }: Props) {
       <div className="bg-card border border-border rounded-xl p-4 space-y-2">
         <div className="flex items-baseline justify-between">
           <h3 className="text-sm font-semibold text-white">Pool ({(pool ?? []).length})</h3>
-          <Link
-            href={`/admin/escalacao/${cardId}/apuracao`}
-            className="text-xs text-primary hover:underline"
-          >
-            Apurar →
-          </Link>
+          <span className="flex items-center gap-3">
+            <Link
+              href={`/admin/escalacao/${cardId}/times`}
+              className="text-xs text-primary hover:underline"
+            >
+              Inscrições ({times ?? 0}) →
+            </Link>
+            <Link
+              href={`/admin/escalacao/${cardId}/apuracao`}
+              className="text-xs text-primary hover:underline"
+            >
+              Apurar →
+            </Link>
+          </span>
         </div>
         {(pool ?? []).length === 0 ? (
           <p className="text-xs text-muted-foreground">Pool vazio.</p>
