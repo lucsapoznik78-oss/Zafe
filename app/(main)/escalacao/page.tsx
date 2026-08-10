@@ -205,8 +205,16 @@ export default async function EscalacaoPage({
                   <span className="flex-1 text-sm text-white truncate">
                     {l.nome || l.username}
                   </span>
-                  <span className="text-sm text-white shrink-0">
-                    {l.pontos_total ?? 0} pts
+                  <span className="text-right shrink-0">
+                    <span className="block text-sm text-white">{l.pontos_total ?? 0} pts</span>
+                    {/* Só existe depois de `escalacao_pagar_card`. Antes disso o
+                        valor é uma projeção, e mostrar projeção de Z$ como se
+                        fosse saldo é promessa que o card ainda pode não cumprir. */}
+                    {l.premio_z !== null && (
+                      <span className="block text-[11px] text-sim">
+                        +{Number(l.premio_z)} Z$
+                      </span>
+                    )}
                   </span>
                 </li>
               ))}
