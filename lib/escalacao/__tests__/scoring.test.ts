@@ -322,8 +322,16 @@ describe("aplicarReservas", () => {
 describe("rulesets publicados", () => {
   const todos = Object.entries(RULESETS);
 
-  it("são nove — um por manual", () => {
-    expect(todos).toHaveLength(9);
+  it("são treze — nove manuais, mais a v2 dos quatro esportes de liga", () => {
+    expect(todos).toHaveLength(13);
+    // A v1 nunca sai do registro: o card que a fixou não pode ser reescrito
+    // (Art. 24 § único), e ela é o registro do que vigorou.
+    expect(todos.filter(([nome]) => nome.endsWith(".v2")).map(([nome]) => nome)).toEqual([
+      "futebol.v2",
+      "nba.v2",
+      "nfl.v2",
+      "valorant.v2",
+    ]);
   });
 
   it.each(todos)("%s passa no schema zod (é o que o banco vai validar)", (_nome, rs) => {

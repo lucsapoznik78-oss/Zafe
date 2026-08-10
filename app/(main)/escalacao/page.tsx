@@ -23,7 +23,7 @@ import { createClient } from "@/lib/supabase/server";
 export const metadata: Metadata = {
   title: "Escalação — monte seu time e pontue com atletas reais | Zafe",
   description:
-    "Escale atletas de UFC, boxe, Fórmula 1 e surf num time só. Cada atleta pontua pelo que fizer de verdade na competição, e os pontos viram Z$.",
+    "Monte um time no Brasileirão, na NBA, na NFL, no Valorant ou no mix de UFC, boxe, Fórmula 1 e surf. Cada atleta pontua pelo que fizer de verdade na competição, e os pontos viram Z$.",
   alternates: { canonical: "/escalacao" },
 };
 
@@ -105,8 +105,31 @@ export default async function EscalacaoPage({
             {card.teto_por_clube !== null && (
               <Chip>máx. {card.teto_por_clube} do mesmo clube</Chip>
             )}
+            <Chip>
+              {card.modo === "fixo" ? "pontua o mês inteiro" : "um evento por atleta"}
+            </Chip>
             <Chip destaque>{card.entrada_z} Z$ de entrada</Chip>
           </div>
+
+          {/* A diferença de cadência entre os dois modos é a coisa que a página
+              mais escondia. No mix cada atleta tem um evento no mês; no fixo o
+              time trava uma vez e acumula todas as rodadas. */}
+          <p className="text-[11px] text-muted-foreground">
+            {card.modo === "fixo" ? (
+              <>
+                É <strong className="text-white">um time só para o mês inteiro</strong>: ele
+                trava no fechamento e pontua em{" "}
+                <strong className="text-white">todas as partidas</strong> da competição no
+                mês. O total é a soma de todas elas.
+              </>
+            ) : (
+              <>
+                Cada atleta disputa <strong className="text-white">um evento</strong> no mês —
+                a pontuação dele é a desse evento.
+              </>
+            )}
+          </p>
+
           <p className="text-[11px] text-muted-foreground">
             {esportes.map((e) => e.nome).join(", ")} ·{" "}
             {aberto ? "fecha em " : "fechou em "}

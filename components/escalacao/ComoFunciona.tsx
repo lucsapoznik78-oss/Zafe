@@ -50,11 +50,12 @@ const DEMO: Array<{ rotulo: string; candidatos: Candidato[] }> = [
   },
 ];
 
+/** Os valores são os de `futebol.v2` — a demonstração não pode mentir a escala. */
 const LANCES = [
-  { texto: "Entrou em campo", pts: 5 },
-  { texto: "Gol", pts: 8 },
+  { texto: "Time venceu", pts: 6 },
+  { texto: "Gol", pts: 10 },
   { texto: "Assistência", pts: 5 },
-  { texto: "Cartão amarelo", pts: -2 },
+  { texto: "Cartão vermelho", pts: -4 },
 ];
 
 export default function ComoFunciona({ cards }: { cards: CardPublico[] }) {
@@ -136,6 +137,18 @@ function PassoEscolha({ cards }: { cards: CardPublico[] }) {
               ? `atletas de ${c.esportes.length} esportes, no máximo ${c.teto_por_esporte} de cada`
               : "cada posição só aceita quem joga nela"}
             {c.teto_por_clube !== null && `, no máximo ${c.teto_por_clube} do mesmo clube`}
+          </p>
+          <p className="text-[11px] text-muted-foreground">
+            {c.modo === "fixo" ? (
+              <>
+                Um time <strong className="text-white">para o mês inteiro</strong>: trava no
+                fechamento e pontua em todas as partidas do mês, somadas.
+              </>
+            ) : (
+              <>
+                Cada atleta disputa <strong className="text-white">um evento</strong> no mês.
+              </>
+            )}
           </p>
           <p className="text-[11px] text-muted-foreground">
             Entrada de <strong className="text-white">{c.entrada_z} Z$</strong>, debitada na
@@ -247,7 +260,7 @@ function PassoPontue() {
     <div className="space-y-3">
       <p className="text-xs text-muted-foreground">
         Ninguém aposta em placar: seu atleta pontua pelo que ele fizer de verdade na
-        competição, lance a lance.
+        competição, lance a lance. Abaixo, <strong className="text-white">uma rodada</strong>.
       </p>
 
       <div className="rounded-xl bg-input/60 border border-border p-3 space-y-2">
@@ -277,9 +290,20 @@ function PassoPontue() {
           onClick={() => setN(fim ? 0 : n + 1)}
           className="w-full py-1.5 rounded-lg bg-input border border-border text-[11px] font-semibold text-white hover:bg-white/5 transition-colors inline-flex items-center justify-center gap-1.5"
         >
-          <Play size={11} /> {fim ? "Rodar de novo" : n === 0 ? "Simular a partida" : "Próximo lance"}
+          <Play size={11} /> {fim ? "Rodar de novo" : n === 0 ? "Simular a rodada" : "Próximo lance"}
         </button>
       </div>
+
+      {/* O ponto que o tutorial existia sem dizer: nas ligas o time é um só e
+          acumula o mês. Quem lê "17 pts" e imagina que é isso o mês inteiro
+          escala errado — e quem imagina o contrário espera 4× mais Z$. */}
+      {fim && (
+        <p className="text-xs text-white">
+          Isso foi <strong>uma rodada</strong>. Nas ligas — Brasileirão, NBA, NFL, Valorant —
+          o time é um só para o mês e joga todas as rodadas: a pontuação do atleta é a soma
+          delas.
+        </p>
+      )}
 
       <p className="text-xs text-muted-foreground flex items-start gap-1.5">
         <Coins size={13} className="text-primary shrink-0 mt-0.5" />
