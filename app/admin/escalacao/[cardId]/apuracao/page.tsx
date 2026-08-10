@@ -4,7 +4,6 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import CardAcoes from "@/components/admin/escalacao/CardAcoes";
-import PesquisaIA from "@/components/admin/escalacao/PesquisaIA";
 import StatEntryForm from "@/components/admin/escalacao/StatEntryForm";
 import { COLUNAS_REGRA, rulesetDaLinha } from "@/lib/escalacao/apuracao";
 import type { Ruleset } from "@/lib/escalacao/rules";
@@ -41,7 +40,7 @@ export default async function ApuracaoPage({ params }: Props) {
 
   const { data: esportes } = await admin
     .from("escalacao_card_esporte")
-    .select("esporte_key, regra_id, evento_key, escalacao_esporte(nome)")
+    .select("esporte_key, regra_id, evento_key")
     .eq("card_id", cardId);
 
   const { data: regras } = await admin
@@ -74,15 +73,6 @@ export default async function ApuracaoPage({ params }: Props) {
       .limit(50),
   ]);
 
-  const esportesDoCard = (esportes ?? []).map((e) => {
-    const rel = e.escalacao_esporte as unknown as { nome: string } | { nome: string }[] | null;
-    return {
-      key: e.esporte_key as string,
-      nome: (Array.isArray(rel) ? rel[0]?.nome : rel?.nome) ?? (e.esporte_key as string),
-      evento_key: e.evento_key as string | null,
-    };
-  });
-
   const atletas = (pool ?? []).map((p) => {
     const rel = p.escalacao_atleta as unknown as { nome: string } | { nome: string }[] | null;
     return {
@@ -105,15 +95,21 @@ export default async function ApuracaoPage({ params }: Props) {
         </p>
       </div>
 
+      {/* A apuração por IA fica em /admin/escalacao, com seletor de card: é a
+          tarefa mais frequente e não devia exigir navegar até aqui. Esta página
+          é o lançamento manual — a correção de um caso que a IA errou. */}
+      <p className="text-[11px] text-muted-foreground">
+        Lançamento manual.{" "}
+        <Link href="/admin/escalacao" className="text-primary hover:underline">
+          Apurar com IA →
+        </Link>
+      </p>
+
       {atletas.length === 0 ? (
         <p className="text-xs text-muted-foreground">
           Importe o pool antes de lançar stats.
         </p>
       ) : (
-        <PesquisaIA cardId={cardId} esportes={esportesDoCard} />
-      )}
-
-      {atletas.length === 0 ? null : (
         <StatEntryForm
           cardId={cardId}
           atletas={atletas}

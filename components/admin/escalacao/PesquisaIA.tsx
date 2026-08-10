@@ -7,9 +7,20 @@ import { Loader2, Sparkles } from "lucide-react";
 import type { Conferencia } from "@/lib/escalacao/conferencia";
 import type { AtletaProposto, PesquisaResultado } from "@/lib/escalacao/pesquisa-ia";
 
-interface Props {
-  cardId: string;
-  esportes: Array<{ key: string; nome: string; evento_key: string | null }>;
+export interface EsporteOpcao {
+  key: string;
+  nome: string;
+  evento_key: string | null;
+  /** Atletas no pool e quantos já têm nota — é o "onde eu parei". */
+  total: number;
+  comNota: number;
+}
+
+export interface CardOpcao {
+  id: string;
+  titulo: string;
+  status: string;
+  esportes: EsporteOpcao[];
 }
 
 /**
@@ -17,16 +28,37 @@ interface Props {
  * admin vê o que a IA achou e quantos pontos aquilo virou ANTES de qualquer
  * coisa tocar o banco — e a soma por usuário só aparece depois de gravar,
  * porque antes disso ela não existe.
+ *
+ * Aceita vários cards porque é o painel de entrada da Escalação: dar nota a
+ * atleta é a tarefa mais frequente do módulo e não devia exigir navegar até o
+ * card antes.
  */
-export default function PesquisaIA({ cardId, esportes }: Props) {
+export default function PesquisaIA({ cards }: { cards: CardOpcao[] }) {
   const router = useRouter();
-  const [esporte, setEsporte] = useState(esportes[0]?.key ?? "");
+  const [cardId, setCardId] = useState(cards[0]?.id ?? "");
+  const [esporteEscolhido, setEsporte] = useState<string | null>(null);
   const [pesquisando, setPesquisando] = useState(false);
   const [gravando, setGravando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [resultado, setResultado] = useState<PesquisaResultado | null>(null);
   const [aprovados, setAprovados] = useState<Set<string>>(new Set());
   const [conferencia, setConferencia] = useState<Conferencia | null>(null);
+
+  // Derivado, não estado: quando o card muda, o esporte escolhido pode nem
+  // existir no novo. Guardar isso em `useState` exigiria um efeito de sincronia
+  // que erraria no primeiro render.
+  const card = cards.find((c) => c.id === cardId) ?? cards[0];
+  const esportes = card?.esportes ?? [];
+  const esporte =
+    esportes.find((e) => e.key === esporteEscolhido)?.key ?? esportes[0]?.key ?? "";
+
+  function trocarCard(id: string) {
+    setCardId(id);
+    setEsporte(null);
+    setResultado(null);
+    setConferencia(null);
+    setErro(null);
+  }
 
   async function pesquisar() {
     setErro(null);
@@ -117,9 +149,31 @@ export default function PesquisaIA({ cardId, esportes }: Props) {
       </div>
 
       <p className="text-[11px] text-muted-foreground">
-        A IA busca o desempenho real e preenche os stats. Quem converte em pontos é o
-        ruleset congelado neste card — a IA nunca decide pontuação. Confira antes de gravar.
+        A IA busca o desempenho real e preenche os stats de cada atleta. Quem converte em
+        pontos é o ruleset congelado no card — a IA nunca decide pontuação. A nota sai por
+        atleta, não por usuário: ela vale igual para todos os times que o escalaram.
       </p>
+
+      {cards.length === 0 ? (
+        <p className="text-xs text-muted-foreground">
+          Nenhum card com pool importado. Crie o card e importe o pool antes.
+        </p>
+      ) : (
+        <>
+      {cards.length > 1 && (
+        <select
+          value={card?.id ?? ""}
+          onChange={(e) => trocarCard(e.target.value)}
+          disabled={pesquisando || gravando}
+          className="w-full px-2.5 py-1.5 rounded-lg bg-input border border-border text-xs text-white"
+        >
+          {cards.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.titulo} · {c.status}
+            </option>
+          ))}
+        </select>
+      )}
 
       <div className="flex items-center gap-2">
         <select
@@ -130,7 +184,7 @@ export default function PesquisaIA({ cardId, esportes }: Props) {
         >
           {esportes.map((e) => (
             <option key={e.key} value={e.key}>
-              {e.nome}
+              {e.nome} · {e.comNota}/{e.total} com nota
               {e.evento_key ? ` · ${e.evento_key}` : ""}
             </option>
           ))}
@@ -246,6 +300,8 @@ export default function PesquisaIA({ cardId, esportes }: Props) {
             </ul>
           )}
         </div>
+      )}
+        </>
       )}
     </div>
   );
