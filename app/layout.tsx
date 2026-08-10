@@ -69,7 +69,12 @@ const jsonLd = {
       image: `${APP_URL}/icon-512.png`,
       description:
         "Zafe é a liga de previsões do Brasil: uma competição de habilidade onde você compete prevendo o que vai acontecer, recebe Z$ grátis e dispute o prêmio mensal com os melhores previsores.",
+      email: "contato@zafe.app",
       foundingDate: "2026",
+      founder: [
+        { "@type": "Person", name: "Luc Sapoznik" },
+        { "@type": "Person", name: "Lorenzo Fragali" },
+      ],
       areaServed: { "@type": "Country", name: "Brasil" },
       knowsLanguage: "pt-BR",
       sameAs: [
