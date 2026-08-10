@@ -18,6 +18,13 @@ export const CONCURSO_ESTREIA_CURTO = "Setembro";
 // como home — divulgar o Concurso não pode reativar essas travas.
 export const CONCURSO_ABERTO = CONCURSO_ENABLED && !CONCURSO_EM_BREVE;
 
+// Gate específico para exigir CPF (Art. 49-VIII: apostador identificado). Fica
+// SEPARADO de CONCURSO_ABERTO porque a UI do Concurso pode estar visível em
+// modo pré-lançamento (demos, pitch) sem que o mundo pago já esteja operando
+// — nesse caso não faz sentido travar toda navegação em /completar-cadastro.
+// Ligar SÓ quando o Concurso realmente aceita inscrição + prêmio R$ via PIX.
+export const CONCURSO_INSCRICOES_ABERTAS = false;
+
 // Modo Escalação (fantasy de escalação em Z$, zona grátis). Opt-IN, ao
 // contrário do Concurso: enquanto ninguém definir NEXT_PUBLIC_ESCALACAO_ENABLED,
 // o modo não existe para o usuário. É o que permite o schema e o painel de

@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest, type NextFetchEvent } from "next/server";
-import { CONCURSO_ABERTO, CONCURSO_ENABLED, HOME_PATH } from "@/lib/flags";
+import { CONCURSO_ENABLED, CONCURSO_INSCRICOES_ABERTAS, HOME_PATH } from "@/lib/flags";
 import { LEGAL_DOCS } from "@/lib/legal";
 import { checkRateLimit, policyFor, registrarBloqueio } from "@/lib/ratelimit";
 import { rateLimitDesligado } from "@/lib/killswitch";
@@ -191,15 +191,16 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
     }
 
     // Cadastro incompleto: o CPF (validado + único) só é OBRIGATÓRIO quando o
-    // Concurso (mundo pago, R$/PIX, 18+) está ABERTO. Enquanto ele é só um
-    // anúncio de estreia, a zona grátis é 100% Z$ virtual e não precisa de CPF —
-    // ninguém é travado nesse muro só para navegar/prever de graça. O CPF entra
-    // pela rota autenticada /api/perfil/completar (nunca no user_metadata,
-    // migration 051). Admins (founders/seed) ficam de fora pra não travarem o painel.
+    // Concurso realmente aceita inscrição com prêmio R$ em jogo. Enquanto é
+    // pré-lançamento (mesmo com a UI do Concurso visível pra divulgação), a
+    // zona grátis é 100% Z$ virtual e não precisa de CPF — ninguém é travado
+    // nesse muro só para navegar/prever de graça. O CPF entra pela rota
+    // autenticada /api/perfil/completar (nunca no user_metadata, migration 051).
+    // Admins (founders/seed) ficam de fora pra não travarem o painel.
     const isCadastroGate =
       pathname.startsWith("/completar-cadastro") ||
       pathname.startsWith("/api/perfil/completar");
-    if (CONCURSO_ABERTO && !profile?.has_cpf && !profile?.is_admin && !isCadastroGate && !isPauseExempt) {
+    if (CONCURSO_INSCRICOES_ABERTAS && !profile?.has_cpf && !profile?.is_admin && !isCadastroGate && !isPauseExempt) {
       if (pathname.startsWith("/api")) {
         return NextResponse.json({ error: "Cadastro incompleto" }, { status: 403 });
       }
