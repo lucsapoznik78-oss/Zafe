@@ -189,8 +189,9 @@ export default function PoliticaPage() {
       <section className="space-y-3">
         <h2 className="text-base font-semibold text-white">8. Encarregado (DPO)</h2>
         <p>
-          Encarregado pelo tratamento de dados pessoais, nos termos do art. 41 da LGPD:{" "}
-          <strong className="text-white">Luc Sapoznik</strong>. Contato para exercício
+          A Zafe é agente de tratamento de pequeno porte nos termos da Resolução CD/ANPD
+          nº 2/2022 e mantém canal de comunicação com o titular em lugar da indicação
+          nominal de Encarregado (art. 11 da mesma resolução). Canal para exercício
           de direitos, dúvidas e reclamações:{" "}
           <a href="mailto:contato@zafe.app" className="text-primary hover:underline">
             contato@zafe.app
