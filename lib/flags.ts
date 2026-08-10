@@ -1,9 +1,10 @@
 // Feature flags de produto.
 //
 // CONCURSO_ENABLED: o Concurso (mundo pago, R$ via PIX) aparece no site.
-// Ligado por padrão — kill switch: NEXT_PUBLIC_CONCURSO_ENABLED=false.
-export const CONCURSO_ENABLED =
-  process.env.NEXT_PUBLIC_CONCURSO_ENABLED !== "false";
+// Desligado no repo — o produto por ora é 100% zona grátis (Z$). Middleware
+// redireciona /concurso* pra home; Navbar e ConcursoBanner já são gateados
+// por esta flag e somem sozinhos. Voltar a ligar: trocar pra `true` e commit.
+export const CONCURSO_ENABLED = false;
 
 // O Concurso está sendo DIVULGADO, mas ainda não começou. A primeira edição
 // válida é a de setembro/2026 — não existe concurso valendo antes disso, e
@@ -32,7 +33,7 @@ export const CONCURSO_INSCRICOES_ABERTAS = false;
 export const ESCALACAO_ENABLED =
   process.env.NEXT_PUBLIC_ESCALACAO_ENABLED === "true";
 
-// Home padrão pós-login: o hub /inicio — Concurso no topo, zona grátis embaixo.
-// Vale também na fase de anúncio: é justamente ali que o usuário logado descobre
-// que o Concurso estreia em setembro.
-export const HOME_PATH = "/inicio";
+// Home padrão pós-login: a /liga (zona grátis, mundo Z$). Enquanto o Concurso
+// estiver oculto (CONCURSO_ENABLED=false), o hub /inicio perde sentido —
+// jogar tudo direto na Liga é a home natural.
+export const HOME_PATH = "/liga";

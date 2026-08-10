@@ -1,91 +1,16 @@
-export const dynamic = "force-dynamic";
-
-import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+// Homepage: raiz virou porta direta pra /liga.
+//
+// Antes essa rota renderizava a landing (Hero, HowItWorks, ConcursoAtivo…) e
+// só logado ia pra HOME_PATH. Com o Concurso oculto, a landing perde metade
+// do enredo e virou etapa a menos: quem chega já vê a Liga (também é
+// HOME_PATH). Anon e logado tomam o mesmo redirect.
+//
+// Custo consciente: a copy da landing sai do índice do Google. Se quiser
+// voltar a ter página institucional, o caminho é mover os componentes de
+// landing pra `/sobre` e re-renderizar lá — não reviver esta rota.
 import { redirect } from "next/navigation";
-import { Suspense } from "react";
+import { HOME_PATH } from "@/lib/flags";
 
-import LandingHeader from "@/components/landing/LandingHeader";
-import Hero from "@/components/landing/Hero";
-import EntrarCards from "@/components/landing/EntrarCards";
-import HowItWorks from "@/components/landing/HowItWorks";
-import ConcursoAtivo from "@/components/landing/ConcursoAtivo";
-import EventosEmAlta from "@/components/landing/EventosEmAlta";
-import PorQueConfiar from "@/components/landing/PorQueConfiar";
-import DiferenteDeBet from "@/components/landing/DiferenteDeBet";
-import CtaFinal from "@/components/landing/CtaFinal";
-import LandingFooter from "@/components/landing/LandingFooter";
-import { CONCURSO_ABERTO, HOME_PATH } from "@/lib/flags";
-
-const META_DESC = CONCURSO_ABERTO
-  ? "Compete prevendo o que vai acontecer. Receba 1.000 Z$ grátis ao criar conta e dispute o prêmio mensal com os melhores previsores do Brasil."
-  : "Compete prevendo esporte e e-sports. Receba 1.000 Z$ grátis ao criar conta e suba no ranking dos melhores previsores do Brasil. Sem depósito, sem cartão.";
-
-const META_SHARE_DESC = CONCURSO_ABERTO
-  ? "Compete prevendo o que vai acontecer. Prêmio mensal em PIX pros melhores. Sem depósito, sem cartão."
-  : "Compete prevendo esporte e e-sports com Z$ virtual. Sem depósito, sem cartão.";
-
-export const metadata: Metadata = {
-  title: "Zafe — A liga das previsões",
-  description: META_DESC,
-  alternates: { canonical: "/" },
-  openGraph: {
-    title: "Zafe — A liga das previsões",
-    description: META_SHARE_DESC,
-    type: "website",
-    siteName: "Zafe",
-    url: "https://www.zafe.app.br",
-    locale: "pt_BR",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Zafe — A liga das previsões",
-    description: META_SHARE_DESC,
-  },
-};
-
-export default async function LandingPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (user) redirect(HOME_PATH);
-
-  return (
-    <div className="min-h-screen bg-black text-white">
-      <LandingHeader />
-
-      <main>
-        <Hero />
-
-        <div className="border-t border-border/20" />
-        <EntrarCards />
-
-        <div className="border-t border-border/20" />
-        <HowItWorks />
-
-        <div className="border-t border-border/20" />
-        <Suspense fallback={<div className="py-16" />}>
-          <ConcursoAtivo />
-        </Suspense>
-
-        <div className="border-t border-border/20" />
-        <Suspense fallback={<div className="py-16" />}>
-          <EventosEmAlta />
-        </Suspense>
-
-        <div className="border-t border-border/20" />
-        <PorQueConfiar />
-
-        <div className="border-t border-border/20" />
-        <DiferenteDeBet />
-
-        <div className="border-t border-border/20" />
-        <CtaFinal />
-      </main>
-
-      <LandingFooter />
-    </div>
-  );
+export default function RootRedirect() {
+  redirect(HOME_PATH);
 }
