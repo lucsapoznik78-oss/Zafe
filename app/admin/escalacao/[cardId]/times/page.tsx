@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import ConferirBotao from "@/components/admin/escalacao/ConferirBotao";
+import PagarCard from "@/components/admin/escalacao/PagarCard";
 import { conferirCard } from "@/lib/escalacao/conferencia";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 
@@ -94,6 +95,20 @@ export default async function TimesPage({ params }: Props) {
         {problemas.length === 0 && totais.inscritos > 0 && (
           <p className="text-[11px] text-sim">Nenhuma inconsistência encontrada.</p>
         )}
+      </div>
+
+      {/* Pagar fica DEPOIS da conferência na ordem de leitura porque é a ordem
+          da decisão: nada aqui é reversível, e este é o único ponto da
+          plataforma que cria Z$. */}
+      <div className="bg-card border border-border rounded-xl p-4 space-y-2">
+        <h3 className="text-sm font-semibold text-white">Pagamento</h3>
+        <PagarCard
+          cardId={cardId}
+          status={card.status}
+          zAEmitir={totais.z_a_emitir}
+          estouraTeto={totais.estoura_teto}
+          problemas={problemas.length}
+        />
       </div>
 
       <div className="bg-card border border-border rounded-xl p-4 space-y-2">
