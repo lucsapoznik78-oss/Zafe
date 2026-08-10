@@ -101,16 +101,18 @@ export async function EventParticipantsPage({
   const admin = createAdminClient();
   const now = new Date().toISOString();
 
-  // Para concurso, precisamos do concurso_id ativo
+  // Para concurso, precisamos do concurso_id corrente (ativo ou agendado no
+  // pré-lançamento) — mesma regra da listagem /concurso e da página do evento.
   let concursoId: string | null = null;
   if (pillar === "concurso") {
     const { data: concurso } = await admin
       .from("concursos")
       .select("id")
-      .eq("status", "ativo")
-      .lte("periodo_inicio", now)
+      .in("status", ["ativo", "agendado"])
       .gte("periodo_fim", now)
-      .single();
+      .order("periodo_inicio", { ascending: true })
+      .limit(1)
+      .maybeSingle();
     concursoId = concurso?.id ?? null;
   }
 

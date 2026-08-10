@@ -35,14 +35,17 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
   const { data: { user } } = await supabase.auth.getUser();
   const now = new Date().toISOString();
 
-  // Get active concurso first
+  // Edição corrente (ou a próxima agendada, no pré-lançamento) — mesma regra
+  // da listagem /concurso: os eventos do concurso agendado também precisam
+  // renderizar a própria página, senão todo card vira 404.
   const { data: concurso } = await admin
     .from("concursos")
     .select("id, titulo, saldo_inicial")
-    .eq("status", "ativo")
-    .lte("periodo_inicio", now)
+    .in("status", ["ativo", "agendado"])
     .gte("periodo_fim", now)
-    .single();
+    .order("periodo_inicio", { ascending: true })
+    .limit(1)
+    .maybeSingle();
 
   const isUUID = /^[0-9a-f-]{36}$/.test(id);
   const topicQuery = admin.from("topics").select("*, creator:profiles!creator_id(id, username, full_name)");
