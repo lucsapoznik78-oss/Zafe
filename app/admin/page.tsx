@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { MessagesSquare } from "lucide-react";
+import { MessagesSquare, Trophy } from "lucide-react";
 import AdminQueue from "@/components/admin/AdminQueue";
 import AdminResolve from "@/components/admin/AdminResolve";
 import AdminStats from "@/components/admin/AdminStats";
@@ -32,6 +32,14 @@ export default async function AdminPage() {
     .from("support_threads")
     .select("id", { count: "exact", head: true })
     .eq("unread_admin", true);
+
+  // Escalação: cards que já fecharam e ainda não foram apurados são o que
+  // exige ação — é o análogo do `resolving` dos tópicos.
+  const { count: escalacaoAApurar } = await admin
+    .from("escalacao_card")
+    .select("id", { count: "exact", head: true })
+    .in("status", ["aberto", "fechado", "apurando"])
+    .lte("fecha_em", new Date().toISOString());
 
   const { data: concursoAtivo } = await admin
     .from("concursos")
@@ -149,6 +157,27 @@ export default async function AdminPage() {
         {(canalPendentes ?? 0) > 0 && (
           <span className="ml-auto px-2 py-1 rounded-full bg-primary text-white text-xs font-bold shrink-0">
             {canalPendentes}
+          </span>
+        )}
+      </Link>
+
+      {/* Escalação fica junto do resolver porque é a mesma tarefa mental:
+          decidir o resultado de uma coisa que já aconteceu. A diferença é que
+          aqui o resultado vira Z$ EMITIDO, não redistribuído. */}
+      <Link
+        href="/admin/escalacao"
+        className="flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3 hover:border-primary/40 transition-colors"
+      >
+        <Trophy className="w-5 h-5 text-primary shrink-0" />
+        <div className="min-w-0">
+          <p className="text-sm font-bold text-white">Escalação</p>
+          <p className="text-xs text-muted-foreground">
+            Convocações, pool de atletas, apuração com IA e soma por usuário
+          </p>
+        </div>
+        {(escalacaoAApurar ?? 0) > 0 && (
+          <span className="ml-auto px-2 py-1 rounded-full bg-primary text-white text-xs font-bold shrink-0">
+            {escalacaoAApurar}
           </span>
         )}
       </Link>
