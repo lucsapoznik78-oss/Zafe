@@ -52,6 +52,17 @@ const nextConfig = {
         destination: "https://www.zafe.app.br/:path*",
         permanent: true,
       },
+      // Home vai direto pra Liga. Um `redirect()` em Server Component acaba
+      // servido como RSC payload (funciona no browser, mas Googlebot pode não
+      // seguir). Aqui vira 307 HTTP puro no edge da Vercel — cacheável e
+      // interpretável por qualquer crawler. `permanent:false` de propósito:
+      // se um dia voltar a landing, é só apagar esta linha (301 ficaria colado
+      // no cache de browsers e no índice por meses).
+      {
+        source: "/",
+        destination: "/liga",
+        permanent: false,
+      },
     ];
   },
   // Cabeçalhos de segurança (audit F-16). Antes só o HSTS existia.
