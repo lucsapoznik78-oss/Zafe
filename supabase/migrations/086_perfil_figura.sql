@@ -28,3 +28,10 @@ alter table public.profiles
 
 comment on column public.profiles.figura is
   'Configuração do avatar-personagem do usuário (DiceBear). Ver 086_perfil_figura.sql.';
+
+-- Zafe restringe UPDATE/SELECT em profiles por COLUNA (não é só RLS). Novas
+-- colunas nascem sem grant pra `authenticated` e a API cai em "permission
+-- denied for table profiles". Alinha figura com full_name/username: dono
+-- lê e escreve; visitante anônimo pode ler (perfis públicos /u/[username]).
+grant select (figura) on public.profiles to authenticated, anon;
+grant update (figura) on public.profiles to authenticated;
