@@ -10,6 +10,7 @@ import CpfForm from "@/components/kyc/CpfForm";
 import TwoFaSettings from "@/components/perfil/TwoFaSettings";
 import ReferralSection from "@/components/perfil/ReferralSection";
 import NivelSection from "@/components/perfil/NivelSection";
+import FiguraSection from "@/components/perfil/FiguraSection";
 import RankBadge from "@/components/games/RankBadge";
 import { tierForWins } from "@/lib/games/types";
 import PremiumBadge from "@/components/ui/PremiumBadge";
@@ -89,8 +90,12 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl, t
         </div>
       </div>
 
-      {/* Nível */}
-      <NivelSection totalWins={totalWins} />
+      {/* Personagem + Nível — lado a lado (FIFA card: figura à esquerda,
+          escada de ranks à direita). No mobile empilha. */}
+      <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-3">
+        <FiguraSection figura={profile?.figura ?? null} />
+        <NivelSection totalWins={totalWins} />
+      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">

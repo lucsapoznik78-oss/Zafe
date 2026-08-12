@@ -66,6 +66,9 @@ export interface Profile {
   bairro: string | null;
   cidade: string | null;
   uf: string | null;
+  // Avatar-personagem estilo Bitmoji/FIFA (DiceBear `avataaars`). Shape validado
+  // no POST /api/perfil/figura. Null = usuário ainda não montou o personagem.
+  figura: Record<string, string> | null;
   created_at: string;
 }
 

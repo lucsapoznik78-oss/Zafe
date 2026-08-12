@@ -12,6 +12,7 @@ import { formatCurrency } from "@/lib/utils";
 import { isPremium } from "@/lib/premium";
 import { CONCURSO_ABERTO, CONCURSO_ENABLED, CONCURSO_ESTREIA_CURTO, ESCALACAO_ENABLED, HOME_PATH } from "@/lib/flags";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import FiguraAvatar, { type FiguraConfig } from "@/components/perfil/FiguraAvatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -141,13 +142,19 @@ export default function Navbar() {
             <DropdownMenuTrigger>
               <div className="relative">
                 <Avatar
-                  className={`h-8 w-8 cursor-pointer ${
+                  className={`h-8 w-8 cursor-pointer overflow-hidden ${
                     premium ? "ring-2 ring-yellow-400 ring-offset-1 ring-offset-black" : "border border-border"
                   }`}
                 >
-                  <AvatarFallback className="bg-primary/20 text-primary text-xs font-semibold">
-                    {initials}
-                  </AvatarFallback>
+                  {profile?.figura ? (
+                    // Se o usuário já montou o personagem, mostra ele mesmo no
+                    // canto. Fallback pra iniciais fica só pra quem ainda não fez.
+                    <FiguraAvatar figura={profile.figura as FiguraConfig} size={32} />
+                  ) : (
+                    <AvatarFallback className="bg-primary/20 text-primary text-xs font-semibold">
+                      {initials}
+                    </AvatarFallback>
+                  )}
                 </Avatar>
                 {premium && (
                   <span className="absolute -bottom-0.5 -right-0.5 flex items-center justify-center rounded-full bg-black">
