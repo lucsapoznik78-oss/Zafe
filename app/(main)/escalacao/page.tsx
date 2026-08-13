@@ -74,71 +74,33 @@ export default async function EscalacaoPage({
 
   return (
     <div className="py-6 space-y-5">
-      <header className="space-y-3">
-        <div className="space-y-1">
-          <h1 className="text-xl font-bold text-white flex items-center gap-2">
-            <Users size={20} className="text-primary" /> Escalação
-          </h1>
-          <p className="text-xs text-muted-foreground">
-            Monte um time de atletas reais. Cada um pontua pelo que fizer de verdade na
-            competição, e <strong className="text-white">1 ponto = 1 Z$</strong>.
-          </p>
-        </div>
-
-        {/* O mix junta vários esportes; cada card de modo fixo é uma competição só.
-            Lado a lado — e não em abas — porque a pergunta que a página precisa
-            responder de cara é "quantos times eu posso ter?". */}
-        <SeletorConvocacoes cards={cards} atual={card.id} meusTimes={meusTimes} />
-
-        <div className="rounded-xl border border-border bg-card p-3 space-y-2">
-          <p className="text-sm font-semibold text-white">{card.titulo}</p>
-          <div className="flex flex-wrap gap-1.5">
-            <Chip>
-              {card.n_titulares} titulares + {card.n_reservas}{" "}
-              {card.n_reservas === 1 ? "reserva" : "reservas"}
-            </Chip>
-            <Chip>
-              {card.modo === "mix"
-                ? `máx. ${card.teto_por_esporte} por esporte`
-                : "posição fixa por vaga"}
-            </Chip>
-            {card.teto_por_clube !== null && (
-              <Chip>máx. {card.teto_por_clube} do mesmo clube</Chip>
-            )}
-            <Chip>
-              {card.modo === "fixo" ? "pontua o mês inteiro" : "um evento por atleta"}
-            </Chip>
-            <Chip destaque>{card.entrada_z} Z$ de entrada</Chip>
-          </div>
-
-          {/* A diferença de cadência entre os dois modos é a coisa que a página
-              mais escondia. No mix cada atleta tem um evento no mês; no fixo o
-              time trava uma vez e acumula todas as rodadas. */}
-          <p className="text-[11px] text-muted-foreground">
-            {card.modo === "fixo" ? (
-              <>
-                É <strong className="text-white">um time só para o mês inteiro</strong>: ele
-                trava no fechamento e pontua em{" "}
-                <strong className="text-white">todas as partidas</strong> da competição no
-                mês. O total é a soma de todas elas.
-              </>
-            ) : (
-              <>
-                Cada atleta disputa <strong className="text-white">um evento</strong> no mês —
-                a pontuação dele é a desse evento.
-              </>
-            )}
-          </p>
-
-          <p className="text-[11px] text-muted-foreground">
-            {esportes.map((e) => e.nome).join(", ")} ·{" "}
-            {aberto ? "fecha em " : "fechou em "}
-            <strong className="text-white">{FMT_DATA.format(new Date(card.fecha_em))}</strong>
-          </p>
-        </div>
+      <header className="space-y-1">
+        <h1 className="text-xl font-bold text-white flex items-center gap-2">
+          <Users size={20} className="text-primary" /> Escalação
+        </h1>
+        <p className="text-xs text-muted-foreground">
+          Monte um time de atletas reais. Cada um pontua pelo que fizer de verdade na
+          competição, e <strong className="text-white">1 ponto = 1 Z$</strong>.
+        </p>
       </header>
 
-      <ComoFunciona cards={cards} />
+      {/* O mix junta vários esportes; cada card de modo fixo é uma competição só.
+          Lado a lado — e não em abas — porque a pergunta que a página precisa
+          responder de cara é "quantos times eu posso ter?". */}
+      <SeletorConvocacoes cards={cards} atual={card.id} meusTimes={meusTimes} />
+
+      {/* Uma linha, não seis. O que o usuário precisa saber antes de escalar é
+          preço, tamanho do time e prazo; o resto (cadência, tetos, pontuação de
+          cada esporte) desceu para o `<details>` de regras lá embaixo, onde só
+          quem procura paga o custo de ler. */}
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+        <h2 className="text-base font-bold text-white">{card.titulo}</h2>
+        <p className="text-[11px] text-muted-foreground">
+          {card.n_titulares}+{card.n_reservas} · {card.entrada_z} Z$ ·{" "}
+          {aberto ? "fecha " : "fechou "}
+          <strong className="text-white">{FMT_DATA.format(new Date(card.fecha_em))}</strong>
+        </p>
+      </div>
 
       {/* `key={card.id}` não é cosmético. Trocar de Convocação é navegação de
           cliente, e o React reaproveita a instância de `MontarTime` quando só as
@@ -223,41 +185,70 @@ export default async function EscalacaoPage({
         </div>
       )}
 
-      <section className="bg-card border border-border rounded-xl p-4 space-y-3">
-        <h2 className="text-sm font-semibold text-white">Como cada esporte pontua</h2>
-        {esportes.map((e) => (
-          <div key={e.esporte_key} className="space-y-1">
-            <p className="text-xs font-semibold text-white">{e.nome}</p>
-            <ul className="space-y-0.5">
-              {e.regras.map((r, i) => (
-                <li key={i} className="text-[11px] text-muted-foreground">
-                  {r.rotulo}
-                  {r.resumo && <span className="text-white"> — {r.resumo}</span>}
-                </li>
-              ))}
-            </ul>
-            {e.fecha_em && (
-              <p className="text-[11px] text-muted-foreground">
-                Prazo próprio: {FMT_DATA.format(new Date(e.fecha_em))}
-              </p>
+      {/* Tutorial e regulamento viram opt-in. Estavam sempre abertos, acima do
+          campo, e empurravam o produto para baixo da dobra — quem já entendeu o
+          modo lia tudo de novo toda visita. */}
+      <details className="bg-card border border-border rounded-xl">
+        <summary className="p-4 text-sm font-semibold text-white cursor-pointer">
+          Como funciona
+        </summary>
+        <div className="px-4 pb-4">
+          <ComoFunciona cards={cards} />
+        </div>
+      </details>
+
+      <details className="bg-card border border-border rounded-xl">
+        <summary className="p-4 text-sm font-semibold text-white cursor-pointer">
+          Regras desta Convocação
+        </summary>
+        <div className="px-4 pb-4 space-y-3">
+          <ul className="space-y-0.5">
+            <Regra>
+              {card.n_titulares} titulares + {card.n_reservas}{" "}
+              {card.n_reservas === 1 ? "reserva" : "reservas"}
+            </Regra>
+            <Regra>
+              {card.modo === "mix"
+                ? `Máximo de ${card.teto_por_esporte} atletas por esporte`
+                : "Cada vaga aceita só atletas da posição dela"}
+            </Regra>
+            {card.teto_por_clube !== null && (
+              <Regra>Máximo de {card.teto_por_clube} atletas do mesmo clube</Regra>
             )}
-          </div>
-        ))}
-      </section>
+            <Regra>
+              {card.modo === "fixo"
+                ? "Um time só para o mês inteiro: trava no fechamento e pontua em todas as partidas da competição no mês."
+                : "Cada atleta disputa um evento no mês — a pontuação dele é a desse evento."}
+            </Regra>
+            <Regra>Entrada de {card.entrada_z} Z$, debitada ao se inscrever</Regra>
+          </ul>
+
+          {esportes.map((e) => (
+            <div key={e.esporte_key} className="space-y-1">
+              <p className="text-xs font-semibold text-white">{e.nome}</p>
+              <ul className="space-y-0.5">
+                {e.regras.map((r, i) => (
+                  <li key={i} className="text-[11px] text-muted-foreground">
+                    {r.rotulo}
+                    {r.resumo && <span className="text-white"> — {r.resumo}</span>}
+                  </li>
+                ))}
+              </ul>
+              {e.fecha_em && (
+                <p className="text-[11px] text-muted-foreground">
+                  Prazo próprio: {FMT_DATA.format(new Date(e.fecha_em))}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      </details>
 
       <LegalFooter />
     </div>
   );
 }
 
-function Chip({ children, destaque }: { children: React.ReactNode; destaque?: boolean }) {
-  return (
-    <span
-      className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-        destaque ? "bg-primary/20 text-primary" : "bg-input text-muted-foreground"
-      }`}
-    >
-      {children}
-    </span>
-  );
+function Regra({ children }: { children: React.ReactNode }) {
+  return <li className="text-[11px] text-muted-foreground">· {children}</li>;
 }

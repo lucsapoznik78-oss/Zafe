@@ -35,13 +35,14 @@ export default function SeletorConvocacoes({
 
   return (
     <div className="space-y-2">
+      {/* O parágrafo que explicava "são N Convocações independentes" saiu: a
+          grade de cards já mostra isso, e o contador diz quantas você já pegou.
+          Texto que repete o que o layout mostra é o que fazia a página parecer
+          cheia. */}
       <div className="flex items-baseline justify-between gap-3">
-        <p className="text-xs text-muted-foreground">
-          São <strong className="text-white">{cards.length} Convocações independentes</strong> —
-          você pode montar um time em cada uma.
-        </p>
-        <span className="text-[11px] font-bold shrink-0 text-white tabular-nums">
-          {inscritos}/{cards.length}
+        <h2 className="text-sm font-semibold text-white">Convocações</h2>
+        <span className="text-[11px] text-muted-foreground tabular-nums">
+          <strong className="text-white">{inscritos}</strong>/{cards.length} times
         </span>
       </div>
 
