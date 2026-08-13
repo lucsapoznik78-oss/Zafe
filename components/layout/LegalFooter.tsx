@@ -10,12 +10,11 @@ export default function LegalFooter() {
         não garantem posições futuras no ranking.
       </p>
       <p>
-        Uso restrito a maiores de 18 anos.
         Ao participar, você declara ter lido e concordado com os{" "}
         <Link href="/termos" className="underline hover:text-muted-foreground transition-colors">
           Termos de Uso
         </Link>
-        {" "}e com as regras do concurso.
+        .
       </p>
       <p>
         Jogue com responsabilidade.{" "}

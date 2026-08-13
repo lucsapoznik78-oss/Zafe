@@ -7,12 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Eye, EyeOff, Loader2, User, AtSign, Mail, Phone, CreditCard,
+  Eye, EyeOff, Loader2, User, AtSign, Mail, Phone,
   Calendar, Gift, Lock, Check, X,
 } from "lucide-react";
 import Link from "next/link";
 import { LEGAL_DOCS } from "@/lib/legal";
-import { formatarCPF, validarCPF } from "@/lib/cpf";
 import { formatarTelefone, formatarDataBR, dataBRparaISO } from "@/lib/masks";
 import { HOME_PATH } from "@/lib/flags";
 import { useCaptcha, comCaptcha } from "./useCaptcha";
@@ -95,7 +94,6 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
   const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
   const [phone, setPhone] = useState("");
-  const [cpf, setCpf] = useState("");
   const [birthDate, setBirthDate] = useState("");
   const [refCode, setRefCode] = useState("");
   const [usernameStatus, setUsernameStatus] = useState<"idle" | "checking" | "free" | "taken">("idle");
@@ -202,23 +200,26 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
       } catch {
         // Se a checagem falhar, o UNIQUE do banco ainda garante a unicidade.
       }
+      // Telefone opcional: só valida formato SE preenchido. É a base do 2FA-SMS
+      // (opt-in em /perfil); quem não quiser usar SMS pode entrar sem número.
       const phoneClean = phone.replace(/\D/g, "");
-      if (phoneClean.length < 10) {
-        setError("Informe um telefone válido com DDD.");
+      if (phoneClean && phoneClean.length < 10) {
+        setError("Telefone incompleto — use DDD + número. Deixe em branco se preferir não informar.");
         setLoading(false);
         return;
       }
-      const cpfClean = cpf.replace(/\D/g, "");
-      if (!validarCPF(cpfClean)) {
-        setError("CPF inválido — confira os números.");
-        setLoading(false);
-        return;
-      }
-      const birthISO = dataBRparaISO(birthDate);
-      if (!birthISO) {
-        setError("Data de nascimento inválida — use DD/MM/AAAA.");
-        setLoading(false);
-        return;
+      // Data de nascimento opcional: sem Concurso valendo R$, não há gate de
+      // 18+ na zona grátis (Z$ virtual). Se um dia o Concurso reabrir, o
+      // /completar-cadastro pede a data antes de qualquer inscrição paga.
+      // Se preenchida, ainda validamos formato pra não gravar lixo no banco.
+      let birthISO: string | null = null;
+      if (birthDate.trim()) {
+        birthISO = dataBRparaISO(birthDate);
+        if (!birthISO) {
+          setError("Data de nascimento inválida — use DD/MM/AAAA ou deixe em branco.");
+          setLoading(false);
+          return;
+        }
       }
       // Código de indicação: vai num cookie (mesmo canal do link /r/[code]);
       // o ReferralActivator registra no primeiro acesso logado.
@@ -233,9 +234,10 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
           data: {
             full_name: fullName.trim(),
             username,
-            phone: phoneClean,
-            cpf: cpfClean,
-            birth_date: birthISO,
+            // Campos opcionais: só mandamos se o usuário preencheu, pra o
+            // trigger `handle_new_user` não escrever string vazia interpretada.
+            ...(phoneClean ? { phone: phoneClean } : {}),
+            ...(birthISO ? { birth_date: birthISO } : {}),
             // Versões mostradas no formulário. O aceite com valor probatório
             // (IP, user-agent, hash do texto) é gravado server-side em
             // /auth/confirm; isto aqui é o que a tela dizia no momento do clique.
@@ -650,7 +652,7 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
           <>
             <div className="space-y-1.5">
               <label htmlFor="phone" className={labelClass}>
-                Telefone <span className={`${hintClass} text-muted-foreground/60`}>(com DDD)</span>
+                Telefone <span className={`${hintClass} text-muted-foreground/60`}>(opcional — usado só se ligar 2FA por SMS)</span>
               </label>
               <Field icon={<Phone size={15} />}>
                 <Input
@@ -662,30 +664,13 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
                   placeholder="(11) 99999-9999"
                   maxLength={15}
                   className={iconInputClass}
-                  required
                 />
               </Field>
             </div>
             <div className="space-y-1.5">
-              <label htmlFor="cpf" className={labelClass}>CPF</label>
-              <Field icon={<CreditCard size={15} />}>
-                <Input
-                  id="cpf"
-                  inputMode="numeric"
-                  value={cpf}
-                  onChange={(e) => setCpf(formatarCPF(e.target.value))}
-                  placeholder="000.000.000-00"
-                  maxLength={14}
-                  className={iconInputClass}
-                  required
-                />
-              </Field>
-              {cpf.replace(/\D/g, "").length === 11 && !validarCPF(cpf) && (
-                <p className="text-destructive text-xs">CPF inválido. Confira os números.</p>
-              )}
-            </div>
-            <div className="space-y-1.5">
-              <label htmlFor="birthDate" className={labelClass}>Data de nascimento</label>
+              <label htmlFor="birthDate" className={labelClass}>
+                Data de nascimento <span className={`${hintClass} text-muted-foreground/60`}>(opcional)</span>
+              </label>
               <Field icon={<Calendar size={15} />}>
                 <Input
                   id="birthDate"
@@ -695,7 +680,6 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
                   placeholder="DD/MM/AAAA"
                   maxLength={10}
                   className={iconInputClass}
-                  required
                 />
               </Field>
             </div>
