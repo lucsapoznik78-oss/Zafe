@@ -46,12 +46,21 @@ const nextConfig = {
         destination: "https://www.zafe.app.br/:path*",
         permanent: true,
       },
-      {
-        source: "/:path*",
-        has: [{ type: "host", value: "(?<host>.*\\.vercel\\.app)" }],
-        destination: "https://www.zafe.app.br/:path*",
-        permanent: true,
-      },
+      // A regra do *.vercel.app só vale em produção. Em preview ela mandava o
+      // deploy inteiro para www.zafe.app.br — não dava para abrir preview
+      // nenhum, e como o 301 é permanente o navegador ainda guardava o desvio.
+      // Preview não é indexado (fica atrás do SSO da Vercel), então não há
+      // conteúdo duplicado a evitar aqui.
+      ...(process.env.VERCEL_ENV === "preview"
+        ? []
+        : [
+            {
+              source: "/:path*",
+              has: [{ type: "host", value: "(?<host>.*\\.vercel\\.app)" }],
+              destination: "https://www.zafe.app.br/:path*",
+              permanent: true,
+            },
+          ]),
       // Home vai direto pra Liga. Um `redirect()` em Server Component acaba
       // servido como RSC payload (funciona no browser, mas Googlebot pode não
       // seguir). Aqui vira 307 HTTP puro no edge da Vercel — cacheável e
