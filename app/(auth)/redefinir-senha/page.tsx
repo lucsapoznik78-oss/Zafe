@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Loader2, CheckCircle2 } from "lucide-react";
+import ZafeLogo from "@/components/brand/Logo";
 
 export default function RedefinirSenhaPage() {
   const router = useRouter();
@@ -48,7 +49,7 @@ export default function RedefinirSenhaPage() {
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <img src="/zafe-logo-full.png" alt="Zafe" className="h-12 mx-auto mb-3" />
+          <ZafeLogo className="h-12 mx-auto mb-3" />
         </div>
 
         {done ? (

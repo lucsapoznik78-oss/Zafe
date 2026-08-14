@@ -13,6 +13,7 @@ import { isPremium } from "@/lib/premium";
 import { CONCURSO_ABERTO, CONCURSO_ENABLED, CONCURSO_ESTREIA_CURTO, ESCALACAO_ENABLED, HOME_PATH, PREMIUM_ENABLED } from "@/lib/flags";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import FiguraAvatar, { type FiguraConfig } from "@/components/perfil/FiguraAvatar";
+import ZafeLogo, { ZafeMarca } from "@/components/brand/Logo";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -78,8 +79,8 @@ export default function Navbar() {
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/90 backdrop-blur-sm pt-[env(safe-area-inset-top)]">
       <div className="flex items-center justify-between h-14 px-3 sm:px-4 max-w-7xl mx-auto">
         <Link href={HOME_PATH} className="flex items-center gap-2">
-          <img src="/zafe-logo-full.png" alt="Zafe" className="h-8 hidden sm:block" />
-          <img src="/zafe-icon.png" alt="Zafe" className="h-8 w-8 sm:hidden rounded" />
+          <ZafeLogo className="h-8 hidden sm:block" />
+          <ZafeMarca className="h-8 w-8 sm:hidden" />
         </Link>
 
         <nav className="hidden md:flex items-center gap-1">

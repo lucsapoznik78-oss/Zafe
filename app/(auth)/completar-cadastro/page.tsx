@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import CompletarCadastro from "@/components/auth/CompletarCadastro";
+import ZafeLogo from "@/components/brand/Logo";
 import { HOME_PATH } from "@/lib/flags";
 
 interface Props {
@@ -38,7 +39,7 @@ export default async function CompletarCadastroPage({ searchParams }: Props) {
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-6">
-          <img src="/zafe-logo-full.png" alt="Zafe" className="h-12 mx-auto" />
+          <ZafeLogo className="h-12 mx-auto" />
         </div>
         <CompletarCadastro
           isGoogle={isGoogle}

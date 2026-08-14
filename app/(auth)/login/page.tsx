@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 import LoginForm from "@/components/auth/LoginForm";
+import ZafeLogo from "@/components/brand/Logo";
 
 interface Props {
   searchParams: Promise<{ next?: string }>;
@@ -11,7 +12,7 @@ export default async function LoginPage({ searchParams }: Props) {
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <img src="/zafe-logo-full.png" alt="Zafe" className="h-12 mx-auto mb-3" />
+          <ZafeLogo className="h-12 mx-auto mb-3" />
           <p className="text-muted-foreground mt-2 text-sm">
             Liga de previsões entre pessoas reais
           </p>
