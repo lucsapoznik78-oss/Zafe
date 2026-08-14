@@ -7,6 +7,17 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.zafe.app.br";
 
+/**
+ * O interruptor de cor. Ver app/globals.css e ROLLBACK.md.
+ *
+ *   NEXT_PUBLIC_THEME=legacy  → devolve o visual roxo/quase-preto inteiro
+ *
+ * Trocar o fallback abaixo tem o mesmo efeito, sem depender da Vercel.
+ */
+const THEME =
+  process.env.NEXT_PUBLIC_THEME === "arquibancada" ? "arquibancada" : "legacy";
+const THEME_COLOR = { legacy: "#0A0A0F", arquibancada: "#0D1B2A" }[THEME];
+
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
   title: {
@@ -48,7 +59,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
-  themeColor: "#0A0A0F",
+  themeColor: THEME_COLOR,
 };
 
 const jsonLd = {
@@ -102,7 +113,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR" className={inter.variable}>
+    <html lang="pt-BR" data-theme={THEME} className={inter.variable}>
       <head>
         <script
           type="application/ld+json"

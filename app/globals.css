@@ -2,61 +2,162 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================================
+   ZAFE — CAMADA DE COR (fonte única de verdade)
+   ============================================================================
+
+   Duas paletas coexistem. O interruptor é o atributo `data-theme` no <html>,
+   definido em app/layout.tsx a partir de NEXT_PUBLIC_THEME.
+
+     data-theme="arquibancada"  → azul-noite + amarelo-sol   (padrão)
+     data-theme="legacy"        → quase-preto + violeta      (visual antigo)
+
+   Para voltar ao visual antigo: NEXT_PUBLIC_THEME=legacy (ou trocar o fallback
+   em app/layout.tsx). Não requer git revert. Ver ROLLBACK.md.
+
+   ---------------------------------------------------------------------------
+   POR QUE CANAIS RGB SOLTOS E NÃO HEX
+
+   `tailwind.config.ts` consome estes tokens como `rgb(var(--c-x) / <alpha>)`.
+   O Tailwind só consegue aplicar modificador de opacidade (`bg-primary/90`,
+   `border-border/40` — ~120 usos no app) se receber os canais separados. Com
+   `--x: #0D1B2A` o modificador é silenciosamente descartado e um `bg-primary/10`
+   viraria um bloco amarelo sólido.
+
+   Regra: quem for consumido pelo Tailwind mora em `--c-*` (canais).
+   Os tokens legíveis (`--bg`, `--accent`, …) logo abaixo são derivados deles e
+   existem para uso direto em CSS/SVG/inline style.
+   ============================================================================ */
+
 @layer base {
+  /* ---------------------------------------------------------------- LEGACY */
+  :root[data-theme="legacy"] {
+    --c-bg:              10 10 15;    /* #0A0A0F */
+    --c-surface:         20 20 28;    /* #14141C */
+    --c-surface-2:       30 30 42;    /* #1E1E2A */
+    --c-surface-3:       38 38 54;    /* #262636 */
+
+    --c-text:           245 245 247;  /* #F5F5F7 */
+    --c-text-secondary: 154 154 168;  /* #9A9AA8 */
+    --c-text-muted:     106 106 120;  /* #6A6A78 */
+    --c-text-on-accent: 255 255 255;  /* #FFFFFF — branco sobre roxo */
+
+    --c-accent:         124 92 252;   /* #7C5CFC */
+    --c-accent-hover:   139 109 255;  /* #8B6DFF */
+    --c-accent-press:   109 77 232;   /* #6D4DE8 */
+    --c-accent-text:    185 174 255;  /* #B9AEFF */
+    --c-accent-surface:  27 22 54;    /* #1B1636 */
+    --c-accent-border:   58 46 122;   /* #3A2E7A */
+
+    --c-brand:          124 92 252;   /* #7C5CFC */
+    --c-brand-on-light: 124 92 252;
+
+    --c-yes:             34 197 94;   /* #22C55E */
+    --c-yes-text:        74 222 128;  /* #4ADE80 */
+    --c-no:             244 63 94;    /* #F43F5E */
+    --c-no-text:        251 113 133;  /* #FB7185 */
+
+    --c-prize:          251 191 36;   /* #FBBF24 */
+    --c-prize-text:     252 211 77;   /* #FCD34D */
+
+    --c-danger:         244 63 94;    /* #F43F5E */
+    --c-success:         34 197 94;   /* #22C55E */
+    --c-live:            34 197 94;
+
+    --c-line:            35 35 49;    /* #232331 */
+    --c-line-strong:     46 46 62;    /* #2E2E3E */
+    --line-a:            1;           /* borda opaca no visual antigo */
+
+    --shadow-base:      0 1px 2px rgba(0, 0, 0, 0.5);
+  }
+
+  /* --------------------------------------------------------- ARQUIBANCADA
+     Também no `:root` pelado: se `data-theme` sumir por qualquer motivo, o app
+     cai na paleta padrão em vez de ficar sem cor nenhuma — `rgb(var(--indefinido))`
+     é inválido e apagaria a interface inteira. `[data-theme="legacy"]` tem
+     especificidade maior (0,2,0 contra 0,1,0) e continua ganhando quando presente. */
+  :root,
+  :root[data-theme="arquibancada"] {
+    --c-bg:              13 27 42;    /* #0D1B2A */
+    --c-surface:         22 38 58;    /* #16263A */
+    --c-surface-2:       27 48 73;    /* #1B3049 */
+    --c-surface-3:       27 48 73;    /* #1B3049 — sem 4o nível na paleta nova */
+
+    --c-text:           242 244 248;  /* #F2F4F8 */
+    --c-text-secondary: 147 165 188;  /* #93A5BC */
+    --c-text-muted:     132 148 172;  /* #8494AC */
+    --c-text-on-accent:  13 27 42;    /* #0D1B2A — nunca branco sobre acento */
+
+    --c-accent:         255 197 61;   /* #FFC53D */
+    --c-accent-hover:   255 207 92;   /* #FFCF5C */
+    --c-accent-press:   230 172 31;   /* #E6AC1F */
+    --c-accent-text:    255 197 61;   /* #FFC53D — 11.0 sobre --bg */
+    --c-accent-surface: 255 197 61;   /* usado a 8% via --accent-soft */
+    --c-accent-border:  255 197 61;   /* #FFC53D */
+
+    --c-brand:          255 197 61;   /* #FFC53D */
+    --c-brand-on-light:  13 27 42;    /* #0D1B2A — amarelo sobre branco não lê */
+
+    --c-yes:             46 158 99;   /* #2E9E63 */
+    --c-yes-text:        63 190 123;  /* #3FBE7B */
+    --c-no:             229 72 77;    /* #E5484D */
+    --c-no-text:        238 95 99;    /* #EE5F63 */
+
+    --c-prize:          255 197 61;   /* prêmio e acento são a mesma cor */
+    --c-prize-text:     255 197 61;
+
+    --c-danger:         229 72 77;    /* #E5484D */
+    --c-success:         46 158 99;   /* #2E9E63 */
+    --c-live:            46 158 99;   /* #2E9E63 */
+
+    --c-line:           242 244 248;  /* #F2F4F8 a 10% = --surface-line */
+    --c-line-strong:    242 244 248;
+    --line-a:            0.10;
+
+    --shadow-base:      0 1px 0 rgba(0, 0, 0, 0.35);
+  }
+
+  /* ------------------------------------------------------------------------
+     Tokens legíveis, derivados dos canais acima.
+     Para CSS/SVG/inline style que não passa pelo Tailwind.
+     Não redeclarar por tema — derivam sozinhos.
+     ------------------------------------------------------------------------ */
   :root {
-    --background: 240 20% 5%;
-    --foreground: 240 8% 96%;
-    --card: 240 17% 9%;
-    --card-foreground: 240 8% 96%;
-    --popover: 240 17% 18%;
-    --popover-foreground: 240 8% 96%;
-    --primary: 252 96% 67%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 240 17% 14%;
-    --secondary-foreground: 240 8% 96%;
-    --muted: 240 17% 14%;
-    --muted-foreground: 240 7% 63%;
-    --accent: 252 96% 67%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 350 89% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 240 17% 16%;
-    --input: 240 17% 14%;
-    --ring: 252 96% 67%;
+    --bg:              rgb(var(--c-bg));
+    --surface:         rgb(var(--c-surface));
+    --surface-2:       rgb(var(--c-surface-2));
+    --surface-line:    rgb(var(--c-line) / var(--line-a));
+
+    --text:            rgb(var(--c-text));
+    --text-secondary:  rgb(var(--c-text-secondary));
+    --text-muted:      rgb(var(--c-text-muted));
+    --text-on-accent:  rgb(var(--c-text-on-accent));
+
+    --accent:          rgb(var(--c-accent));
+    --accent-hover:    rgb(var(--c-accent-hover));
+    --accent-press:    rgb(var(--c-accent-press));
+    --accent-soft:     rgb(var(--c-accent-surface) / 0.08);
+    --accent-border:   rgb(var(--c-accent-border));
+
+    --brand:           rgb(var(--c-brand));
+    --brand-on-light:  rgb(var(--c-brand-on-light));
+
+    --yes:             rgb(var(--c-yes));
+    --yes-text:        rgb(var(--c-yes-text));
+    --no:              rgb(var(--c-no));
+    --no-text:         rgb(var(--c-no-text));
+
+    --danger-text:     rgb(var(--c-danger));
+    --danger-bg:       rgb(var(--c-danger) / 0.12);
+    --danger-border:   rgb(var(--c-danger) / 0.45);
+    --success-text:    rgb(var(--c-success));
+    --success-bg:      rgb(var(--c-success) / 0.14);
+    --live:            rgb(var(--c-live));
+
     --radius: 0.75rem;
-
-    /* ---- Zafe design tokens (guia de cores) ---- */
-    --brand:          #7C5CFC;
-    --brand-hover:    #8B6DFF;
-    --brand-active:   #6D4DE8;
-    --brand-text:     #B9AEFF;
-    --brand-bg:       #1B1636;
-    --brand-bg-soft:  rgba(124, 92, 252, 0.12);
-    --brand-border:   #3A2E7A;
-
-    --surface-1:      #14141C;
-    --surface-2:      #1E1E2A;
-    --surface-3:      #262636;
-
-    --sim:            #22C55E;
-    --sim-text:       #4ADE80;
-    --sim-bg:         rgba(34, 197, 94, 0.10);
-    --sim-border:     rgba(34, 197, 94, 0.35);
-
-    --nao:            #F43F5E;
-    --nao-text:       #FB7185;
-    --nao-bg:         rgba(244, 63, 94, 0.10);
-    --nao-border:     rgba(244, 63, 94, 0.35);
-
-    --prize:          #FBBF24;
-    --prize-text:     #FCD34D;
-    --prize-bg:       rgba(251, 191, 36, 0.12);
-    --prize-border:   rgba(251, 191, 36, 0.35);
-
-    --success:        #22C55E;
-    --warning:        #F59E0B;
-    --danger:         #F43F5E;
-    --info:           #7C5CFC;
+    /* NÃO definir --radius-md aqui. components/ui/* o referencia mas ele nunca
+       existiu; defini-lo mudaria border-radius, que está fora do escopo desta
+       tarefa (só cor). Anotado como achado, não corrigido. */
   }
 
   * {

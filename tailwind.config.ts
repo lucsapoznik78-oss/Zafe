@@ -1,5 +1,28 @@
 import type { Config } from "tailwindcss";
 
+/**
+ * As cores NÃO moram aqui. Moram em `app/globals.css`, como canais RGB sob
+ * `:root[data-theme="legacy"]` e `:root[data-theme="arquibancada"]`.
+ *
+ * Este arquivo só aponta para elas. Trocar o `data-theme` no <html> troca o app
+ * inteiro — é o que torna o rollback de cor um passo só. Não voltar a cravar
+ * hex aqui: hex neste arquivo é invisível ao interruptor de tema.
+ */
+
+/**
+ * `token("--c-accent")` → `rgb(var(--c-accent) / <opacidade>)`.
+ *
+ * A forma de função (e não a string com `<alpha-value>`) é necessária para
+ * distinguir "sem modificador" de "com modificador": só assim `border-border`
+ * pode render 10% no tema novo e 100% no antigo, enquanto `border-border/40`
+ * continua respeitando o 40% pedido no componente.
+ */
+const token = (channels: string, defaultAlpha = "1") =>
+  // O cast é necessário: o Tailwind aceita função de cor em runtime, mas o tipo
+  // `RecursiveKeyValuePair<string, string>` do `Config` só admite string.
+  (({ opacityValue }: { opacityValue?: string } = {}) =>
+    `rgb(var(${channels}) / ${opacityValue ?? defaultAlpha})`) as unknown as string;
+
 const config: Config = {
   darkMode: ["class"],
   content: [
@@ -10,55 +33,73 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#0A0A0F",
-        foreground: "#F5F5F7",
+        background: token("--c-bg"),
+        foreground: token("--c-text"),
         primary: {
-          DEFAULT: "#7C5CFC",
-          foreground: "#ffffff",
-          light: "#B9AEFF",
-          dark: "#6D4DE8",
+          DEFAULT: token("--c-accent"),
+          foreground: token("--c-text-on-accent"),
+          light: token("--c-accent-hover"),
+          dark: token("--c-accent-press"),
         },
         brand: {
-          DEFAULT: "#7C5CFC",
-          hover: "#8B6DFF",
-          active: "#6D4DE8",
-          text: "#B9AEFF",
-          bg: "#1B1636",
-          border: "#3A2E7A",
+          DEFAULT: token("--c-brand"),
+          hover: token("--c-accent-hover"),
+          active: token("--c-accent-press"),
+          text: token("--c-accent-text"),
+          bg: token("--c-accent-surface"),
+          border: token("--c-accent-border"),
+          onLight: token("--c-brand-on-light"),
         },
         secondary: {
-          DEFAULT: "#1E1E2A",
-          foreground: "#F5F5F7",
+          DEFAULT: token("--c-surface-2"),
+          foreground: token("--c-text"),
         },
         muted: {
-          DEFAULT: "#1E1E2A",
-          foreground: "#9A9AA8",
+          DEFAULT: token("--c-surface-2"),
+          foreground: token("--c-text-secondary"),
         },
         accent: {
-          DEFAULT: "#7C5CFC",
-          foreground: "#ffffff",
+          DEFAULT: token("--c-accent"),
+          foreground: token("--c-text-on-accent"),
         },
-        border: "#232331",
-        input: "#1E1E2A",
+        border: token("--c-line", "var(--line-a)"),
+        input: token("--c-surface-2"),
         card: {
-          DEFAULT: "#14141C",
-          foreground: "#F5F5F7",
+          DEFAULT: token("--c-surface"),
+          foreground: token("--c-text"),
         },
         popover: {
-          DEFAULT: "#262636",
-          foreground: "#F5F5F7",
+          DEFAULT: token("--c-surface-3"),
+          foreground: token("--c-text"),
         },
         destructive: {
-          DEFAULT: "#F43F5E",
-          foreground: "#ffffff",
+          DEFAULT: token("--c-danger"),
+          foreground: token("--c-text-on-accent"),
         },
-        sim: { DEFAULT: "#22C55E", text: "#4ADE80" },
-        nao: { DEFAULT: "#F43F5E", text: "#FB7185" },
-        prize: { DEFAULT: "#FBBF24", text: "#FCD34D" },
-        surface: { 0: "#0A0A0F", 1: "#14141C", 2: "#1E1E2A", 3: "#262636" },
-        line: { DEFAULT: "#232331", strong: "#2E2E3E" },
-        ink: { DEFAULT: "#F5F5F7", muted: "#9A9AA8", faint: "#6A6A78" },
-        ring: "#7C5CFC",
+        sim: { DEFAULT: token("--c-yes"), text: token("--c-yes-text") },
+        nao: { DEFAULT: token("--c-no"), text: token("--c-no-text") },
+        prize: { DEFAULT: token("--c-prize"), text: token("--c-prize-text") },
+        success: { DEFAULT: token("--c-success"), text: token("--c-success") },
+        live: token("--c-live"),
+        surface: {
+          0: token("--c-bg"),
+          1: token("--c-surface"),
+          2: token("--c-surface-2"),
+          3: token("--c-surface-3"),
+        },
+        line: {
+          DEFAULT: token("--c-line", "var(--line-a)"),
+          strong: token("--c-line-strong", "var(--line-a)"),
+        },
+        ink: {
+          DEFAULT: token("--c-text"),
+          muted: token("--c-text-secondary"),
+          faint: token("--c-text-muted"),
+        },
+        ring: token("--c-accent"),
+      },
+      boxShadow: {
+        base: "var(--shadow-base)",
       },
       borderRadius: {
         lg: "0.75rem",
@@ -75,11 +116,11 @@ const config: Config = {
           "100%": { transform: "translateX(100%)" },
         },
         "odds-pulse-up": {
-          "0%":   { backgroundColor: "rgba(34, 197, 94, 0.25)" },
+          "0%":   { backgroundColor: "rgb(var(--c-yes) / 0.25)" },
           "100%": { backgroundColor: "transparent" },
         },
         "odds-pulse-down": {
-          "0%":   { backgroundColor: "rgba(244, 63, 94, 0.25)" },
+          "0%":   { backgroundColor: "rgb(var(--c-no) / 0.25)" },
           "100%": { backgroundColor: "transparent" },
         },
       },
