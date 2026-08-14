@@ -7,33 +7,58 @@
 //
 // Cores hex são validadas por regex e SEMPRE salvas sem `#` (padrão do
 // DiceBear). Quem lê (FiguraAvatar) já lida com/sem `#`.
+//
+// Whitelists refletem o catálogo COMPLETO do avataaars — se surgir opção
+// nova numa versão futura, adicionar aqui + no FiguraBuilder.
 
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 const HAIR_STYLES = new Set([
-  "shortFlat", "shortWaved", "shortCurly", "shortRound", "shaggy", "theCaesar",
-  "sides", "bigHair", "curly", "bun", "bob", "longButNotTooLong", "dreads",
-  "fro", "hijab", "turban", "winterHat01", "noHair",
+  "noHair", "shortFlat", "shortWaved", "shortCurly", "shortRound",
+  "shaggy", "shaggyMullet", "shavedSides",
+  "theCaesar", "theCaesarAndSidePart", "sides",
+  "bigHair", "curly", "curvy", "bun", "bob", "longButNotTooLong",
+  "miaWallace", "straight01", "straight02", "straightAndStrand", "frida",
+  "dreads", "dreads01", "dreads02", "fro", "froBand",
+  "hijab", "turban", "hat",
+  "winterHat1", "winterHat02", "winterHat03", "winterHat04",
 ]);
 const FACIAL_HAIR = new Set([
   "beardLight", "beardMedium", "beardMagestic", "moustacheFancy", "moustacheMagnum",
 ]);
 const CLOTHING = new Set([
-  "shirtCrewNeck", "shirtVNeck", "shirtScoopNeck", "hoodie", "blazerAndShirt",
-  "collarAndSweater", "graphicShirt", "overall",
+  "shirtCrewNeck", "shirtVNeck", "shirtScoopNeck", "hoodie",
+  "blazerAndShirt", "blazerAndSweater", "collarAndSweater",
+  "graphicShirt", "overall",
+]);
+const CLOTHING_GRAPHIC = new Set([
+  "bat", "bear", "cumbia", "deer", "diamond", "hola",
+  "pizza", "resist", "selena", "skull", "skullOutline",
 ]);
 const ACCESSORIES = new Set([
-  "prescription01", "prescription02", "round", "sunglasses", "wayfarers", "eyepatch",
+  "prescription01", "prescription02", "round", "sunglasses",
+  "wayfarers", "kurt", "eyepatch",
+]);
+const EYEBROWS = new Set([
+  "default", "defaultNatural", "flatNatural",
+  "raisedExcited", "raisedExcitedNatural",
+  "sadConcerned", "sadConcernedNatural",
+  "angry", "angryNatural", "frownNatural",
+  "unibrowNatural", "upDown", "upDownNatural",
 ]);
 const EYES = new Set([
-  "default", "happy", "wink", "squint", "surprised", "hearts", "side", "closed",
+  "default", "happy", "wink", "winkWacky", "squint", "surprised",
+  "hearts", "side", "close", "cry", "dizzy", "eyeRoll",
 ]);
 const MOUTHS = new Set([
-  "default", "smile", "twinkle", "serious", "tongue", "grimace", "eating",
+  "default", "smile", "twinkle", "serious", "tongue", "grimace",
+  "eating", "sad", "concerned", "disbelief", "screamOpen", "vomit",
 ]);
 
-const HEX = /^#?[0-9a-fA-F]{6}$/;
+// Hex 6 dígitos com # opcional. Aceita também 8 dígitos (RGBA) pra permitir
+// "transparente" como fundo (#00000000).
+const HEX = /^#?[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$/;
 
 function pickHex(v: unknown): string | undefined {
   if (typeof v !== "string") return undefined;
@@ -73,6 +98,9 @@ export async function POST(request: Request) {
   const seed = pickSeed(raw.seed);
   if (seed) figura.seed = seed;
 
+  const backgroundColor = pickHex(raw.backgroundColor);
+  if (backgroundColor) figura.backgroundColor = backgroundColor;
+
   const skinColor = pickHex(raw.skinColor);
   if (skinColor) figura.skinColor = skinColor;
 
@@ -85,14 +113,26 @@ export async function POST(request: Request) {
   const facialHair = pickEnum(raw.facialHair, FACIAL_HAIR);
   if (facialHair) figura.facialHair = facialHair;
 
+  const facialHairColor = pickHex(raw.facialHairColor);
+  if (facialHairColor) figura.facialHairColor = facialHairColor;
+
   const clothing = pickEnum(raw.clothing, CLOTHING);
   if (clothing) figura.clothing = clothing;
 
   const clothesColor = pickHex(raw.clothesColor);
   if (clothesColor) figura.clothesColor = clothesColor;
 
+  const clothingGraphic = pickEnum(raw.clothingGraphic, CLOTHING_GRAPHIC);
+  if (clothingGraphic) figura.clothingGraphic = clothingGraphic;
+
   const accessories = pickEnum(raw.accessories, ACCESSORIES);
   if (accessories) figura.accessories = accessories;
+
+  const accessoriesColor = pickHex(raw.accessoriesColor);
+  if (accessoriesColor) figura.accessoriesColor = accessoriesColor;
+
+  const eyebrows = pickEnum(raw.eyebrows, EYEBROWS);
+  if (eyebrows) figura.eyebrows = eyebrows;
 
   const eyes = pickEnum(raw.eyes, EYES);
   if (eyes) figura.eyes = eyes;
