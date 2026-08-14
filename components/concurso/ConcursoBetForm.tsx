@@ -180,9 +180,11 @@ export default function ConcursoBetForm({
                   onClick={() => setSide(s)}
                   className={`py-3 rounded-lg font-bold text-sm transition-all ${
                     active
+                      // Texto sobre preenchimento verde/vermelho é sempre o
+                      // on-accent escuro, nunca claro — regra 2 da paleta.
                       ? s === "sim"
-                        ? "bg-sim text-foreground ring-2 ring-sim/50"
-                        : "bg-nao text-foreground ring-2 ring-destructive/50"
+                        ? "bg-sim text-primary-foreground ring-2 ring-sim/50"
+                        : "bg-nao text-primary-foreground ring-2 ring-destructive/50"
                       : s === "sim"
                         ? "bg-sim/10 text-sim hover:bg-sim/20"
                         : "bg-nao/10 text-destructive hover:bg-nao/20"

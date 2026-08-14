@@ -152,7 +152,10 @@ export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed,
               onClick={() => setSide(s)}
               className={`py-3 rounded-lg font-bold text-sm transition-all ${
                 active
-                  ? `bg-${colorClass} text-foreground ring-2 ring-${colorClass}/50`
+                  // Texto sobre preenchimento verde/vermelho é sempre o
+                  // on-accent escuro, nunca claro — regra 2 da paleta. Era
+                  // `text-white`, que sobre #2E9E63 dá 3.0:1.
+                  ? `bg-${colorClass} text-primary-foreground ring-2 ring-${colorClass}/50`
                   : `bg-${colorClass}/10 text-${colorClass} hover:bg-${colorClass}/20`
               }`}
             >
