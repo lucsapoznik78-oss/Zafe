@@ -8,6 +8,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { Star } from "lucide-react";
+import { PREMIUM_ENABLED } from "@/lib/flags";
 
 export default function PremiumStar({ size = 12 }: { size?: number }) {
   const [open, setOpen] = useState(false);
@@ -21,6 +22,11 @@ export default function PremiumStar({ size = 12 }: { size?: number }) {
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
   }, [open]);
+
+  // Premium oculto no produto (ver flag). O selo fica invisível pra todo mundo
+  // — inclusive quem já era premium — enquanto a assinatura não voltar. Fica
+  // depois dos hooks pra respeitar as rules-of-hooks (bundle já é minúsculo).
+  if (!PREMIUM_ENABLED) return null;
 
   return (
     <span ref={ref} className="relative inline-flex">

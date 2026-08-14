@@ -26,6 +26,20 @@ export const CONCURSO_ABERTO = CONCURSO_ENABLED && !CONCURSO_EM_BREVE;
 // Ligar SÓ quando o Concurso realmente aceita inscrição + prêmio R$ via PIX.
 export const CONCURSO_INSCRICOES_ABERTAS = false;
 
+// PREMIUM_ENABLED: o tier Premium (assinatura R$, badge dourado, insights,
+// chat exclusivo, bônus turbinado) aparece no site. Desligado no repo — o
+// produto por ora é 100% zona grátis. Assim que ligarmos:
+//   - Navbar volta a mostrar o item "Premium" no dropdown
+//   - Estrela dourada volta ao redor do avatar dos assinantes
+//   - PremiumStar/PremiumBadge voltam a renderizar
+//   - TopicInsights/CommunityChat mostram o CTA "Desbloquear com Premium"
+//   - PerfilTabs mostra o card "Plano"
+//   - Middleware para de redirecionar /premium pra home
+// Backend (`isPremium()`, gate no /api/liga/[id]/insights, bônus semanal)
+// segue funcionando normalmente pros usuários já marcados como premium — só
+// escondemos a superfície de venda enquanto não temos cobrança pronta.
+export const PREMIUM_ENABLED = false;
+
 // Modo Escalação (fantasy de escalação em Z$, zona grátis). Opt-IN, ao
 // contrário do Concurso: enquanto ninguém definir NEXT_PUBLIC_ESCALACAO_ENABLED,
 // o modo não existe para o usuário. É o que permite o schema e o painel de

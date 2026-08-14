@@ -10,6 +10,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Lock, Star, MessagesSquare, Send } from "lucide-react";
+import { PREMIUM_ENABLED } from "@/lib/flags";
 
 interface ChatMessage {
   id: string;
@@ -58,6 +59,11 @@ export default function CommunityChat({
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
   }, [messages]);
+
+  // Premium oculto: nem mostra o cadeado/CTA nem o chat real. Backend
+  // (/api/comunidade/[id]/chat) segue funcionando pra premium legados —
+  // mas nenhum caminho de UI dá acesso a esse endpoint enquanto isto for false.
+  if (!PREMIUM_ENABLED) return null;
 
   async function send(e: React.FormEvent) {
     e.preventDefault();

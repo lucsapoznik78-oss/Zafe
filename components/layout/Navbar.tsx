@@ -10,7 +10,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
 import { formatCurrency } from "@/lib/utils";
 import { isPremium } from "@/lib/premium";
-import { CONCURSO_ABERTO, CONCURSO_ENABLED, CONCURSO_ESTREIA_CURTO, ESCALACAO_ENABLED, HOME_PATH } from "@/lib/flags";
+import { CONCURSO_ABERTO, CONCURSO_ENABLED, CONCURSO_ESTREIA_CURTO, ESCALACAO_ENABLED, HOME_PATH, PREMIUM_ENABLED } from "@/lib/flags";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import FiguraAvatar, { type FiguraConfig } from "@/components/perfil/FiguraAvatar";
 import {
@@ -68,7 +68,11 @@ export default function Navbar() {
     .join("")
     .toUpperCase() ?? "?";
 
-  const premium = isPremium(profile);
+  // Enquanto o Premium está oculto pro produto, também escondemos os SINAIS
+  // visuais dele — anel dourado, estrelinha no canto do avatar e item do menu
+  // — mesmo pra quem já era premium. `isPremium(profile)` no backend continua
+  // valendo (bonus semanal turbinado etc.).
+  const premium = PREMIUM_ENABLED && isPremium(profile);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-black/90 backdrop-blur-sm pt-[env(safe-area-inset-top)]">
@@ -181,10 +185,12 @@ export default function Navbar() {
                 <Users size={14} className="mr-2 text-primary" />
                 <span className="text-sm">Amigos e grupos</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => window.location.href = "/premium"}>
-                <Star size={14} className="mr-2 text-yellow-400" />
-                <span className="text-sm">Premium</span>
-              </DropdownMenuItem>
+              {PREMIUM_ENABLED && (
+                <DropdownMenuItem onClick={() => window.location.href = "/premium"}>
+                  <Star size={14} className="mr-2 text-yellow-400" />
+                  <span className="text-sm">Premium</span>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={() => window.location.href = "/ajuda"}>
                 <LifeBuoy size={14} className="mr-2 text-primary" />
                 <span className="text-sm">Ajuda e Transparência</span>

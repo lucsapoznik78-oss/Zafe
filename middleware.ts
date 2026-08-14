@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest, type NextFetchEvent } from "next/server";
-import { CONCURSO_ENABLED, CONCURSO_INSCRICOES_ABERTAS, HOME_PATH } from "@/lib/flags";
+import { CONCURSO_ENABLED, CONCURSO_INSCRICOES_ABERTAS, HOME_PATH, PREMIUM_ENABLED } from "@/lib/flags";
 import { LEGAL_DOCS } from "@/lib/legal";
 import { checkRateLimit, policyFor, registrarBloqueio } from "@/lib/ratelimit";
 import { rateLimitDesligado } from "@/lib/killswitch";
@@ -24,6 +24,12 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
   // fora daqui (prefixo diferente) e é inócua enquanto o PIX não está configurado.
   if (!CONCURSO_ENABLED && request.nextUrl.pathname.startsWith("/concurso")) {
     return NextResponse.redirect(new URL("/", request.url));
+  }
+
+  // Mesma lógica pro Premium: enquanto a cobrança e o feature-set não estão
+  // prontos, /premium não pode ser acessado nem por link direto.
+  if (!PREMIUM_ENABLED && request.nextUrl.pathname.startsWith("/premium")) {
+    return NextResponse.redirect(new URL(HOME_PATH, request.url));
   }
 
   // Server Components não enxergam o pathname. O gate de re-aceite precisa dele

@@ -15,6 +15,7 @@ import RankBadge from "@/components/games/RankBadge";
 import { tierForWins } from "@/lib/games/types";
 import PremiumBadge from "@/components/ui/PremiumBadge";
 import { isPremium } from "@/lib/premium";
+import { PREMIUM_ENABLED } from "@/lib/flags";
 import { mascaraCPF } from "@/lib/cpf";
 
 interface Props {
@@ -171,32 +172,36 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl, t
             <EditProfileForm fullName={profile?.full_name ?? ""} username={profile?.username ?? ""} />
           </div>
 
-          {/* Plano */}
-          <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-            <div className="flex items-center gap-2">
-              <Star size={15} className={premiumActive ? "text-yellow-400" : "text-muted-foreground"} />
-              <h3 className="text-sm font-semibold text-white">Plano</h3>
-              {premiumActive && <PremiumBadge className="ml-auto" />}
-            </div>
-            {premiumActive ? (
-              <p className="text-xs text-muted-foreground">
-                Você é Premium
-                {profile?.premium_until
-                  ? ` até ${new Date(profile.premium_until).toLocaleDateString("pt-BR")}.`
-                  : " (vitalício)."}
-              </p>
-            ) : (
-              <div className="flex items-center justify-between gap-3 flex-wrap">
-                <p className="text-xs text-muted-foreground">Você está no plano Gratuito.</p>
-                <Link
-                  href="/premium"
-                  className="text-xs font-bold text-primary hover:underline shrink-0"
-                >
-                  Conhecer o Premium →
-                </Link>
+          {/* Plano — card inteiro fica oculto enquanto a assinatura não
+              está no ar (ver PREMIUM_ENABLED). Não faz sentido mostrar
+              "você está no plano gratuito" sem existir plano pago. */}
+          {PREMIUM_ENABLED && (
+            <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Star size={15} className={premiumActive ? "text-yellow-400" : "text-muted-foreground"} />
+                <h3 className="text-sm font-semibold text-white">Plano</h3>
+                {premiumActive && <PremiumBadge className="ml-auto" />}
               </div>
-            )}
-          </div>
+              {premiumActive ? (
+                <p className="text-xs text-muted-foreground">
+                  Você é Premium
+                  {profile?.premium_until
+                    ? ` até ${new Date(profile.premium_until).toLocaleDateString("pt-BR")}.`
+                    : " (vitalício)."}
+                </p>
+              ) : (
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <p className="text-xs text-muted-foreground">Você está no plano Gratuito.</p>
+                  <Link
+                    href="/premium"
+                    className="text-xs font-bold text-primary hover:underline shrink-0"
+                  >
+                    Conhecer o Premium →
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* KYC */}
           <div className="bg-card border border-border rounded-xl p-4 space-y-3">

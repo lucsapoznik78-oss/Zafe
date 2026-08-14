@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Lock, Star, ExternalLink } from "lucide-react";
 import type { TopicInsightContent } from "@/types/database";
+import { PREMIUM_ENABLED } from "@/lib/flags";
 
 interface InsightsResponse {
   locked: boolean;
@@ -24,6 +25,9 @@ export default function TopicInsights({ topicId }: { topicId: string }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Premium oculto: não bate no backend nem mostra loading. Backend
+    // (/api/liga/[id]/insights) segue servindo os premium legados normalmente.
+    if (!PREMIUM_ENABLED) { setLoading(false); return; }
     let active = true;
     setLoading(true);
     fetch(`/api/liga/${topicId}/insights`)
@@ -39,6 +43,8 @@ export default function TopicInsights({ topicId }: { topicId: string }) {
       active = false;
     };
   }, [topicId]);
+
+  if (!PREMIUM_ENABLED) return null;
 
   if (loading) {
     return (
