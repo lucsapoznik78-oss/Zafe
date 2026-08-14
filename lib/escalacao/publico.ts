@@ -88,9 +88,26 @@ export interface MeuTime {
  * competição só).
  *
  * A policy já esconde rascunho, então "vigente" aqui é o card mais recente de
- * cada modo. Ordenado com o mix primeiro porque é o carro-chefe; dentro do fixo,
- * o de prazo mais curto na frente.
+ * cada modo. A ordem do seletor é editorial (`ORDEM_SELETOR`), não derivada de
+ * prazo nem de modo.
  */
+
+/**
+ * A ordem em que as Convocações aparecem no seletor — e, por tabela, qual delas
+ * abre por padrão (a página cai no primeiro card quando não há `?c=`).
+ *
+ * É uma decisão de produto, não uma propriedade dos dados: o Brasileirão é o
+ * esporte de maior alcance no Brasil e abre a página. Esporte fora da lista cai
+ * no fim, em ordem alfabética — a chegada de tênis ou Champions não precisa
+ * desta linha para funcionar.
+ */
+const ORDEM_SELETOR = ["futebol", "nba", "nfl", "mix", "valorant"];
+
+/** Chave de ordenação: o mix é um bloco só; cada card de fixo é seu esporte. */
+function chaveDeOrdem(card: CardPublico): string {
+  return card.modo === "mix" ? "mix" : card.esportes[0] ?? "";
+}
+
 export async function getCardsVigentes(supabase: SupabaseClient): Promise<CardPublico[]> {
   const { data } = await supabase
     .from("escalacao_card")
@@ -110,13 +127,6 @@ export async function getCardsVigentes(supabase: SupabaseClient): Promise<CardPu
     return true;
   });
 
-  vigentes.sort((a, b) => {
-    if (a.modo !== b.modo) return a.modo === "mix" ? -1 : 1;
-    // Entre os cards de fixo, o que fecha antes vem primeiro: a aba mais à
-    // esquerda é a que o usuário ainda dá tempo de perder.
-    return a.fecha_em.localeCompare(b.fecha_em) || a.titulo.localeCompare(b.titulo, "pt-BR");
-  });
-
   // Os esportes de todos os cards de uma vez: o seletor pinta cada Convocação com
   // a cor do esporte, e um SELECT por card seria uma consulta por aba.
   const { data: esportes } = await supabase
@@ -128,6 +138,14 @@ export async function getCardsVigentes(supabase: SupabaseClient): Promise<CardPu
       .filter((e) => e.card_id === c.id)
       .map((e) => e.esporte_key as string);
   }
+
+  // Depois do preenchimento acima, não antes: a ordem depende de `esportes`.
+  vigentes.sort((a, b) => {
+    const ia = ORDEM_SELETOR.indexOf(chaveDeOrdem(a));
+    const ib = ORDEM_SELETOR.indexOf(chaveDeOrdem(b));
+    if (ia !== ib) return (ia < 0 ? ORDEM_SELETOR.length : ia) - (ib < 0 ? ORDEM_SELETOR.length : ib);
+    return a.titulo.localeCompare(b.titulo, "pt-BR");
+  });
 
   return vigentes;
 }
