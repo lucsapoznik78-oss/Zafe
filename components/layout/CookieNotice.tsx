@@ -31,19 +31,19 @@ export default function CookieNotice() {
     <div
       role="dialog"
       aria-label="Aviso de cookies"
-      className="fixed left-3 right-3 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] md:bottom-4 md:left-auto md:right-4 md:max-w-sm z-[60] rounded-xl border border-border bg-black/95 backdrop-blur-sm p-4 shadow-lg"
+      className="fixed left-3 right-3 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] md:bottom-4 md:left-auto md:right-4 md:max-w-sm z-[60] rounded-xl border border-border bg-background/95 backdrop-blur-sm p-4 shadow-lg"
     >
       <p className="text-xs text-muted-foreground leading-relaxed">
         A Zafe usa apenas cookies essenciais: para manter você conectado e
         reconhecer convites de amigos. Não usamos cookies de publicidade nem de
         rastreamento.{" "}
-        <Link href="/termos" className="underline hover:text-white transition-colors">
+        <Link href="/termos" className="underline hover:text-foreground transition-colors">
           Saiba mais
         </Link>
       </p>
       <button
         onClick={dismiss}
-        className="mt-3 w-full md:w-auto px-4 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary/90 transition-colors"
+        className="mt-3 w-full md:w-auto px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors"
       >
         Entendi
       </button>

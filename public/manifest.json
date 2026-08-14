@@ -4,8 +4,8 @@
   "description": "O fantasy game de previsões do Brasil. Compete prevendo eventos reais.",
   "start_url": "/liga",
   "display": "standalone",
-  "background_color": "#0A0A0F",
-  "theme_color": "#0A0A0F",
+  "background_color": "#0D1B2A",
+  "theme_color": "#0D1B2A",
   "orientation": "portrait-primary",
   "icons": [
     {

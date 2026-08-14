@@ -43,12 +43,12 @@ export default function DeleteEventButton({ eventId, hasBets }: { eventId: strin
             <button
               onClick={handleDelete}
               disabled={loading}
-              className="flex-1 py-2 rounded-lg bg-nao text-white font-bold text-xs disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 py-2 rounded-lg bg-nao text-primary-foreground font-bold text-xs disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading && <Loader2 size={12} className="animate-spin" />}
               Apagar
             </button>
-            <button onClick={() => setOpen(false)} className="px-3 py-2 rounded-lg bg-muted text-white text-xs">
+            <button onClick={() => setOpen(false)} className="px-3 py-2 rounded-lg bg-muted text-foreground text-xs">
               Voltar
             </button>
           </div>

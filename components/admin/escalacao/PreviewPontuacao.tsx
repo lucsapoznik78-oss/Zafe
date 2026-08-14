@@ -14,7 +14,7 @@ export default function PreviewPontuacao({ resultado }: { resultado: ResultadoMe
     <div className="bg-muted/40 border border-border rounded-lg p-3 space-y-3">
       <div className="flex items-baseline justify-between">
         <span className="text-xs text-muted-foreground">Total no mês</span>
-        <span className="text-lg font-bold text-white tabular-nums">
+        <span className="text-lg font-bold text-foreground tabular-nums">
           {resultado.total.toFixed(1)}
         </span>
       </div>
@@ -22,8 +22,8 @@ export default function PreviewPontuacao({ resultado }: { resultado: ResultadoMe
       {resultado.porEvento.map((ev) => (
         <div key={ev.eventoKey} className="space-y-1">
           <div className="flex items-baseline justify-between border-b border-border pb-1">
-            <span className="text-[11px] font-semibold text-white">{ev.eventoKey}</span>
-            <span className="text-[11px] text-white tabular-nums">
+            <span className="text-[11px] font-semibold text-foreground">{ev.eventoKey}</span>
+            <span className="text-[11px] text-foreground tabular-nums">
               {ev.total.toFixed(1)}
               {ev.clampado && (
                 <span className="ml-1 text-nao">
@@ -40,10 +40,10 @@ export default function PreviewPontuacao({ resultado }: { resultado: ResultadoMe
                 <li key={i} className="flex items-baseline justify-between gap-2 text-[11px]">
                   <span className="text-muted-foreground">
                     {l.ocorrencia !== undefined && (
-                      <span className="text-white/60">#{l.ocorrencia} </span>
+                      <span className="text-foreground/60">#{l.ocorrencia} </span>
                     )}
                     {l.rotulo}
-                    <span className="text-white/40"> · {l.conta}</span>
+                    <span className="text-foreground/40"> · {l.conta}</span>
                   </span>
                   <span
                     className={`tabular-nums shrink-0 ${l.pontos < 0 ? "text-nao" : "text-sim"}`}

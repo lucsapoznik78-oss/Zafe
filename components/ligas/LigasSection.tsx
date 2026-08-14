@@ -100,7 +100,7 @@ export default function LigasSection({ ligas, currentUserId, friends }: Props) {
       <div className="bg-card border border-border rounded-xl p-4 space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
             <Trophy size={16} className="text-primary" />
             Grupos
             {ligas.length > 0 && (
@@ -122,8 +122,8 @@ export default function LigasSection({ ligas, currentUserId, friends }: Props) {
             onClick={() => setActiveSection("privadas")}
             className={`flex items-center justify-center gap-1.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
               activeSection === "privadas"
-                ? "bg-card text-white shadow-sm"
-                : "text-muted-foreground hover:text-white"
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             <Lock size={11} />
@@ -138,8 +138,8 @@ export default function LigasSection({ ligas, currentUserId, friends }: Props) {
             onClick={() => setActiveSection("publicas")}
             className={`flex items-center justify-center gap-1.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
               activeSection === "publicas"
-                ? "bg-card text-white shadow-sm"
-                : "text-muted-foreground hover:text-white"
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             <Globe size={11} />
@@ -162,7 +162,7 @@ export default function LigasSection({ ligas, currentUserId, friends }: Props) {
                 <p className="text-xs text-muted-foreground">Crie um grupo e convide seus amigos para palpitar juntos</p>
                 <button
                   onClick={() => setShowCreate(true)}
-                  className="mt-2 px-4 py-2 bg-primary text-white text-sm font-bold rounded-lg hover:bg-primary/90 transition-colors"
+                  className="mt-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-bold rounded-lg hover:bg-primary/90 transition-colors"
                 >
                   Criar grupo privado
                 </button>
@@ -211,7 +211,7 @@ export default function LigasSection({ ligas, currentUserId, friends }: Props) {
                     value={searchQ}
                     onChange={(e) => setSearchQ(e.target.value)}
                     placeholder="Buscar grupos públicos..."
-                    className="w-full pl-8 pr-3 py-2 bg-input border border-border rounded-lg text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+                    className="w-full pl-8 pr-3 py-2 bg-input border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
                   />
                 </div>
                 <button
@@ -244,7 +244,7 @@ export default function LigasSection({ ligas, currentUserId, friends }: Props) {
                         <Trophy size={16} style={{ color: liga.color }} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-white truncate">{liga.name}</p>
+                        <p className="text-sm font-semibold text-foreground truncate">{liga.name}</p>
                         <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-0.5">
                           <Users size={10} />
                           <span>{liga.member_count} membros</span>
@@ -265,7 +265,7 @@ export default function LigasSection({ ligas, currentUserId, friends }: Props) {
 
               <button
                 onClick={() => setShowCreate(true)}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-dashed border-border text-xs text-muted-foreground hover:text-white hover:border-border/80 transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-dashed border-border text-xs text-muted-foreground hover:text-foreground hover:border-border/80 transition-colors"
               >
                 <Globe size={13} />
                 Criar grupo público

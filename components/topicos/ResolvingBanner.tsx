@@ -41,13 +41,13 @@ export default function ResolvingBanner({ topicId }: Props) {
   }, [topicId, router]);
 
   return (
-    <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/5 px-5 py-4 flex items-start gap-4">
-      <Loader2 size={20} className="text-yellow-400 animate-spin mt-0.5 shrink-0" />
+    <div className="rounded-xl border border-prize/30 bg-prize/5 px-5 py-4 flex items-start gap-4">
+      <Loader2 size={20} className="text-prize animate-spin mt-0.5 shrink-0" />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-yellow-300">
+        <p className="text-sm font-semibold text-prize">
           Aguardando resolução{dots}
         </p>
-        <p className="text-xs text-yellow-400/70 mt-1 leading-relaxed">
+        <p className="text-xs text-prize/70 mt-1 leading-relaxed">
           O oracle de IA está analisando o resultado deste setor. Isso costuma levar entre 30 segundos e 2 minutos.
           A página atualiza automaticamente assim que o resultado for publicado.
         </p>

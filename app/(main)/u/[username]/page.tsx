@@ -124,7 +124,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
   const SIDE_STATUS: Record<string, { label: string; class: string }> = {
     won:      { label: "Ganhou",    class: "text-sim" },
     lost:     { label: "Perdeu",    class: "text-nao" },
-    pending:  { label: "Pendente",  class: "text-yellow-400" },
+    pending:  { label: "Pendente",  class: "text-prize" },
     matched:  { label: "Em jogo",   class: "text-primary" },
     partial:  { label: "Em jogo",   class: "text-primary" },
     refunded: { label: "Reembolso", class: "text-muted-foreground" },
@@ -140,7 +140,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
         </Avatar>
         <div>
           <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-xl font-bold text-white">{profile.full_name}</h1>
+            <h1 className="text-xl font-bold text-foreground">{profile.full_name}</h1>
             {premiumActive && <PremiumBadge />}
           </div>
           <p className="text-muted-foreground text-sm">@{profile.username}</p>
@@ -166,13 +166,13 @@ export default async function PublicProfilePage({ params }: PageProps) {
             icon: <Flame size={16} />,
             label: "Sequência atual",
             value: streak > 0 ? `${streak}🔥` : "—",
-            color: streak >= 3 ? "text-orange-400" : "text-white",
+            color: streak >= 3 ? "text-destructive" : "text-foreground",
           },
           {
             icon: <Star size={16} />,
             label: "Melhor categoria",
             value: bestCat ? `${CATEGORY_LABELS[bestCat] ?? bestCat} (${(bestRate * 100).toFixed(0)}%)` : "—",
-            color: "text-yellow-400",
+            color: "text-prize",
           },
         ].map((stat) => (
           <div key={stat.label} className="bg-card border border-border rounded-xl p-3 text-center">
@@ -185,7 +185,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
 
       {/* Histórico público */}
       <div className="bg-card border border-border rounded-xl p-4">
-        <h3 className="text-sm font-semibold text-white mb-4">Histórico Público</h3>
+        <h3 className="text-sm font-semibold text-foreground mb-4">Histórico Público</h3>
         {!all.length ? (
           <p className="text-muted-foreground text-sm text-center py-4">Nenhum palpite ainda</p>
         ) : (
@@ -196,7 +196,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
                 <div key={i} className="flex items-center justify-between py-2.5 border-b border-border/50 last:border-0">
                   <div className="flex-1 min-w-0 mr-3">
                     <Link href={(bet.topic as any)?._community ? `/comunidade/${(bet.topic as any)?.id}` : `/liga/${(bet.topic as any)?.id}`} className="hover:text-primary transition-colors">
-                      <p className="text-sm text-white truncate">{(bet.topic as any)?.title}</p>
+                      <p className="text-sm text-foreground truncate">{(bet.topic as any)?.title}</p>
                     </Link>
                     <div className="flex items-center gap-2 mt-0.5">
                       {(bet.topic as any)?.category && <CategoryBadge category={(bet.topic as any).category} />}
@@ -214,7 +214,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
                     ) : bet.status === "lost" ? (
                       <p className="text-sm font-semibold text-nao">-{formatCurrency(bet.amount)}</p>
                     ) : (
-                      <p className="text-sm font-semibold text-white">{formatCurrency(bet.amount)}</p>
+                      <p className="text-sm font-semibold text-foreground">{formatCurrency(bet.amount)}</p>
                     )}
                     <p className={`text-xs ${status.class}`}>{status.label}</p>
                   </div>

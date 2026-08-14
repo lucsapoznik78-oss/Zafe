@@ -20,7 +20,7 @@ export default function LandingFooter() {
               <Link
                 key={l.href}
                 href={l.href}
-                className="text-xs text-muted-foreground hover:text-white transition-colors"
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
                 {l.label}
               </Link>

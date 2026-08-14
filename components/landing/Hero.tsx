@@ -12,7 +12,7 @@ export default function Hero() {
         </div>
 
         {/* Headline */}
-        <h1 className="text-4xl sm:text-5xl font-black text-white leading-tight tracking-tight">
+        <h1 className="text-4xl sm:text-5xl font-black text-foreground leading-tight tracking-tight">
           O fantasy game onde você compete{" "}
           <span className="text-primary">prevendo</span> esporte e e-sports
         </h1>
@@ -28,13 +28,13 @@ export default function Hero() {
         <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
           <Link
             href="/login"
-            className="px-6 py-3 rounded-xl bg-primary text-white font-bold text-base hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-base hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
             Criar conta grátis
           </Link>
           <Link
             href="/liga"
-            className="px-6 py-3 rounded-xl border border-border text-white font-medium text-base hover:border-primary/40 hover:bg-white/5 transition-colors"
+            className="px-6 py-3 rounded-xl border border-border text-foreground font-medium text-base hover:border-primary/40 hover:bg-foreground/5 transition-colors"
           >
             Ver eventos abertos →
           </Link>

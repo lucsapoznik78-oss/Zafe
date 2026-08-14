@@ -217,7 +217,7 @@ export default function AdminUsuarios() {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Buscar por username ou nome…"
-          className="w-full bg-input border border-border rounded-lg pl-9 pr-3 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50"
+          className="w-full bg-input border border-border rounded-lg pl-9 pr-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50"
         />
       </div>
 
@@ -238,13 +238,13 @@ export default function AdminUsuarios() {
                 <div className="min-w-0 flex items-center gap-3">
                   <span className="text-xs font-bold text-muted-foreground tabular-nums w-6 shrink-0 text-right">#{i + 1}</span>
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-white truncate">
+                    <p className="text-sm font-bold text-foreground truncate">
                       @{u.username ?? u.id.slice(0, 8)}
                       {u.is_admin && <span className="ml-2 text-[10px] text-primary font-semibold">ADMIN</span>}
-                      {isPremium(u) && <span className="ml-2 text-[10px] text-yellow-400 font-semibold">PREMIUM</span>}
+                      {isPremium(u) && <span className="ml-2 text-[10px] text-prize font-semibold">PREMIUM</span>}
                       {u.banned && <span className="ml-2 text-[10px] text-destructive font-semibold">BANIDO</span>}
-                      {pausaAtiva(u) === "autoexcluido" && <span className="ml-2 text-[10px] text-red-400 font-semibold">AUTOEXCLUÍDO</span>}
-                      {pausaAtiva(u) === "pausa" && <span className="ml-2 text-[10px] text-violet-300 font-semibold">EM PAUSA</span>}
+                      {pausaAtiva(u) === "autoexcluido" && <span className="ml-2 text-[10px] text-destructive font-semibold">AUTOEXCLUÍDO</span>}
+                      {pausaAtiva(u) === "pausa" && <span className="ml-2 text-[10px] text-primary font-semibold">EM PAUSA</span>}
                     </p>
                     <p className="text-xs text-muted-foreground truncate">
                       {u.full_name ?? "—"}
@@ -259,7 +259,7 @@ export default function AdminUsuarios() {
                     className={`p-2 rounded-lg border transition-colors ${
                       atividadeId === u.id
                         ? "border-primary/50 text-primary"
-                        : "border-border text-muted-foreground hover:text-white hover:border-primary/50"
+                        : "border-border text-muted-foreground hover:text-foreground hover:border-primary/50"
                     }`}
                     title="Monitoramento / jogo responsável"
                   >
@@ -270,8 +270,8 @@ export default function AdminUsuarios() {
                     disabled={busyId === u.id}
                     className={`p-2 rounded-lg border transition-colors disabled:opacity-40 ${
                       isPremium(u)
-                        ? "border-yellow-400/50 text-yellow-400 hover:bg-yellow-400/10"
-                        : "border-border text-muted-foreground hover:text-yellow-400 hover:border-yellow-400/50"
+                        ? "border-prize/50 text-prize hover:bg-prize/10"
+                        : "border-border text-muted-foreground hover:text-prize hover:border-prize/50"
                     }`}
                     title={isPremium(u) ? "Desativar Premium" : "Ativar Premium"}
                   >
@@ -279,7 +279,7 @@ export default function AdminUsuarios() {
                   </button>
                   <button
                     onClick={() => { setAdjustId(adjustId === u.id ? null : u.id); setMsg(""); }}
-                    className="p-2 rounded-lg border border-border text-muted-foreground hover:text-white hover:border-primary/50 transition-colors"
+                    className="p-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors"
                     title="Ajustar saldo"
                   >
                     <Coins size={14} />
@@ -307,19 +307,19 @@ export default function AdminUsuarios() {
                     onChange={(e) => setAmount(e.target.value)}
                     placeholder="± valor (ex: -50)"
                     inputMode="decimal"
-                    className="w-32 bg-input border border-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary/50"
+                    className="w-32 bg-input border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary/50"
                   />
                   <input
                     type="text"
                     value={motivo}
                     onChange={(e) => setMotivo(e.target.value)}
                     placeholder="Motivo do ajuste (obrigatório)"
-                    className="flex-1 min-w-[180px] bg-input border border-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary/50"
+                    className="flex-1 min-w-[180px] bg-input border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary/50"
                   />
                   <button
                     onClick={() => submitAdjust(u)}
                     disabled={busyId === u.id}
-                    className="px-4 py-2 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                    className="px-4 py-2 bg-primary text-primary-foreground font-bold text-sm rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
                   >
                     {busyId === u.id ? <Loader2 size={14} className="animate-spin" /> : "Aplicar"}
                   </button>
@@ -330,7 +330,7 @@ export default function AdminUsuarios() {
                 <div className="bg-background/60 border border-border rounded-lg p-3 space-y-3">
                   <div className="flex items-center gap-2">
                     <Activity size={14} className="text-primary" />
-                    <p className="text-xs font-semibold text-white">Monitoramento — jogo responsável</p>
+                    <p className="text-xs font-semibold text-foreground">Monitoramento — jogo responsável</p>
                   </div>
 
                   {atividadeLoading ? (
@@ -345,12 +345,12 @@ export default function AdminUsuarios() {
                           <span className="px-2 py-0.5 rounded-full bg-destructive/15 text-destructive font-semibold">Banido</span>
                         )}
                         {atividade.jogoResponsavel.autoexcluido && (
-                          <span className="px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 font-semibold">
+                          <span className="px-2 py-0.5 rounded-full bg-nao/15 text-destructive font-semibold">
                             Autoexcluído até {new Date(atividade.jogoResponsavel.self_excluded_until!).toLocaleDateString("pt-BR")}
                           </span>
                         )}
                         {atividade.jogoResponsavel.cooloffAtivo && (
-                          <span className="px-2 py-0.5 rounded-full bg-violet-500/15 text-violet-300 font-semibold">
+                          <span className="px-2 py-0.5 rounded-full bg-primary/15 text-primary font-semibold">
                             Em pausa até {new Date(atividade.jogoResponsavel.cooloff_until!).toLocaleDateString("pt-BR")}
                           </span>
                         )}
@@ -374,7 +374,7 @@ export default function AdminUsuarios() {
                             key={s.indice}
                             className="grid grid-cols-[1.4fr_1fr_0.8fr_0.8fr] gap-2 px-3 py-2 border-t border-border text-xs"
                           >
-                            <span className="text-white">{rotuloSemana(s.indice)}</span>
+                            <span className="text-foreground">{rotuloSemana(s.indice)}</span>
                             <span className="text-right text-primary font-semibold tabular-nums">{fmtDuracao(s.minutosEstimados)}</span>
                             <span className="text-right text-muted-foreground tabular-nums">{s.palpites}</span>
                             <span className="text-right text-muted-foreground tabular-nums">{s.diasAtivos}/7</span>

@@ -10,9 +10,9 @@ import { createAdminClient, createClient } from "@/lib/supabase/server";
 const CORES: Record<string, string> = {
   rascunho: "text-muted-foreground",
   aberto: "text-sim",
-  fechado: "text-white",
-  apurando: "text-white",
-  apurado: "text-white",
+  fechado: "text-foreground",
+  apurando: "text-foreground",
+  apurado: "text-foreground",
   pago: "text-sim",
   cancelado: "text-nao",
 };
@@ -119,7 +119,7 @@ export default async function EscalacaoAdminPage() {
         <Link href="/admin" className="text-[11px] text-muted-foreground">
           ← Painel
         </Link>
-        <h1 className="text-lg font-bold text-white">Escalação</h1>
+        <h1 className="text-lg font-bold text-foreground">Escalação</h1>
         <p className="text-xs text-muted-foreground">
           Dar nota aos atletas é o trabalho principal daqui. Nenhum cron faz isso — a apuração
           só acontece quando você roda.
@@ -129,7 +129,7 @@ export default async function EscalacaoAdminPage() {
       <PesquisaIA cards={paraApurar} />
 
       <div className="space-y-2">
-        <h2 className="text-sm font-semibold text-white">Convocações</h2>
+        <h2 className="text-sm font-semibold text-foreground">Convocações</h2>
         <div className="bg-card border border-border rounded-xl divide-y divide-border">
           {(cards ?? []).length === 0 ? (
             <p className="p-4 text-xs text-muted-foreground">Nenhum card ainda.</p>
@@ -146,8 +146,8 @@ export default async function EscalacaoAdminPage() {
                   className="block p-3 hover:bg-muted/40 transition-colors"
                 >
                   <div className="flex items-baseline justify-between gap-2">
-                    <span className="text-sm text-white">{c.titulo}</span>
-                    <span className={`text-[11px] ${CORES[c.status] ?? "text-white"}`}>
+                    <span className="text-sm text-foreground">{c.titulo}</span>
+                    <span className={`text-[11px] ${CORES[c.status] ?? "text-foreground"}`}>
                       {c.status}
                     </span>
                   </div>
@@ -164,7 +164,7 @@ export default async function EscalacaoAdminPage() {
       </div>
 
       <details className="bg-card border border-border rounded-xl p-4">
-        <summary className="text-sm font-semibold text-white cursor-pointer">
+        <summary className="text-sm font-semibold text-foreground cursor-pointer">
           Criar convocação
         </summary>
         <div className="pt-3">

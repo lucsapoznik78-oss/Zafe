@@ -8,7 +8,7 @@ export default function ConcursoLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-background">
       <ConcursoNav />
       <main className="pt-[calc(3.5rem+env(safe-area-inset-top))] pb-[calc(4rem+env(safe-area-inset-bottom))] max-w-5xl mx-auto px-4">{children}</main>
       <Suspense fallback={null}>

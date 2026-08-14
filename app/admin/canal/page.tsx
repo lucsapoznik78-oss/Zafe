@@ -15,7 +15,7 @@ export default async function AdminCanalPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
       <div>
-        <h1 className="text-xl sm:text-2xl font-black text-white">Canal do Usuário</h1>
+        <h1 className="text-xl sm:text-2xl font-black text-foreground">Canal do Usuário</h1>
         <p className="text-sm text-muted-foreground">
           Mensagens enviadas pelos usuários em /canal. Responda por aqui — o usuário
           recebe notificação no app e push.

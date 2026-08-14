@@ -85,7 +85,7 @@ export default function MultiOutcomeBetForm({
   return (
     <div className="bg-card border border-border rounded-xl p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-white">Fazer Palpite</h3>
+        <h3 className="text-sm font-semibold text-foreground">Fazer Palpite</h3>
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
           <Wallet size={11} />
           <span className={insufficientBalance && amountNum > 0 ? "text-destructive font-semibold" : ""}>
@@ -97,7 +97,7 @@ export default function MultiOutcomeBetForm({
       {/* Pool total */}
       <div className="bg-muted/40 rounded-lg px-3 py-2 text-center">
         <p className="text-[10px] text-muted-foreground font-medium">POOL TOTAL</p>
-        <p className="text-sm font-bold text-white">{formatCurrency(totalPool)}</p>
+        <p className="text-sm font-bold text-foreground">{formatCurrency(totalPool)}</p>
       </div>
 
       {/* Outcomes */}
@@ -111,8 +111,8 @@ export default function MultiOutcomeBetForm({
               onClick={() => setSelectedOutcomeId(o.id)}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg border text-sm transition-all text-left ${
                 active
-                  ? "bg-primary/20 border-primary text-white ring-1 ring-primary/40"
-                  : "bg-muted/30 border-border text-muted-foreground hover:border-primary/40 hover:text-white"
+                  ? "bg-primary/20 border-primary text-foreground ring-1 ring-primary/40"
+                  : "bg-muted/30 border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
               }`}
             >
               <span className="font-medium flex-1 pr-2">{o.label}</span>
@@ -138,7 +138,7 @@ export default function MultiOutcomeBetForm({
             placeholder="0,00"
             min={effectiveMin}
             step="0.01"
-            className={`w-full bg-input border rounded-lg pl-9 pr-3 py-2.5 text-sm text-white focus:outline-none transition-colors ${
+            className={`w-full bg-input border rounded-lg pl-9 pr-3 py-2.5 text-sm text-foreground focus:outline-none transition-colors ${
               insufficientBalance && amountNum > 0 ? "border-destructive/50 focus:border-destructive" : "border-border focus:border-primary/50"
             }`}
           />
@@ -162,7 +162,7 @@ export default function MultiOutcomeBetForm({
         <div className="bg-muted rounded-lg p-3 space-y-1.5 text-xs">
           <div className="flex justify-between">
             <span className="text-muted-foreground">Resultado selecionado</span>
-            <span className="text-white font-semibold truncate max-w-[140px]">{selectedOutcome.label}</span>
+            <span className="text-foreground font-semibold truncate max-w-[140px]">{selectedOutcome.label}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Retorno estimado</span>
@@ -180,7 +180,7 @@ export default function MultiOutcomeBetForm({
       <button
         onClick={handleBet}
         disabled={loading || !amountNum || insufficientBalance || !selectedOutcomeId}
-        className="w-full py-3 rounded-lg font-bold text-sm bg-primary text-white hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full py-3 rounded-lg font-bold text-sm bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         {loading ? (
           <Loader2 size={16} className="animate-spin mx-auto" />

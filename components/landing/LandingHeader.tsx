@@ -3,7 +3,7 @@ import SoundMenu from "@/components/layout/SoundMenu";
 
 export default function LandingHeader() {
   return (
-    <header className="sticky top-0 z-50 border-b border-border/40 bg-black/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-md">
       <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
         <Link href="/" className="text-xl font-black text-primary tracking-tight">
           Zafe
@@ -12,19 +12,19 @@ export default function LandingHeader() {
           <SoundMenu />
           <Link
             href="/liga"
-            className="hidden sm:inline-flex px-3 py-1.5 text-sm text-muted-foreground hover:text-white transition-colors"
+            className="hidden sm:inline-flex px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             Ver eventos
           </Link>
           <Link
             href="/login"
-            className="px-3 py-1.5 text-sm text-muted-foreground hover:text-white transition-colors"
+            className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             Entrar
           </Link>
           <Link
             href="/login"
-            className="px-4 py-1.5 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors"
+            className="px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors"
           >
             Criar conta
           </Link>

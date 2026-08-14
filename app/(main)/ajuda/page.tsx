@@ -71,7 +71,7 @@ function CardLink({
     >
       <Icon className="w-5 h-5 text-primary shrink-0 mt-0.5" />
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-bold text-white">{title}</p>
+        <p className="text-sm font-bold text-foreground">{title}</p>
         <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{description}</p>
       </div>
       <ArrowRight className="w-4 h-4 text-muted-foreground/40 shrink-0 mt-0.5 group-hover:text-primary transition-colors" />
@@ -83,7 +83,7 @@ export default function AjudaPage() {
   return (
     <div className="py-6 space-y-8 max-w-3xl mx-auto">
       <div>
-        <h1 className="text-xl sm:text-2xl font-black text-white">Ajuda e Transparência</h1>
+        <h1 className="text-xl sm:text-2xl font-black text-foreground">Ajuda e Transparência</h1>
         <p className="text-sm text-muted-foreground">
           Suporte direto com a equipe e tudo que a Zafe publica abertamente sobre como a
           plataforma funciona.
@@ -97,7 +97,7 @@ export default function AjudaPage() {
       >
         <MessagesSquare className="w-6 h-6 text-primary shrink-0 mt-0.5" />
         <div className="min-w-0 flex-1">
-          <p className="text-base font-bold text-white">Canal do Usuário</p>
+          <p className="text-base font-bold text-foreground">Canal do Usuário</p>
           <p className="text-sm text-muted-foreground mt-0.5 leading-relaxed">
             Sua linha direta com a equipe Zafe. Abra uma conversa sobre previsões, conta, Z$
             ou o Concurso e acompanhe a resposta por aqui mesmo.
@@ -108,7 +108,7 @@ export default function AjudaPage() {
 
       <section className="space-y-3">
         <div>
-          <h2 className="text-lg font-bold text-white">Transparência</h2>
+          <h2 className="text-lg font-bold text-foreground">Transparência</h2>
           <p className="text-xs text-muted-foreground">
             Nada de caixa-preta: o histórico de decisões e de regras fica público.
           </p>
@@ -122,7 +122,7 @@ export default function AjudaPage() {
 
       <section className="space-y-3">
         <div>
-          <h2 className="text-lg font-bold text-white">Legal</h2>
+          <h2 className="text-lg font-bold text-foreground">Legal</h2>
           <p className="text-xs text-muted-foreground">
             Os documentos que regem sua participação na plataforma.
           </p>

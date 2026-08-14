@@ -81,7 +81,7 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl, t
         </Avatar>
         <div className="flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-xl font-bold text-white">{profile?.full_name}</h1>
+            <h1 className="text-xl font-bold text-foreground">{profile?.full_name}</h1>
             <RankBadge tier={tierForWins(totalWins)} />
             {premiumActive && <PremiumBadge />}
           </div>
@@ -113,13 +113,13 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl, t
             icon: <Flame size={16} />,
             label: "Sequência atual",
             value: streak > 0 ? `${streak}🔥` : "—",
-            color: streak >= 3 ? "text-orange-400" : "text-white",
+            color: streak >= 3 ? "text-destructive" : "text-foreground",
           },
           {
             icon: <Star size={16} />,
             label: "Melhor categoria",
             value: bestCat ? `${CATEGORY_LABELS[bestCat] ?? bestCat} (${(bestRate * 100).toFixed(0)}%)` : "—",
-            color: "text-yellow-400",
+            color: "text-prize",
           },
         ].map((s) => (
           <div key={s.label} className="bg-card border border-border rounded-xl p-3 text-center">
@@ -139,7 +139,7 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl, t
             className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-colors ${
               tab === t.id
                 ? "bg-primary/15 text-primary"
-                : "text-muted-foreground hover:text-white"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {t.icon}
@@ -153,19 +153,19 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl, t
         <div className="space-y-4">
           {/* Dados da conta */}
           <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-            <h3 className="text-sm font-semibold text-white">Dados da conta</h3>
+            <h3 className="text-sm font-semibold text-foreground">Dados da conta</h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between items-center py-1.5 border-b border-border/50">
                 <span className="text-muted-foreground">Nome</span>
-                <span className="text-white font-medium">{profile?.full_name ?? "—"}</span>
+                <span className="text-foreground font-medium">{profile?.full_name ?? "—"}</span>
               </div>
               <div className="flex justify-between items-center py-1.5 border-b border-border/50">
                 <span className="text-muted-foreground">Usuário</span>
-                <span className="text-white font-mono">@{profile?.username ?? "—"}</span>
+                <span className="text-foreground font-mono">@{profile?.username ?? "—"}</span>
               </div>
               <div className="flex justify-between items-center py-1.5">
                 <span className="text-muted-foreground">E-mail</span>
-                <span className="text-white">{profile?.email ?? "—"}</span>
+                <span className="text-foreground">{profile?.email ?? "—"}</span>
               </div>
             </div>
             <EditProfileForm fullName={profile?.full_name ?? ""} username={profile?.username ?? ""} />
@@ -174,8 +174,8 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl, t
           {/* Plano */}
           <div className="bg-card border border-border rounded-xl p-4 space-y-3">
             <div className="flex items-center gap-2">
-              <Star size={15} className={premiumActive ? "text-yellow-400" : "text-muted-foreground"} />
-              <h3 className="text-sm font-semibold text-white">Plano</h3>
+              <Star size={15} className={premiumActive ? "text-prize" : "text-muted-foreground"} />
+              <h3 className="text-sm font-semibold text-foreground">Plano</h3>
               {premiumActive && <PremiumBadge className="ml-auto" />}
             </div>
             {premiumActive ? (
@@ -203,15 +203,15 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl, t
             <div className="flex items-center gap-2">
               {profile?.kyc_verified
                 ? <ShieldCheck size={15} className="text-sim" />
-                : <ShieldAlert size={15} className="text-yellow-400" />}
-              <h3 className="text-sm font-semibold text-white">Verificação de identidade</h3>
+                : <ShieldAlert size={15} className="text-prize" />}
+              <h3 className="text-sm font-semibold text-foreground">Verificação de identidade</h3>
               {profile?.kyc_verified && (
                 <span className="ml-auto px-1.5 py-0.5 bg-sim/20 text-sim text-xs rounded font-bold">Verificado</span>
               )}
             </div>
             {profile?.kyc_verified ? (
               <p className="text-xs text-muted-foreground">
-                CPF cadastrado: <span className="text-white font-mono">{mascaraCPF(profile.cpf ?? "")}</span>
+                CPF cadastrado: <span className="text-foreground font-mono">{mascaraCPF(profile.cpf ?? "")}</span>
               </p>
             ) : (
               <CpfForm />
@@ -220,7 +220,7 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl, t
 
           {/* Segurança / 2FA */}
           <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-            <h3 className="text-sm font-semibold text-white">Segurança</h3>
+            <h3 className="text-sm font-semibold text-foreground">Segurança</h3>
             <TwoFaSettings
               enabled={profile?.two_fa_enabled ?? false}
               method={profile?.two_fa_method ?? "email"}
@@ -245,7 +245,7 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl, t
         <div className="space-y-4">
           {/* Visão geral */}
           <div className="bg-card border border-border rounded-xl p-4 space-y-2">
-            <h3 className="text-sm font-semibold text-white">O que é a Zafe?</h3>
+            <h3 className="text-sm font-semibold text-foreground">O que é a Zafe?</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
               A Zafe é uma liga de previsões onde você palpita em eventos reais de
               esporte e e-sports. Se sua previsão estiver certa, você
@@ -258,7 +258,7 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl, t
           <div className="bg-card border border-border rounded-xl p-4 space-y-3">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-sim shrink-0" />
-              <h3 className="text-sm font-semibold text-white">Eventos Públicos</h3>
+              <h3 className="text-sm font-semibold text-foreground">Eventos Públicos</h3>
             </div>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li className="flex gap-2"><span className="text-primary shrink-0">→</span> Abertos para qualquer usuário palpitar</li>
@@ -273,7 +273,7 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl, t
           <div className="bg-card border border-border rounded-xl p-4 space-y-3">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
-              <h3 className="text-sm font-semibold text-white">Eventos Privados</h3>
+              <h3 className="text-sm font-semibold text-foreground">Eventos Privados</h3>
             </div>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li className="flex gap-2"><span className="text-primary shrink-0">→</span> Criados por você para disputar com amigos ou grupos específicos</li>
@@ -286,7 +286,7 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl, t
 
           {/* Resolução */}
           <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-            <h3 className="text-sm font-semibold text-white">Como o resultado é decidido?</h3>
+            <h3 className="text-sm font-semibold text-foreground">Como o resultado é decidido?</h3>
             <div className="space-y-2 text-sm text-muted-foreground">
               <div className="flex gap-3 items-start">
                 <span className="bg-primary/15 text-primary rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">1</span>
@@ -309,7 +309,7 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl, t
 
           {/* Taxas */}
           <div className="bg-card border border-border rounded-xl p-4 space-y-2">
-            <h3 className="text-sm font-semibold text-white">Taxas</h3>
+            <h3 className="text-sm font-semibold text-foreground">Taxas</h3>
             <div className="space-y-1.5 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Palpite (pool)</span>
@@ -321,7 +321,7 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl, t
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Z$ virtual</span>
-                <span className="text-white">Sem valor monetário real</span>
+                <span className="text-foreground">Sem valor monetário real</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Ganhos</span>

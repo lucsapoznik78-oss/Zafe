@@ -116,7 +116,7 @@ export default function FriendSearch({
 
   return (
     <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-      <h3 className="text-sm font-semibold text-white">Usuários</h3>
+      <h3 className="text-sm font-semibold text-foreground">Usuários</h3>
 
       <div className="relative">
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -124,7 +124,7 @@ export default function FriendSearch({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Filtrar por nome ou usuário..."
-          className="w-full bg-input border border-border rounded-lg pl-9 pr-3 py-2.5 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+          className="w-full bg-input border border-border rounded-lg pl-9 pr-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
         />
       </div>
 
@@ -142,7 +142,7 @@ export default function FriendSearch({
             const isLoading = adding === profile.id;
 
             return (
-              <div key={profile.id} className="flex items-center justify-between py-2 px-1 rounded-lg hover:bg-white/5 transition-colors">
+              <div key={profile.id} className="flex items-center justify-between py-2 px-1 rounded-lg hover:bg-foreground/5 transition-colors">
                 <div className="flex items-center gap-2.5">
                   <Link href={`/u/${profile.username}`} className="shrink-0">
                     <Avatar className="h-8 w-8 hover:ring-2 hover:ring-primary/50 transition-all">
@@ -150,7 +150,7 @@ export default function FriendSearch({
                     </Avatar>
                   </Link>
                   <div>
-                    <Link href={`/u/${profile.username}`} className="text-sm font-medium text-white hover:text-primary transition-colors">{profile.full_name}</Link>
+                    <Link href={`/u/${profile.username}`} className="text-sm font-medium text-foreground hover:text-primary transition-colors">{profile.full_name}</Link>
                     <p className="text-xs text-muted-foreground">@{profile.username}</p>
                   </div>
                 </div>

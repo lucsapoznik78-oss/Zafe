@@ -3,6 +3,12 @@ import type { GamesTier } from "@/lib/games/types";
 import { TIER_LABELS } from "@/lib/games/types";
 
 // Cores por rank (gamificação). Derivado de events_won no servidor.
+//
+// EXCEÇÃO DECLARADA à migração de paleta: é uma escala ordinal de 7 degraus, e
+// codificar a ordem é a função da cor aqui. Mapear para os tokens colapsaria
+// bronze e ouro no mesmo amarelo e ferro e prata no mesmo cinza — o usuário
+// perderia de vista em que degrau está. Único ponto do app onde ainda aparece
+// um roxo (fuchsia, no rank máximo); listado no relatório de entrega.
 const TIER_STYLE: Record<GamesTier, string> = {
   ferro: "bg-zinc-600/20 text-zinc-300 border-zinc-500/30",
   bronze: "bg-amber-800/20 text-amber-500 border-amber-700/30",

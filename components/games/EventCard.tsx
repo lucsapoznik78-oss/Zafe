@@ -97,12 +97,12 @@ export default function EventCard({ event, prediction, isAuthed, currentUserId }
         onClick={() => submit(side)}
         className={`flex-1 py-2.5 px-3 rounded-lg text-sm font-bold border transition-colors disabled:cursor-not-allowed ${
           isWinner
-            ? "bg-violet-500/30 border-violet-400 text-violet-200"
+            ? "bg-primary/30 border-primary text-primary"
             : isLoser
               ? "bg-input border-border text-muted-foreground opacity-60"
               : active
-                ? "bg-violet-500/20 border-violet-400 text-violet-300"
-                : "bg-input border-border text-white hover:border-violet-400/50 disabled:opacity-50"
+                ? "bg-primary/20 border-primary text-primary"
+                : "bg-input border-border text-foreground hover:border-primary/50 disabled:opacity-50"
         }`}
       >
         {label}
@@ -114,11 +114,11 @@ export default function EventCard({ event, prediction, isAuthed, currentUserId }
   return (
     <div className="rounded-xl border border-border bg-card p-4 space-y-3">
       <div className="flex items-center justify-between gap-2">
-        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-violet-500/15 text-violet-300 text-[10px] font-bold uppercase tracking-wide">
+        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/15 text-primary text-[10px] font-bold uppercase tracking-wide">
           {gameDisplayName(event.game, event.custom_game)}
         </span>
         {event.creator_id && (
-          <span className="px-2 py-0.5 rounded-full bg-white/5 text-muted-foreground text-[10px] font-medium">
+          <span className="px-2 py-0.5 rounded-full bg-foreground/5 text-muted-foreground text-[10px] font-medium">
             Comunidade
           </span>
         )}
@@ -126,7 +126,7 @@ export default function EventCard({ event, prediction, isAuthed, currentUserId }
           <span className="text-[11px] text-muted-foreground truncate">{event.tournament}</span>
         )}
         {isPot && (
-          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-violet-300 ml-auto">
+          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-primary ml-auto">
             <Coins size={12} /> Pote Z$ {Number(event.pot_total).toFixed(0)}
           </span>
         )}
@@ -139,41 +139,41 @@ export default function EventCard({ event, prediction, isAuthed, currentUserId }
       </div>
 
       {isPot && !prediction && !locked && (
-        <p className="text-[11px] text-violet-300/80">
+        <p className="text-[11px] text-primary/80">
           Entrada: Z$ {Number(event.buy_in).toFixed(0)} — vai pro pote. Palpite definitivo.
         </p>
       )}
 
       {canResolve && (
-        <div className="rounded-lg border border-violet-400/30 bg-violet-500/5 p-2.5 space-y-2">
-          <p className="text-[11px] text-violet-200 font-medium">
+        <div className="rounded-lg border border-primary/30 bg-primary/5 p-2.5 space-y-2">
+          <p className="text-[11px] text-primary font-medium">
             Você é o juiz. Quem venceu?
           </p>
           <div className="flex gap-2">
             <button
               disabled={resolving}
               onClick={() => resolve("a")}
-              className="flex-1 py-1.5 px-2 rounded-md text-xs font-bold border border-border bg-input text-white hover:border-violet-400/50 disabled:opacity-50"
+              className="flex-1 py-1.5 px-2 rounded-md text-xs font-bold border border-border bg-input text-foreground hover:border-primary/50 disabled:opacity-50"
             >
               {event.side_a}
             </button>
             <button
               disabled={resolving}
               onClick={() => resolve("b")}
-              className="flex-1 py-1.5 px-2 rounded-md text-xs font-bold border border-border bg-input text-white hover:border-violet-400/50 disabled:opacity-50"
+              className="flex-1 py-1.5 px-2 rounded-md text-xs font-bold border border-border bg-input text-foreground hover:border-primary/50 disabled:opacity-50"
             >
               {event.side_b}
             </button>
           </div>
-          {resolving && <Loader2 size={12} className="animate-spin text-violet-300" />}
+          {resolving && <Loader2 size={12} className="animate-spin text-primary" />}
         </div>
       )}
 
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {error && <p className="text-xs text-destructive">{error}</p>}
 
       <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
         {finished ? (
-          <span className="inline-flex items-center gap-1 text-violet-300">
+          <span className="inline-flex items-center gap-1 text-primary">
             <Trophy size={12} /> Encerrado
             {prediction && (
               <span className="ml-1">
@@ -189,7 +189,7 @@ export default function EventCard({ event, prediction, isAuthed, currentUserId }
         ) : (
           <>
             {saved && (
-              <span className="inline-flex items-center gap-1 text-violet-300">
+              <span className="inline-flex items-center gap-1 text-primary">
                 <CheckCircle2 size={12} /> Palpite salvo
               </span>
             )}

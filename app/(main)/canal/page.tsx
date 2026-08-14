@@ -21,7 +21,7 @@ export default async function CanalPage() {
   return (
     <div className="py-6 space-y-4 max-w-4xl mx-auto">
       <div>
-        <h1 className="text-xl sm:text-2xl font-black text-white">Canal do Usuário</h1>
+        <h1 className="text-xl sm:text-2xl font-black text-foreground">Canal do Usuário</h1>
         <p className="text-sm text-muted-foreground">
           Sua linha direta com a equipe Zafe. Abra uma conversa e acompanhe a resposta por aqui.
         </p>
@@ -41,7 +41,7 @@ export default async function CanalPage() {
 
       <section className="bg-card border border-border rounded-xl p-5 space-y-3">
         <div>
-          <h2 className="text-sm font-bold text-white">Contato da empresa</h2>
+          <h2 className="text-sm font-bold text-foreground">Contato da empresa</h2>
           <p className="text-xs text-muted-foreground">
             A conversa aqui no Canal é o caminho mais rápido — fica registrada e a equipe
             responde por aqui. Se preferir, também estamos nestes canais.
@@ -57,7 +57,7 @@ export default async function CanalPage() {
           >
             <AtSign className="w-4 h-4 text-primary shrink-0" />
             <div className="min-w-0">
-              <p className="text-xs font-bold text-white">Instagram</p>
+              <p className="text-xs font-bold text-foreground">Instagram</p>
               <p className="text-xs text-muted-foreground truncate">@zafe.app.br</p>
             </div>
           </a>
@@ -68,7 +68,7 @@ export default async function CanalPage() {
           >
             <Mail className="w-4 h-4 text-primary shrink-0" />
             <div className="min-w-0">
-              <p className="text-xs font-bold text-white">E-mail</p>
+              <p className="text-xs font-bold text-foreground">E-mail</p>
               <p className="text-xs text-muted-foreground truncate">contato@zafe.app</p>
             </div>
           </a>

@@ -5,7 +5,7 @@ export default function CtaFinal() {
   return (
     <section className="py-20 px-4 text-center">
       <div className="max-w-lg mx-auto space-y-6">
-        <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight">
+        <h2 className="text-3xl sm:text-4xl font-black text-foreground leading-tight">
           Pronto pra começar?
         </h2>
         <p className="text-muted-foreground leading-relaxed">
@@ -15,13 +15,13 @@ export default function CtaFinal() {
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
             href={CONCURSO_ABERTO ? "/concurso/entrar" : "/login"}
-            className="px-8 py-3.5 rounded-xl bg-primary text-white font-bold text-base hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="px-8 py-3.5 rounded-xl bg-primary text-primary-foreground font-bold text-base hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
             Criar conta grátis
           </Link>
           <Link
             href="/liga"
-            className="px-8 py-3.5 rounded-xl border border-border text-white font-medium text-base hover:border-primary/40 hover:bg-white/5 transition-colors"
+            className="px-8 py-3.5 rounded-xl border border-border text-foreground font-medium text-base hover:border-primary/40 hover:bg-foreground/5 transition-colors"
           >
             Ver eventos primeiro
           </Link>

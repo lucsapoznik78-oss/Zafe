@@ -1,14 +1,25 @@
+<!--
+  Favicon da Zafe (convenção de arquivo do Next: app/icon.svg).
+
+  Hex chapado de propósito: o navegador busca este arquivo isolado, fora do
+  documento, então `var(--brand)` não resolveria — não existe :root aqui.
+  Ele NÃO segue o interruptor `data-theme`. Para voltar ao roxo, copie
+  public/icon-legacy.svg por cima. Ver ROLLBACK.md.
+
+    #0D1B2A  --bg     (era #1B1636, roxo escuro)
+    #FFC53D  --brand  (era #7C5CFC, violeta)
+-->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
   <!-- Dark circle background -->
-  <circle cx="50" cy="50" r="50" fill="#1B1636"/>
+  <circle cx="50" cy="50" r="50" fill="#0D1B2A"/>
   <!-- Trend line behind Z -->
-  <polyline points="15,62 38,45 62,55 85,38" stroke="#7C5CFC" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.6"/>
+  <polyline points="15,62 38,45 62,55 85,38" stroke="#FFC53D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.6"/>
   <!-- Z letter -->
-  <g fill="none" stroke="#7C5CFC" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+  <g fill="none" stroke="#FFC53D" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
     <line x1="28" y1="30" x2="72" y2="30"/>
     <line x1="72" y1="30" x2="28" y2="70"/>
     <line x1="28" y1="70" x2="72" y2="70"/>
   </g>
   <!-- Small dot on trend line -->
-  <circle cx="85" cy="38" r="3.5" fill="#7C5CFC"/>
+  <circle cx="85" cy="38" r="3.5" fill="#FFC53D"/>
 </svg>

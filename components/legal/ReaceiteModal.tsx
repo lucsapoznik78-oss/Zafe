@@ -64,7 +64,7 @@ export default function ReaceiteModal({ pendentes }: { pendentes: PendenciaLegal
             <DialogTitle>{atual.label} — nova versão</DialogTitle>
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Publicamos a versão <strong className="text-white">{atual.version}</strong>. Para
+            Publicamos a versão <strong className="text-foreground">{atual.version}</strong>. Para
             continuar usando a Zafe, precisamos do seu aceite — nada muda para trás, e o texto
             anterior continua disponível no histórico.
           </p>

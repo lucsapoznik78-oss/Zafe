@@ -20,17 +20,17 @@ export default function StatsPanel({ stats }: { stats: GamesUserStats | null }) 
   return (
     <div className="rounded-xl border border-border bg-card p-4">
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-sm font-bold text-white">Suas estatísticas</span>
+        <span className="text-sm font-bold text-foreground">Suas estatísticas</span>
         <span className="text-[11px] text-muted-foreground">· {played} eventos</span>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {metrics.map((m) => (
-          <div key={m.label} className="rounded-lg bg-black/20 border border-border px-3 py-2">
+          <div key={m.label} className="rounded-lg bg-background/20 border border-border px-3 py-2">
             <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
-              <m.icon size={12} className="text-violet-300" />
+              <m.icon size={12} className="text-primary" />
               <span className="text-[10px]">{m.label}</span>
             </div>
-            <p className="text-lg font-bold text-white">{m.value}</p>
+            <p className="text-lg font-bold text-foreground">{m.value}</p>
           </div>
         ))}
       </div>

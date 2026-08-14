@@ -97,7 +97,7 @@ export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed,
   return (
     <div className="bg-card border border-border rounded-xl p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-white">Fazer Palpite</h3>
+        <h3 className="text-sm font-semibold text-foreground">Fazer Palpite</h3>
         {/* Saldo do usuário */}
         <div className="relative group">
           <button type="button" className="flex items-center gap-1 text-xs text-muted-foreground cursor-default">
@@ -109,7 +109,7 @@ export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed,
           </button>
           <div className="pointer-events-none absolute right-0 top-full mt-1.5 w-52 rounded-lg border border-border bg-card px-3 py-2 shadow-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50">
             <p className="text-[11px] text-muted-foreground leading-relaxed">
-              Z$ é a moeda virtual da Zafe. <span className="text-white font-medium">Sem valor monetário real</span> e não convertível em dinheiro.
+              Z$ é a moeda virtual da Zafe. <span className="text-foreground font-medium">Sem valor monetário real</span> e não convertível em dinheiro.
             </p>
           </div>
         </div>
@@ -152,7 +152,7 @@ export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed,
               onClick={() => setSide(s)}
               className={`py-3 rounded-lg font-bold text-sm transition-all ${
                 active
-                  ? `bg-${colorClass} text-white ring-2 ring-${colorClass}/50`
+                  ? `bg-${colorClass} text-foreground ring-2 ring-${colorClass}/50`
                   : `bg-${colorClass}/10 text-${colorClass} hover:bg-${colorClass}/20`
               }`}
             >
@@ -176,7 +176,7 @@ export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed,
             placeholder="0,00"
             min={effectiveMin}
             step="0.01"
-            className={`w-full bg-input border rounded-lg pl-9 pr-3 py-2.5 text-sm text-white focus:outline-none transition-colors ${
+            className={`w-full bg-input border rounded-lg pl-9 pr-3 py-2.5 text-sm text-foreground focus:outline-none transition-colors ${
               insufficientBalance && amountNum > 0 ? "border-destructive/50 focus:border-destructive" : "border-border focus:border-primary/50"
             }`}
           />
@@ -213,7 +213,7 @@ export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed,
                   <Lock size={10} />
                   Probabilidade {side.toUpperCase()}
                 </span>
-                <span className="text-white font-bold">{currentProbPct ? `${currentProbPct}%` : "—"}</span>
+                <span className="text-foreground font-bold">{currentProbPct ? `${currentProbPct}%` : "—"}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Retorno estimado se ganhar</span>
@@ -241,7 +241,7 @@ export default function BetForm({ topicId, minBet, totalSim, totalNao, isClosed,
       <button
         onClick={handleBet}
         disabled={loading || !amountNum || insufficientBalance}
-        className="w-full py-3 rounded-lg font-bold text-sm bg-primary text-white hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full py-3 rounded-lg font-bold text-sm bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         {loading ? (
           <Loader2 size={16} className="animate-spin mx-auto" />

@@ -77,7 +77,7 @@ export default function LiveTicker() {
           visible ? "opacity-100" : "opacity-0"
         }`}
       >
-        <span className="text-white font-medium">{item.username}</span>
+        <span className="text-foreground font-medium">{item.username}</span>
         {" previu "}
         {item.side === "sim" || item.side === "nao" ? (
           <span className={item.side === "sim" ? "text-sim font-bold" : "text-nao font-bold"}>
@@ -87,7 +87,7 @@ export default function LiveTicker() {
           <span className="text-primary font-semibold">um resultado</span>
         )}
         {" em "}
-        <span className="text-white">&ldquo;{item.topic_title}&rdquo;</span>
+        <span className="text-foreground">&ldquo;{item.topic_title}&rdquo;</span>
         <span className="text-muted-foreground/60"> · {timeAgo(item.created_at)}</span>
       </p>
     </div>

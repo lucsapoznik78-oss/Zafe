@@ -25,7 +25,7 @@ export default async function EditarTopicoPage({ params }: PageProps) {
   return (
     <div className="py-6 max-w-2xl mx-auto space-y-5">
       <div>
-        <h1 className="text-xl font-bold text-white">Editar Tópico</h1>
+        <h1 className="text-xl font-bold text-foreground">Editar Tópico</h1>
         <p className="text-sm text-muted-foreground mt-0.5">Aguardando aprovação — você ainda pode editar</p>
       </div>
       <EditTopicForm topic={topic} />

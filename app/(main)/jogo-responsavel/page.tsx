@@ -38,11 +38,11 @@ export default async function JogoResponsavelPage() {
   return (
     <div className="py-8 max-w-2xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-violet-500/15 flex items-center justify-center shrink-0">
-          <ShieldCheck size={20} className="text-violet-300" />
+        <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
+          <ShieldCheck size={20} className="text-primary" />
         </div>
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-white">Jogo responsável</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Jogo responsável</h1>
           <p className="text-sm text-muted-foreground">
             A Zafe é uma competição de habilidade com moeda virtual. Ainda assim,
             queremos que sua experiência seja saudável e sob controle.
@@ -51,9 +51,9 @@ export default async function JogoResponsavelPage() {
       </div>
 
       {pausaAtiva && (
-        <div className="rounded-xl border border-violet-400/30 bg-violet-500/10 p-4 flex items-start gap-3">
-          <Clock size={18} className="text-violet-300 mt-0.5 shrink-0" />
-          <div className="text-sm text-violet-100">
+        <div className="rounded-xl border border-primary/30 bg-primary/10 p-4 flex items-start gap-3">
+          <Clock size={18} className="text-primary mt-0.5 shrink-0" />
+          <div className="text-sm text-primary">
             {selfExcludedUntil ? (
               <p>
                 Sua conta está em <strong>autoexclusão</strong> até{" "}
@@ -72,7 +72,7 @@ export default async function JogoResponsavelPage() {
       )}
 
       <section className="space-y-2 text-sm text-muted-foreground">
-        <h2 className="text-base font-semibold text-white">Dicas de uso saudável</h2>
+        <h2 className="text-base font-semibold text-foreground">Dicas de uso saudável</h2>
         <ul className="list-disc pl-5 space-y-1">
           <li>Jogue por diversão — os Z$ são virtuais e não viram dinheiro.</li>
           <li>Defina limites de tempo e respeite-os.</li>
@@ -90,7 +90,7 @@ export default async function JogoResponsavelPage() {
       )}
 
       <section className="space-y-2 text-sm text-muted-foreground">
-        <h2 className="text-base font-semibold text-white">Precisa de ajuda?</h2>
+        <h2 className="text-base font-semibold text-foreground">Precisa de ajuda?</h2>
         <p>
           Se você ou alguém próximo sente que o jogo está fora de controle, procure apoio:
         </p>

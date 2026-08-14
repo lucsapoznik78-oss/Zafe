@@ -93,11 +93,11 @@ export default function ConfirmarInscricao({ titulo, saldoInicial, initialFullNa
 
   if (done) {
     return (
-      <div className="rounded-xl border border-yellow-400/30 bg-yellow-400/5 p-6 text-center space-y-3">
-        <CheckCircle2 size={36} className="mx-auto text-yellow-400" />
+      <div className="rounded-xl border border-prize/30 bg-prize/5 p-6 text-center space-y-3">
+        <CheckCircle2 size={36} className="mx-auto text-prize" />
         <div>
-          <p className="text-lg font-bold text-yellow-400">Você está participando!</p>
-          <p className="text-sm text-yellow-300/70 mt-1">
+          <p className="text-lg font-bold text-prize">Você está participando!</p>
+          <p className="text-sm text-prize/70 mt-1">
             Recebeu ZC$ {saldoInicial.toLocaleString("pt-BR")} para competir. Redirecionando…
           </p>
         </div>
@@ -106,23 +106,23 @@ export default function ConfirmarInscricao({ titulo, saldoInicial, initialFullNa
   }
 
   return (
-    <div className="rounded-xl border border-yellow-400/30 bg-yellow-400/5 p-6 space-y-5">
+    <div className="rounded-xl border border-prize/30 bg-prize/5 p-6 space-y-5">
       <div className="flex items-center gap-2">
-        <div className="w-9 h-9 rounded-lg bg-yellow-400/20 flex items-center justify-center shrink-0">
-          <Trophy size={18} className="text-yellow-400" />
+        <div className="w-9 h-9 rounded-lg bg-prize/20 flex items-center justify-center shrink-0">
+          <Trophy size={18} className="text-prize" />
         </div>
         <div>
-          <p className="text-sm font-bold text-yellow-300">{titulo}</p>
-          <p className="text-[11px] text-yellow-400/60">
+          <p className="text-sm font-bold text-prize">{titulo}</p>
+          <p className="text-[11px] text-prize/60">
             Inscrição grátis · ZC$ {saldoInicial.toLocaleString("pt-BR")} de presente
           </p>
         </div>
       </div>
 
-      <div className="flex items-start gap-2 rounded-lg bg-yellow-400/10 border border-yellow-400/20 px-3 py-2.5">
-        <AlertCircle size={15} className="text-yellow-400 shrink-0 mt-0.5" />
-        <p className="text-[12px] text-yellow-300/80 leading-relaxed">
-          Você ainda <span className="font-bold text-yellow-400">não está participando</span> deste concurso.
+      <div className="flex items-start gap-2 rounded-lg bg-prize/10 border border-prize/20 px-3 py-2.5">
+        <AlertCircle size={15} className="text-prize shrink-0 mt-0.5" />
+        <p className="text-[12px] text-prize/80 leading-relaxed">
+          Você ainda <span className="font-bold text-prize">não está participando</span> deste concurso.
           Como o prêmio é pago em R$, confirme seus dados abaixo para entrar.
         </p>
       </div>
@@ -138,7 +138,7 @@ export default function ConfirmarInscricao({ titulo, saldoInicial, initialFullNa
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             placeholder="Seu nome completo"
-            className="bg-input border-border focus:border-yellow-400"
+            className="bg-input border-border focus:border-prize"
             required
             autoFocus
           />
@@ -154,7 +154,7 @@ export default function ConfirmarInscricao({ titulo, saldoInicial, initialFullNa
             value={username}
             onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s/g, ""))}
             placeholder="seu_usuario"
-            className="bg-input border-border focus:border-yellow-400"
+            className="bg-input border-border focus:border-prize"
             required
           />
         </div>
@@ -171,7 +171,7 @@ export default function ConfirmarInscricao({ titulo, saldoInicial, initialFullNa
             onChange={(e) => setCpf(formatarCPF(e.target.value))}
             placeholder="000.000.000-00"
             maxLength={14}
-            className="bg-input border-border focus:border-yellow-400"
+            className="bg-input border-border focus:border-prize"
             required
           />
           {cpf.replace(/\D/g, "").length === 11 && !cpfValido && (
@@ -189,7 +189,7 @@ export default function ConfirmarInscricao({ titulo, saldoInicial, initialFullNa
             value={birthDate}
             onChange={(e) => setBirthDate(e.target.value)}
             max={new Date().toISOString().split("T")[0]}
-            className="bg-input border-border focus:border-yellow-400"
+            className="bg-input border-border focus:border-prize"
             required
           />
           {birthDate && calcularIdade(birthDate) < 18 && (
@@ -202,7 +202,7 @@ export default function ConfirmarInscricao({ titulo, saldoInicial, initialFullNa
         <Button
           type="submit"
           disabled={loading || !fullName || !username || !cpf || !birthDate}
-          className="w-full bg-primary text-white font-semibold hover:bg-primary/90"
+          className="w-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90"
         >
           {loading ? <Loader2 size={16} className="animate-spin" /> : "Confirmar participação"}
         </Button>

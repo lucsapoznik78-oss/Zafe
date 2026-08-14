@@ -89,7 +89,7 @@ export default async function RankingPage({ searchParams }: PageProps) {
   return (
     <div className="py-6 max-w-3xl mx-auto space-y-5">
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
           <Trophy size={22} className="text-primary" />
           Ranking Geral
         </h1>
@@ -101,7 +101,7 @@ export default async function RankingPage({ searchParams }: PageProps) {
       {ranking.length === 0 ? (
         <div className="bg-card border border-border rounded-xl p-12 text-center space-y-2">
           <Trophy size={32} className="text-muted-foreground mx-auto" />
-          <p className="text-white font-semibold">Nenhum previsor ainda</p>
+          <p className="text-foreground font-semibold">Nenhum previsor ainda</p>
           <p className="text-sm text-muted-foreground">
             Faça pelo menos um palpite para entrar no ranking.
           </p>
@@ -127,7 +127,7 @@ export default async function RankingPage({ searchParams }: PageProps) {
               </div>
 
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white truncate">{r.full_name}</p>
+                <p className="text-sm font-semibold text-foreground truncate">{r.full_name}</p>
                 <p className="text-xs text-muted-foreground">@{r.username}</p>
               </div>
 
@@ -135,7 +135,7 @@ export default async function RankingPage({ searchParams }: PageProps) {
                 <div>
                   <p className="text-xs text-muted-foreground">Acertos</p>
                   {r.total > 0 ? (
-                    <p className="text-sm font-semibold text-white">
+                    <p className="text-sm font-semibold text-foreground">
                       {r.winRate.toFixed(0)}%
                       <span className="text-xs text-muted-foreground ml-1">({r.wins}/{r.total})</span>
                     </p>
@@ -165,7 +165,7 @@ export default async function RankingPage({ searchParams }: PageProps) {
               {currentPage > 1 && (
                 <Link
                   href={buildPageHref(currentPage - 1)}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-card border border-border text-sm text-white hover:border-primary/40 transition-colors"
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-card border border-border text-sm text-foreground hover:border-primary/40 transition-colors"
                 >
                   <ChevronLeft size={14} />
                   Anterior
@@ -177,7 +177,7 @@ export default async function RankingPage({ searchParams }: PageProps) {
               {currentPage < totalPages && (
                 <Link
                   href={buildPageHref(currentPage + 1)}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-card border border-border text-sm text-white hover:border-primary/40 transition-colors"
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-card border border-border text-sm text-foreground hover:border-primary/40 transition-colors"
                 >
                   Próxima
                   <ChevronRight size={14} />

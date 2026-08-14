@@ -33,7 +33,7 @@ export default async function PrivadaDetailPage({ params }: PageProps) {
   if (topicError && topicError.code !== "PGRST116") {
     return (
       <div className="py-12 text-center space-y-2">
-        <p className="text-red-400 font-semibold">Erro ao carregar bolão</p>
+        <p className="text-destructive font-semibold">Erro ao carregar bolão</p>
         <p className="text-muted-foreground text-xs font-mono">{topicError.message}</p>
       </div>
     );

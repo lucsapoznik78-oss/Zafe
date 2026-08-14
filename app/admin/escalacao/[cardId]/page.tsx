@@ -76,18 +76,18 @@ export default async function CardPage({ params }: Props) {
           <Link href="/admin/escalacao" className="text-[11px] text-muted-foreground">
             ← Escalação
           </Link>
-          <h1 className="text-lg font-bold text-white">{card.titulo}</h1>
+          <h1 className="text-lg font-bold text-foreground">{card.titulo}</h1>
         </div>
         <span className="text-xs text-muted-foreground">{card.status}</span>
       </div>
 
       <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-        <h3 className="text-sm font-semibold text-white">Termos congelados</h3>
+        <h3 className="text-sm font-semibold text-foreground">Termos congelados</h3>
         <dl className="grid grid-cols-2 gap-y-1 text-xs">
           {termos.map(([k, v]) => (
             <div key={k} className="contents">
               <dt className="text-muted-foreground">{k}</dt>
-              <dd className="text-white text-right">{String(v)}</dd>
+              <dd className="text-foreground text-right">{String(v)}</dd>
             </div>
           ))}
         </dl>
@@ -113,7 +113,7 @@ export default async function CardPage({ params }: Props) {
 
       <div className="bg-card border border-border rounded-xl p-4 space-y-2">
         <div className="flex items-baseline justify-between">
-          <h3 className="text-sm font-semibold text-white">Pool ({(pool ?? []).length})</h3>
+          <h3 className="text-sm font-semibold text-foreground">Pool ({(pool ?? []).length})</h3>
           <span className="flex items-center gap-3">
             <Link
               href={`/admin/escalacao/${cardId}/times`}
@@ -143,7 +143,7 @@ export default async function CardPage({ params }: Props) {
               const nome = Array.isArray(rel) ? rel[0]?.nome : rel?.nome;
               return (
                 <li key={p.id} className="py-1.5 flex items-baseline justify-between gap-2 text-xs">
-                  <span className="text-white">
+                  <span className="text-foreground">
                     {nome ?? p.id}
                     <span className="text-muted-foreground"> · {p.esporte_key}</span>
                   </span>

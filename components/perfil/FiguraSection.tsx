@@ -17,7 +17,7 @@ export default function FiguraSection({ figura }: { figura: FiguraConfig | null 
     <div className="bg-card border border-border rounded-xl p-4 flex flex-col items-center gap-3">
       {figura ? (
         <>
-          <div className="bg-gradient-to-br from-primary/15 to-black/40 rounded-2xl p-2">
+          <div className="bg-background/40 rounded-2xl p-2">
             <FiguraAvatar figura={figura} size={140} />
           </div>
           <button
@@ -29,12 +29,12 @@ export default function FiguraSection({ figura }: { figura: FiguraConfig | null 
         </>
       ) : (
         <>
-          <div className="bg-black/30 border border-dashed border-border rounded-2xl w-[140px] h-[140px] flex items-center justify-center">
+          <div className="bg-background/30 border border-dashed border-border rounded-2xl w-[140px] h-[140px] flex items-center justify-center">
             <Sparkles size={28} className="text-muted-foreground/50" />
           </div>
           <button
             onClick={() => setAberto(true)}
-            className="text-xs font-bold px-3 py-1.5 bg-primary text-black rounded-lg hover:brightness-110"
+            className="text-xs font-bold px-3 py-1.5 bg-primary text-primary-foreground rounded-lg hover:brightness-110"
           >
             Criar seu personagem
           </button>

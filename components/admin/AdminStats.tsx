@@ -75,28 +75,28 @@ export default function AdminStats({ passiveTotal, walletBalance, betsLocked, pe
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="bg-card border border-border rounded-xl p-4">
           <div className="mb-2 text-primary"><Users size={18} /></div>
-          <p className="text-2xl font-bold text-white">
+          <p className="text-2xl font-bold text-foreground">
             {totalUsers.toLocaleString("pt-BR")}
-            <span className="text-base font-bold text-yellow-400 ml-2">· {concursoUsers.toLocaleString("pt-BR")}</span>
+            <span className="text-base font-bold text-prize ml-2">· {concursoUsers.toLocaleString("pt-BR")}</span>
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            Usuários cadastrados <span className="text-yellow-400">· no concurso</span>
+            Usuários cadastrados <span className="text-prize">· no concurso</span>
           </p>
           <p className="text-[10px] text-sim mt-0.5">+{newUsersWeek} essa semana</p>
         </div>
         <div className="bg-card border border-border rounded-xl p-4">
           <div className="mb-2 text-primary"><Users size={18} /></div>
-          <p className="text-2xl font-bold text-white">{activeUsers30d.toLocaleString("pt-BR")}</p>
+          <p className="text-2xl font-bold text-foreground">{activeUsers30d.toLocaleString("pt-BR")}</p>
           <p className="text-xs text-muted-foreground mt-1">Ativos (30 dias)</p>
         </div>
         <div className="bg-card border border-border rounded-xl p-4">
           <div className="mb-2 text-primary"><BarChart2 size={18} /></div>
-          <p className="text-2xl font-bold text-white">{totalBets.toLocaleString("pt-BR")}</p>
+          <p className="text-2xl font-bold text-foreground">{totalBets.toLocaleString("pt-BR")}</p>
           <p className="text-xs text-muted-foreground mt-1">Palpites realizados</p>
         </div>
         <div className="bg-card border border-border rounded-xl p-4">
           <div className="mb-2 text-primary"><TrendingUp size={18} /></div>
-          <p className="text-2xl font-bold text-white">{formatCurrency(volumeTotal)}</p>
+          <p className="text-2xl font-bold text-foreground">{formatCurrency(volumeTotal)}</p>
           <p className="text-xs text-muted-foreground mt-1">Volume total Z$</p>
         </div>
       </div>
@@ -112,13 +112,13 @@ export default function AdminStats({ passiveTotal, walletBalance, betsLocked, pe
           </p>
         </div>
         <div className="bg-card border border-border rounded-xl p-4">
-          <div className="mb-2 text-yellow-400"><Clock size={18} /></div>
-          <p className="text-2xl font-bold text-yellow-400">{pendingCount}</p>
+          <div className="mb-2 text-prize"><Clock size={18} /></div>
+          <p className="text-2xl font-bold text-prize">{pendingCount}</p>
           <p className="text-xs text-muted-foreground mt-1">Aguardando aprovação</p>
         </div>
         <div className="bg-card border border-border rounded-xl p-4">
-          <div className="mb-2 text-yellow-400"><CheckSquare size={18} /></div>
-          <p className="text-2xl font-bold text-yellow-400">{toResolveCount}</p>
+          <div className="mb-2 text-prize"><CheckSquare size={18} /></div>
+          <p className="text-2xl font-bold text-prize">{toResolveCount}</p>
           <p className="text-xs text-muted-foreground mt-1">Setores p/ resolver</p>
         </div>
       </div>
@@ -126,7 +126,7 @@ export default function AdminStats({ passiveTotal, walletBalance, betsLocked, pe
       {/* Botão direto — resolve tudo agora */}
       <div className="bg-primary/5 border border-primary/30 rounded-xl p-4 flex items-center gap-4">
         <div className="flex-1">
-          <p className="text-sm font-semibold text-white">Resolver setores agora</p>
+          <p className="text-sm font-semibold text-foreground">Resolver setores agora</p>
           <p className="text-xs text-muted-foreground">Claude decide o resultado e distribui o saldo Z$ imediatamente.</p>
           {directResult && <p className="text-xs mt-1 text-primary">{directResult}</p>}
         </div>
@@ -176,7 +176,7 @@ export default function AdminStats({ passiveTotal, walletBalance, betsLocked, pe
             router.refresh();
           }}
           disabled={directLoading}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-bold rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors shrink-0"
+          className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-bold rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors shrink-0"
         >
           <Zap size={14} className={directLoading ? "animate-pulse" : ""} />
           {directLoading ? "Resolvendo..." : "Resolver agora"}
@@ -186,7 +186,7 @@ export default function AdminStats({ passiveTotal, walletBalance, betsLocked, pe
       {/* Bônus semanal */}
       <div className="bg-card border border-border rounded-xl p-4 flex items-center gap-4">
         <div className="flex-1">
-          <p className="text-sm font-semibold text-white">Bônus semanal (Z$ 100)</p>
+          <p className="text-sm font-semibold text-foreground">Bônus semanal (Z$ 100)</p>
           <p className="text-xs text-muted-foreground">Credita Z$ 100 para todos os usuários com menos de Z$ 1.000 no saldo Z$.</p>
           {bonusResult && <p className="text-xs mt-1 text-primary">{bonusResult}</p>}
         </div>
@@ -201,7 +201,7 @@ export default function AdminStats({ passiveTotal, walletBalance, betsLocked, pe
             router.refresh();
           }}
           disabled={bonusLoading}
-          className="flex items-center gap-2 px-4 py-2 bg-muted text-white text-sm rounded-lg hover:bg-muted/80 disabled:opacity-50 transition-colors shrink-0"
+          className="flex items-center gap-2 px-4 py-2 bg-muted text-foreground text-sm rounded-lg hover:bg-muted/80 disabled:opacity-50 transition-colors shrink-0"
         >
           <Zap size={14} className={bonusLoading ? "animate-pulse" : ""} />
           {bonusLoading ? "Creditando..." : "Dar bônus"}
@@ -211,7 +211,7 @@ export default function AdminStats({ passiveTotal, walletBalance, betsLocked, pe
       {/* Botão de manutenção */}
       <div className="bg-card border border-border rounded-xl p-4 flex items-center gap-4">
         <div className="flex-1">
-          <p className="text-sm font-semibold text-white">Fechar + Resolver setores</p>
+          <p className="text-sm font-semibold text-foreground">Fechar + Resolver setores</p>
           <p className="text-xs text-muted-foreground">
             1) Fecha expirados · 2) Oracle (API + Claude AI) determina resultado · 3) Distribui fundos automaticamente
           </p>
@@ -220,7 +220,7 @@ export default function AdminStats({ passiveTotal, walletBalance, betsLocked, pe
         <button
           onClick={runCron}
           disabled={cronLoading}
-          className="flex items-center gap-2 px-4 py-2 bg-muted text-white text-sm rounded-lg hover:bg-muted/80 disabled:opacity-50 transition-colors shrink-0"
+          className="flex items-center gap-2 px-4 py-2 bg-muted text-foreground text-sm rounded-lg hover:bg-muted/80 disabled:opacity-50 transition-colors shrink-0"
         >
           <RefreshCw size={14} className={cronLoading ? "animate-spin" : ""} />
           {cronLoading ? "Rodando..." : "Rodar agora"}

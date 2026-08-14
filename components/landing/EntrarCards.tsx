@@ -7,7 +7,7 @@ export default function EntrarCards() {
     <section className="py-16 px-4">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-10">
-          <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">
+          <h2 className="text-2xl sm:text-3xl font-black text-foreground mb-2">
             {CONCURSO_ABERTO ? "Por onde você quer começar" : "Comece a jogar grátis"}
           </h2>
           <p className="text-muted-foreground text-sm">
@@ -24,7 +24,7 @@ export default function EntrarCards() {
               <Gift size={20} className="text-primary" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">Jogar grátis</h3>
+              <h3 className="text-lg font-bold text-foreground">Jogar grátis</h3>
               <p className="text-sm text-muted-foreground mt-1">
                 A zona grátis completa de esporte e e-sports, com Z$ virtual.
               </p>
@@ -42,7 +42,7 @@ export default function EntrarCards() {
             </ul>
             <Link
               href="/login"
-              className="w-full text-center px-4 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-colors"
+              className="w-full text-center px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors"
             >
               Criar conta grátis
             </Link>
@@ -50,30 +50,30 @@ export default function EntrarCards() {
 
           {/* Concurso — R$, 18+, CPF */}
           {CONCURSO_ABERTO && (
-          <div className="bg-yellow-400/5 border border-yellow-400/30 rounded-2xl p-6 flex flex-col gap-4 hover:border-yellow-400/50 transition-colors">
-            <div className="w-10 h-10 rounded-xl bg-yellow-400/15 flex items-center justify-center">
-              <Trophy size={20} className="text-yellow-400" />
+          <div className="bg-prize/5 border border-prize/30 rounded-2xl p-6 flex flex-col gap-4 hover:border-prize/50 transition-colors">
+            <div className="w-10 h-10 rounded-xl bg-prize/15 flex items-center justify-center">
+              <Trophy size={20} className="text-prize" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">Concurso mensal</h3>
+              <h3 className="text-lg font-bold text-foreground">Concurso mensal</h3>
               <p className="text-sm text-muted-foreground mt-1">
                 Dispute o prêmio em dinheiro real via PIX.
               </p>
             </div>
             <ul className="space-y-2 text-sm text-muted-foreground flex-1">
               <li className="flex items-center gap-2">
-                <Check size={15} className="text-yellow-400 shrink-0" /> Prêmio em R$ pros melhores do mês
+                <Check size={15} className="text-prize shrink-0" /> Prêmio em R$ pros melhores do mês
               </li>
               <li className="flex items-center gap-2">
-                <Check size={15} className="text-yellow-400 shrink-0" /> Inscrição grátis · exige CPF
+                <Check size={15} className="text-prize shrink-0" /> Inscrição grátis · exige CPF
               </li>
               <li className="flex items-center gap-2">
-                <Check size={15} className="text-yellow-400 shrink-0" /> Exclusivo para maiores de 18 anos
+                <Check size={15} className="text-prize shrink-0" /> Exclusivo para maiores de 18 anos
               </li>
             </ul>
             <Link
               href="/concurso/entrar"
-              className="w-full text-center px-4 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-colors"
+              className="w-full text-center px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors"
             >
               Entrar no concurso
             </Link>

@@ -71,7 +71,7 @@ export default function Navbar() {
   const premium = isPremium(profile);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-black/90 backdrop-blur-sm pt-[env(safe-area-inset-top)]">
+    <header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/90 backdrop-blur-sm pt-[env(safe-area-inset-top)]">
       <div className="flex items-center justify-between h-14 px-3 sm:px-4 max-w-7xl mx-auto">
         <Link href={HOME_PATH} className="flex items-center gap-2">
           <img src="/zafe-logo-full.png" alt="Zafe" className="h-8 hidden sm:block" />
@@ -94,7 +94,7 @@ export default function Navbar() {
               className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                 pathname.startsWith(item.href)
                   ? "text-primary bg-primary/10"
-                  : "text-muted-foreground hover:text-white hover:bg-white/5"
+                  : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
               }`}
             >
               {item.label}
@@ -107,7 +107,7 @@ export default function Navbar() {
           {CONCURSO_ENABLED && (
             <Link
               href="/concurso"
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors"
             >
               <Trophy size={14} />
               <span>Concurso</span>
@@ -125,9 +125,9 @@ export default function Navbar() {
             </button>
             {/* Tooltip (hover no desktop, toque/focus no mobile) */}
             <div className="pointer-events-none absolute right-0 top-full mt-2 w-56 rounded-lg border border-border bg-card px-3 py-2.5 shadow-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-150 z-50">
-              <p className="text-xs font-semibold text-white mb-1">Z$ — moeda virtual</p>
+              <p className="text-xs font-semibold text-foreground mb-1">Z$ — moeda virtual</p>
               <p className="text-[11px] text-muted-foreground leading-relaxed">
-                Z$ é a moeda virtual da Zafe. <span className="text-white font-medium">Não tem valor monetário real</span> e não pode ser convertida em dinheiro.
+                Z$ é a moeda virtual da Zafe. <span className="text-foreground font-medium">Não tem valor monetário real</span> e não pode ser convertida em dinheiro.
               </p>
             </div>
           </div>
@@ -143,7 +143,7 @@ export default function Navbar() {
               <div className="relative">
                 <Avatar
                   className={`h-8 w-8 cursor-pointer overflow-hidden ${
-                    premium ? "ring-2 ring-yellow-400 ring-offset-1 ring-offset-black" : "border border-border"
+                    premium ? "ring-2 ring-prize ring-offset-1 ring-offset-black" : "border border-border"
                   }`}
                 >
                   {profile?.figura ? (
@@ -157,8 +157,8 @@ export default function Navbar() {
                   )}
                 </Avatar>
                 {premium && (
-                  <span className="absolute -bottom-0.5 -right-0.5 flex items-center justify-center rounded-full bg-black">
-                    <Star size={11} className="text-yellow-400" fill="currentColor" />
+                  <span className="absolute -bottom-0.5 -right-0.5 flex items-center justify-center rounded-full bg-background">
+                    <Star size={11} className="text-prize" fill="currentColor" />
                   </span>
                 )}
               </div>
@@ -182,7 +182,7 @@ export default function Navbar() {
                 <span className="text-sm">Amigos e grupos</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => window.location.href = "/premium"}>
-                <Star size={14} className="mr-2 text-yellow-400" />
+                <Star size={14} className="mr-2 text-prize" />
                 <span className="text-sm">Premium</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => window.location.href = "/ajuda"}>

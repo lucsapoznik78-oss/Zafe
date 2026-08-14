@@ -75,11 +75,11 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
 
   // Cores dinâmicas baseadas no tema
   const btnClass = isConcurso
-    ? "w-full bg-primary text-white font-semibold hover:bg-primary/90"
-    : "w-full bg-primary text-white font-semibold hover:bg-primary/90";
+    ? "w-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90"
+    : "w-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90";
   const tabActiveClass = isConcurso
-    ? "bg-primary text-white"
-    : "bg-primary text-white";
+    ? "bg-primary text-primary-foreground"
+    : "bg-primary text-primary-foreground";
   const inputFocusClass = isConcurso
     ? "bg-input border-border focus:border-primary"
     : "bg-input border-border focus:border-primary";
@@ -378,7 +378,7 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
     return (
       <div className={cardClass}>
         <div className="text-center space-y-1">
-          <p className="text-lg font-bold text-white">Recuperar senha</p>
+          <p className="text-lg font-bold text-foreground">Recuperar senha</p>
           <p className="text-sm text-muted-foreground">
             {resetSent
               ? `Enviamos um link para ${email}. Confira sua caixa de entrada e o spam.`
@@ -420,7 +420,7 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
 
         <button
           onClick={() => { setShowReset(false); setResetSent(false); setResetNotFound(false); setError(""); }}
-          className="w-full text-xs text-muted-foreground hover:text-white transition-colors"
+          className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors"
         >
           Voltar ao login
         </button>
@@ -433,7 +433,7 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
     return (
       <div className={cardClass}>
         <div className="text-center space-y-1">
-          <p className="text-lg font-bold text-white">Verificação em 2 etapas</p>
+          <p className="text-lg font-bold text-foreground">Verificação em 2 etapas</p>
           <p className="text-sm text-muted-foreground">
             {twoFaMethod === "sms"
               ? "Enviamos um código SMS para o seu celular."
@@ -467,7 +467,7 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
 
         <button
           onClick={() => { setStep("credentials"); setOtp(""); setError(""); }}
-          className="w-full text-xs text-muted-foreground hover:text-white transition-colors"
+          className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors"
         >
           Voltar ao login
         </button>
@@ -480,7 +480,7 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
   const googleButton = (
     <button
       onClick={handleGoogle}
-      className="w-full flex items-center justify-center gap-2 py-2 px-4 border border-border rounded-lg text-sm font-medium hover:bg-white/5 transition-colors"
+      className="w-full flex items-center justify-center gap-2 py-2 px-4 border border-border rounded-lg text-sm font-medium hover:bg-foreground/5 transition-colors"
     >
       <svg width="16" height="16" viewBox="0 0 24 24">
         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -549,7 +549,7 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
         <button
           type="button"
           onClick={() => setShowPass(!showPass)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
         >
           {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
         </button>
@@ -579,7 +579,7 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
         <button
           onClick={() => setMode("login")}
           className={`flex-1 py-1.5 rounded-md text-sm font-medium transition-colors ${
-            mode === "login" ? tabActiveClass : "text-muted-foreground hover:text-white"
+            mode === "login" ? tabActiveClass : "text-muted-foreground hover:text-foreground"
           }`}
         >
           Entrar
@@ -587,7 +587,7 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
         <button
           onClick={() => setMode("cadastro")}
           className={`flex-1 py-1.5 rounded-md text-sm font-medium transition-colors ${
-            mode === "cadastro" ? tabActiveClass : "text-muted-foreground hover:text-white"
+            mode === "cadastro" ? tabActiveClass : "text-muted-foreground hover:text-foreground"
           }`}
         >
           Cadastrar
@@ -708,7 +708,7 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
             type="button"
             onClick={handleResendConfirmation}
             disabled={loading}
-            className="w-full py-2 px-4 border border-border rounded-lg text-sm font-medium text-white hover:bg-white/5 transition-colors"
+            className="w-full py-2 px-4 border border-border rounded-lg text-sm font-medium text-foreground hover:bg-foreground/5 transition-colors"
           >
             Reenviar email de confirmação
           </button>
@@ -732,7 +732,7 @@ export default function LoginForm({ next, theme }: { next?: string; theme?: "con
           <button
             type="button"
             onClick={() => { setShowReset(true); setError(""); }}
-            className="w-full text-xs text-muted-foreground hover:text-white transition-colors"
+            className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             Esqueci minha senha
           </button>

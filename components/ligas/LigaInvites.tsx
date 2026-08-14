@@ -19,7 +19,7 @@ export default function LigaInvites({ invites }: { invites: any[] }) {
 
   return (
     <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-      <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+      <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
         Convites de Grupo
         <span className="px-1.5 py-0.5 bg-primary/20 text-primary rounded text-xs">{invites.length}</span>
       </h3>
@@ -36,9 +36,9 @@ export default function LigaInvites({ invites }: { invites: any[] }) {
               <Trophy size={16} style={{ color: liga?.color }} />
             </div>
             <div>
-              <p className="text-sm font-semibold text-white">{liga?.name}</p>
+              <p className="text-sm font-semibold text-foreground">{liga?.name}</p>
               <p className="text-xs text-muted-foreground">
-                Convidado por <span className="text-white">{inviter?.full_name}</span>
+                Convidado por <span className="text-foreground">{inviter?.full_name}</span>
               </p>
             </div>
           </div>

@@ -73,11 +73,11 @@ export default function NotificationBell() {
           setOpen(opening);
           if (opening && unread > 0) markAllRead();
         }}
-        className="relative text-muted-foreground hover:text-white transition-colors p-1"
+        className="relative text-muted-foreground hover:text-foreground transition-colors p-1"
       >
         <Bell size={18} />
         {unread > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-nao text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+          <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-nao text-primary-foreground text-[9px] font-bold rounded-full flex items-center justify-center">
             {unread > 9 ? "9+" : unread}
           </span>
         )}
@@ -86,7 +86,7 @@ export default function NotificationBell() {
       {open && (
         <div className="absolute right-0 top-8 w-80 bg-card border border-border rounded-xl shadow-xl z-50 overflow-hidden">
           <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-            <span className="text-sm font-semibold text-white">Notificações</span>
+            <span className="text-sm font-semibold text-foreground">Notificações</span>
             {unread > 0 && (
               <button
                 onClick={markAllRead}
@@ -116,7 +116,7 @@ export default function NotificationBell() {
                 return (
                   <div
                     key={n.id}
-                    className={`group px-4 py-3 border-b border-border last:border-0 hover:bg-white/5 transition-colors ${
+                    className={`group px-4 py-3 border-b border-border last:border-0 hover:bg-foreground/5 transition-colors ${
                       !n.read ? "bg-primary/5" : ""
                     }`}
                   >
@@ -151,7 +151,7 @@ function NotifContent({
     <div className="flex gap-3">
       <span className="text-lg shrink-0 mt-0.5">{icons[n.type] ?? "🔔"}</span>
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold text-white">{n.title}</p>
+        <p className="text-xs font-semibold text-foreground">{n.title}</p>
         <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.body}</p>
         <p className="text-[10px] text-muted-foreground/50 mt-1">
           {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: ptBR })}

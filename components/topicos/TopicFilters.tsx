@@ -37,8 +37,8 @@ export default function TopicFilters() {
             onClick={() => setParam("sort", opt.value)}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
               currentSort === opt.value
-                ? "bg-primary text-white"
-                : "bg-card border border-border text-muted-foreground hover:text-white hover:border-primary/30"
+                ? "bg-primary text-primary-foreground"
+                : "bg-card border border-border text-muted-foreground hover:text-foreground hover:border-primary/30"
             }`}
           >
             {opt.label}
@@ -52,7 +52,7 @@ export default function TopicFilters() {
           className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
             !currentCategory
               ? "bg-primary/20 text-primary border border-primary/30"
-              : "bg-card border border-border text-muted-foreground hover:text-white"
+              : "bg-card border border-border text-muted-foreground hover:text-foreground"
           }`}
         >
           Todos
@@ -64,7 +64,7 @@ export default function TopicFilters() {
             className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
               currentCategory === cat.value
                 ? "bg-primary/20 text-primary border border-primary/30"
-                : "bg-card border border-border text-muted-foreground hover:text-white"
+                : "bg-card border border-border text-muted-foreground hover:text-foreground"
             }`}
           >
             {cat.label}

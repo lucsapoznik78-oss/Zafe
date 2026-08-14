@@ -21,11 +21,11 @@ export default async function GamesRankingPage() {
   return (
     <div className="py-6 space-y-5">
       <div className="flex items-center gap-2">
-        <Link href="/games" className="text-muted-foreground hover:text-white">
+        <Link href="/games" className="text-muted-foreground hover:text-foreground">
           <ArrowLeft size={18} />
         </Link>
-        <h1 className="text-xl font-bold text-white flex items-center gap-2">
-          <Medal size={20} className="text-violet-400" /> Ranking Zafe Games
+        <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
+          <Medal size={20} className="text-primary" /> Ranking Zafe Games
         </h1>
       </div>
 
@@ -48,19 +48,19 @@ export default async function GamesRankingPage() {
               <div
                 key={r.user_id}
                 className={`grid grid-cols-[2.5rem_1fr_5rem_3.5rem_3.5rem] gap-2 px-4 py-2.5 items-center border-b border-border last:border-b-0 text-sm ${
-                  isMe ? "bg-violet-500/10" : ""
+                  isMe ? "bg-primary/10" : ""
                 }`}
               >
                 <span className="font-mono text-muted-foreground flex items-center gap-1">
                   {r.posicao}
-                  {r.posicao === 1 && <Trophy size={11} className="text-violet-400" />}
+                  {r.posicao === 1 && <Trophy size={11} className="text-primary" />}
                 </span>
-                <span className={`truncate ${isMe ? "text-violet-300 font-semibold" : "text-white"}`}>
+                <span className={`truncate ${isMe ? "text-primary font-semibold" : "text-foreground"}`}>
                   {r.username}
-                  {isMe && <span className="text-[10px] ml-1.5 text-violet-300/70">(você)</span>}
+                  {isMe && <span className="text-[10px] ml-1.5 text-primary/70">(você)</span>}
                 </span>
                 <span><RankBadge tier={r.current_tier} /></span>
-                <span className="text-right font-bold text-white">{r.points_total}</span>
+                <span className="text-right font-bold text-foreground">{r.points_total}</span>
                 <span className="text-right text-muted-foreground">{r.events_won}</span>
               </div>
             );

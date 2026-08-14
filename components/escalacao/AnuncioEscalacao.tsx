@@ -48,21 +48,21 @@ export default function AnuncioEscalacao() {
   if (!mostrar) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
       <div className="relative w-full max-w-sm max-h-[calc(100dvh-2rem)] overflow-y-auto bg-card border border-border rounded-2xl shadow-2xl">
         <button
           onClick={fechar}
           aria-label="Fechar"
-          className="absolute top-3 right-3 text-muted-foreground hover:text-white transition-colors"
+          className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors"
         >
           <X size={16} />
         </button>
 
-        <div className="rounded-t-2xl bg-gradient-to-br from-primary/30 via-primary/10 to-transparent px-6 pt-6 pb-5 text-center">
-          <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-white">
+        <div className="rounded-t-2xl bg-primary/10 px-6 pt-6 pb-5 text-center">
+          <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-primary-foreground">
             <Sparkles size={11} /> Novidade
           </span>
-          <h2 className="mt-3 text-2xl font-black leading-tight text-white">
+          <h2 className="mt-3 text-2xl font-black leading-tight text-foreground">
             Modo Escalação
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -74,7 +74,7 @@ export default function AnuncioEscalacao() {
           <div className="flex items-start gap-3 rounded-xl bg-muted/30 p-3">
             <Layers size={16} className="mt-0.5 shrink-0 text-primary" />
             <div>
-              <p className="text-sm font-semibold text-white">Até 5 times ao mesmo tempo</p>
+              <p className="text-sm font-semibold text-foreground">Até 5 times ao mesmo tempo</p>
               <p className="text-xs text-muted-foreground">
                 Um no Mix e um em cada liga — Brasileirão, NBA, NFL e Valorant. São
                 competições independentes, com ranking próprio.
@@ -82,9 +82,9 @@ export default function AnuncioEscalacao() {
             </div>
           </div>
           <div className="flex items-start gap-3 rounded-xl bg-muted/30 p-3">
-            <Trophy size={16} className="mt-0.5 shrink-0 text-yellow-400" />
+            <Trophy size={16} className="mt-0.5 shrink-0 text-prize" />
             <div>
-              <p className="text-sm font-semibold text-white">1 ponto = 1 Z$</p>
+              <p className="text-sm font-semibold text-foreground">1 ponto = 1 Z$</p>
               <p className="text-xs text-muted-foreground">
                 Cada titular pontua lance a lance. A soma do time vira Z$ na sua
                 carteira quando a Convocação é apurada.
@@ -95,13 +95,13 @@ export default function AnuncioEscalacao() {
           <Link
             href="/escalacao"
             onClick={fechar}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-bold text-white transition-colors hover:bg-primary/90"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90"
           >
             Escalar meu time <ArrowRight size={15} />
           </Link>
           <button
             onClick={fechar}
-            className="w-full text-xs text-muted-foreground transition-colors hover:text-white"
+            className="w-full text-xs text-muted-foreground transition-colors hover:text-foreground"
           >
             Agora não
           </button>

@@ -41,7 +41,7 @@ export default function PagarCard({
   if (status !== "apurado") {
     return (
       <p className="text-[11px] text-muted-foreground">
-        Pagar só depois de apurar. Status atual: <span className="text-white">{status}</span>.
+        Pagar só depois de apurar. Status atual: <span className="text-foreground">{status}</span>.
       </p>
     );
   }
@@ -83,7 +83,7 @@ export default function PagarCard({
       ) : (
         <>
           <p className="text-[11px] text-muted-foreground">
-            Digite <span className="text-white tabular-nums">{zAEmitir}</span> para confirmar que
+            Digite <span className="text-foreground tabular-nums">{zAEmitir}</span> para confirmar que
             é este o valor a emitir. Pagar é de mão única.
             {problemas > 0 && (
               <span className="text-nao">
@@ -98,12 +98,12 @@ export default function PagarCard({
               onChange={(e) => setValor(e.target.value)}
               inputMode="decimal"
               placeholder="0,00"
-              className="flex-1 px-2.5 py-1.5 rounded-lg bg-input border border-border text-xs text-white tabular-nums"
+              className="flex-1 px-2.5 py-1.5 rounded-lg bg-input border border-border text-xs text-foreground tabular-nums"
             />
             <button
               onClick={pagar}
               disabled={travado}
-              className="px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-bold disabled:opacity-50"
+              className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold disabled:opacity-50"
             >
               {rodando ? <Loader2 size={12} className="animate-spin" /> : "Pagar e emitir Z$"}
             </button>

@@ -45,7 +45,7 @@ export default function RedefinirSenhaPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <img src="/zafe-logo-full.png" alt="Zafe" className="h-12 mx-auto mb-3" />
@@ -55,14 +55,14 @@ export default function RedefinirSenhaPage() {
           <div className="bg-card border border-border rounded-xl p-6 text-center space-y-3">
             <CheckCircle2 size={36} className="mx-auto text-primary" />
             <div>
-              <p className="text-lg font-bold text-white">Senha redefinida!</p>
+              <p className="text-lg font-bold text-foreground">Senha redefinida!</p>
               <p className="text-sm text-muted-foreground mt-1">Redirecionando…</p>
             </div>
           </div>
         ) : (
           <div className="bg-card border border-border rounded-xl p-6 space-y-5">
             <div className="text-center space-y-1">
-              <p className="text-lg font-bold text-white">Nova senha</p>
+              <p className="text-lg font-bold text-foreground">Nova senha</p>
               <p className="text-sm text-muted-foreground">Escolha uma nova senha para sua conta.</p>
             </div>
 
@@ -82,7 +82,7 @@ export default function RedefinirSenhaPage() {
                   <button
                     type="button"
                     onClick={() => setShowPass(!showPass)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
                     {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
@@ -107,7 +107,7 @@ export default function RedefinirSenhaPage() {
               <Button
                 type="submit"
                 disabled={loading || !password || !confirm}
-                className="w-full bg-primary text-white font-semibold hover:bg-primary/90"
+                className="w-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90"
               >
                 {loading ? <Loader2 size={16} className="animate-spin" /> : "Redefinir senha"}
               </Button>

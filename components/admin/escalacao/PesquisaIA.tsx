@@ -141,7 +141,7 @@ export default function PesquisaIA({ cards }: { cards: CardOpcao[] }) {
   return (
     <div className="bg-card border border-border rounded-xl p-4 space-y-3">
       <div className="flex items-baseline justify-between gap-2">
-        <h3 className="text-sm font-semibold text-white flex items-center gap-1.5">
+        <h3 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
           <Sparkles size={14} className="text-primary" />
           Apurar com IA
         </h3>
@@ -165,7 +165,7 @@ export default function PesquisaIA({ cards }: { cards: CardOpcao[] }) {
           value={card?.id ?? ""}
           onChange={(e) => trocarCard(e.target.value)}
           disabled={pesquisando || gravando}
-          className="w-full px-2.5 py-1.5 rounded-lg bg-input border border-border text-xs text-white"
+          className="w-full px-2.5 py-1.5 rounded-lg bg-input border border-border text-xs text-foreground"
         >
           {cards.map((c) => (
             <option key={c.id} value={c.id}>
@@ -180,7 +180,7 @@ export default function PesquisaIA({ cards }: { cards: CardOpcao[] }) {
           value={esporte}
           onChange={(e) => setEsporte(e.target.value)}
           disabled={pesquisando || gravando}
-          className="flex-1 px-2.5 py-1.5 rounded-lg bg-input border border-border text-xs text-white"
+          className="flex-1 px-2.5 py-1.5 rounded-lg bg-input border border-border text-xs text-foreground"
         >
           {esportes.map((e) => (
             <option key={e.key} value={e.key}>
@@ -192,7 +192,7 @@ export default function PesquisaIA({ cards }: { cards: CardOpcao[] }) {
         <button
           onClick={pesquisar}
           disabled={pesquisando || gravando || !esporte}
-          className="px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold disabled:opacity-50 flex items-center gap-1.5"
+          className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold disabled:opacity-50 flex items-center gap-1.5"
         >
           {pesquisando ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
           {pesquisando ? "Pesquisando…" : "Pesquisar"}
@@ -206,7 +206,7 @@ export default function PesquisaIA({ cards }: { cards: CardOpcao[] }) {
           <div className="flex items-baseline justify-between text-[11px] text-muted-foreground">
             <span>
               {resultado.atletas.length} atletas · evento{" "}
-              <span className="text-white">{resultado.evento_key}</span>
+              <span className="text-foreground">{resultado.evento_key}</span>
             </span>
             <span>{aprovados.size} selecionados</span>
           </div>
@@ -222,8 +222,8 @@ export default function PesquisaIA({ cards }: { cards: CardOpcao[] }) {
                 />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-2">
-                    <span className="text-white truncate">{a.nome}</span>
-                    <span className="text-white tabular-nums shrink-0">
+                    <span className="text-foreground truncate">{a.nome}</span>
+                    <span className="text-foreground tabular-nums shrink-0">
                       {a.competiu ? a.pontos.toFixed(1) : "não competiu"}
                     </span>
                   </div>
@@ -254,7 +254,7 @@ export default function PesquisaIA({ cards }: { cards: CardOpcao[] }) {
           <button
             onClick={gravar}
             disabled={gravando || aprovados.size === 0}
-            className="w-full px-3 py-2 rounded-lg bg-input border border-border text-xs font-semibold text-white hover:bg-white/5 disabled:opacity-50 flex items-center justify-center gap-1.5"
+            className="w-full px-3 py-2 rounded-lg bg-input border border-border text-xs font-semibold text-foreground hover:bg-foreground/5 disabled:opacity-50 flex items-center justify-center gap-1.5"
           >
             {gravando && <Loader2 size={12} className="animate-spin" />}
             {gravando
@@ -267,7 +267,7 @@ export default function PesquisaIA({ cards }: { cards: CardOpcao[] }) {
       {conferencia && (
         <div className="space-y-2 pt-2 border-t border-border">
           <div className="flex items-baseline justify-between">
-            <h4 className="text-xs font-semibold text-white">Soma por usuário</h4>
+            <h4 className="text-xs font-semibold text-foreground">Soma por usuário</h4>
             <span
               className={`text-[11px] tabular-nums ${
                 conferencia.totais.estoura_teto ? "text-nao font-bold" : "text-muted-foreground"
@@ -286,12 +286,12 @@ export default function PesquisaIA({ cards }: { cards: CardOpcao[] }) {
                   key={t.time_id}
                   className="py-1.5 flex items-baseline justify-between gap-2 text-xs"
                 >
-                  <span className="text-white truncate">
+                  <span className="text-foreground truncate">
                     <span className="text-muted-foreground">{i + 1}º </span>
                     {t.nome || "(sem nome)"}
                     <span className="text-muted-foreground"> · @{t.username}</span>
                   </span>
-                  <span className="text-white tabular-nums shrink-0">
+                  <span className="text-foreground tabular-nums shrink-0">
                     {t.pontos_total === null ? "—" : t.pontos_total.toFixed(1)} pts ·{" "}
                     {t.z_a_emitir} Z$
                   </span>

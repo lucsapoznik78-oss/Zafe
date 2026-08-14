@@ -32,7 +32,7 @@ export default function ConferirBotao({ cardId }: { cardId: string }) {
       <button
         onClick={conferir}
         disabled={rodando}
-        className="px-2.5 py-1 rounded-lg bg-input border border-border text-[11px] font-semibold text-white hover:bg-white/5 disabled:opacity-50 transition-colors"
+        className="px-2.5 py-1 rounded-lg bg-input border border-border text-[11px] font-semibold text-foreground hover:bg-foreground/5 disabled:opacity-50 transition-colors"
       >
         {rodando ? <Loader2 size={12} className="animate-spin" /> : "Conferir de novo"}
       </button>

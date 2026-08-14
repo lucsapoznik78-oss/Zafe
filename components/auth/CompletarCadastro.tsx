@@ -114,7 +114,7 @@ export default function CompletarCadastro({ isGoogle, email, initialFullName, ne
   return (
     <div className="bg-card border border-border rounded-xl p-6 space-y-5">
       <div className="space-y-1">
-        <h1 className="text-lg font-bold text-white">Finalize seu cadastro</h1>
+        <h1 className="text-lg font-bold text-foreground">Finalize seu cadastro</h1>
         <p className="text-sm text-muted-foreground leading-relaxed">
           {isGoogle
             ? "Sua conta do Google foi conectada. Falta só completar alguns dados pra você começar a prever."
@@ -213,7 +213,7 @@ export default function CompletarCadastro({ isGoogle, email, initialFullName, ne
           <label htmlFor="refCode" className={labelClass}>
             Código de indicação <span className={`${hintClass} text-muted-foreground/60`}>(opcional)</span>
           </label>
-          <Field icon={<Gift size={15} className="text-pink-400" />}>
+          <Field icon={<Gift size={15} className="text-primary" />}>
             <Input
               id="refCode"
               value={refCode}
@@ -229,7 +229,7 @@ export default function CompletarCadastro({ isGoogle, email, initialFullName, ne
         <Button
           type="submit"
           disabled={loading}
-          className="w-full h-11 bg-primary text-white font-bold hover:bg-primary/90"
+          className="w-full h-11 bg-primary text-primary-foreground font-bold hover:bg-primary/90"
         >
           {loading ? <Loader2 size={16} className="animate-spin" /> : "Começar a prever"}
         </Button>
@@ -253,7 +253,7 @@ export default function CompletarCadastro({ isGoogle, email, initialFullName, ne
           <button
             type="button"
             onClick={() => router.push(destino)}
-            className="w-full text-sm text-muted-foreground hover:text-white transition-colors"
+            className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             Visitar o site sem completar agora
           </button>

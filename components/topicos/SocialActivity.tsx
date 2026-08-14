@@ -85,7 +85,7 @@ export default async function SocialActivity({ topicId, currentUserId }: Props) 
       {/* Amigos que apostaram */}
       {hasFriendBets && (
         <div className="space-y-2">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-white">
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
             <Users size={13} />
             Seus amigos palpitaram
           </div>
@@ -104,7 +104,7 @@ export default async function SocialActivity({ topicId, currentUserId }: Props) 
                     <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${isMulti ? "bg-primary" : isSim ? "bg-sim" : "bg-nao"}`} />
                     <Link
                       href={`/u/${profile?.username}`}
-                      className="text-xs text-white font-medium hover:text-primary transition-colors truncate"
+                      className="text-xs text-foreground font-medium hover:text-primary transition-colors truncate"
                     >
                       {name}
                     </Link>
@@ -127,7 +127,7 @@ export default async function SocialActivity({ topicId, currentUserId }: Props) 
                       </Link>
                       <Link
                         href={`/liga/${topicId}?side=${bet.side === "sim" ? "nao" : "sim"}`}
-                        className="px-2 py-0.5 rounded text-[10px] font-semibold bg-muted text-muted-foreground hover:text-white transition-colors"
+                        className="px-2 py-0.5 rounded text-[10px] font-semibold bg-muted text-muted-foreground hover:text-foreground transition-colors"
                       >
                         Discordar
                       </Link>
@@ -146,7 +146,7 @@ export default async function SocialActivity({ topicId, currentUserId }: Props) 
       {/* Comentários em destaque */}
       {hasComments && (
         <div className="space-y-2">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-white">
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
             <MessageSquare size={13} />
             Em discussão
           </div>
@@ -165,7 +165,7 @@ export default async function SocialActivity({ topicId, currentUserId }: Props) 
                   }`} />
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 mb-0.5">
-                      <span className="text-[11px] font-semibold text-white">{name}</span>
+                      <span className="text-[11px] font-semibold text-foreground">{name}</span>
                       {cLabel && (
                         <span className={`text-[9px] font-bold ${cBet?.outcome_id ? "text-primary" : side === "sim" ? "text-sim" : "text-nao"}`}>
                           {cLabel}

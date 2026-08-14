@@ -19,7 +19,7 @@ export default function OrderBook({ simOrders, naoOrders }: Props) {
 
   return (
     <div className="bg-card border border-border rounded-xl p-4">
-      <h3 className="text-sm font-semibold text-white mb-4">Livro de Ordens</h3>
+      <h3 className="text-sm font-semibold text-foreground mb-4">Livro de Ordens</h3>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <div className="flex justify-between text-xs text-sim font-semibold mb-2">
@@ -36,7 +36,7 @@ export default function OrderBook({ simOrders, naoOrders }: Props) {
                     className="absolute inset-0 bg-sim/10"
                     style={{ width: `${(order.amount / maxAmount) * 100}%` }}
                   />
-                  <span className="relative text-white">{order.count}x</span>
+                  <span className="relative text-foreground">{order.count}x</span>
                   <span className="relative text-sim">{formatCurrency(order.amount)}</span>
                 </div>
               ))
@@ -59,7 +59,7 @@ export default function OrderBook({ simOrders, naoOrders }: Props) {
                     className="absolute inset-0 bg-nao/10"
                     style={{ width: `${(order.amount / maxAmount) * 100}%` }}
                   />
-                  <span className="relative text-white">{order.count}x</span>
+                  <span className="relative text-foreground">{order.count}x</span>
                   <span className="relative text-nao">{formatCurrency(order.amount)}</span>
                 </div>
               ))

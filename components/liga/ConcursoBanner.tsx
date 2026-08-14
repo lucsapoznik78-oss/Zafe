@@ -13,7 +13,7 @@ export default function ConcursoBanner() {
           <Trophy size={18} className="text-prize" />
         </div>
         <div>
-          <p className="text-sm font-semibold text-white">
+          <p className="text-sm font-semibold text-foreground">
             Concurso Mensal{CONCURSO_ABERTO ? "" : ` · estreia em ${CONCURSO_ESTREIA}`}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -25,7 +25,7 @@ export default function ConcursoBanner() {
       </div>
       <Link
         href="/concurso"
-        className="flex-shrink-0 px-3 py-1.5 rounded-md bg-primary text-white text-xs font-semibold hover:bg-primary/90 transition-colors"
+        className="flex-shrink-0 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors"
       >
         {CONCURSO_ABERTO ? "Participar" : "Saiba mais"}
       </Link>

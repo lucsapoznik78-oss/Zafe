@@ -8,9 +8,29 @@ const CATEGORY_LABELS: Record<string, string> = {
   esports: "e-Sports",
 };
 
+/**
+ * Paleta arquibancada, chapada. Satori (next/og) renderiza fora do documento:
+ * não existe :root, então `var(--accent)` não resolve. Este arquivo NÃO segue o
+ * interruptor `data-theme` — está anotado em ROLLBACK.md.
+ */
+const C = {
+  bg:        "#0D1B2A", // --bg
+  brand:     "#FFC53D", // --brand
+  text:      "#F2F4F8", // --text
+  textSec:   "#93A5BC", // --text-secondary
+  textMuted: "#8494AC", // --text-muted
+  onAccent:  "#0D1B2A", // --text-on-accent
+  yes:       "#2E9E63", // --yes  (preenchimento)
+  yesText:   "#3FBE7B", // --yes-text
+  no:        "#E5484D", // --no   (preenchimento)
+  noText:    "#EE5F63", // --no-text
+};
+
+// Chip de categoria: só há duas. Sem laranja nem ciano na paleta nova, então
+// vira acento vs. verde — dois tons que já existem e continuam distinguíveis.
 const CATEGORY_COLOR: Record<string, string> = {
-  esportes: "#fb923c",
-  esports: "#22d3ee",
+  esportes: C.brand,
+  esports: C.yesText,
 };
 
 export async function GET(req: Request) {
@@ -33,7 +53,7 @@ export async function GET(req: Request) {
   const probNao = 100 - probSim;
   const volume = parseFloat(stats?.total_volume ?? "0");
   const catLabel = CATEGORY_LABELS[category] ?? "Outros";
-  const catColor = CATEGORY_COLOR[category] ?? "#94a3b8";
+  const catColor = CATEGORY_COLOR[category] ?? C.textSec;
 
   return new ImageResponse(
     (
@@ -41,7 +61,7 @@ export async function GET(req: Request) {
         style={{
           width: "1200px",
           height: "630px",
-          background: "#09090b",
+          background: C.bg,
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
@@ -65,7 +85,7 @@ export async function GET(req: Request) {
               {catLabel}
             </div>
           </div>
-          <div style={{ fontSize: "32px", fontWeight: 800, color: "#7C5CFC", letterSpacing: "-1px" }}>
+          <div style={{ fontSize: "32px", fontWeight: 800, color: C.brand, letterSpacing: "-1px" }}>
             Zafe
           </div>
         </div>
@@ -75,7 +95,7 @@ export async function GET(req: Request) {
           style={{
             fontSize: title.length > 60 ? "44px" : "52px",
             fontWeight: 800,
-            color: "#ffffff",
+            color: C.text,
             lineHeight: 1.2,
             maxWidth: "900px",
           }}
@@ -89,25 +109,25 @@ export async function GET(req: Request) {
             <div
               style={{
                 width: `${probSim}%`,
-                background: "#22C55E",
+                background: C.yes,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 fontSize: "14px",
                 fontWeight: 700,
-                color: "#000",
+                color: C.onAccent,
               }}
             />
             <div
               style={{
                 flex: 1,
-                background: "#F43F5E",
+                background: C.no,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 fontSize: "14px",
                 fontWeight: 700,
-                color: "#000",
+                color: C.onAccent,
               }}
             />
           </div>
@@ -116,21 +136,21 @@ export async function GET(req: Request) {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div style={{ display: "flex", gap: "32px" }}>
               <div style={{ display: "flex", flexDirection: "column" }}>
-                <span style={{ fontSize: "16px", color: "#4ADE80", fontWeight: 600 }}>SIM</span>
-                <span style={{ fontSize: "40px", fontWeight: 800, color: "#4ADE80", lineHeight: 1 }}>
+                <span style={{ fontSize: "16px", color: C.yesText, fontWeight: 600 }}>SIM</span>
+                <span style={{ fontSize: "40px", fontWeight: 800, color: C.yesText, lineHeight: 1 }}>
                   {probSim}%
                 </span>
               </div>
               <div style={{ display: "flex", flexDirection: "column" }}>
-                <span style={{ fontSize: "16px", color: "#FB7185", fontWeight: 600 }}>NÃO</span>
-                <span style={{ fontSize: "40px", fontWeight: 800, color: "#FB7185", lineHeight: 1 }}>
+                <span style={{ fontSize: "16px", color: C.noText, fontWeight: 600 }}>NÃO</span>
+                <span style={{ fontSize: "40px", fontWeight: 800, color: C.noText, lineHeight: 1 }}>
                   {probNao}%
                 </span>
               </div>
             </div>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-              <span style={{ fontSize: "14px", color: "#71717a" }}>Volume total</span>
-              <span style={{ fontSize: "28px", fontWeight: 700, color: "#a1a1aa" }}>
+              <span style={{ fontSize: "14px", color: C.textMuted }}>Volume total</span>
+              <span style={{ fontSize: "28px", fontWeight: 700, color: C.textSec }}>
                 Z$ {new Intl.NumberFormat("pt-BR").format(Math.round(volume))}
               </span>
             </div>
@@ -139,8 +159,8 @@ export async function GET(req: Request) {
 
         {/* Footer */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontSize: "16px", color: "#52525b" }}>zafe.app.br</span>
-          <span style={{ fontSize: "16px", color: "#52525b" }}>Liga de previsões brasileira</span>
+          <span style={{ fontSize: "16px", color: C.textMuted }}>zafe.app.br</span>
+          <span style={{ fontSize: "16px", color: C.textMuted }}>Liga de previsões brasileira</span>
         </div>
       </div>
     ),

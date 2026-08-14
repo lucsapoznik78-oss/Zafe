@@ -24,7 +24,7 @@ export default function SoundMenu() {
     <button
       onClick={toggleSfx}
       title={sfx ? "Desligar efeitos sonoros" : "Ligar efeitos sonoros"}
-      className="relative p-2 rounded-md text-muted-foreground hover:text-white hover:bg-white/5 transition-colors"
+      className="relative p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors"
     >
       {sfx ? <Volume2 size={18} /> : <VolumeX size={18} />}
     </button>

@@ -26,7 +26,7 @@ const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
   active:    { label: "Aberto",    cls: "bg-secondary text-muted-foreground" },
   resolved:  { label: "Resolvido", cls: "bg-muted text-muted-foreground" },
   cancelled: { label: "Cancelado", cls: "bg-nao/15 text-nao" },
-  closed:    { label: "Fechado",   cls: "bg-yellow-500/15 text-yellow-400" },
+  closed:    { label: "Fechado",   cls: "bg-prize/15 text-prize" },
 };
 
 export default function TopicCard({ topic, href: hrefProp }: TopicCardProps) {
@@ -71,7 +71,7 @@ export default function TopicCard({ topic, href: hrefProp }: TopicCardProps) {
           </div>
         </div>
 
-        <h3 className="text-sm font-semibold text-white leading-snug mb-3 group-hover:text-primary transition-colors line-clamp-2 flex-1">
+        <h3 className="text-sm font-semibold text-foreground leading-snug mb-3 group-hover:text-primary transition-colors line-clamp-2 flex-1">
           {topic.title}
         </h3>
 
@@ -85,7 +85,7 @@ export default function TopicCard({ topic, href: hrefProp }: TopicCardProps) {
               RESOLVIDO
             </div>
           ) : hasRealBets ? (
-            <div className="text-center py-1.5 rounded-lg text-xs font-bold bg-yellow-500/10 text-yellow-400">
+            <div className="text-center py-1.5 rounded-lg text-xs font-bold bg-prize/10 text-prize">
               REEMBOLSADO
             </div>
           ) : (

@@ -70,7 +70,7 @@ async function CommunityList({ tab, category, search, minScore, userId }: { tab:
   if (!events || events.length === 0) {
     return (
       <div className="text-center py-20 text-muted-foreground">
-        <p className="text-lg font-medium text-white mb-1">
+        <p className="text-lg font-medium text-foreground mb-1">
           {isEncerrados ? "Nenhum evento encerrado" : "Nenhum evento encontrado"}
         </p>
         <p className="text-sm">
@@ -116,7 +116,7 @@ async function CommunityList({ tab, category, search, minScore, userId }: { tab:
       </div>
       {others.length > 0 && (
         <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-white">Eventos da galera ({others.length})</h2>
+          <h2 className="text-sm font-semibold text-foreground">Eventos da galera ({others.length})</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {others.map((event) => (
               <CommunityEventCard key={event.id} event={event as any} />
@@ -142,7 +142,7 @@ async function MyEventsList({ userId }: { userId: string }) {
   if (!events || events.length === 0) {
     return (
       <div className="text-center py-20 text-muted-foreground">
-        <p className="text-lg font-medium text-white mb-1">Você ainda não criou nenhum evento</p>
+        <p className="text-lg font-medium text-foreground mb-1">Você ainda não criou nenhum evento</p>
         <p className="text-sm">Crie um evento e a galera palpita</p>
       </div>
     );
@@ -166,7 +166,7 @@ async function MyEventsList({ userId }: { userId: string }) {
   const Section = ({ title, items, resolveCta }: { title: string; items: any[]; resolveCta?: boolean }) =>
     items.length === 0 ? null : (
       <div className="space-y-3">
-        <h2 className={`text-sm font-semibold ${resolveCta ? "text-yellow-400" : "text-white"}`}>
+        <h2 className={`text-sm font-semibold ${resolveCta ? "text-prize" : "text-foreground"}`}>
           {title} ({items.length})
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -217,12 +217,12 @@ export default async function ComunidadePage({ searchParams }: PageProps) {
     <div className="py-6 space-y-5">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-white">Comunidade</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Comunidade</h1>
           <p className="text-muted-foreground text-sm mt-0.5">Eventos criados e resolvidos pela galera</p>
         </div>
         <Link
           href="/comunidade/criar"
-          className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors"
+          className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors"
         >
           <Plus size={16} />
           Criar evento
@@ -230,9 +230,9 @@ export default async function ComunidadePage({ searchParams }: PageProps) {
       </div>
 
       {/* Disclaimer */}
-      <div className="flex items-start gap-2 bg-yellow-500/5 border border-yellow-500/20 rounded-lg px-3 py-2.5">
-        <AlertTriangle size={14} className="text-yellow-400 mt-0.5 shrink-0" />
-        <p className="text-xs text-yellow-200/80">
+      <div className="flex items-start gap-2 bg-prize/5 border border-prize/20 rounded-lg px-3 py-2.5">
+        <AlertTriangle size={14} className="text-prize mt-0.5 shrink-0" />
+        <p className="text-xs text-prize/80">
           Estes eventos são criados e resolvidos por usuários. A Zafe não garante a veracidade do resultado.
         </p>
       </div>
@@ -244,7 +244,7 @@ export default async function ComunidadePage({ searchParams }: PageProps) {
             key={t.key}
             href={buildHref(t.key)}
             className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-              tab === t.key ? "bg-card text-white" : "text-muted-foreground hover:text-white"
+              tab === t.key ? "bg-card text-foreground" : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {t.label}
@@ -262,7 +262,7 @@ export default async function ComunidadePage({ searchParams }: PageProps) {
             className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
               minScore === f.value
                 ? "bg-primary/20 text-primary"
-                : "bg-muted text-muted-foreground hover:text-white"
+                : "bg-muted text-muted-foreground hover:text-foreground"
             }`}
           >
             {f.label}

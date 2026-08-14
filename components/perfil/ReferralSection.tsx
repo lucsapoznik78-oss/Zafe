@@ -24,7 +24,7 @@ export default function ReferralSection({ referralCode, totalReferrals, complete
     <div className="bg-card border border-border rounded-xl p-4 space-y-3">
       <div className="flex items-center gap-2">
         <Gift size={15} className="text-primary" />
-        <h3 className="text-sm font-semibold text-white">Indicar amigos</h3>
+        <h3 className="text-sm font-semibold text-foreground">Indicar amigos</h3>
         <span className="ml-auto text-xs text-muted-foreground flex items-center gap-1">
           <Users size={11} />
           {completedReferrals}/{totalReferrals} convertidos
@@ -32,7 +32,7 @@ export default function ReferralSection({ referralCode, totalReferrals, complete
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Compartilhe seu link. Quando o amigo criar a conta, <span className="text-white font-semibold">ambos ganham Z$ 50</span>.
+        Compartilhe seu link. Quando o amigo criar a conta, <span className="text-foreground font-semibold">ambos ganham Z$ 50</span>.
       </p>
 
       <div className="flex gap-2">
@@ -41,7 +41,7 @@ export default function ReferralSection({ referralCode, totalReferrals, complete
         </div>
         <button
           onClick={copiar}
-          className="flex items-center gap-1.5 px-3 py-2 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary/90 transition-colors shrink-0"
+          className="flex items-center gap-1.5 px-3 py-2 bg-primary text-primary-foreground text-xs font-bold rounded-lg hover:bg-primary/90 transition-colors shrink-0"
         >
           {copied ? <Check size={12} /> : <Copy size={12} />}
           {copied ? "Copiado!" : "Copiar"}

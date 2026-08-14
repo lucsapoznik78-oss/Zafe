@@ -96,9 +96,9 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
     groupStatus === "active"
       ? { label: "Ativo", cls: "bg-sim/15 text-sim" }
       : groupStatus === "pending"
-        ? { label: "Pendente", cls: "bg-yellow-500/15 text-yellow-500" }
+        ? { label: "Pendente", cls: "bg-prize/15 text-prize" }
         : groupStatus === "cancelled"
-          ? { label: "Cancelado", cls: "bg-red-500/15 text-red-400" }
+          ? { label: "Cancelado", cls: "bg-nao/15 text-destructive" }
           : null;
 
   const tabs: Tab[] = ["members", "ranking", ...((!liga.is_public && (subLigas.length > 0 || isCreator)) ? ["subligas" as Tab] : [])];
@@ -210,7 +210,7 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
-                <p className="text-sm font-semibold text-white truncate">{liga.name}</p>
+                <p className="text-sm font-semibold text-foreground truncate">{liga.name}</p>
                 {isCreator && <Crown size={11} style={{ color: liga.color }} className="shrink-0" />}
                 {liga.is_public ? (
                   <Globe size={11} className="text-sim shrink-0" aria-label="Grupo público" />
@@ -266,7 +266,7 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
                   key={t}
                   onClick={() => setTab(t)}
                   className={`flex-1 py-2 text-xs font-medium transition-colors ${
-                    tab === t ? "text-white border-b-2 border-primary -mb-px" : "text-muted-foreground hover:text-white"
+                    tab === t ? "text-foreground border-b-2 border-primary -mb-px" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {tabLabels[t]}
@@ -297,14 +297,14 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
                               {isMemberCreator && (
                                 <div
                                   className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full flex items-center justify-center text-[8px]"
-                                  style={{ backgroundColor: liga.color, color: "#000" }}
+                                  style={{ backgroundColor: liga.color, color: "var(--bg)" }}
                                 >
                                   ★
                                 </div>
                               )}
                             </div>
                             <div>
-                              <p className="text-sm text-white font-medium">{name}</p>
+                              <p className="text-sm text-foreground font-medium">{name}</p>
                               <p className="text-[10px] text-muted-foreground">
                                 {isMemberCreator ? "Criador" : "@" + member.profiles?.username}
                               </p>
@@ -332,7 +332,7 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
                         </Avatar>
                         <div>
                           <p className="text-sm text-muted-foreground">{m.profiles?.full_name}</p>
-                          <p className="text-[10px] text-yellow-500">Convite pendente</p>
+                          <p className="text-[10px] text-prize">Convite pendente</p>
                         </div>
                       </div>
                     ))}
@@ -352,8 +352,8 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
 
                   {/* Confirmar transferência */}
                   {transferTarget && (
-                    <div className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-3 py-2">
-                      <p className="text-xs text-yellow-400 flex-1">
+                    <div className="flex items-center gap-2 bg-prize/10 border border-prize/30 rounded-lg px-3 py-2">
+                      <p className="text-xs text-prize flex-1">
                         Transferir liderança para{" "}
                         <strong>{activeMembers.find((m) => m.user_id === transferTarget)?.profiles?.full_name}</strong>?
                       </p>
@@ -364,7 +364,7 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
                       >
                         {transferring ? <Loader2 size={12} className="animate-spin" /> : "Confirmar"}
                       </button>
-                      <button onClick={() => setTransferTarget(null)} className="text-muted-foreground hover:text-white">
+                      <button onClick={() => setTransferTarget(null)} className="text-muted-foreground hover:text-foreground">
                         <X size={12} />
                       </button>
                     </div>
@@ -387,7 +387,7 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
                         <button
                           onClick={leaveLeague}
                           disabled={leaving}
-                          className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors disabled:opacity-50"
+                          className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-nao/10 text-destructive hover:bg-nao/20 transition-colors disabled:opacity-50"
                         >
                           {leaving ? <Loader2 size={13} className="animate-spin" /> : <LogOut size={13} />}
                           Sair do grupo
@@ -401,7 +401,7 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
                     <button
                       onClick={leaveLeague}
                       disabled={leaving}
-                      className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors disabled:opacity-50"
+                      className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-nao/10 text-destructive hover:bg-nao/20 transition-colors disabled:opacity-50"
                     >
                       {leaving ? <Loader2 size={13} className="animate-spin" /> : <LogOut size={13} />}
                       Sair do grupo
@@ -413,7 +413,7 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
                     <button
                       onClick={deleteLeague}
                       disabled={deleting}
-                      className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors disabled:opacity-50"
+                      className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-nao/10 text-destructive hover:bg-nao/20 transition-colors disabled:opacity-50"
                     >
                       {deleting ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
                       Apagar grupo
@@ -435,7 +435,7 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
                                     {getInitials(friend.full_name)}
                                   </AvatarFallback>
                                 </Avatar>
-                                <span className="text-sm text-white">{friend.full_name}</span>
+                                <span className="text-sm text-foreground">{friend.full_name}</span>
                               </div>
                               <button
                                 onClick={() => inviteFriend(friend.id)}
@@ -459,7 +459,7 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
                             value={searchQ}
                             onChange={(e) => searchUsers(e.target.value)}
                             placeholder="Nome ou @usuário..."
-                            className="w-full pl-7 pr-3 py-2 bg-input border border-border rounded-lg text-xs text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+                            className="w-full pl-7 pr-3 py-2 bg-input border border-border rounded-lg text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
                           />
                           {searching && <Loader2 size={11} className="absolute right-2.5 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground" />}
                         </div>
@@ -472,7 +472,7 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
                                 </AvatarFallback>
                               </Avatar>
                               <div>
-                                <p className="text-xs text-white">{u.full_name ?? u.username}</p>
+                                <p className="text-xs text-foreground">{u.full_name ?? u.username}</p>
                                 <p className="text-[10px] text-muted-foreground">@{u.username}</p>
                               </div>
                             </div>
@@ -526,7 +526,7 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
-                            <p className="text-xs font-medium text-white truncate">{entry.full_name}</p>
+                            <p className="text-xs font-medium text-foreground truncate">{entry.full_name}</p>
                             <p className="text-[10px] text-muted-foreground">{entry.won}/{entry.total} ganhas</p>
                           </div>
                           <div className="text-right shrink-0">
@@ -561,7 +561,7 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
                           <Trophy size={14} style={{ color: sub.color }} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-white truncate">{sub.name}</p>
+                          <p className="text-sm font-medium text-foreground truncate">{sub.name}</p>
                           <p className="text-[10px] text-muted-foreground">
                             {sub.members.filter((m) => m.status === "active").length} membros
                           </p>
@@ -573,7 +573,7 @@ export default function LigaCard({ liga, currentUserId, friends, subLigas = [] }
                   {isCreator && (
                     <button
                       onClick={() => setShowCreateSub(true)}
-                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-dashed border-border text-xs text-muted-foreground hover:text-white hover:border-border/80 transition-colors"
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-dashed border-border text-xs text-muted-foreground hover:text-foreground hover:border-border/80 transition-colors"
                     >
                       <Plus size={13} />
                       Novo subgrupo

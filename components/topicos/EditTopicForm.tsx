@@ -51,13 +51,13 @@ export default function EditTopicForm({ topic }: { topic: Topic }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {error && <p className="text-red-400 text-sm bg-red-400/10 rounded-lg px-3 py-2">{error}</p>}
+      {error && <p className="text-destructive text-sm bg-nao/10 rounded-lg px-3 py-2">{error}</p>}
 
       <div className="bg-card border border-border rounded-xl p-4 space-y-4">
         <div>
           <label className="text-xs text-muted-foreground">Pergunta da previsão</label>
           <input
-            className="w-full mt-1 bg-background border border-border rounded-lg px-3 py-2 text-white text-sm"
+            className="w-full mt-1 bg-background border border-border rounded-lg px-3 py-2 text-foreground text-sm"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
@@ -67,7 +67,7 @@ export default function EditTopicForm({ topic }: { topic: Topic }) {
         <div>
           <label className="text-xs text-muted-foreground">Descrição (opcional)</label>
           <textarea
-            className="w-full mt-1 bg-background border border-border rounded-lg px-3 py-2 text-white text-sm resize-none"
+            className="w-full mt-1 bg-background border border-border rounded-lg px-3 py-2 text-foreground text-sm resize-none"
             rows={3}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -78,7 +78,7 @@ export default function EditTopicForm({ topic }: { topic: Topic }) {
           <div>
             <label className="text-xs text-muted-foreground">Categoria</label>
             <select
-              className="w-full mt-1 bg-background border border-border rounded-lg px-3 py-2 text-white text-sm"
+              className="w-full mt-1 bg-background border border-border rounded-lg px-3 py-2 text-foreground text-sm"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
             >
@@ -89,7 +89,7 @@ export default function EditTopicForm({ topic }: { topic: Topic }) {
             <label className="text-xs text-muted-foreground">Data do evento</label>
             <input
               type="datetime-local"
-              className="w-full mt-1 bg-background border border-border rounded-lg px-3 py-2 text-white text-sm"
+              className="w-full mt-1 bg-background border border-border rounded-lg px-3 py-2 text-foreground text-sm"
               value={closesAt}
               onChange={(e) => setClosesAt(e.target.value)}
               required
@@ -102,14 +102,14 @@ export default function EditTopicForm({ topic }: { topic: Topic }) {
         <button
           type="button"
           onClick={() => router.back()}
-          className="flex-1 py-3 bg-muted text-white font-semibold rounded-xl hover:bg-muted/80 transition-colors"
+          className="flex-1 py-3 bg-muted text-foreground font-semibold rounded-xl hover:bg-muted/80 transition-colors"
         >
           Cancelar
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="flex-1 py-3 bg-primary text-white font-bold rounded-xl disabled:opacity-50"
+          className="flex-1 py-3 bg-primary text-primary-foreground font-bold rounded-xl disabled:opacity-50"
         >
           {loading ? "Salvando..." : "Salvar Alterações"}
         </button>

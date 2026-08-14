@@ -28,13 +28,13 @@ export default async function StreamerDashboardPage() {
     return (
       <div className="py-10 space-y-4 max-w-lg">
         <div className="flex items-center gap-2">
-          <Link href="/games" className="text-muted-foreground hover:text-white">
+          <Link href="/games" className="text-muted-foreground hover:text-foreground">
             <ArrowLeft size={18} />
           </Link>
-          <h1 className="text-xl font-bold text-white">Programa de Streamers</h1>
+          <h1 className="text-xl font-bold text-foreground">Programa de Streamers</h1>
         </div>
         <div className="bg-card border border-border rounded-xl p-6 text-sm text-muted-foreground space-y-2">
-          <p className="text-white font-semibold">Você ainda não é um streamer parceiro.</p>
+          <p className="text-foreground font-semibold">Você ainda não é um streamer parceiro.</p>
           <p>
             O programa é por convite. Streamers parceiros ganham um link único, acompanham
             quem trouxeram e recebem participação na receita (sem adiantamento, pago por
@@ -66,10 +66,10 @@ export default async function StreamerDashboardPage() {
   return (
     <div className="py-6 space-y-5 max-w-2xl">
       <div className="flex items-center gap-2">
-        <Link href="/games" className="text-muted-foreground hover:text-white">
+        <Link href="/games" className="text-muted-foreground hover:text-foreground">
           <ArrowLeft size={18} />
         </Link>
-        <h1 className="text-xl font-bold text-white">Painel do Streamer</h1>
+        <h1 className="text-xl font-bold text-foreground">Painel do Streamer</h1>
         <span className="ml-2 text-xs text-muted-foreground">{streamer.display_name}</span>
       </div>
 
@@ -83,8 +83,8 @@ export default async function StreamerDashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {cards.map((c) => (
           <div key={c.label} className="bg-card border border-border rounded-xl p-4">
-            <c.icon size={16} className="text-violet-400 mb-2" />
-            <p className="text-2xl font-bold text-white">{c.value}</p>
+            <c.icon size={16} className="text-primary mb-2" />
+            <p className="text-2xl font-bold text-foreground">{c.value}</p>
             <p className="text-[11px] text-muted-foreground mt-0.5">{c.label}</p>
           </div>
         ))}

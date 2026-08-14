@@ -79,21 +79,21 @@ export default async function CommunityDetailPage({ params }: PageProps) {
 
   const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
     active:              { label: "Aberto", cls: "bg-sim/20 text-sim" },
-    awaiting_resolution: { label: "Aguardando resolução do criador", cls: "bg-yellow-500/20 text-yellow-400" },
+    awaiting_resolution: { label: "Aguardando resolução do criador", cls: "bg-prize/20 text-prize" },
     community_resolved:  { label: "Resolvido", cls: "bg-muted text-muted-foreground" },
-    contested:           { label: "Contestado", cls: "bg-orange-500/20 text-orange-300" },
-    under_review:        { label: "Em revisão pela Zafe", cls: "bg-purple-500/20 text-purple-300" },
+    contested:           { label: "Contestado", cls: "bg-nao/20 text-destructive" },
+    under_review:        { label: "Em revisão pela Zafe", cls: "bg-primary/20 text-primary" },
     auto_cancelled:      { label: "Cancelado (sem resolução)", cls: "bg-nao/20 text-nao" },
     mod_cancelled:       { label: "Removido pela moderação", cls: "bg-nao/20 text-nao" },
     creator_cancelled:   { label: "Apagado pelo criador", cls: "bg-nao/20 text-nao" },
-    reversed:            { label: "Resultado revertido", cls: "bg-orange-500/20 text-orange-300" },
+    reversed:            { label: "Resultado revertido", cls: "bg-nao/20 text-destructive" },
   };
 
   const badge = STATUS_BADGE[event.status] ?? STATUS_BADGE.active;
 
   return (
     <div className="py-6 max-w-4xl mx-auto">
-      <Link href="/comunidade" className="text-xs text-muted-foreground hover:text-white mb-4 block">
+      <Link href="/comunidade" className="text-xs text-muted-foreground hover:text-foreground mb-4 block">
         &larr; Voltar para Comunidade
       </Link>
 
@@ -103,7 +103,7 @@ export default async function CommunityDetailPage({ params }: PageProps) {
           {/* Header */}
           <div className="space-y-3">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/15 text-purple-300 uppercase">
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-primary/15 text-primary uppercase">
                 Comunidade
               </span>
               <CategoryBadge category={event.category} />
@@ -112,17 +112,17 @@ export default async function CommunityDetailPage({ params }: PageProps) {
               </span>
             </div>
 
-            <h1 className="text-xl font-bold text-white">{event.title}</h1>
+            <h1 className="text-xl font-bold text-foreground">{event.title}</h1>
             <p className="text-sm text-muted-foreground">{event.description}</p>
 
             {/* Creator info */}
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              <Link href={`/u/${event.creator?.username}`} className="flex items-center gap-1.5 hover:text-white">
+              <Link href={`/u/${event.creator?.username}`} className="flex items-center gap-1.5 hover:text-foreground">
                 <User size={12} />
                 @{event.creator?.username}
               </Link>
               <span className="flex items-center gap-1">
-                <Star size={12} className={creatorScore >= 90 ? "text-yellow-400" : ""} />
+                <Star size={12} className={creatorScore >= 90 ? "text-prize" : ""} />
                 Nota {creatorScore}
               </span>
               {event.status === "active" && (
@@ -144,7 +144,7 @@ export default async function CommunityDetailPage({ params }: PageProps) {
               </div>
               <div>
                 <p className="text-[10px] text-muted-foreground">Total</p>
-                <p className="text-sm font-bold text-white">{fmtZ(totalVolume)}</p>
+                <p className="text-sm font-bold text-foreground">{fmtZ(totalVolume)}</p>
               </div>
               <div>
                 <p className="text-[10px] text-muted-foreground">Volume NÃO</p>
@@ -175,13 +175,13 @@ export default async function CommunityDetailPage({ params }: PageProps) {
 
           {(contestations ?? []).length > 0 && (
             <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-orange-300 flex items-center gap-1.5">
+              <h3 className="text-sm font-semibold text-destructive flex items-center gap-1.5">
                 <AlertTriangle size={14} />
                 Contestações ({contestations?.length ?? 0})
               </h3>
               {(contestations ?? []).map((c: any) => (
-                <div key={c.id} className="bg-orange-500/5 border border-orange-500/20 rounded-lg p-3">
-                  <p className="text-xs text-white">@{c.user?.username}: {c.reason}</p>
+                <div key={c.id} className="bg-nao/5 border border-destructive/20 rounded-lg p-3">
+                  <p className="text-xs text-foreground">@{c.user?.username}: {c.reason}</p>
                   <p className="text-[10px] text-muted-foreground mt-1">
                     {new Date(c.created_at).toLocaleString("pt-BR")} — {c.status}
                   </p>
@@ -193,13 +193,13 @@ export default async function CommunityDetailPage({ params }: PageProps) {
           {/* User bets */}
           {(userBets ?? []).length > 0 && (
             <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-white">Seus palpites</h3>
+              <h3 className="text-sm font-semibold text-foreground">Seus palpites</h3>
               {(userBets ?? []).map((b: any) => (
                 <div key={b.id} className={`rounded-lg p-3 border text-sm ${
                   b.status === "won" ? "bg-sim/10 border-sim/30 text-sim" :
                   b.status === "lost" ? "bg-nao/10 border-nao/30 text-nao" :
-                  b.status === "refunded" ? "bg-yellow-500/10 border-yellow-500/30 text-yellow-400" :
-                  "bg-card border-border text-white"
+                  b.status === "refunded" ? "bg-prize/10 border-prize/30 text-prize" :
+                  "bg-card border-border text-foreground"
                 }`}>
                   <span className="font-bold">{b.side.toUpperCase()}</span>
                   {" "}{formatCurrency(b.amount)}
@@ -212,7 +212,7 @@ export default async function CommunityDetailPage({ params }: PageProps) {
 
           {/* All bets */}
           <div className="space-y-2">
-            <h3 className="text-sm font-semibold text-white">Atividade ({(allBets ?? []).length})</h3>
+            <h3 className="text-sm font-semibold text-foreground">Atividade ({(allBets ?? []).length})</h3>
             {(allBets ?? []).slice(0, 20).map((b: any) => (
               <div key={b.id} className="flex items-center justify-between bg-card border border-border rounded-lg px-3 py-2">
                 <div className="text-xs">
@@ -222,7 +222,7 @@ export default async function CommunityDetailPage({ params }: PageProps) {
                     {b.side.toUpperCase()}
                   </span>
                 </div>
-                <span className="text-xs text-white font-medium">{formatCurrency(b.amount)}</span>
+                <span className="text-xs text-foreground font-medium">{formatCurrency(b.amount)}</span>
               </div>
             ))}
           </div>
@@ -231,9 +231,9 @@ export default async function CommunityDetailPage({ params }: PageProps) {
           <CommunityChat eventId={id} isPremium={premium} />
 
           {/* Disclaimer */}
-          <div className="flex items-start gap-2 bg-yellow-500/5 border border-yellow-500/20 rounded-lg px-3 py-2.5">
-            <AlertTriangle size={14} className="text-yellow-400 mt-0.5 shrink-0" />
-            <p className="text-[10px] text-yellow-200/80">
+          <div className="flex items-start gap-2 bg-prize/5 border border-prize/20 rounded-lg px-3 py-2.5">
+            <AlertTriangle size={14} className="text-prize mt-0.5 shrink-0" />
+            <p className="text-[10px] text-prize/80">
               Este evento foi criado e será resolvido por @{event.creator?.username}. A Zafe não garante a veracidade do resultado.
               Palpites na Comunidade contam para seu ranking geral, mas não para o concurso mensal.
             </p>

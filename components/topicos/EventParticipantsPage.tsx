@@ -45,13 +45,13 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const STATUS_CLASS: Record<string, string> = {
-  pending: "bg-yellow-400/15 text-yellow-300",
+  pending: "bg-prize/15 text-prize",
   matched: "bg-primary/15 text-primary",
   partial: "bg-primary/15 text-primary",
   won: "bg-sim/15 text-sim",
   lost: "bg-nao/15 text-nao",
-  refunded: "bg-zinc-500/15 text-zinc-300",
-  exited: "bg-zinc-500/15 text-zinc-300",
+  refunded: "bg-muted/15 text-muted-foreground",
+  exited: "bg-muted/15 text-muted-foreground",
 };
 
 function formatZ(value: number) {
@@ -249,7 +249,7 @@ export async function EventParticipantsPage({
   return (
     <div className="py-6 max-w-5xl mx-auto space-y-5">
       <div className="flex items-center gap-2 text-sm">
-        <Link href={hrefBack} className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-white transition-colors">
+        <Link href={hrefBack} className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft size={14} />
           Voltar ao evento
         </Link>
@@ -263,7 +263,7 @@ export async function EventParticipantsPage({
           </span>
         </div>
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-white leading-snug">Participantes</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground leading-snug">Participantes</h1>
           <p className="text-sm text-muted-foreground mt-1">{topic.title}</p>
         </div>
       </div>
@@ -271,11 +271,11 @@ export async function EventParticipantsPage({
       <div className={`grid grid-cols-1 gap-3 ${isMulti ? "sm:grid-cols-3" : "sm:grid-cols-4"}`}>
         <div className="bg-card border border-border rounded-xl p-4">
           <p className="text-xs text-muted-foreground mb-1">Usuários</p>
-          <p className="text-xl font-bold text-white">{grouped.length}</p>
+          <p className="text-xl font-bold text-foreground">{grouped.length}</p>
         </div>
         <div className="bg-card border border-border rounded-xl p-4">
           <p className="text-xs text-muted-foreground mb-1">Entradas</p>
-          <p className="text-xl font-bold text-white">{bets.length}</p>
+          <p className="text-xl font-bold text-foreground">{bets.length}</p>
         </div>
         {isMulti ? (
           <div className="bg-card border border-border rounded-xl p-4">
@@ -286,11 +286,11 @@ export async function EventParticipantsPage({
           <>
             <div className="bg-card border border-border rounded-xl p-4">
               <p className="text-xs text-muted-foreground mb-1">SIM</p>
-              <p className={`text-xl font-bold ${isConcurso ? "text-yellow-400" : "text-sim"}`}>{isConcurso ? "ZC$" : "Z$"} {formatZ(totalSim)}</p>
+              <p className={`text-xl font-bold ${isConcurso ? "text-prize" : "text-sim"}`}>{isConcurso ? "ZC$" : "Z$"} {formatZ(totalSim)}</p>
             </div>
             <div className="bg-card border border-border rounded-xl p-4">
               <p className="text-xs text-muted-foreground mb-1">NÃO</p>
-              <p className={`text-xl font-bold ${isConcurso ? "text-yellow-400" : "text-nao"}`}>{isConcurso ? "ZC$" : "Z$"} {formatZ(totalNao)}</p>
+              <p className={`text-xl font-bold ${isConcurso ? "text-prize" : "text-nao"}`}>{isConcurso ? "ZC$" : "Z$"} {formatZ(totalNao)}</p>
             </div>
           </>
         )}
@@ -341,18 +341,18 @@ export async function EventParticipantsPage({
             return (
               <section key={participant.userId} className="bg-card border border-border rounded-xl overflow-hidden">
                 <div className="p-4 border-b border-border/50 flex items-start gap-3">
-                  <span className="text-[10px] text-zinc-600 w-5 text-center font-mono pt-2">{index + 1}</span>
+                  <span className="text-[10px] text-muted-foreground w-5 text-center font-mono pt-2">{index + 1}</span>
                   <div className="w-10 h-10 rounded-full bg-primary/15 text-primary flex items-center justify-center text-xs font-bold shrink-0">
                     {initials(profile)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       {profileHref ? (
-                        <Link href={profileHref} className="text-sm font-semibold text-white hover:text-primary transition-colors">
+                        <Link href={profileHref} className="text-sm font-semibold text-foreground hover:text-primary transition-colors">
                           {displayName}
                         </Link>
                       ) : (
-                        <span className="text-sm font-semibold text-white">{displayName}</span>
+                        <span className="text-sm font-semibold text-foreground">{displayName}</span>
                       )}
                       {participant.avgEntryPercent != null && (
                         <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-[10px] font-semibold">
@@ -375,8 +375,8 @@ export async function EventParticipantsPage({
                   </div>
                   {!isMulti && (
                     <div className="text-right shrink-0">
-                      <p className={`text-xs font-semibold ${isConcurso ? "text-yellow-400" : "text-sim"}`}>SIM {isConcurso ? "ZC$" : "Z$"} {formatZ(participant.simTotal)}</p>
-                      <p className={`text-xs font-semibold mt-0.5 ${isConcurso ? "text-yellow-400" : "text-nao"}`}>NÃO {isConcurso ? "ZC$" : "Z$"} {formatZ(participant.naoTotal)}</p>
+                      <p className={`text-xs font-semibold ${isConcurso ? "text-prize" : "text-sim"}`}>SIM {isConcurso ? "ZC$" : "Z$"} {formatZ(participant.simTotal)}</p>
+                      <p className={`text-xs font-semibold mt-0.5 ${isConcurso ? "text-prize" : "text-nao"}`}>NÃO {isConcurso ? "ZC$" : "Z$"} {formatZ(participant.naoTotal)}</p>
                     </div>
                   )}
                 </div>
@@ -395,11 +395,11 @@ export async function EventParticipantsPage({
                           <span className={`px-2 py-0.5 rounded text-[10px] font-black ${isMulti ? "bg-primary/15 text-primary" : isSim ? "bg-sim/15 text-sim" : "bg-nao/15 text-nao"}`}>
                             {pickLabel}
                           </span>
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${STATUS_CLASS[bet.status] ?? "bg-zinc-500/15 text-zinc-300"}`}>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${STATUS_CLASS[bet.status] ?? "bg-muted/15 text-muted-foreground"}`}>
                             {STATUS_LABEL[bet.status] ?? bet.status}
                           </span>
                         </div>
-                        <div className="text-sm font-semibold text-white">
+                        <div className="text-sm font-semibold text-foreground">
                           {isConcurso ? "ZC$" : "Z$"} {formatZ(Number(bet.amount))}
                         </div>
                         <div className="text-xs text-muted-foreground inline-flex items-center gap-1">
@@ -420,7 +420,7 @@ export async function EventParticipantsPage({
       )}
 
       <div className="text-center">
-        <Link href={participantsHref(pillar, topic)} className="text-[11px] text-muted-foreground hover:text-white transition-colors">
+        <Link href={participantsHref(pillar, topic)} className="text-[11px] text-muted-foreground hover:text-foreground transition-colors">
           Link desta página
         </Link>
       </div>

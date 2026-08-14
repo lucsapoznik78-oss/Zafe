@@ -47,8 +47,11 @@ interface Props {
 }
 
 // Paleta para resultados (uma cor por linha).
+// Escala categórica: uma cor por resultado em mercado multi. Precisa de 10
+// matizes distinguíveis, então fica fora do mapa de tokens — mesma categoria
+// das cores por esporte. Só o primeiro slot mudou: era o roxo da marca antiga.
 const PALETTE = [
-  "#7C5CFC", "#f87171", "#60a5fa", "#fbbf24", "#c084fc",
+  "#FFC53D", "#f87171", "#60a5fa", "#fbbf24", "#c084fc",
   "#34d399", "#fb923c", "#f472b6", "#22d3ee", "#a3e635",
 ];
 
@@ -184,7 +187,7 @@ function EndDot(color: string) {
     const { cx, cy, index, data } = props;
     if (index !== data?.length - 1) return null;
     return (
-      <circle key={`dot-${index}`} cx={cx} cy={cy} r={5} fill={color} stroke="#000" strokeWidth={1.5} />
+      <circle key={`dot-${index}`} cx={cx} cy={cy} r={5} fill={color} stroke="var(--bg)" strokeWidth={1.5} />
     );
   };
 }
@@ -247,7 +250,7 @@ export default function ProbabilityChart({ topicId, chartUrl, marketType = "bina
             <span key={o.id} className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full" style={{ background: o.color }} />
               <span className="text-muted-foreground">{o.label}</span>
-              <span className="font-bold text-white">{o.prob.toFixed(1)}%</span>
+              <span className="font-bold text-foreground">{o.prob.toFixed(1)}%</span>
             </span>
           ))}
         </div>
@@ -255,10 +258,10 @@ export default function ProbabilityChart({ topicId, chartUrl, marketType = "bina
         {hasData ? (
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={data} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="4 4" stroke="#27272a" vertical={false} />
+              <CartesianGrid strokeDasharray="4 4" stroke="var(--surface-line)" vertical={false} />
               <XAxis
                 dataKey="label"
-                tick={{ fontSize: 10, fill: "#52525b" }}
+                tick={{ fontSize: 10, fill: "var(--text-muted)" }}
                 tickLine={false}
                 axisLine={false}
                 interval="preserveStartEnd"
@@ -266,7 +269,7 @@ export default function ProbabilityChart({ topicId, chartUrl, marketType = "bina
               <YAxis
                 domain={domain}
                 tickFormatter={(v) => `${v}%`}
-                tick={{ fontSize: 10, fill: "#52525b" }}
+                tick={{ fontSize: 10, fill: "var(--text-muted)" }}
                 tickLine={false}
                 axisLine={false}
                 allowDecimals={false}
@@ -298,7 +301,7 @@ export default function ProbabilityChart({ topicId, chartUrl, marketType = "bina
               key={f}
               onClick={() => setFilter(f)}
               className={`px-3 py-1.5 sm:px-2.5 sm:py-1 rounded text-xs font-semibold transition-colors ${
-                filter === f ? "bg-primary text-white" : "text-muted-foreground hover:text-white"
+                filter === f ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-primary-foreground"
               }`}
             >
               {f}
@@ -326,14 +329,14 @@ export default function ProbabilityChart({ topicId, chartUrl, marketType = "bina
         <span className="flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-sim" />
           <span className="text-muted-foreground">SIM</span>
-          <span className="font-bold text-white">
+          <span className="font-bold text-foreground">
             {currentSim != null ? `${currentSim.toFixed(1)}%` : "—"}
           </span>
         </span>
         <span className="flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-nao" />
           <span className="text-muted-foreground">NÃO</span>
-          <span className="font-bold text-white">
+          <span className="font-bold text-foreground">
             {currentNao != null ? `${currentNao.toFixed(1)}%` : "—"}
           </span>
         </span>
@@ -343,10 +346,10 @@ export default function ProbabilityChart({ topicId, chartUrl, marketType = "bina
       {hasData ? (
         <ResponsiveContainer width="100%" height={260}>
           <LineChart data={data} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="4 4" stroke="#27272a" vertical={false} />
+            <CartesianGrid strokeDasharray="4 4" stroke="var(--surface-line)" vertical={false} />
             <XAxis
               dataKey="label"
-              tick={{ fontSize: 10, fill: "#52525b" }}
+              tick={{ fontSize: 10, fill: "var(--text-muted)" }}
               tickLine={false}
               axisLine={false}
               interval="preserveStartEnd"
@@ -354,31 +357,31 @@ export default function ProbabilityChart({ topicId, chartUrl, marketType = "bina
             <YAxis
               domain={domain}
               tickFormatter={(v) => `${v}%`}
-              tick={{ fontSize: 10, fill: "#52525b" }}
+              tick={{ fontSize: 10, fill: "var(--text-muted)" }}
               tickLine={false}
               axisLine={false}
               allowDecimals={false}
             />
             <Tooltip content={<BinaryTooltip />} />
             {domain[0] <= 50 && domain[1] >= 50 && (
-              <ReferenceLine y={50} stroke="#3f3f46" strokeDasharray="3 3" />
+              <ReferenceLine y={50} stroke="var(--surface-line)" strokeDasharray="3 3" />
             )}
             <Line
               type="monotone"
               dataKey="sim"
-              stroke="#7C5CFC"
+              stroke="var(--yes-text)"
               strokeWidth={2}
-              dot={EndDot("#7C5CFC")}
-              activeDot={{ r: 4, fill: "#7C5CFC" }}
+              dot={EndDot("var(--yes-text)")}
+              activeDot={{ r: 4, fill: "var(--yes-text)" }}
               isAnimationActive={false}
             />
             <Line
               type="monotone"
               dataKey="nao"
-              stroke="#f87171"
+              stroke="var(--no-text)"
               strokeWidth={2}
-              dot={EndDot("#f87171")}
-              activeDot={{ r: 4, fill: "#f87171" }}
+              dot={EndDot("var(--no-text)")}
+              activeDot={{ r: 4, fill: "var(--no-text)" }}
               isAnimationActive={false}
             />
           </LineChart>
@@ -397,8 +400,8 @@ export default function ProbabilityChart({ topicId, chartUrl, marketType = "bina
             onClick={() => setFilter(f)}
             className={`px-3 py-1.5 sm:px-2.5 sm:py-1 rounded text-xs font-semibold transition-colors ${
               filter === f
-                ? "bg-primary text-white"
-                : "text-muted-foreground hover:text-white"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {f}

@@ -40,7 +40,7 @@ const STATUS_LABEL: Record<Status, string> = {
 };
 
 const STATUS_CLASS: Record<Status, string> = {
-  aberto: "bg-yellow-500/15 text-yellow-400",
+  aberto: "bg-prize/15 text-prize",
   respondido: "bg-primary/15 text-primary",
   fechado: "bg-muted text-muted-foreground",
 };
@@ -102,8 +102,8 @@ export default function AdminCanal() {
             }}
             className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
               filtro === f.value
-                ? "bg-primary text-white"
-                : "bg-card border border-border text-muted-foreground hover:text-white"
+                ? "bg-primary text-primary-foreground"
+                : "bg-card border border-border text-muted-foreground hover:text-foreground"
             }`}
           >
             {f.label}
@@ -139,7 +139,7 @@ export default function AdminCanal() {
                 }`}
               >
                 <div className="flex items-start gap-2">
-                  <span className="text-sm font-semibold text-white leading-snug break-words flex-1">
+                  <span className="text-sm font-semibold text-foreground leading-snug break-words flex-1">
                     {t.subject}
                   </span>
                   {t.unread_admin && (
@@ -268,11 +268,11 @@ function AdminConversa({
   return (
     <div className="bg-card border border-border rounded-xl p-5 space-y-3">
       <div className="flex items-center gap-2">
-        <button onClick={onBack} className="md:hidden text-muted-foreground hover:text-white" aria-label="Voltar">
+        <button onClick={onBack} className="md:hidden text-muted-foreground hover:text-foreground" aria-label="Voltar">
           <ArrowLeft className="w-4 h-4" />
         </button>
         <div className="min-w-0">
-          <p className="text-sm font-bold text-white break-words">{thread.subject}</p>
+          <p className="text-sm font-bold text-foreground break-words">{thread.subject}</p>
           <p className="text-[11px] text-muted-foreground">
             {thread.user?.full_name ?? "—"}
             {thread.user?.username ? ` · @${thread.user.username}` : ""}
@@ -304,7 +304,7 @@ function AdminConversa({
                   </span>
                   <span className="text-[10px] text-muted-foreground">{formatarData(m.created_at)}</span>
                 </div>
-                <p className="text-sm text-white leading-snug break-words whitespace-pre-wrap">
+                <p className="text-sm text-foreground leading-snug break-words whitespace-pre-wrap">
                   {m.message}
                 </p>
               </div>
@@ -320,7 +320,7 @@ function AdminConversa({
             onChange={(e) => setText(e.target.value.slice(0, MAX_MESSAGE))}
             placeholder="Responder ao usuário…"
             rows={3}
-            className="flex-1 resize-none rounded-lg bg-background border border-border px-3 py-2 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+            className="flex-1 resize-none rounded-lg bg-background border border-border px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
@@ -331,7 +331,7 @@ function AdminConversa({
           <button
             type="submit"
             disabled={sending || !text.trim()}
-            className="shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-lg bg-primary text-white hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             aria-label="Responder"
           >
             <Send className="w-4 h-4" />
@@ -348,7 +348,7 @@ function AdminConversa({
           <button
             type="button"
             onClick={() => mudarStatus(thread.status === "fechado" ? "aberto" : "fechado")}
-            className="text-[11px] text-muted-foreground hover:text-white underline shrink-0"
+            className="text-[11px] text-muted-foreground hover:text-foreground underline shrink-0"
           >
             {thread.status === "fechado" ? "Reabrir conversa" : "Encerrar conversa"}
           </button>

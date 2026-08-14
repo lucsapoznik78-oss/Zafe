@@ -85,12 +85,12 @@ export default function CardForm({ regras, competicoes }: Props) {
     router.push(`/admin/escalacao/${json.id}`);
   }
 
-  const campo = "w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-white";
+  const campo = "w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-foreground";
   const rotulo = "text-xs text-muted-foreground";
 
   return (
     <div className="bg-card border border-border rounded-xl p-4 space-y-4">
-      <h3 className="text-sm font-semibold text-white">Nova Convocação</h3>
+      <h3 className="text-sm font-semibold text-foreground">Nova Convocação</h3>
 
       <div className="grid grid-cols-2 gap-3">
         <label className="space-y-1">
@@ -175,8 +175,8 @@ export default function CardForm({ regras, competicoes }: Props) {
                 onClick={() => alternarEsporte(r)}
                 className={`px-3 py-1.5 rounded-lg text-xs border transition-colors ${
                   ativa
-                    ? "bg-primary text-white border-primary"
-                    : "bg-muted text-muted-foreground border-border hover:text-white"
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-muted text-muted-foreground border-border hover:text-foreground"
                 }`}
               >
                 {r.esporte_key}.v{r.versao}
@@ -191,7 +191,7 @@ export default function CardForm({ regras, competicoes }: Props) {
       <button
         onClick={salvar}
         disabled={salvando || !titulo || Object.keys(escolhidas).length === 0}
-        className="w-full py-2 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
+        className="w-full py-2 bg-primary text-primary-foreground font-bold text-sm rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
       >
         {salvando ? <Loader2 size={14} className="animate-spin mx-auto" /> : "Criar em rascunho"}
       </button>

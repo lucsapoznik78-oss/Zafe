@@ -17,7 +17,7 @@ export default function TransactionHistory({ transactions }: { transactions: Tra
   if (transactions.length === 0) {
     return (
       <div className="bg-card border border-border rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-white mb-3">Histórico</h3>
+        <h3 className="text-sm font-semibold text-foreground mb-3">Histórico</h3>
         <p className="text-muted-foreground text-sm text-center py-6">Nenhuma transação ainda</p>
       </div>
     );
@@ -25,10 +25,10 @@ export default function TransactionHistory({ transactions }: { transactions: Tra
 
   return (
     <div className="bg-card border border-border rounded-xl p-5">
-      <h3 className="text-sm font-semibold text-white mb-4">Histórico de Transações</h3>
+      <h3 className="text-sm font-semibold text-foreground mb-4">Histórico de Transações</h3>
       <div className="space-y-2">
         {transactions.map((tx) => {
-          const config = TYPE_CONFIG[tx.type] ?? { label: tx.type, color: "text-white", icon: null };
+          const config = TYPE_CONFIG[tx.type] ?? { label: tx.type, color: "text-foreground", icon: null };
           const isPositive = ["deposit", "bet_won", "bet_refund"].includes(tx.type);
           const isNegative = ["withdraw", "investimento realizado", "bet_placed", "commission"].includes(tx.type);
 
@@ -37,7 +37,7 @@ export default function TransactionHistory({ transactions }: { transactions: Tra
               <div className="flex items-center gap-2.5">
                 <div className={`${config.color} opacity-70`}>{config.icon}</div>
                 <div>
-                  <p className="text-sm text-white font-medium">{config.label}</p>
+                  <p className="text-sm text-foreground font-medium">{config.label}</p>
                   {tx.description && <p className="text-xs text-muted-foreground truncate max-w-[200px]">{tx.description}</p>}
                   <p className="text-[10px] text-muted-foreground">
                     {format(new Date(tx.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}

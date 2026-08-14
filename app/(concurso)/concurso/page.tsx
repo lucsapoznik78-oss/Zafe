@@ -49,21 +49,21 @@ function ConcursoEmBreve({ concurso }: { concurso: any }) {
 
   return (
     <div className="py-6 space-y-5">
-      <div className="rounded-xl border border-yellow-400/30 bg-yellow-400/5 p-5 space-y-4">
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-400 text-black text-xs font-extrabold uppercase tracking-wide">
+      <div className="rounded-xl border border-prize/30 bg-prize/5 p-5 space-y-4">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-prize text-primary-foreground text-xs font-extrabold uppercase tracking-wide">
           <Calendar size={12} />
           Estreia em {CONCURSO_ESTREIA}
         </span>
 
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Trophy size={18} className="text-yellow-400" />
-            <h1 className="text-lg font-bold text-yellow-400">
+            <Trophy size={18} className="text-prize" />
+            <h1 className="text-lg font-bold text-prize">
               {concurso?.titulo ?? "Concurso Liga Zafe"}
             </h1>
           </div>
           {inicio && fim && (
-            <p className="flex items-center gap-1 text-xs text-yellow-300/50">
+            <p className="flex items-center gap-1 text-xs text-prize/50">
               <Calendar size={11} />
               {format(new Date(inicio), "dd/MM", { locale: ptBR })} –{" "}
               {format(new Date(fim), "dd/MM/yyyy", { locale: ptBR })}
@@ -71,10 +71,10 @@ function ConcursoEmBreve({ concurso }: { concurso: any }) {
           )}
         </div>
 
-        <div className="flex items-start gap-2 rounded-lg bg-yellow-400/10 border border-yellow-400/30 px-3 py-3">
-          <AlertCircle size={16} className="text-yellow-400 shrink-0 mt-0.5" />
-          <div className="text-xs text-yellow-100/80 leading-relaxed space-y-1.5">
-            <p className="font-bold text-yellow-300">O Concurso ainda não começou.</p>
+        <div className="flex items-start gap-2 rounded-lg bg-prize/10 border border-prize/30 px-3 py-3">
+          <AlertCircle size={16} className="text-prize shrink-0 mt-0.5" />
+          <div className="text-xs text-prize/80 leading-relaxed space-y-1.5">
+            <p className="font-bold text-prize">O Concurso ainda não começou.</p>
             <p>
               A primeira edição valendo é a de {CONCURSO_ESTREIA}. Até lá não existe
               concurso válido: as inscrições não estão abertas, não há palpite que
@@ -86,27 +86,27 @@ function ConcursoEmBreve({ concurso }: { concurso: any }) {
           </div>
         </div>
 
-        <div className="border-t border-yellow-400/20 pt-3">
+        <div className="border-t border-prize/20 pt-3">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-[10px] text-yellow-300/50 font-semibold uppercase tracking-wide">
+            <p className="text-[10px] text-prize/50 font-semibold uppercase tracking-wide">
               Premiação prevista
             </p>
             <Link
               href="/concurso/como-funciona"
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-400 text-black text-xs font-extrabold uppercase tracking-wide hover:bg-yellow-300 transition-colors"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-prize text-primary-foreground text-xs font-extrabold uppercase tracking-wide hover:bg-prize transition-colors"
             >
               Como funciona →
             </Link>
           </div>
           <div className="flex flex-wrap gap-2">
             {PREMIOS.map((p) => (
-              <div key={p.pos} className="px-2 py-1 rounded bg-yellow-400/10 border border-yellow-400/20">
-                <span className="text-[10px] text-yellow-400 font-bold">{p.pos}</span>
-                <span className="text-[10px] text-yellow-300/60 ml-1">{p.valor}</span>
+              <div key={p.pos} className="px-2 py-1 rounded bg-prize/10 border border-prize/20">
+                <span className="text-[10px] text-prize font-bold">{p.pos}</span>
+                <span className="text-[10px] text-prize/60 ml-1">{p.valor}</span>
               </div>
             ))}
           </div>
-          <p className="mt-1.5 text-[10px] text-yellow-300/40">
+          <p className="mt-1.5 text-[10px] text-prize/40">
             Valores previstos para a edição de estreia, ainda sujeitos a confirmação
             na abertura. A premiação é fixa e será paga integralmente, independentemente
             do número de inscritos.
@@ -116,7 +116,7 @@ function ConcursoEmBreve({ concurso }: { concurso: any }) {
 
       <Link
         href="/liga"
-        className="inline-block px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-white border border-border hover:border-primary/40 transition-all"
+        className="inline-block px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground border border-border hover:border-primary/40 transition-all"
       >
         ← Jogar na Liga (Z$)
       </Link>
@@ -133,10 +133,10 @@ async function EventosConcurso({ category, search, tab, concurso, now }: { categ
   if (!concurso) {
     return (
       <div className="py-20 text-center text-muted-foreground">
-        <Trophy size={40} className="mx-auto mb-3 text-yellow-400/40" />
-        <p className="text-white font-semibold mb-1">Nenhum concurso ativo</p>
+        <Trophy size={40} className="mx-auto mb-3 text-prize/40" />
+        <p className="text-foreground font-semibold mb-1">Nenhum concurso ativo</p>
         <p className="text-sm">O próximo concurso será anunciado em breve.</p>
-        <Link href="/liga" className="mt-4 inline-block text-sm text-yellow-400 hover:underline">
+        <Link href="/liga" className="mt-4 inline-block text-sm text-prize hover:underline">
           Jogar na Liga →
         </Link>
       </div>
@@ -164,7 +164,7 @@ async function EventosConcurso({ category, search, tab, concurso, now }: { categ
   if (!topics || topics.length === 0) {
     return (
       <div className="text-center py-16 text-muted-foreground">
-        <p className="text-white font-medium mb-1">
+        <p className="text-foreground font-medium mb-1">
           {isEncerrados ? "Nenhum evento encerrado" : "Nenhum evento disponível"}
         </p>
         <p className="text-sm">Tente outros filtros ou aguarde novos eventos</p>
@@ -222,10 +222,10 @@ async function EventosConcurso({ category, search, tab, concurso, now }: { categ
         // Wrapper amarelo sobre o TopicCard. O link fica DENTRO do próprio
         // TopicCard (via prop href) — nunca aninhar <a> dentro de <a>, senão o
         // navegador segue o link interno (/liga) e o palpite cai no fluxo Z$.
-        <div key={topic.id} className="relative rounded-xl ring-1 ring-yellow-400/20 hover:ring-yellow-400/50 transition-all">
+        <div key={topic.id} className="relative rounded-xl ring-1 ring-prize/20 hover:ring-prize/50 transition-all">
           <TopicCard topic={topic as TopicWithStats} href={`/concurso/${topic.id}`} />
           <div className="absolute bottom-2 left-2 pointer-events-none">
-            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-yellow-400/20 text-yellow-400 border border-yellow-400/30">
+            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-prize/20 text-prize border border-prize/30">
               ZC$
             </span>
           </div>
@@ -266,10 +266,10 @@ export default async function ConcursoPage({ searchParams }: PageProps) {
   if (!concurso) {
     return (
       <div className="py-20 text-center text-muted-foreground">
-        <Trophy size={40} className="mx-auto mb-3 text-yellow-400/40" />
-        <p className="text-white font-semibold mb-1">Nenhum concurso ativo</p>
+        <Trophy size={40} className="mx-auto mb-3 text-prize/40" />
+        <p className="text-foreground font-semibold mb-1">Nenhum concurso ativo</p>
         <p className="text-sm">O próximo concurso será anunciado em breve.</p>
-        <Link href="/liga" className="mt-4 inline-block text-sm text-yellow-400 hover:underline">
+        <Link href="/liga" className="mt-4 inline-block text-sm text-prize hover:underline">
           Jogar na Liga →
         </Link>
       </div>
@@ -302,10 +302,10 @@ export default async function ConcursoPage({ searchParams }: PageProps) {
   return (
     <div className="py-6 space-y-5">
       {/* Header do concurso */}
-      <div className="rounded-xl border border-yellow-400/30 bg-yellow-400/5 p-5 space-y-4">
+      <div className="rounded-xl border border-prize/30 bg-prize/5 p-5 space-y-4">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 mb-2 rounded-full bg-yellow-400 text-black text-xs font-extrabold uppercase tracking-wide">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 mb-2 rounded-full bg-prize text-primary-foreground text-xs font-extrabold uppercase tracking-wide">
               <Calendar size={12} />
               Concurso de {(() => {
                 const s = format(new Date(concurso.periodo_inicio), "MMMM 'de' yyyy", { locale: ptBR });
@@ -313,14 +313,14 @@ export default async function ConcursoPage({ searchParams }: PageProps) {
               })()}
             </span>
             <div className="flex items-center gap-2 mb-1">
-              <Trophy size={18} className="text-yellow-400" />
-              <h1 className="text-lg font-bold text-yellow-400">{concurso.titulo}</h1>
+              <Trophy size={18} className="text-prize" />
+              <h1 className="text-lg font-bold text-prize">{concurso.titulo}</h1>
             </div>
-            <p className="text-xs text-yellow-300/60">{concurso.descricao}</p>
-            <p className="text-[11px] text-yellow-300/50 mt-1">
+            <p className="text-xs text-prize/60">{concurso.descricao}</p>
+            <p className="text-[11px] text-prize/50 mt-1">
               Toda virada de mês o concurso recomeça: saldo ZC$ renovado e ranking zerado.
             </p>
-            <div className="flex items-center gap-3 mt-2 text-xs text-yellow-300/50">
+            <div className="flex items-center gap-3 mt-2 text-xs text-prize/50">
               <span className="flex items-center gap-1">
                 <Calendar size={11} />
                 {format(new Date(concurso.periodo_inicio), "dd/MM", { locale: ptBR })} –{" "}
@@ -338,19 +338,19 @@ export default async function ConcursoPage({ searchParams }: PageProps) {
               inscrição volta automaticamente quando o concurso vira 'ativo'. */}
           {concurso.status === "agendado" ? (
             <div className="shrink-0 text-right">
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-yellow-400/20 border border-yellow-400/30 text-[10px] font-bold text-yellow-400">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-prize/20 border border-prize/30 text-[10px] font-bold text-prize">
                 <AlertCircle size={11} /> O Concurso ainda não começou
               </span>
             </div>
           ) : user ? (
             enrolled ? (
               <div className="text-right shrink-0">
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 mb-1 rounded-full bg-yellow-400/20 border border-yellow-400/30 text-[10px] font-bold text-yellow-400">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 mb-1 rounded-full bg-prize/20 border border-prize/30 text-[10px] font-bold text-prize">
                   <CheckCircle2 size={11} /> Você está participando
                 </span>
-                <p className="text-xs text-yellow-300/60 mb-0.5">Seu saldo ZC$</p>
-                <p className="text-2xl font-bold text-yellow-400">ZC$ {walletBalance.toLocaleString("pt-BR", { minimumFractionDigits: 0 })}</p>
-                <p className="text-[10px] text-yellow-300/40 mt-0.5">Iniciou com ZC$ {concurso.saldo_inicial}</p>
+                <p className="text-xs text-prize/60 mb-0.5">Seu saldo ZC$</p>
+                <p className="text-2xl font-bold text-prize">ZC$ {walletBalance.toLocaleString("pt-BR", { minimumFractionDigits: 0 })}</p>
+                <p className="text-[10px] text-prize/40 mt-0.5">Iniciou com ZC$ {concurso.saldo_inicial}</p>
               </div>
             ) : (
               <div className="shrink-0 text-right space-y-1.5">
@@ -367,7 +367,7 @@ export default async function ConcursoPage({ searchParams }: PageProps) {
               </span>
               <Link
                 href="/concurso/entrar"
-                className="block px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors"
+                className="block px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors"
               >
                 Entrar para participar
               </Link>
@@ -376,32 +376,32 @@ export default async function ConcursoPage({ searchParams }: PageProps) {
         </div>
 
         {/* Prêmios */}
-        <div className="border-t border-yellow-400/20 pt-3">
+        <div className="border-t border-prize/20 pt-3">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-[10px] text-yellow-300/50 font-semibold uppercase tracking-wide">Premiação</p>
+            <p className="text-[10px] text-prize/50 font-semibold uppercase tracking-wide">Premiação</p>
             <Link
               href="/concurso/como-funciona"
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-400 text-black text-xs font-extrabold uppercase tracking-wide hover:bg-yellow-300 transition-colors"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-prize text-primary-foreground text-xs font-extrabold uppercase tracking-wide hover:bg-prize transition-colors"
             >
               Como funciona →
             </Link>
           </div>
           <div className="flex flex-wrap gap-2">
             {PREMIOS.map((p) => (
-              <div key={p.pos} className="px-2 py-1 rounded bg-yellow-400/10 border border-yellow-400/20">
-                <span className="text-[10px] text-yellow-400 font-bold">{p.pos}</span>
-                <span className="text-[10px] text-yellow-300/60 ml-1">{p.valor}</span>
+              <div key={p.pos} className="px-2 py-1 rounded bg-prize/10 border border-prize/20">
+                <span className="text-[10px] text-prize font-bold">{p.pos}</span>
+                <span className="text-[10px] text-prize/60 ml-1">{p.valor}</span>
               </div>
             ))}
           </div>
-          <p className="mt-1.5 text-[10px] text-yellow-300/40">
+          <p className="mt-1.5 text-[10px] text-prize/40">
             A premiação é fixa, definida na abertura desta edição, e será paga integralmente
             independentemente do número de inscritos.
           </p>
-          <div className="mt-3 flex items-start gap-2 rounded-lg bg-yellow-400/10 border border-yellow-400/20 px-3 py-2">
-            <Mail size={14} className="text-yellow-400 shrink-0 mt-0.5" />
-            <p className="text-[11px] text-yellow-300/70 leading-relaxed">
-              Ao fim do concurso, quem ficar entre os <span className="font-semibold text-yellow-400">melhores colocados do ranking</span> receberá
+          <div className="mt-3 flex items-start gap-2 rounded-lg bg-prize/10 border border-prize/20 px-3 py-2">
+            <Mail size={14} className="text-prize shrink-0 mt-0.5" />
+            <p className="text-[11px] text-prize/70 leading-relaxed">
+              Ao fim do concurso, quem ficar entre os <span className="font-semibold text-prize">melhores colocados do ranking</span> receberá
               um email com os detalhes de como resgatar o prêmio em dinheiro. Mantenha o email da sua conta atualizado.
             </p>
           </div>
@@ -416,7 +416,7 @@ export default async function ConcursoPage({ searchParams }: PageProps) {
               key={t.key}
               href={buildHref(t.key)}
               className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                tab === t.key ? "bg-yellow-400/20 text-yellow-400" : "text-muted-foreground hover:text-white"
+                tab === t.key ? "bg-prize/20 text-prize" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {t.label}
@@ -425,7 +425,7 @@ export default async function ConcursoPage({ searchParams }: PageProps) {
         </div>
         <Link
           href="/liga"
-          className="px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-white border border-border hover:border-primary/40 transition-all"
+          className="px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground border border-border hover:border-primary/40 transition-all"
         >
           ← Jogar na Liga (Z$)
         </Link>

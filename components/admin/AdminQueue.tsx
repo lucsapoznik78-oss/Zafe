@@ -33,10 +33,10 @@ export default function AdminQueue({ topics }: { topics: Topic[] }) {
 
   return (
     <div className="bg-card border border-border rounded-xl p-4">
-      <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+      <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
         Fila de Moderação
         {topics.length > 0 && (
-          <span className="px-1.5 py-0.5 bg-yellow-500/20 text-yellow-300 rounded text-xs">{topics.length}</span>
+          <span className="px-1.5 py-0.5 bg-prize/20 text-prize rounded text-xs">{topics.length}</span>
         )}
       </h3>
       {topics.length === 0 ? (
@@ -48,10 +48,10 @@ export default function AdminQueue({ topics }: { topics: Topic[] }) {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
                   <CategoryBadge category={topic.category as any} className="mb-1.5" />
-                  <p className="text-sm font-semibold text-white">{topic.title}</p>
+                  <p className="text-sm font-semibold text-foreground">{topic.title}</p>
                   <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{topic.description}</p>
                   <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
-                    <span>por <span className="text-white">{topic.creator?.full_name}</span></span>
+                    <span>por <span className="text-foreground">{topic.creator?.full_name}</span></span>
                     <span>Prazo: {format(new Date(topic.closes_at), "dd/MM/yyyy", { locale: ptBR })}</span>
                   </div>
                 </div>

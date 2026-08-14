@@ -40,36 +40,36 @@ export default function AvisoAntesDePagar({
     <div className="rounded-xl border border-primary/40 bg-primary/5 p-4 space-y-3">
       <div className="flex items-center gap-2">
         <AlertCircle size={16} className="text-primary shrink-0" />
-        <p className="text-sm font-bold text-white">
+        <p className="text-sm font-bold text-foreground">
           Antes de pagar, entenda o que você está aceitando
         </p>
       </div>
 
       <ul className="space-y-2 text-xs text-muted-foreground leading-relaxed">
         <li>
-          A inscrição custa <strong className="text-white">{reais(valorCentavos)}</strong> por
+          A inscrição custa <strong className="text-foreground">{reais(valorCentavos)}</strong> por
           edição, em pagamento único via PIX. Não vira saldo, não é conversível em dinheiro e não
           é sacável.
         </li>
         <li>
-          A premiação é <strong className="text-white">fixa</strong>, definida na abertura da
+          A premiação é <strong className="text-foreground">fixa</strong>, definida na abertura da
           edição, e é paga integralmente{" "}
-          <strong className="text-white">independentemente do número de inscritos</strong> ou do
+          <strong className="text-foreground">independentemente do número de inscritos</strong> ou do
           valor arrecadado.
         </li>
         <li>
           Sobre o prêmio incide{" "}
-          <strong className="text-white">imposto de renda retido na fonte</strong>, conforme a
+          <strong className="text-foreground">imposto de renda retido na fonte</strong>, conforme a
           legislação tributária aplicável. O valor creditado é líquido.
         </li>
         <li>
-          Esta edição vai até <strong className="text-white">{dataHoraBR(fimEm)}</strong>. Depois
+          Esta edição vai até <strong className="text-foreground">{dataHoraBR(fimEm)}</strong>. Depois
           de confirmada, a inscrição em edição já em andamento{" "}
-          <strong className="text-white">não é reembolsável</strong>, salvo nas hipóteses
+          <strong className="text-foreground">não é reembolsável</strong>, salvo nas hipóteses
           previstas nos Termos de Uso.
         </li>
         <li>
-          Participar exige <strong className="text-white">18 anos ou mais</strong>, CPF válido de
+          Participar exige <strong className="text-foreground">18 anos ou mais</strong>, CPF válido de
           sua titularidade e uma única inscrição por pessoa.
         </li>
       </ul>

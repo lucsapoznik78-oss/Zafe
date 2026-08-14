@@ -40,9 +40,9 @@ export default function SeletorConvocacoes({
           Texto que repete o que o layout mostra é o que fazia a página parecer
           cheia. */}
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-sm font-semibold text-white">Convocações</h2>
+        <h2 className="text-sm font-semibold text-foreground">Convocações</h2>
         <span className="text-[11px] text-muted-foreground tabular-nums">
-          <strong className="text-white">{inscritos}</strong>/{cards.length} times
+          <strong className="text-foreground">{inscritos}</strong>/{cards.length} times
         </span>
       </div>
 
@@ -63,7 +63,7 @@ export default function SeletorConvocacoes({
               className={`relative rounded-xl border p-2.5 transition-colors ${
                 selecionado
                   ? "border-primary bg-primary/10"
-                  : "border-border bg-card hover:border-white/25"
+                  : "border-border bg-card hover:border-foreground/25"
               }`}
             >
               <span
@@ -72,14 +72,14 @@ export default function SeletorConvocacoes({
                   c.esportes[0] ?? ""
                 )}`}
               />
-              <span className="block text-sm font-bold text-white truncate">{nomeCurto(c)}</span>
+              <span className="block text-sm font-bold text-foreground truncate">{nomeCurto(c)}</span>
               <span className="block text-[10px] text-muted-foreground">
                 {c.modo === "mix" ? `${c.esportes.length} esportes` : "liga única"} ·{" "}
                 {c.n_titulares}+{c.n_reservas}
               </span>
               <span
                 className={`mt-1.5 inline-flex items-center gap-1 text-[10px] font-semibold ${
-                  inscrito ? "text-sim" : status ? "text-white/70" : "text-muted-foreground"
+                  inscrito ? "text-sim" : status ? "text-foreground/70" : "text-muted-foreground"
                 }`}
               >
                 {inscrito ? (

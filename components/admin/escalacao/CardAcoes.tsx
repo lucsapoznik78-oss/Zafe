@@ -52,7 +52,7 @@ export default function CardAcoes({ cardId, acao }: Props) {
       <button
         onClick={executar}
         disabled={rodando}
-        className="w-full py-2 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
+        className="w-full py-2 bg-primary text-primary-foreground font-bold text-sm rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
       >
         {rodando ? <Loader2 size={14} className="animate-spin mx-auto" /> : TEXTO[acao].botao}
       </button>

@@ -10,14 +10,14 @@ export default function DiferenteDeBet() {
             <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
               <Scale size={18} className="text-primary" />
             </div>
-            <h2 className="text-base font-bold text-white">
+            <h2 className="text-base font-bold text-foreground">
               Diferente de casa de jogos
             </h2>
           </div>
 
           <p className="text-sm text-muted-foreground leading-relaxed">
             A Zafe é um{" "}
-            <span className="text-white font-semibold">fantasy game de habilidade</span>{" "}
+            <span className="text-foreground font-semibold">fantasy game de habilidade</span>{" "}
             de esporte e e-sports — quem prevê melhor, ganha. É o mesmo modelo do
             fantasy sport (tipo Cartola): você não compete contra a plataforma,
             compete contra outros previsores.
@@ -26,7 +26,7 @@ export default function DiferenteDeBet() {
           {CONCURSO_ABERTO && (
             <p className="text-sm text-muted-foreground leading-relaxed">
               O Concurso se enquadra como{" "}
-              <span className="text-white font-medium">fantasy sport pelo Art. 49 da Lei 14.790/2023</span>{" "}
+              <span className="text-foreground font-medium">fantasy sport pelo Art. 49 da Lei 14.790/2023</span>{" "}
               — prêmio fixo definido na abertura, independente do número de inscritos,
               sobre eventos reais de esporte e e-sports. Não somos uma casa de jogos e
               não pretendemos ser.
@@ -45,7 +45,7 @@ export default function DiferenteDeBet() {
               <div key={item.label} className="flex items-start gap-2">
                 <span className="text-primary text-sm mt-0.5">✓</span>
                 <div>
-                  <p className="text-xs font-semibold text-white">{item.label}</p>
+                  <p className="text-xs font-semibold text-foreground">{item.label}</p>
                   <p className="text-[11px] text-muted-foreground">{item.sub}</p>
                 </div>
               </div>

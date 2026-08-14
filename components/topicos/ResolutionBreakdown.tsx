@@ -22,12 +22,12 @@ export default function ResolutionBreakdown({
 
   return (
     <div className="bg-card border border-border rounded-xl p-4 space-y-4">
-      <p className="text-sm font-semibold text-white">Distribuição final</p>
+      <p className="text-sm font-semibold text-foreground">Distribuição final</p>
 
       <div className="space-y-2 text-xs">
         <div className="flex justify-between">
           <span className="text-muted-foreground">Total no pool</span>
-          <span className="text-white font-semibold">{formatCurrency(totalVolume)}</span>
+          <span className="text-foreground font-semibold">{formatCurrency(totalVolume)}</span>
         </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">Pool {resolution.toUpperCase()} (vencedores)</span>

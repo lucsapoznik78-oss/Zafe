@@ -17,13 +17,13 @@ const PHASE_LABELS: Record<string, string> = {
 };
 
 const PHASE_COLORS: Record<string, string> = {
-  recruiting: "text-yellow-400 bg-yellow-400/10",
-  leader_election: "text-blue-400 bg-blue-400/10",
-  judge_negotiation: "text-purple-400 bg-purple-400/10",
-  judge_confirmation: "text-indigo-400 bg-indigo-400/10",
+  recruiting: "text-prize bg-prize/10",
+  leader_election: "text-primary bg-primary/10",
+  judge_negotiation: "text-primary bg-primary/10",
+  judge_confirmation: "text-primary bg-primary/10",
   active: "text-sim bg-sim/10",
   voting: "text-primary bg-primary/10",
-  voting_round2: "text-orange-400 bg-orange-400/10",
+  voting_round2: "text-destructive bg-nao/10",
   resolved: "text-muted-foreground bg-muted/20",
   cancelled: "text-nao bg-nao/10",
 };
@@ -103,12 +103,12 @@ export default async function PrivadasPage({
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-white">Privadas</h1>
+          <h1 className="text-xl font-bold text-foreground">Privadas</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Bolão entre amigos com juízes e líderes eleitos</p>
         </div>
         <Link
           href="/privadas/criar"
-          className="flex items-center gap-1.5 px-4 py-2 bg-primary text-white text-sm font-bold rounded-xl"
+          className="flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-foreground text-sm font-bold rounded-xl"
         >
           <Plus size={16} />
           Criar
@@ -121,8 +121,8 @@ export default async function PrivadasPage({
           href="/privadas"
           className={`px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
             aba === "ativos"
-              ? "border-primary text-white"
-              : "border-transparent text-muted-foreground hover:text-white"
+              ? "border-primary text-foreground"
+              : "border-transparent text-muted-foreground hover:text-foreground"
           }`}
         >
           Ativos ({ativos.length})
@@ -131,8 +131,8 @@ export default async function PrivadasPage({
           href="/privadas?tab=encerrados"
           className={`px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
             aba === "encerrados"
-              ? "border-primary text-white"
-              : "border-transparent text-muted-foreground hover:text-white"
+              ? "border-primary text-foreground"
+              : "border-transparent text-muted-foreground hover:text-foreground"
           }`}
         >
           Encerrados ({encerrados.length})
@@ -145,12 +145,12 @@ export default async function PrivadasPage({
           <div>
             {aba === "encerrados" ? (
               <>
-                <p className="text-white font-semibold">Nenhum bolão encerrado</p>
+                <p className="text-foreground font-semibold">Nenhum bolão encerrado</p>
                 <p className="text-sm text-muted-foreground mt-1">Bolões resolvidos ou cancelados aparecem aqui por 7 dias</p>
               </>
             ) : (
               <>
-                <p className="text-white font-semibold">Nenhum bolão ativo</p>
+                <p className="text-foreground font-semibold">Nenhum bolão ativo</p>
                 <p className="text-sm text-muted-foreground mt-1">Crie um bolão e convide seus amigos para competir</p>
               </>
             )}
@@ -158,7 +158,7 @@ export default async function PrivadasPage({
           {aba === "ativos" && (
             <Link
               href="/privadas/criar"
-              className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-xl"
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-primary text-primary-foreground text-sm font-bold rounded-xl"
             >
               <Plus size={14} />
               Criar Bolão
@@ -185,7 +185,7 @@ export default async function PrivadasPage({
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-white line-clamp-2">{topic.title}</p>
+                    <p className="text-sm font-semibold text-foreground line-clamp-2">{topic.title}</p>
                     <p className="text-xs text-muted-foreground mt-1">por @{topic.creator?.username}</p>
                   </div>
                   <span className={`shrink-0 text-xs font-medium px-2 py-1 rounded-full ${phaseColor}`}>

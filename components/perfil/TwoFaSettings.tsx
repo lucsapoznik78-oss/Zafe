@@ -61,7 +61,7 @@ export default function TwoFaSettings({ enabled: initialEnabled, method: initial
             ? <ShieldCheck size={15} className="text-sim" />
             : <Shield size={15} className="text-muted-foreground" />
           }
-          <span className="text-sm font-medium text-white">Verificação em 2 etapas</span>
+          <span className="text-sm font-medium text-foreground">Verificação em 2 etapas</span>
           {enabled && (
             <span className="px-1.5 py-0.5 bg-sim/20 text-sim text-[10px] rounded font-bold">Ativa</span>
           )}
@@ -70,7 +70,7 @@ export default function TwoFaSettings({ enabled: initialEnabled, method: initial
           onClick={() => setEnabled(!enabled)}
           className={`w-10 h-5 rounded-full transition-colors relative ${enabled ? "bg-primary" : "bg-muted"}`}
         >
-          <div className={`w-4 h-4 rounded-full bg-white absolute top-0.5 transition-transform ${enabled ? "translate-x-5" : "translate-x-0.5"}`} />
+          <div className={`w-4 h-4 rounded-full bg-foreground absolute top-0.5 transition-transform ${enabled ? "translate-x-5" : "translate-x-0.5"}`} />
         </button>
       </div>
 
@@ -86,7 +86,7 @@ export default function TwoFaSettings({ enabled: initialEnabled, method: initial
               <button
                 onClick={() => setMethod("email")}
                 className={`flex-1 py-2 rounded-lg text-xs font-medium border transition-colors ${
-                  method === "email" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:text-white"
+                  method === "email" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Email
@@ -94,7 +94,7 @@ export default function TwoFaSettings({ enabled: initialEnabled, method: initial
               <button
                 onClick={() => setMethod("sms")}
                 className={`flex-1 py-2 rounded-lg text-xs font-medium border transition-colors ${
-                  method === "sms" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:text-white"
+                  method === "sms" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:text-foreground"
                 }`}
               >
                 SMS
@@ -127,7 +127,7 @@ export default function TwoFaSettings({ enabled: initialEnabled, method: initial
       <button
         onClick={save}
         disabled={loading}
-        className="flex items-center gap-1.5 px-4 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
+        className="flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-foreground text-sm font-semibold rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
       >
         {loading ? <Loader2 size={13} className="animate-spin" /> : "Salvar segurança"}
       </button>

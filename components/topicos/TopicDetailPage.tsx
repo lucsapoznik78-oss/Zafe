@@ -24,11 +24,11 @@ import { calcOdds, formatOdds } from "@/lib/odds";
 
 const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
   active:    { label: "Aberto",               cls: "bg-secondary text-muted-foreground" },
-  closed:    { label: "Fechado",              cls: "bg-yellow-500/20 text-yellow-400" },
+  closed:    { label: "Fechado",              cls: "bg-prize/20 text-prize" },
   resolved:  { label: "Resolvido",            cls: "bg-muted text-muted-foreground" },
   cancelled: { label: "Cancelado",            cls: "bg-nao/20 text-nao" },
-  pending:   { label: "Em moderação",         cls: "bg-yellow-500/20 text-yellow-400" },
-  resolving: { label: "Aguardando resolução", cls: "bg-yellow-500/20 text-yellow-400" },
+  pending:   { label: "Em moderação",         cls: "bg-prize/20 text-prize" },
+  resolving: { label: "Aguardando resolução", cls: "bg-prize/20 text-prize" },
 };
 
 export async function TopicDetailPage({ id, initialSide }: { id: string; initialSide?: string }) {
@@ -139,7 +139,7 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
           </span>
           {creatorUsername && (
             <Link href={`/u/${creatorUsername}`}
-              className="text-xs text-muted-foreground hover:text-white transition-colors">
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors">
               por @{creatorUsername}
             </Link>
           )}
@@ -156,7 +156,7 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
       </div>
 
       {/* Título */}
-      <h1 className="text-xl sm:text-2xl font-bold text-white leading-snug mb-4">{topic.title}</h1>
+      <h1 className="text-xl sm:text-2xl font-bold text-foreground leading-snug mb-4">{topic.title}</h1>
 
       {/* Banner resultado próprio (ganhou/perdeu) */}
       {finalizedBets.length > 0 && (
@@ -269,11 +269,11 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
                       <div key={o.id} className={`grid grid-cols-[1.2fr_0.9fr_0.9fr] sm:grid-cols-3 items-center py-3 ${i < outcomes.length - 1 ? "border-b border-border/40" : ""}`}>
                         <div className="flex flex-col gap-1">
                           {isWinner && <div className="h-[3px] w-8 rounded-full bg-primary" />}
-                          <span className={`font-semibold text-sm ${isWinner ? "text-primary" : "text-white"}`}>{o.label}</span>
+                          <span className={`font-semibold text-sm ${isWinner ? "text-primary" : "text-foreground"}`}>{o.label}</span>
                         </div>
                         <div className="text-center">
                           {odds !== null
-                            ? <span className="text-white font-bold text-sm">{formatOdds(odds)}</span>
+                            ? <span className="text-foreground font-bold text-sm">{formatOdds(odds)}</span>
                             : <span className="text-muted-foreground text-xs">—</span>}
                         </div>
                         <div className="flex justify-center">
@@ -302,11 +302,11 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
               <div className="grid grid-cols-[1.2fr_0.9fr_0.9fr] sm:grid-cols-3 items-center py-3 border-b border-border/40">
                 <div className="flex flex-col gap-1">
                   <div className="h-[3px] w-8 rounded-full bg-sim" />
-                  <span className="text-white font-semibold text-sm">SIM</span>
+                  <span className="text-foreground font-semibold text-sm">SIM</span>
                 </div>
                 <div className="text-center">
                   {hasBothSides
-                    ? <span className="text-white font-bold text-sm">{formatOdds(simOdds)}</span>
+                    ? <span className="text-foreground font-bold text-sm">{formatOdds(simOdds)}</span>
                     : <span className="text-muted-foreground text-xs">—</span>}
                 </div>
                 <div className="flex justify-center">
@@ -324,11 +324,11 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
               <div className="grid grid-cols-[1.2fr_0.9fr_0.9fr] sm:grid-cols-3 items-center py-3">
                 <div className="flex flex-col gap-1">
                   <div className="h-[3px] w-8 rounded-full bg-nao" />
-                  <span className="text-white font-semibold text-sm">NÃO</span>
+                  <span className="text-foreground font-semibold text-sm">NÃO</span>
                 </div>
                 <div className="text-center">
                   {hasBothSides
-                    ? <span className="text-white font-bold text-sm">{formatOdds(naoOdds)}</span>
+                    ? <span className="text-foreground font-bold text-sm">{formatOdds(naoOdds)}</span>
                     : <span className="text-muted-foreground text-xs">—</span>}
                 </div>
                 <div className="flex justify-center">
@@ -384,7 +384,7 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
             <div className="flex justify-end">
               <Link
                 href={`${eventPath}/participantes`}
-                className="text-xs text-muted-foreground hover:text-white transition-colors"
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
                 Ver histórico completo de participantes →
               </Link>
@@ -442,7 +442,7 @@ export async function TopicDetailPage({ id, initialSide }: { id: string; initial
           )}
 
           <div className="bg-card border border-border rounded-xl p-4 text-xs text-muted-foreground space-y-2">
-            <p className="font-semibold text-white text-sm">Como funciona</p>
+            <p className="font-semibold text-foreground text-sm">Como funciona</p>
             <p>Todos palpitam num pool em Z$. Quem ganhar divide o que o lado perdedor alocou, proporcional ao valor.</p>
             <p>Se ninguém palpitar no lado oposto, todo mundo recebe de volta.</p>
             <p>As probabilidades mudam conforme mais pessoas palpitam.</p>

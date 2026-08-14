@@ -49,9 +49,9 @@ export default function CpfForm({ onSuccess }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      <div className="flex items-start gap-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-        <ShieldCheck size={16} className="text-yellow-400 mt-0.5 shrink-0" />
-        <p className="text-xs text-yellow-300">
+      <div className="flex items-start gap-3 p-3 bg-prize/10 border border-prize/30 rounded-lg">
+        <ShieldCheck size={16} className="text-prize mt-0.5 shrink-0" />
+        <p className="text-xs text-prize">
           Para receber prêmios, precisamos verificar seu CPF. Seus dados são protegidos e usados apenas para conformidade regulatória.
         </p>
       </div>
@@ -65,7 +65,7 @@ export default function CpfForm({ onSuccess }: Props) {
           placeholder="000.000.000-00"
           maxLength={14}
           inputMode="numeric"
-          className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50 transition-colors"
+          className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50 transition-colors"
         />
         {cpf.replace(/\D/g, "").length === 11 && !cpfValido && (
           <p className="text-destructive text-xs mt-1.5">CPF inválido. Confira os números.</p>
@@ -77,7 +77,7 @@ export default function CpfForm({ onSuccess }: Props) {
       <button
         type="submit"
         disabled={loading || !cpfValido}
-        className="w-full py-2.5 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full py-2.5 bg-primary text-primary-foreground font-bold text-sm rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         {loading ? <Loader2 size={14} className="animate-spin mx-auto" /> : "Verificar CPF"}
       </button>

@@ -31,7 +31,9 @@ export async function POST(request: Request) {
     name: name.trim(),
     description: description?.trim() ?? null,
     creator_id: user.id,
-    color: color ?? "#B9AEFF",
+    // Padrão do grupo novo. Era o roxo da marca antiga; segue o primeiro slot
+    // do seletor em components/ligas/CreateLigaModal.tsx.
+    color: color ?? "#FFC53D",
     is_public: is_public === true,
     parent_liga_id: parent_liga_id ?? null,
   }).select().single();

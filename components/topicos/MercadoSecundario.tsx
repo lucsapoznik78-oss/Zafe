@@ -79,7 +79,7 @@ interface Props {
 
 const LIQUIDITY_LABEL = {
   alta:  { text: "Alta",   cls: "text-sim",            dot: "bg-sim" },
-  media: { text: "Média",  cls: "text-yellow-400",      dot: "bg-yellow-400" },
+  media: { text: "Média",  cls: "text-prize",      dot: "bg-prize" },
   baixa: { text: "Baixa",  cls: "text-muted-foreground", dot: "bg-muted-foreground" },
 };
 
@@ -161,11 +161,11 @@ function PositionCard({
       </div>
       <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px]">
         <div className="text-muted-foreground">Alocado</div>
-        <div className="text-right text-white">{qty(pos.total_amount)}</div>
+        <div className="text-right text-foreground">{qty(pos.total_amount)}</div>
         <div className="text-muted-foreground">Entrada</div>
-        <div className="text-right text-white">{pct(pos.avg_entry_price)}</div>
+        <div className="text-right text-foreground">{pct(pos.avg_entry_price)}</div>
         <div className="text-muted-foreground">Atual</div>
-        <div className="text-right text-white">{pct(pos.current_price)}</div>
+        <div className="text-right text-foreground">{pct(pos.current_price)}</div>
         <div className="text-muted-foreground">Valor atual</div>
         <div className={`text-right font-semibold ${positive ? "text-sim" : "text-nao"}`}>{qty(pos.current_value)}</div>
       </div>
@@ -347,10 +347,10 @@ export default function MercadoSecundario({ topicId, apiBase, isActive, userBets
 
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-white">Mercado Secundário</h3>
+        <h3 className="text-sm font-semibold text-foreground">Mercado Secundário</h3>
         <button
           onClick={fetchBook}
-          className="text-muted-foreground hover:text-white transition-colors"
+          className="text-muted-foreground hover:text-foreground transition-colors"
           title="Atualizar"
         >
           <RefreshCw size={13} />
@@ -361,7 +361,7 @@ export default function MercadoSecundario({ topicId, apiBase, isActive, userBets
       {totalInvested > 0 && (
         <div className="flex items-center justify-between bg-muted/30 rounded-lg px-3 py-2 text-xs">
           <span className="text-muted-foreground">Você tem aqui</span>
-          <span className="font-bold text-white">{formatCurrency(totalInvested)}</span>
+          <span className="font-bold text-foreground">{formatCurrency(totalInvested)}</span>
         </div>
       )}
 
@@ -373,8 +373,8 @@ export default function MercadoSecundario({ topicId, apiBase, isActive, userBets
             onClick={() => setSide(s)}
             className={`flex-1 py-1.5 transition-colors ${
               side === s
-                ? s === "sim" ? "bg-sim text-white" : "bg-nao text-white"
-                : "text-muted-foreground hover:text-white"
+                ? s === "sim" ? "bg-sim text-primary-foreground" : "bg-nao text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {s.toUpperCase()}
@@ -387,7 +387,7 @@ export default function MercadoSecundario({ topicId, apiBase, isActive, userBets
         <LiquidityBadge liquidity={book!.liquidity} spread={book!.spread} />
         {book!.last_price !== null && (
           <span className="text-[10px] text-muted-foreground">
-            Último: <span className="text-white font-mono">{pct(book!.last_price)}</span>
+            Último: <span className="text-foreground font-mono">{pct(book!.last_price)}</span>
           </span>
         )}
       </div>
@@ -405,7 +405,7 @@ export default function MercadoSecundario({ topicId, apiBase, isActive, userBets
           <p className="text-[10px] text-muted-foreground">Histórico de preços</p>
           <Sparkline
             data={book!.trade_history}
-            color={side === "sim" ? "#4ADE80" : "#FB7185"}
+            color={side === "sim" ? "var(--yes-text)" : "var(--no-text)"}
           />
           <div className="flex justify-between text-[9px] text-muted-foreground font-mono">
             <span>{pct(Math.min(...book!.trade_history.map(d => d.price)))}</span>
@@ -450,7 +450,7 @@ export default function MercadoSecundario({ topicId, apiBase, isActive, userBets
       {/* Order form */}
       {isActive && (
         <form onSubmit={handleSubmit} className="space-y-3 pt-1 border-t border-border/40">
-          <p className="text-xs font-semibold text-white">Nova ordem</p>
+          <p className="text-xs font-semibold text-foreground">Nova ordem</p>
 
           {/* Buy / Sell tabs */}
           <div className="flex rounded-lg overflow-hidden border border-border text-[11px] font-semibold">
@@ -465,10 +465,10 @@ export default function MercadoSecundario({ topicId, apiBase, isActive, userBets
                   title={canSell ? `Sem palpites ${side.toUpperCase()} para vender` : undefined}
                   className={`flex-1 py-1.5 transition-colors ${
                     orderType === t
-                      ? t === "buy" ? "bg-sim text-white" : "bg-nao text-white"
+                      ? t === "buy" ? "bg-sim text-primary-foreground" : "bg-nao text-primary-foreground"
                       : canSell
                         ? "text-muted-foreground/40 cursor-not-allowed"
-                        : "text-muted-foreground hover:text-white"
+                        : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {t === "buy" ? "Comprar" : "Vender"}
@@ -483,7 +483,7 @@ export default function MercadoSecundario({ topicId, apiBase, isActive, userBets
               onClick={() => setIsMarket(v => !v)}
               className={`relative w-8 h-4 rounded-full transition-colors ${isMarket ? "bg-sim" : "bg-muted"}`}
             >
-              <span className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform ${isMarket ? "translate-x-4" : "translate-x-0.5"}`} />
+              <span className={`absolute top-0.5 w-3 h-3 rounded-full bg-foreground transition-transform ${isMarket ? "translate-x-4" : "translate-x-0.5"}`} />
             </div>
             <span className="text-[11px] text-muted-foreground">
               {isMarket ? "Mercado (executa agora)" : "Limite"}
@@ -500,7 +500,7 @@ export default function MercadoSecundario({ topicId, apiBase, isActive, userBets
               placeholder="Ex: 10"
               min={1}
               step={1}
-              className="w-full bg-background border border-border rounded-lg px-2.5 py-1.5 text-sm text-white placeholder-muted-foreground focus:outline-none focus:border-white/30"
+              className="w-full bg-background border border-border rounded-lg px-2.5 py-1.5 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:border-foreground/30"
             />
           </div>
 
@@ -516,7 +516,7 @@ export default function MercadoSecundario({ topicId, apiBase, isActive, userBets
                 min={1}
                 max={99}
                 step={1}
-                className="w-full bg-background border border-border rounded-lg px-2.5 py-1.5 text-sm text-white placeholder-muted-foreground focus:outline-none focus:border-white/30"
+                className="w-full bg-background border border-border rounded-lg px-2.5 py-1.5 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:border-foreground/30"
               />
             </div>
           )}
@@ -534,7 +534,7 @@ export default function MercadoSecundario({ topicId, apiBase, isActive, userBets
                 <select
                   value={sourceBetId}
                   onChange={e => setSourceBetId(e.target.value)}
-                  className="w-full bg-background border border-border rounded-lg px-2.5 py-1.5 text-sm text-white focus:outline-none focus:border-white/30"
+                  className="w-full bg-background border border-border rounded-lg px-2.5 py-1.5 text-sm text-foreground focus:outline-none focus:border-foreground/30"
                 >
                   <option value="">Selecionar posição...</option>
                   {sellableBets.map(b => (
@@ -551,25 +551,25 @@ export default function MercadoSecundario({ topicId, apiBase, isActive, userBets
           {escrowNeeded !== null && escrowNeeded > 0 && (
             <div className="flex items-start gap-1.5 bg-muted/30 rounded-lg p-2 text-[11px] text-muted-foreground">
               <Info size={11} className="mt-0.5 shrink-0" />
-              <span>Reserva de saldo (escrow): <span className="text-white">{qty(escrowNeeded)}</span> — devolvido se cancelar</span>
+              <span>Reserva de saldo (escrow): <span className="text-foreground">{qty(escrowNeeded)}</span> — devolvido se cancelar</span>
             </div>
           )}
 
           {/* Warnings */}
           {noSellers && (
-            <div className="flex items-start gap-1.5 bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-2 text-[11px] text-yellow-400">
+            <div className="flex items-start gap-1.5 bg-prize/10 border border-prize/20 rounded-lg p-2 text-[11px] text-prize">
               <AlertTriangle size={11} className="mt-0.5 shrink-0" />
               Sem vendedores agora. Sua ordem ficará no livro aguardando.
             </div>
           )}
           {noBuyers && (
-            <div className="flex items-start gap-1.5 bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-2 text-[11px] text-yellow-400">
+            <div className="flex items-start gap-1.5 bg-prize/10 border border-prize/20 rounded-lg p-2 text-[11px] text-prize">
               <AlertTriangle size={11} className="mt-0.5 shrink-0" />
               Sem compradores agora. Sua ordem ficará no livro aguardando.
             </div>
           )}
           {lowLiquidity && (
-            <div className="flex items-start gap-1.5 bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-2 text-[11px] text-yellow-400">
+            <div className="flex items-start gap-1.5 bg-prize/10 border border-prize/20 rounded-lg p-2 text-[11px] text-prize">
               <AlertTriangle size={11} className="mt-0.5 shrink-0" />
               Liquidez baixa — pode ser difícil executar ao preço desejado.
             </div>
@@ -597,8 +597,8 @@ export default function MercadoSecundario({ topicId, apiBase, isActive, userBets
             disabled={submitting || (orderType === "sell" && sellableBets.length === 0)}
             className={`w-full py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 ${
               orderType === "buy"
-                ? "bg-sim text-white hover:bg-sim/90"
-                : "bg-nao text-white hover:bg-nao/90"
+                ? "bg-sim text-primary-foreground hover:bg-sim/90"
+                : "bg-nao text-primary-foreground hover:bg-nao/90"
             }`}
           >
             {submitting ? (
@@ -613,7 +613,7 @@ export default function MercadoSecundario({ topicId, apiBase, isActive, userBets
       {/* Open orders */}
       {data.user_orders.length > 0 && (
         <div className="pt-1 border-t border-border/40 space-y-2">
-          <p className="text-xs font-semibold text-white">Ordens abertas</p>
+          <p className="text-xs font-semibold text-foreground">Ordens abertas</p>
           {data.user_orders.map(o => {
             const unfilled = o.quantity - o.filled_qty;
             return (

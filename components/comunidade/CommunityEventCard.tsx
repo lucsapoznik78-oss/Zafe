@@ -23,14 +23,14 @@ interface CommunityEvent {
 
 const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
   active:                { label: "Aberto",     cls: "bg-secondary text-muted-foreground" },
-  awaiting_resolution:   { label: "Aguardando", cls: "bg-yellow-500/15 text-yellow-400" },
+  awaiting_resolution:   { label: "Aguardando", cls: "bg-prize/15 text-prize" },
   community_resolved:    { label: "Resolvido",  cls: "bg-muted text-muted-foreground" },
-  contested:             { label: "Contestado", cls: "bg-orange-500/15 text-orange-300" },
-  under_review:          { label: "Em revisão", cls: "bg-purple-500/15 text-purple-300" },
+  contested:             { label: "Contestado", cls: "bg-nao/15 text-destructive" },
+  under_review:          { label: "Em revisão", cls: "bg-primary/15 text-primary" },
   auto_cancelled:        { label: "Cancelado",  cls: "bg-nao/15 text-nao" },
   mod_cancelled:         { label: "Removido",   cls: "bg-nao/15 text-nao" },
   creator_cancelled:     { label: "Apagado",    cls: "bg-nao/15 text-nao" },
-  reversed:              { label: "Revertido",  cls: "bg-orange-500/15 text-orange-300" },
+  reversed:              { label: "Revertido",  cls: "bg-nao/15 text-destructive" },
 };
 
 export default function CommunityEventCard({ event, showResolveCta }: { event: CommunityEvent; showResolveCta?: boolean }) {
@@ -54,7 +54,7 @@ export default function CommunityEventCard({ event, showResolveCta }: { event: C
       <div className="group bg-card border border-dashed border-border rounded-xl p-4 hover:border-primary/40 hover:bg-card/80 transition-all duration-200 cursor-pointer h-full flex flex-col">
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-500/15 text-purple-300">
+            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-primary/15 text-primary">
               COMUNIDADE
             </span>
             <CategoryBadge category={event.category as any} />
@@ -70,7 +70,7 @@ export default function CommunityEventCard({ event, showResolveCta }: { event: C
           )}
         </div>
 
-        <h3 className="text-sm font-semibold text-white leading-snug mb-2 group-hover:text-primary transition-colors line-clamp-2 flex-1">
+        <h3 className="text-sm font-semibold text-foreground leading-snug mb-2 group-hover:text-primary transition-colors line-clamp-2 flex-1">
           {event.title}
         </h3>
 
@@ -79,7 +79,7 @@ export default function CommunityEventCard({ event, showResolveCta }: { event: C
           <span>por @{event.creator?.username ?? "?"}</span>
           {isPremium(event.creator) && <PremiumStar size={11} />}
           <span className="flex items-center gap-0.5">
-            <Star size={10} className={creatorScore >= 90 ? "text-yellow-400" : "text-muted-foreground"} />
+            <Star size={10} className={creatorScore >= 90 ? "text-prize" : "text-muted-foreground"} />
             {creatorScore}
           </span>
         </div>
@@ -107,7 +107,7 @@ export default function CommunityEventCard({ event, showResolveCta }: { event: C
         )}
 
         {showResolveCta && (
-          <div className="mt-3 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-yellow-500/15 text-yellow-400 text-xs font-bold">
+          <div className="mt-3 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-prize/15 text-prize text-xs font-bold">
             <CheckCircle size={12} />
             Resolver agora
           </div>

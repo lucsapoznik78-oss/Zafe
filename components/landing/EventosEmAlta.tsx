@@ -52,7 +52,7 @@ export default async function EventosEmAlta() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <TrendingUp size={16} className="text-primary" />
-              <h2 className="text-2xl sm:text-3xl font-black text-white">
+              <h2 className="text-2xl sm:text-3xl font-black text-foreground">
                 Eventos em alta
               </h2>
             </div>
@@ -75,7 +75,7 @@ export default async function EventosEmAlta() {
         <div className="mt-6 text-center sm:hidden">
           <Link
             href="/liga"
-            className="inline-flex px-5 py-2.5 rounded-xl border border-border text-sm text-white font-medium hover:border-primary/40 transition-colors"
+            className="inline-flex px-5 py-2.5 rounded-xl border border-border text-sm text-foreground font-medium hover:border-primary/40 transition-colors"
           >
             Ver todos os eventos →
           </Link>

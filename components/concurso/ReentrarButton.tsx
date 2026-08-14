@@ -37,11 +37,11 @@ export default function ReentrarButton({ saldoInicial, mesLabel }: Props) {
   }
 
   return (
-    <div className="rounded-xl border border-yellow-400/30 bg-yellow-400/5 p-6 space-y-4 text-center">
-      <Trophy size={36} className="mx-auto text-yellow-400" />
+    <div className="rounded-xl border border-prize/30 bg-prize/5 p-6 space-y-4 text-center">
+      <Trophy size={36} className="mx-auto text-prize" />
       <div>
-        <p className="text-lg font-bold text-yellow-400">Concurso de {mesLabel}</p>
-        <p className="text-sm text-yellow-300/70 mt-1">
+        <p className="text-lg font-bold text-prize">Concurso de {mesLabel}</p>
+        <p className="text-sm text-prize/70 mt-1">
           Nova temporada, saldo renovado. Você já é verificado — entre com um clique
           e receba ZC$ {saldoInicial.toLocaleString("pt-BR")} para competir.
         </p>
@@ -52,7 +52,7 @@ export default function ReentrarButton({ saldoInicial, mesLabel }: Props) {
       <button
         onClick={handleReentrar}
         disabled={loading}
-        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors disabled:opacity-60"
+        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors disabled:opacity-60"
       >
         {loading ? <Loader2 size={16} className="animate-spin" /> : <>Entrar no Concurso de {mesLabel}</>}
       </button>

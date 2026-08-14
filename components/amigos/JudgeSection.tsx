@@ -50,7 +50,7 @@ export default function JudgeSection({ propostos, pendentes, ativos }: Props) {
       <div className="bg-card border border-border rounded-xl p-12 text-center space-y-3">
         <Gavel size={36} className="text-muted-foreground mx-auto" />
         <div>
-          <p className="text-white font-semibold">Nenhum convite de juiz</p>
+          <p className="text-foreground font-semibold">Nenhum convite de juiz</p>
           <p className="text-sm text-muted-foreground mt-1">
             Quando alguém indicar você como juiz em um bolão, aparecerá aqui.
           </p>
@@ -65,7 +65,7 @@ export default function JudgeSection({ propostos, pendentes, ativos }: Props) {
       {/* Propostos — aguardando aprovação dos dois líderes */}
       {propostos.length > 0 && (
         <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
             <Clock size={14} className="text-muted-foreground" />
             Aguardando aprovação dos líderes
             <span className="px-1.5 py-0.5 bg-muted/40 text-muted-foreground rounded text-xs font-bold">
@@ -85,7 +85,7 @@ export default function JudgeSection({ propostos, pendentes, ativos }: Props) {
                 <Gavel size={16} className="text-muted-foreground" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white line-clamp-1">{nom.topic.title}</p>
+                <p className="text-sm font-semibold text-foreground line-clamp-1">{nom.topic.title}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">Indicado — aguardando aprovação</p>
               </div>
               <ExternalLink size={14} className="text-muted-foreground shrink-0" />
@@ -98,8 +98,8 @@ export default function JudgeSection({ propostos, pendentes, ativos }: Props) {
       {pendentes.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-semibold text-white">Convites pendentes</h2>
-            <span className="px-1.5 py-0.5 bg-yellow-500/20 text-yellow-400 rounded text-xs font-bold">
+            <h2 className="text-sm font-semibold text-foreground">Convites pendentes</h2>
+            <span className="px-1.5 py-0.5 bg-prize/20 text-prize rounded text-xs font-bold">
               {pendentes.length}
             </span>
           </div>
@@ -108,21 +108,21 @@ export default function JudgeSection({ propostos, pendentes, ativos }: Props) {
           </p>
 
           {pendentes.map((nom) => (
-            <div key={nom.id} className="bg-card border border-yellow-500/30 rounded-xl p-4 space-y-3">
+            <div key={nom.id} className="bg-card border border-prize/30 rounded-xl p-4 space-y-3">
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-yellow-500/20 flex items-center justify-center shrink-0">
-                  <Gavel size={15} className="text-yellow-400" />
+                <div className="w-8 h-8 rounded-lg bg-prize/20 flex items-center justify-center shrink-0">
+                  <Gavel size={15} className="text-prize" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <Link
                     href={`/privadas/${nom.topic_id}`}
-                    className="text-sm font-semibold text-white hover:text-primary transition-colors line-clamp-2 flex items-start gap-1"
+                    className="text-sm font-semibold text-foreground hover:text-primary transition-colors line-clamp-2 flex items-start gap-1"
                   >
                     {nom.topic.title}
                     <ExternalLink size={11} className="mt-0.5 shrink-0 text-muted-foreground" />
                   </Link>
                   {nom.availability_deadline && (
-                    <p className="text-xs text-yellow-400 mt-1 flex items-center gap-1">
+                    <p className="text-xs text-prize mt-1 flex items-center gap-1">
                       <Clock size={11} />
                       Responder até{" "}
                       {new Date(nom.availability_deadline).toLocaleString("pt-BR", {
@@ -134,7 +134,7 @@ export default function JudgeSection({ propostos, pendentes, ativos }: Props) {
                 </div>
               </div>
 
-              <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-lg px-3 py-2 text-xs text-yellow-300">
+              <div className="bg-prize/5 border border-prize/20 rounded-lg px-3 py-2 text-xs text-prize">
                 Como juiz, você não palpita — apenas vota no resultado após o evento. Sua decisão (junto com outros juízes) determina o vencedor.
               </div>
 
@@ -164,7 +164,7 @@ export default function JudgeSection({ propostos, pendentes, ativos }: Props) {
       {/* Ativos — está servindo como juiz */}
       {ativos.length > 0 && (
         <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
             <Shield size={14} className="text-primary" />
             Atuando como juiz
           </h2>
@@ -179,7 +179,7 @@ export default function JudgeSection({ propostos, pendentes, ativos }: Props) {
                 <Gavel size={16} className="text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white line-clamp-1">{nom.topic.title}</p>
+                <p className="text-sm font-semibold text-foreground line-clamp-1">{nom.topic.title}</p>
                 <p className="text-xs text-primary mt-0.5">
                   {PHASE_LABELS[nom.topic.private_phase] ?? nom.topic.private_phase}
                 </p>

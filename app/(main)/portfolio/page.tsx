@@ -134,7 +134,7 @@ export default async function PortfolioPage() {
 
       {/* Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-white">Portfólio</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground">Portfólio</h1>
         <p className="text-muted-foreground text-sm mt-0.5">Suas posições e histórico de resultados</p>
       </div>
 
@@ -142,11 +142,11 @@ export default async function PortfolioPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="bg-card border border-border rounded-xl p-4">
           <p className="text-xs text-muted-foreground mb-1">Saldo atual</p>
-          <p className="text-lg font-bold text-white">{formatCurrency(wallet?.balance ?? 0)}</p>
+          <p className="text-lg font-bold text-foreground">{formatCurrency(wallet?.balance ?? 0)}</p>
         </div>
         <div className="bg-card border border-border rounded-xl p-4">
           <p className="text-xs text-muted-foreground mb-1">Em palpites (ativo)</p>
-          <p className="text-lg font-bold text-white">{formatCurrency(totalInvested)}</p>
+          <p className="text-lg font-bold text-foreground">{formatCurrency(totalInvested)}</p>
         </div>
         <div className={`bg-card border rounded-xl p-4 ${unrealizedPnl >= 0 ? "border-sim/30" : "border-nao/30"}`}>
           <p className="text-xs text-muted-foreground mb-1">P&L não realizado</p>
@@ -166,7 +166,7 @@ export default async function PortfolioPage() {
       {/* Posições ativas */}
       {activeTopicIds.length > 0 && (
         <section className="space-y-3">
-          <h2 className="text-base font-semibold text-white">Posições ativas</h2>
+          <h2 className="text-base font-semibold text-foreground">Posições ativas</h2>
           <div className="space-y-3">
             {activeTopicIds.map(topicId => {
               const topic = topicMap.get(topicId);
@@ -197,7 +197,7 @@ export default async function PortfolioPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="space-y-1">
                       <CategoryBadge category={topic.category} />
-                      <Link href={`/liga/${topicId}`} className="block text-sm font-semibold text-white hover:text-primary transition-colors line-clamp-2">
+                      <Link href={`/liga/${topicId}`} className="block text-sm font-semibold text-foreground hover:text-primary transition-colors line-clamp-2">
                         {topic.title}
                       </Link>
                     </div>
@@ -226,11 +226,11 @@ export default async function PortfolioPage() {
                           </div>
                           <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-[11px]">
                             <span className="text-muted-foreground">Palpitado</span>
-                            <span className="text-right text-white">{formatCurrency(pos.totalAmt)}</span>
+                            <span className="text-right text-foreground">{formatCurrency(pos.totalAmt)}</span>
                             <span className="text-muted-foreground">Entrada</span>
-                            <span className="text-right text-white">{fmtPct(pos.weightedEntry)}</span>
+                            <span className="text-right text-foreground">{fmtPct(pos.weightedEntry)}</span>
                             <span className="text-muted-foreground">Atual</span>
-                            <span className="text-right text-white">{fmtPct(pos.currentProb)}</span>
+                            <span className="text-right text-foreground">{fmtPct(pos.currentProb)}</span>
                             <span className="text-muted-foreground">Se ganhar</span>
                             <span className={`text-right font-semibold ${positive ? "text-sim" : "text-muted-foreground"}`}>
                               +{formatCurrency(pos.maxPayout - pos.totalAmt)}
@@ -268,7 +268,7 @@ export default async function PortfolioPage() {
       {/* Watchlist (sem aposta) */}
       {watchlistOnlyTopics.length > 0 && (
         <section className="space-y-3">
-          <h2 className="text-base font-semibold text-white flex items-center gap-2">
+          <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
             <Eye size={15} className="text-muted-foreground" />
             Seguindo (sem posição)
           </h2>
@@ -278,7 +278,7 @@ export default async function PortfolioPage() {
               return (
                 <div key={topic.id} className="bg-card border border-border rounded-xl p-3 flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <Link href={`/liga/${topic.id}`} className="text-sm font-medium text-white hover:text-primary transition-colors line-clamp-1">
+                    <Link href={`/liga/${topic.id}`} className="text-sm font-medium text-foreground hover:text-primary transition-colors line-clamp-1">
                       {topic.title}
                     </Link>
                     <p className="text-[11px] text-muted-foreground mt-0.5">
@@ -286,8 +286,8 @@ export default async function PortfolioPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-xs font-bold text-white">{fmtPct(probSim)}</span>
-                    <Link href={`/liga/${topic.id}`} className="px-2.5 py-1 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary/90">
+                    <span className="text-xs font-bold text-foreground">{fmtPct(probSim)}</span>
+                    <Link href={`/liga/${topic.id}`} className="px-2.5 py-1 bg-primary text-primary-foreground text-xs font-bold rounded-lg hover:bg-primary/90">
                       Palpitar
                     </Link>
                   </div>
@@ -301,7 +301,7 @@ export default async function PortfolioPage() {
       {/* Histórico */}
       {(resolvedBets ?? []).length > 0 && (
         <section className="space-y-3">
-          <h2 className="text-base font-semibold text-white flex items-center gap-2">
+          <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
             <Trophy size={15} className="text-muted-foreground" />
             Histórico de palpites
           </h2>
@@ -315,7 +315,7 @@ export default async function PortfolioPage() {
               return (
                 <div key={b.id} className="bg-card border border-border rounded-xl p-3 flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <Link href={topic ? `/liga/${b.topic_id}` : "#"} className="text-sm font-medium text-white hover:text-primary transition-colors line-clamp-1">
+                    <Link href={topic ? `/liga/${b.topic_id}` : "#"} className="text-sm font-medium text-foreground hover:text-primary transition-colors line-clamp-1">
                       {topic?.title ?? "Evento removido"}
                     </Link>
                     <p className="text-[11px] text-muted-foreground mt-0.5">
@@ -337,9 +337,9 @@ export default async function PortfolioPage() {
 
       {activeTopicIds.length === 0 && (resolvedBets ?? []).length === 0 && watchlistOnlyTopics.length === 0 && (
         <div className="text-center py-20">
-          <p className="text-white font-medium mb-1">Nenhuma posição ainda</p>
+          <p className="text-foreground font-medium mb-1">Nenhuma posição ainda</p>
           <p className="text-muted-foreground text-sm">Explore os eventos e faça seu primeiro palpite</p>
-          <Link href="/liga" className="inline-block mt-4 px-5 py-2.5 bg-primary text-white font-semibold rounded-lg text-sm">
+          <Link href="/liga" className="inline-block mt-4 px-5 py-2.5 bg-primary text-primary-foreground font-semibold rounded-lg text-sm">
             Explorar eventos
           </Link>
         </div>

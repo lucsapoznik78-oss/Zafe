@@ -38,18 +38,18 @@ export default async function HistoricoPage() {
   const totalWinners = [...winnersMap.values()].reduce((s, set) => s + set.size, 0);
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-background">
       {/* Navbar simples para página pública */}
-      <header className="border-b border-border bg-black/90 sticky top-0 z-50">
+      <header className="border-b border-border bg-background/90 sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link href="/liga" className="text-xl font-bold text-primary">Zafe</Link>
           <div className="flex items-center gap-3">
-            <Link href="/liga" className="text-sm text-muted-foreground hover:text-white transition-colors">
+            <Link href="/liga" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               Ver eventos abertos
             </Link>
             <Link
               href="/login"
-              className="px-3 py-1.5 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary/90 transition-colors"
+              className="px-3 py-1.5 bg-primary text-primary-foreground text-sm font-semibold rounded-lg hover:bg-primary/90 transition-colors"
             >
               Entrar
             </Link>
@@ -64,7 +64,7 @@ export default async function HistoricoPage() {
             <CheckCircle2 size={12} />
             Transparência total
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">Histórico de Resoluções</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Histórico de Resoluções</h1>
           <p className="text-muted-foreground max-w-md mx-auto">
             Todos os eventos resolvidos na Zafe. Resultado público, auditável por qualquer pessoa.
           </p>
@@ -75,7 +75,7 @@ export default async function HistoricoPage() {
           {[
             { icon: <Trophy size={18} />, label: "Eventos resolvidos", value: total, color: "text-primary" },
             { icon: <Users size={18} />, label: "Vencedores únicos", value: totalWinners, color: "text-sim" },
-            { icon: <CheckCircle2 size={18} />, label: "Taxa de pagamento", value: total > 0 ? "100%" : "—", color: "text-white" },
+            { icon: <CheckCircle2 size={18} />, label: "Taxa de pagamento", value: total > 0 ? "100%" : "—", color: "text-foreground" },
           ].map((s) => (
             <div key={s.label} className="bg-card border border-border rounded-xl p-4 text-center">
               <div className={`flex justify-center mb-1 ${s.color}`}>{s.icon}</div>
@@ -91,13 +91,13 @@ export default async function HistoricoPage() {
             <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
               <Trophy size={24} className="text-primary" />
             </div>
-            <p className="text-white font-semibold">Nenhum evento resolvido ainda</p>
+            <p className="text-foreground font-semibold">Nenhum evento resolvido ainda</p>
             <p className="text-muted-foreground text-sm">
               Os primeiros resultados aparecerão aqui assim que um evento for encerrado.
             </p>
             <Link
               href="/liga"
-              className="inline-block mt-2 px-4 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary/90 transition-colors"
+              className="inline-block mt-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-semibold rounded-lg hover:bg-primary/90 transition-colors"
             >
               Ver eventos abertos
             </Link>
@@ -132,7 +132,7 @@ export default async function HistoricoPage() {
                             {topic.resolution?.toUpperCase()} venceu
                           </span>
                         </div>
-                        <p className="text-sm font-semibold text-white line-clamp-2">{topic.title}</p>
+                        <p className="text-sm font-semibold text-foreground line-clamp-2">{topic.title}</p>
                         <div className="flex items-center gap-4 mt-1.5 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Users size={11} />
@@ -163,13 +163,13 @@ export default async function HistoricoPage() {
 
         {/* CTA */}
         <div className="bg-card border border-border rounded-xl p-6 text-center space-y-3">
-          <p className="text-white font-semibold">Quer palpitar nos próximos eventos?</p>
+          <p className="text-foreground font-semibold">Quer palpitar nos próximos eventos?</p>
           <p className="text-muted-foreground text-sm">
             Crie sua conta e comece a palpitar em eventos reais com outros usuários.
           </p>
           <Link
             href="/login"
-            className="inline-block px-6 py-2.5 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors"
+            className="inline-block px-6 py-2.5 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-colors"
           >
             Criar conta grátis
           </Link>

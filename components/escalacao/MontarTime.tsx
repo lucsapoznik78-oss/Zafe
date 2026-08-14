@@ -212,7 +212,7 @@ export default function MontarTime({
       <div className="rounded-2xl border border-border bg-card overflow-hidden">
         <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border">
           {somenteLeitura ? (
-            <h2 className="text-sm font-semibold text-white truncate">
+            <h2 className="text-sm font-semibold text-foreground truncate">
               {nome || "Seu time"}
             </h2>
           ) : (
@@ -222,7 +222,7 @@ export default function MontarTime({
               maxLength={40}
               placeholder="Nome do time"
               aria-label="Nome do time"
-              className="flex-1 min-w-0 bg-transparent text-sm font-semibold text-white placeholder:text-muted-foreground/70 focus:outline-none"
+              className="flex-1 min-w-0 bg-transparent text-sm font-semibold text-foreground placeholder:text-muted-foreground/70 focus:outline-none"
             />
           )}
           <span
@@ -316,7 +316,7 @@ export default function MontarTime({
             <button
               onClick={salvar}
               disabled={enviando !== null}
-              className="flex-1 py-2.5 bg-input border border-border text-white font-bold text-sm rounded-xl hover:bg-input/70 disabled:opacity-50 transition-colors"
+              className="flex-1 py-2.5 bg-input border border-border text-foreground font-bold text-sm rounded-xl hover:bg-input/70 disabled:opacity-50 transition-colors"
             >
               {enviando === "salvar" ? (
                 <Loader2 size={14} className="animate-spin mx-auto" />
@@ -328,7 +328,7 @@ export default function MontarTime({
               <button
                 onClick={inscrever}
                 disabled={enviando !== null || !completo}
-                className="flex-1 py-2.5 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                className="flex-1 py-2.5 bg-primary text-primary-foreground font-bold text-sm rounded-xl hover:bg-primary/90 disabled:opacity-50 transition-colors"
               >
                 {enviando === "inscrever" ? (
                   <Loader2 size={14} className="animate-spin mx-auto" />
@@ -379,11 +379,11 @@ function Campo({ children }: { children: React.ReactNode }) {
         className="absolute inset-0 opacity-[0.07] bg-[repeating-linear-gradient(180deg,#fff_0_28px,transparent_28px_56px)]"
       />
       {/* marcação: linha de fundo, meio-campo e círculo central */}
-      <div aria-hidden="true" className="absolute inset-3 rounded-lg border border-white/20" />
-      <div aria-hidden="true" className="absolute left-3 right-3 top-1/2 h-px bg-white/20" />
+      <div aria-hidden="true" className="absolute inset-3 rounded-lg border border-foreground/20" />
+      <div aria-hidden="true" className="absolute left-3 right-3 top-1/2 h-px bg-foreground/20" />
       <div
         aria-hidden="true"
-        className="absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/20"
+        className="absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full border border-foreground/20"
       />
       <div className="relative space-y-5">{children}</div>
     </div>
@@ -398,16 +398,16 @@ function Quadra({ children }: { children: React.ReactNode }) {
         aria-hidden="true"
         className="absolute inset-0 opacity-[0.06] bg-[repeating-linear-gradient(90deg,#fff_0_2px,transparent_2px_18px)]"
       />
-      <div aria-hidden="true" className="absolute inset-3 rounded-lg border border-white/25" />
+      <div aria-hidden="true" className="absolute inset-3 rounded-lg border border-foreground/25" />
       {/* garrafão colado na linha de fundo (topo, onde fica o pivô) */}
       <div
         aria-hidden="true"
-        className="absolute left-1/2 top-3 h-24 w-28 -translate-x-1/2 border-x border-b border-white/25"
+        className="absolute left-1/2 top-3 h-24 w-28 -translate-x-1/2 border-x border-b border-foreground/25"
       />
       {/* arco de três pontos */}
       <div
         aria-hidden="true"
-        className="absolute left-1/2 top-3 h-44 w-72 -translate-x-1/2 rounded-b-full border-x border-b border-white/25"
+        className="absolute left-1/2 top-3 h-44 w-72 -translate-x-1/2 rounded-b-full border-x border-b border-foreground/25"
       />
       <div className="relative space-y-5">{children}</div>
     </div>
@@ -449,8 +449,8 @@ function Slot({
 
   if (deitado) {
     return (
-      <div className="flex items-center gap-3 rounded-xl bg-black/30 border border-white/10 px-3 py-2">
-        <span className="w-24 shrink-0 text-[10px] font-bold tracking-wide text-white/70 uppercase">
+      <div className="flex items-center gap-3 rounded-xl bg-background/30 border border-foreground/10 px-3 py-2">
+        <span className="w-24 shrink-0 text-[10px] font-bold tracking-wide text-foreground/70 uppercase">
           {legenda}
         </span>
         {atleta ? (
@@ -462,17 +462,17 @@ function Slot({
               tamanho="sm"
             />
             <span className="flex-1 min-w-0">
-              <span className="block text-xs font-semibold text-white truncate">
+              <span className="block text-xs font-semibold text-foreground truncate">
                 {atleta.nome}
               </span>
-              <span className="block text-[10px] text-white/60 truncate">
+              <span className="block text-[10px] text-foreground/60 truncate">
                 {atleta.clube ?? nomeDoEsporte[atleta.esporte_key] ?? atleta.esporte_key}
               </span>
             </span>
             <button
               onClick={somenteLeitura ? undefined : onAbrir}
               disabled={somenteLeitura}
-              className="text-[10px] text-white/60 hover:text-white disabled:opacity-40 transition-colors"
+              className="text-[10px] text-foreground/60 hover:text-foreground disabled:opacity-40 transition-colors"
             >
               trocar
             </button>
@@ -480,7 +480,7 @@ function Slot({
               <button
                 onClick={onLimpar}
                 aria-label={`Tirar ${atleta.nome} do time`}
-                className="text-white/50 hover:text-nao transition-colors"
+                className="text-foreground/50 hover:text-nao transition-colors"
               >
                 <X size={13} />
               </button>
@@ -491,9 +491,9 @@ function Slot({
             onClick={somenteLeitura ? undefined : onAbrir}
             disabled={somenteLeitura}
             aria-label={`Escolher ${legenda}`}
-            className="flex-1 flex items-center gap-2 text-left text-white/50 hover:text-white disabled:opacity-40 transition-colors"
+            className="flex-1 flex items-center gap-2 text-left text-foreground/50 hover:text-foreground disabled:opacity-40 transition-colors"
           >
-            <span className="h-9 w-9 rounded-full border-2 border-dashed border-white/30 flex items-center justify-center">
+            <span className="h-9 w-9 rounded-full border-2 border-dashed border-foreground/30 flex items-center justify-center">
               <Plus size={14} />
             </span>
             <span className="text-xs">Escalar</span>
@@ -511,10 +511,10 @@ function Slot({
         aria-label={`Escolher ${legenda}`}
         className="w-[70px] sm:w-[84px] flex flex-col items-center gap-1 group disabled:opacity-50"
       >
-        <span className="h-12 w-12 rounded-full border-2 border-dashed border-white/40 flex items-center justify-center text-white/50 group-hover:border-white/80 group-hover:text-white transition-colors">
+        <span className="h-12 w-12 rounded-full border-2 border-dashed border-foreground/40 flex items-center justify-center text-foreground/50 group-hover:border-foreground/80 group-hover:text-foreground transition-colors">
           <Plus size={16} />
         </span>
-        <span className="text-[10px] font-semibold text-white/60 leading-tight">
+        <span className="text-[10px] font-semibold text-foreground/60 leading-tight">
           {legenda}
         </span>
       </button>
@@ -535,7 +535,7 @@ function Slot({
           fotoUrl={atleta.foto_url}
         />
         {rotulo && (
-          <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-1.5 rounded-full bg-black/80 border border-white/20 text-[8px] font-bold tracking-wide text-white/80">
+          <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-1.5 rounded-full bg-background/80 border border-foreground/20 text-[8px] font-bold tracking-wide text-foreground/80">
             {rotulo}
           </span>
         )}
@@ -555,16 +555,16 @@ function Slot({
                 onLimpar();
               }
             }}
-            className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-black/80 border border-white/20 flex items-center justify-center text-white/70 hover:text-nao hover:border-nao/50 transition-colors"
+            className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-background/80 border border-foreground/20 flex items-center justify-center text-foreground/70 hover:text-nao hover:border-nao/50 transition-colors"
           >
             <X size={11} />
           </span>
         )}
       </button>
-      <span className="w-full text-center text-[10px] font-semibold text-white leading-tight truncate">
+      <span className="w-full text-center text-[10px] font-semibold text-foreground leading-tight truncate">
         {atleta.nome}
       </span>
-      <span className="w-full text-center text-[9px] text-white/60 leading-tight truncate">
+      <span className="w-full text-center text-[9px] text-foreground/60 leading-tight truncate">
         {atleta.clube ?? nomeDoEsporte[atleta.esporte_key] ?? atleta.esporte_key}
       </span>
     </div>
@@ -617,7 +617,7 @@ function Seletor({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-background/70 backdrop-blur-sm"
       onClick={onFechar}
     >
       <div
@@ -628,7 +628,7 @@ function Seletor({
         className="w-full sm:max-w-lg max-h-[85vh] flex flex-col bg-card border border-border rounded-t-2xl sm:rounded-2xl"
       >
         <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border">
-          <h3 className="text-sm font-semibold text-white">
+          <h3 className="text-sm font-semibold text-foreground">
             {slot?.rotulo
               ? `Escolher ${slot.rotulo}`
               : alvo.papel === "titular"
@@ -638,7 +638,7 @@ function Seletor({
           <button
             onClick={onFechar}
             aria-label="Fechar"
-            className="text-muted-foreground hover:text-white transition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors"
           >
             <X size={18} />
           </button>
@@ -655,14 +655,14 @@ function Seletor({
               onChange={(e) => setBusca(e.target.value)}
               placeholder="Buscar atleta"
               aria-label="Buscar atleta"
-              className="w-full bg-input border border-border rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder:text-muted-foreground"
+              className="w-full bg-input border border-border rounded-lg pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground"
             />
           </div>
 
           {exigePosicao && (
             <p className="text-[11px] text-muted-foreground">
               Só quem joga de{" "}
-              <strong className="text-white">{slot!.pos!.join(" ou ")}</strong>.
+              <strong className="text-foreground">{slot!.pos!.join(" ou ")}</strong>.
             </p>
           )}
 
@@ -711,7 +711,7 @@ function Seletor({
                   onClick={() => !bloqueado && onEscolher(a.card_atleta_id)}
                   disabled={bloqueado}
                   className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${
-                    bloqueado ? "opacity-40 cursor-not-allowed" : "hover:bg-white/5"
+                    bloqueado ? "opacity-40 cursor-not-allowed" : "hover:bg-foreground/5"
                   }`}
                 >
                   <FotoAtleta
@@ -721,7 +721,7 @@ function Seletor({
                     tamanho="sm"
                   />
                   <span className="flex-1 min-w-0">
-                    <span className="block text-sm text-white truncate">
+                    <span className="block text-sm text-foreground truncate">
                       {a.nome}
                       {a.genero === "f" && (
                         <span className="ml-1.5 text-[10px] text-muted-foreground">fem</span>
@@ -765,7 +765,7 @@ function Aba({
     <button
       onClick={onClick}
       className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
-        ativa ? "bg-primary text-white" : "bg-input text-muted-foreground hover:text-white"
+        ativa ? "bg-primary text-primary-foreground" : "bg-input text-muted-foreground hover:text-primary-foreground"
       }`}
     >
       {children}

@@ -28,14 +28,14 @@ export default function AmigosTabNav({ pendingJudge }: Props) {
             href={`/amigos?tab=${t.key}`}
             className={`flex items-center gap-2 px-5 py-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
               active
-                ? "text-white border-primary"
-                : "text-muted-foreground border-transparent hover:text-white"
+                ? "text-foreground border-primary"
+                : "text-muted-foreground border-transparent hover:text-foreground"
             }`}
           >
             <Icon size={15} />
             {t.label}
             {t.badge > 0 && (
-              <span className="px-1.5 py-0.5 bg-primary text-white text-[10px] font-bold rounded-full leading-none">
+              <span className="px-1.5 py-0.5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full leading-none">
                 {t.badge}
               </span>
             )}

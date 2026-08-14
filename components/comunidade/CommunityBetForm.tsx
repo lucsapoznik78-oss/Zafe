@@ -65,13 +65,13 @@ export default function CommunityBetForm({ eventId, totalSim, totalNao, isClosed
 
   return (
     <div className="bg-card border border-border rounded-xl p-4 space-y-4">
-      <h3 className="text-sm font-semibold text-white">Fazer palpite</h3>
+      <h3 className="text-sm font-semibold text-foreground">Fazer palpite</h3>
 
       <div className="grid grid-cols-2 gap-2">
         <button
           onClick={() => setSide("sim")}
           className={`py-2.5 rounded-lg text-sm font-bold transition-all ${
-            side === "sim" ? "bg-sim text-white" : "bg-sim/10 text-sim hover:bg-sim/20"
+            side === "sim" ? "bg-sim text-primary-foreground" : "bg-sim/10 text-sim hover:bg-sim/20"
           }`}
         >
           SIM
@@ -79,7 +79,7 @@ export default function CommunityBetForm({ eventId, totalSim, totalNao, isClosed
         <button
           onClick={() => setSide("nao")}
           className={`py-2.5 rounded-lg text-sm font-bold transition-all ${
-            side === "nao" ? "bg-nao text-white" : "bg-nao/10 text-nao hover:bg-nao/20"
+            side === "nao" ? "bg-nao text-primary-foreground" : "bg-nao/10 text-nao hover:bg-nao/20"
           }`}
         >
           NÃO
@@ -95,7 +95,7 @@ export default function CommunityBetForm({ eventId, totalSim, totalNao, isClosed
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           placeholder="0"
-          className="w-full bg-black border border-border rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50"
+          className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50"
         />
       </div>
 
@@ -103,7 +103,7 @@ export default function CommunityBetForm({ eventId, totalSim, totalNao, isClosed
         <div className="text-xs text-muted-foreground space-y-1">
           <div className="flex justify-between">
             <span>Cotação estimada</span>
-            <span className="text-white">{currentOdds.toFixed(2)}x</span>
+            <span className="text-foreground">{currentOdds.toFixed(2)}x</span>
           </div>
           <div className="flex justify-between">
             <span>Retorno estimado</span>
@@ -123,7 +123,7 @@ export default function CommunityBetForm({ eventId, totalSim, totalNao, isClosed
       <button
         onClick={handleBet}
         disabled={loading || amountNum < 1}
-        className="w-full py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+        className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
       >
         {loading && <Loader2 size={14} className="animate-spin" />}
         Palpitar {side.toUpperCase()}

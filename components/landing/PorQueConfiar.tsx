@@ -23,7 +23,7 @@ export default function PorQueConfiar() {
     <section className="py-16 px-4 bg-card/30">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-10">
-          <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">
+          <h2 className="text-2xl sm:text-3xl font-black text-foreground mb-2">
             Por que confiar na Zafe?
           </h2>
           <p className="text-muted-foreground text-sm">
@@ -41,7 +41,7 @@ export default function PorQueConfiar() {
                 <p.icon size={18} className="text-primary" />
               </div>
               <div className="space-y-1.5">
-                <h3 className="text-sm font-bold text-white leading-snug">{p.title}</h3>
+                <h3 className="text-sm font-bold text-foreground leading-snug">{p.title}</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">{p.body}</p>
               </div>
             </div>

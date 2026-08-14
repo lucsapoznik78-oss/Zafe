@@ -125,7 +125,7 @@ export default function StatEntryForm({ cardId, atletas, rulesets, eventoPadrao 
     if (modo === "salvar") router.refresh();
   }
 
-  const campo = "w-full bg-input border border-border rounded-lg px-2 py-1.5 text-sm text-white";
+  const campo = "w-full bg-input border border-border rounded-lg px-2 py-1.5 text-sm text-foreground";
   const rotulo = "text-xs text-muted-foreground";
 
   function campoStat(decl: StatDecl, valor: string | undefined, onChange: (v: string) => void) {
@@ -169,7 +169,7 @@ export default function StatEntryForm({ cardId, atletas, rulesets, eventoPadrao 
 
   return (
     <div className="bg-card border border-border rounded-xl p-4 space-y-4">
-      <h3 className="text-sm font-semibold text-white">Lançar stats</h3>
+      <h3 className="text-sm font-semibold text-foreground">Lançar stats</h3>
 
       <div className="grid grid-cols-2 gap-3">
         <label className="space-y-1">
@@ -240,7 +240,7 @@ export default function StatEntryForm({ cardId, atletas, rulesets, eventoPadrao 
               {ocorrencias.map((oc, i) => (
                 <div key={i} className="border border-border rounded-lg p-3 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-white">#{i + 1}</span>
+                    <span className="text-[11px] text-foreground">#{i + 1}</span>
                     {ocorrencias.length > 1 && (
                       <button
                         type="button"
@@ -268,7 +268,7 @@ export default function StatEntryForm({ cardId, atletas, rulesets, eventoPadrao 
               <button
                 type="button"
                 onClick={() => setOcorrencias((a) => [...a, {}])}
-                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-white"
+                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
               >
                 <Plus size={12} /> adicionar ocorrência
               </button>
@@ -284,7 +284,7 @@ export default function StatEntryForm({ cardId, atletas, rulesets, eventoPadrao 
         <button
           onClick={() => enviar("preview")}
           disabled={!!ocupado || !eventoKey || !atletaId}
-          className="py-2 bg-muted text-white font-bold text-sm rounded-lg hover:bg-muted/80 disabled:opacity-50 transition-colors"
+          className="py-2 bg-muted text-foreground font-bold text-sm rounded-lg hover:bg-muted/80 disabled:opacity-50 transition-colors"
         >
           {ocupado === "preview" ? (
             <Loader2 size={14} className="animate-spin mx-auto" />
@@ -295,7 +295,7 @@ export default function StatEntryForm({ cardId, atletas, rulesets, eventoPadrao 
         <button
           onClick={() => enviar("salvar")}
           disabled={!!ocupado || !eventoKey || !atletaId}
-          className="py-2 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
+          className="py-2 bg-primary text-primary-foreground font-bold text-sm rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
         >
           {ocupado === "salvar" ? <Loader2 size={14} className="animate-spin mx-auto" /> : "Gravar"}
         </button>

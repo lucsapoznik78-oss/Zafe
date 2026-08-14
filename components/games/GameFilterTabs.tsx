@@ -41,7 +41,7 @@ export default function GameFilterTabs({ status, game }: { status: string; game:
             key={t.key}
             href={href(t.key, game)}
             className={`px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap transition-colors ${
-              status === t.key ? "bg-violet-500/20 text-violet-300" : "text-muted-foreground hover:text-white"
+              status === t.key ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {t.label}
@@ -55,8 +55,8 @@ export default function GameFilterTabs({ status, game }: { status: string; game:
             href={href(status, t.key)}
             className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap border transition-colors ${
               game === t.key
-                ? "bg-violet-500/20 text-violet-300 border-violet-500/40"
-                : "text-muted-foreground border-border hover:text-white"
+                ? "bg-primary/20 text-primary border-primary/40"
+                : "text-muted-foreground border-border hover:text-foreground"
             }`}
           >
             {t.label}

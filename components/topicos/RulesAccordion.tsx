@@ -63,7 +63,7 @@ export default function RulesAccordion({ description, type = "topico" }: Props) 
     <div className="bg-card border border-border rounded-xl overflow-hidden">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-white hover:bg-white/5 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-foreground hover:bg-foreground/5 transition-colors"
       >
         <span>Regras e cenários</span>
         <ChevronDown size={16} className={`text-muted-foreground transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
@@ -81,9 +81,9 @@ export default function RulesAccordion({ description, type = "topico" }: Props) 
             <div key={i}>
               <button
                 onClick={() => setOpenItem(openItem === i ? null : i)}
-                className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-white/3 transition-colors"
+                className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-foreground/3 transition-colors"
               >
-                <span className="text-xs text-white pr-4">{rule.q}</span>
+                <span className="text-xs text-foreground pr-4">{rule.q}</span>
                 <ChevronDown size={13} className={`text-muted-foreground shrink-0 transition-transform duration-150 ${openItem === i ? "rotate-180" : ""}`} />
               </button>
               {openItem === i && (

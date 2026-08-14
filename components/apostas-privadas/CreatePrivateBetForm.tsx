@@ -43,7 +43,7 @@ function UserPicker({
   return (
     <div className="bg-card border border-border rounded-xl p-4 space-y-3">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold text-white">
+        <p className="text-sm font-semibold text-foreground">
           {label}{" "}
           {sublabel && <span className="text-muted-foreground font-normal">{sublabel}</span>}
         </p>
@@ -55,7 +55,7 @@ function UserPicker({
           {selected.map((u) => (
             <span key={u.id} className="flex items-center gap-1.5 px-2.5 py-1 bg-primary/15 text-primary text-xs rounded-full font-medium">
               @{u.username}
-              <button type="button" onClick={() => onRemove(u.id)} className="hover:text-red-400 transition-colors">
+              <button type="button" onClick={() => onRemove(u.id)} className="hover:text-destructive transition-colors">
                 <X size={11} />
               </button>
             </span>
@@ -70,7 +70,7 @@ function UserPicker({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Filtrar por nome ou usuário..."
-          className="w-full bg-input border border-border rounded-lg pl-9 pr-3 py-2.5 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+          className="w-full bg-input border border-border rounded-lg pl-9 pr-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
         />
       </div>
 
@@ -88,13 +88,13 @@ function UserPicker({
             const atMax = maxSelect != null && selected.length >= maxSelect;
 
             return (
-              <div key={u.id} className="flex items-center justify-between py-2 px-1 rounded-lg hover:bg-white/5 transition-colors">
+              <div key={u.id} className="flex items-center justify-between py-2 px-1 rounded-lg hover:bg-foreground/5 transition-colors">
                 <div className="flex items-center gap-2.5">
                   <Avatar className="h-8 w-8">
                     <AvatarFallback className="bg-primary/20 text-primary text-xs">{initials}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="text-sm font-medium text-white">{u.full_name}</p>
+                    <p className="text-sm font-medium text-foreground">{u.full_name}</p>
                     <p className="text-xs text-muted-foreground">@{u.username}</p>
                   </div>
                 </div>
@@ -103,7 +103,7 @@ function UserPicker({
                     <button
                       type="button"
                       onClick={() => onRemove(u.id)}
-                      className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300 transition-colors px-2 py-1"
+                      className="flex items-center gap-1 text-xs text-destructive hover:text-destructive transition-colors px-2 py-1"
                     >
                       <X size={12} /> Remover
                     </button>
@@ -234,14 +234,14 @@ export default function CreatePrivateBetForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      {error && <p className="text-red-400 text-sm bg-red-400/10 rounded-lg px-3 py-2">{error}</p>}
+      {error && <p className="text-destructive text-sm bg-nao/10 rounded-lg px-3 py-2">{error}</p>}
 
       <div className="bg-card border border-border rounded-xl p-4 space-y-4">
-        <p className="text-sm font-semibold text-white">Evento</p>
+        <p className="text-sm font-semibold text-foreground">Evento</p>
         <div>
           <label className="text-xs text-muted-foreground">Pergunta do bolão</label>
           <input
-            className="w-full mt-1 bg-background border border-border rounded-lg px-3 py-2 text-white text-sm"
+            className="w-full mt-1 bg-background border border-border rounded-lg px-3 py-2 text-foreground text-sm"
             placeholder="Ex: Palmeiras vai ganhar o Brasileirão 2026?"
             value={title} onChange={(e) => setTitle(e.target.value)} required maxLength={120}
           />
@@ -249,7 +249,7 @@ export default function CreatePrivateBetForm({
         <div>
           <label className="text-xs text-muted-foreground">Descrição (opcional)</label>
           <textarea
-            className="w-full mt-1 bg-background border border-border rounded-lg px-3 py-2 text-white text-sm resize-none"
+            className="w-full mt-1 bg-background border border-border rounded-lg px-3 py-2 text-foreground text-sm resize-none"
             rows={2} value={description} onChange={(e) => setDescription(e.target.value)} maxLength={500}
           />
         </div>
@@ -257,7 +257,7 @@ export default function CreatePrivateBetForm({
           <div>
             <label className="text-xs text-muted-foreground">Categoria</label>
             <select
-              className="w-full mt-1 bg-background border border-border rounded-lg px-3 py-2 text-white text-sm"
+              className="w-full mt-1 bg-background border border-border rounded-lg px-3 py-2 text-foreground text-sm"
               value={category} onChange={(e) => setCategory(e.target.value)}
             >
               {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -267,7 +267,7 @@ export default function CreatePrivateBetForm({
             <label className="text-xs text-muted-foreground">Palpite mínimo (Z$)</label>
             <input
               type="number" min="1" step="1"
-              className="w-full mt-1 bg-background border border-border rounded-lg px-3 py-2 text-white text-sm"
+              className="w-full mt-1 bg-background border border-border rounded-lg px-3 py-2 text-foreground text-sm"
               value={minBet} onChange={(e) => setMinBet(e.target.value)} required
             />
           </div>
@@ -276,7 +276,7 @@ export default function CreatePrivateBetForm({
           <label className="text-xs text-muted-foreground">Data do evento</label>
           <input
             type="datetime-local"
-            className="w-full mt-1 bg-background border border-border rounded-lg px-3 py-2 text-white text-sm"
+            className="w-full mt-1 bg-background border border-border rounded-lg px-3 py-2 text-foreground text-sm"
             value={closesAt} onChange={(e) => setClosesAt(e.target.value)} required
           />
         </div>
@@ -284,7 +284,7 @@ export default function CreatePrivateBetForm({
 
       {fromLiga && (
         <p className="text-xs text-muted-foreground -mb-1">
-          Bolão de <span className="text-white font-medium">{ligaName ?? "grupo"}</span> — só
+          Bolão de <span className="text-foreground font-medium">{ligaName ?? "grupo"}</span> — só
           os membros do grupo aparecem nas listas abaixo.
         </p>
       )}
@@ -325,10 +325,10 @@ export default function CreatePrivateBetForm({
 
 
 
-      {error && <p className="text-red-400 text-sm bg-red-400/10 rounded-lg px-3 py-2">{error}</p>}
+      {error && <p className="text-destructive text-sm bg-nao/10 rounded-lg px-3 py-2">{error}</p>}
       <button
         type="submit" disabled={loading}
-        className="w-full py-3 bg-primary text-white font-bold rounded-xl disabled:opacity-50"
+        className="w-full py-3 bg-primary text-primary-foreground font-bold rounded-xl disabled:opacity-50"
       >
         {loading ? "Criando..." : "Criar Bolão"}
       </button>

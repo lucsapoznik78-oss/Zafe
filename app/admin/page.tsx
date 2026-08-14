@@ -139,7 +139,7 @@ export default async function AdminPage() {
     <div className="py-6 space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-white">Painel Admin</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Painel Admin</h1>
           <p className="text-muted-foreground text-sm">Gerencie setores e acompanhe previsões</p>
         </div>
         <span className="ml-auto px-2 py-1 bg-primary/20 text-primary text-xs font-bold rounded">ADMIN</span>
@@ -151,11 +151,11 @@ export default async function AdminPage() {
       >
         <MessagesSquare className="w-5 h-5 text-primary shrink-0" />
         <div className="min-w-0">
-          <p className="text-sm font-bold text-white">Canal do Usuário</p>
+          <p className="text-sm font-bold text-foreground">Canal do Usuário</p>
           <p className="text-xs text-muted-foreground">Mensagens dos usuários para a equipe</p>
         </div>
         {(canalPendentes ?? 0) > 0 && (
-          <span className="ml-auto px-2 py-1 rounded-full bg-primary text-white text-xs font-bold shrink-0">
+          <span className="ml-auto px-2 py-1 rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0">
             {canalPendentes}
           </span>
         )}
@@ -170,13 +170,13 @@ export default async function AdminPage() {
       >
         <Trophy className="w-5 h-5 text-primary shrink-0" />
         <div className="min-w-0">
-          <p className="text-sm font-bold text-white">Escalação</p>
+          <p className="text-sm font-bold text-foreground">Escalação</p>
           <p className="text-xs text-muted-foreground">
             Convocações, pool de atletas, apuração com IA e soma por usuário
           </p>
         </div>
         {(escalacaoAApurar ?? 0) > 0 && (
-          <span className="ml-auto px-2 py-1 rounded-full bg-primary text-white text-xs font-bold shrink-0">
+          <span className="ml-auto px-2 py-1 rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0">
             {escalacaoAApurar}
           </span>
         )}
@@ -200,21 +200,21 @@ export default async function AdminPage() {
 
       {/* Liga */}
       <div>
-        <h2 className="text-lg font-bold text-white mb-1">Liga (Eventos Gerais)</h2>
+        <h2 className="text-lg font-bold text-foreground mb-1">Liga (Eventos Gerais)</h2>
         <p className="text-xs text-muted-foreground mb-3">Eventos que NÃO são econômicos (esportes, política, tecnologia, entretenimento)</p>
         <AdminActiveTopics topics={ligaTopics ?? []} showCategory />
       </div>
 
       {/* Concurso - Com concurso_id */}
       <div>
-        <h2 className="text-lg font-bold text-white mb-1">Concurso (Eventos com Inscrição)</h2>
+        <h2 className="text-lg font-bold text-foreground mb-1">Concurso (Eventos com Inscrição)</h2>
         <p className="text-xs text-muted-foreground mb-3">Eventos que fazem parte do concurso ativo (min_bet = 20 Z$)</p>
         <AdminActiveTopics topics={concursoTopics ?? []} showCategory showConcurso />
       </div>
 
       {/* Participantes do Concurso */}
       <div>
-        <h2 className="text-lg font-bold text-white mb-1">Participantes do Concurso</h2>
+        <h2 className="text-lg font-bold text-foreground mb-1">Participantes do Concurso</h2>
         <p className="text-xs text-muted-foreground mb-3">
           {concursoAtivo
             ? `Inscritos no concurso ativo "${concursoAtivo.titulo}"`
@@ -236,14 +236,14 @@ export default async function AdminPage() {
               {concursoParticipantes.map((p: any, i: number) => (
                 <div key={i} className="px-4 py-3 flex items-center justify-between gap-4 text-sm">
                   <div className="min-w-0">
-                    <p className="text-white font-medium truncate">
+                    <p className="text-foreground font-medium truncate">
                       {p.profile?.full_name ?? "—"}
                       {p.profile?.username ? <span className="text-muted-foreground font-normal"> @{p.profile.username}</span> : null}
                     </p>
                     <p className="text-xs text-muted-foreground font-mono">{p.profile?.cpf ?? "sem CPF"}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    {p.saldo_atual != null ? <p className="text-xs text-white">{Number(p.saldo_atual).toFixed(2)} ZC$</p> : null}
+                    {p.saldo_atual != null ? <p className="text-xs text-foreground">{Number(p.saldo_atual).toFixed(2)} ZC$</p> : null}
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {new Date(p.created_at).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                     </p>
@@ -257,7 +257,7 @@ export default async function AdminPage() {
 
       {/* Saúde do Sistema */}
       <div>
-        <h2 className="text-lg font-bold text-white mb-1">Saúde do Sistema</h2>
+        <h2 className="text-lg font-bold text-foreground mb-1">Saúde do Sistema</h2>
         <p className="text-xs text-muted-foreground mb-3">Usuários órfãos — criaram conta mas não têm perfil</p>
         {orphanedUsers.length === 0 ? (
           <div className="bg-card border border-border rounded-xl p-4 text-sm text-sim flex items-center gap-2">
@@ -265,23 +265,23 @@ export default async function AdminPage() {
             Nenhum usuário órfão encontrado. Trigger funcionando corretamente.
           </div>
         ) : (
-          <div className="bg-card border border-yellow-500/30 rounded-xl overflow-hidden">
-            <div className="px-4 py-3 bg-yellow-500/10 border-b border-yellow-500/20 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-yellow-400 inline-block" />
-              <span className="text-sm font-semibold text-yellow-400">{orphanedUsers.length} usuário(s) sem perfil</span>
+          <div className="bg-card border border-prize/30 rounded-xl overflow-hidden">
+            <div className="px-4 py-3 bg-prize/10 border-b border-prize/20 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-prize inline-block" />
+              <span className="text-sm font-semibold text-prize">{orphanedUsers.length} usuário(s) sem perfil</span>
             </div>
             <div className="divide-y divide-border">
               {orphanedUsers.map((u) => (
                 <div key={u.id} className="px-4 py-3 flex items-center justify-between gap-4 text-sm">
                   <div className="min-w-0">
-                    <p className="text-white font-medium truncate">{u.email}</p>
+                    <p className="text-foreground font-medium truncate">{u.email}</p>
                     <p className="text-xs text-muted-foreground font-mono">{u.id}</p>
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-xs text-muted-foreground">
                       {new Date(u.created_at).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                     </p>
-                    <p className="text-xs text-yellow-400 mt-0.5">{u.email_confirmed_at ? "email confirmado" : "email não confirmado"}</p>
+                    <p className="text-xs text-prize mt-0.5">{u.email_confirmed_at ? "email confirmado" : "email não confirmado"}</p>
                   </div>
                 </div>
               ))}
@@ -291,7 +291,7 @@ export default async function AdminPage() {
       </div>
 
       <div>
-        <h2 className="text-lg font-bold text-white mb-3">Resoluções Oracle</h2>
+        <h2 className="text-lg font-bold text-foreground mb-3">Resoluções Oracle</h2>
         <OracleLog />
       </div>
     </div>

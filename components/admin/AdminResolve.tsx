@@ -75,7 +75,7 @@ export default function AdminResolve({ topics, allResolving }: Props) {
   if (!hasSinalizado && !hasPending) {
     return (
       <div className="bg-card border border-border rounded-xl p-4">
-        <h3 className="text-sm font-semibold text-white mb-2 flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
           <Clock size={14} className="text-muted-foreground" />
           Setores Aguardando Resolução
         </h3>
@@ -96,7 +96,7 @@ export default function AdminResolve({ topics, allResolving }: Props) {
           <select
             value={chosen}
             onChange={(e) => setSelectedOutcome((s) => ({ ...s, [topicId]: e.target.value }))}
-            className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none"
+            className="w-full bg-input border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none"
           >
             <option value="">Selecionar resultado vencedor…</option>
             {outcomes.map((o) => (
@@ -107,12 +107,12 @@ export default function AdminResolve({ topics, allResolving }: Props) {
             <button
               onClick={() => chosen && resolve(topicId, "sim", chosen)}
               disabled={!!loading || !chosen}
-              className="flex-1 py-2 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
+              className="flex-1 py-2 bg-primary text-primary-foreground font-bold text-sm rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {loading === topicId + chosen ? <Loader2 size={14} className="animate-spin mx-auto" /> : "Confirmar vencedor"}
             </button>
             <button onClick={() => resolve(topicId, "cancelled")} disabled={!!loading}
-              className="px-3 py-2 bg-muted text-muted-foreground text-sm rounded-lg hover:text-white transition-colors">
+              className="px-3 py-2 bg-muted text-muted-foreground text-sm rounded-lg hover:text-foreground transition-colors">
               Cancelar
             </button>
           </div>
@@ -123,15 +123,15 @@ export default function AdminResolve({ topics, allResolving }: Props) {
     return (
       <div className="flex gap-2">
         <button onClick={() => resolve(topicId, "sim")} disabled={!!loading}
-          className="flex-1 py-2 bg-sim text-white font-bold text-sm rounded-lg hover:bg-sim/90 disabled:opacity-50 transition-colors">
+          className="flex-1 py-2 bg-sim text-primary-foreground font-bold text-sm rounded-lg hover:bg-sim/90 disabled:opacity-50 transition-colors">
           {loading === topicId + "sim" ? <Loader2 size={14} className="animate-spin mx-auto" /> : "SIM venceu"}
         </button>
         <button onClick={() => resolve(topicId, "nao")} disabled={!!loading}
-          className="flex-1 py-2 bg-nao text-white font-bold text-sm rounded-lg hover:bg-nao/90 disabled:opacity-50 transition-colors">
+          className="flex-1 py-2 bg-nao text-primary-foreground font-bold text-sm rounded-lg hover:bg-nao/90 disabled:opacity-50 transition-colors">
           {loading === topicId + "nao" ? <Loader2 size={14} className="animate-spin mx-auto" /> : "NÃO venceu"}
         </button>
         <button onClick={() => resolve(topicId, "cancelled")} disabled={!!loading}
-          className="px-3 py-2 bg-muted text-muted-foreground text-sm rounded-lg hover:text-white transition-colors">
+          className="px-3 py-2 bg-muted text-muted-foreground text-sm rounded-lg hover:text-foreground transition-colors">
           Cancelar
         </button>
       </div>
@@ -142,11 +142,11 @@ export default function AdminResolve({ topics, allResolving }: Props) {
     <div className="space-y-4">
       {/* Todos resolving pendentes */}
       {hasPending && (
-        <div className="bg-card border border-yellow-500/30 rounded-xl p-4">
-          <h3 className="text-sm font-semibold text-white mb-1 flex items-center gap-2">
-            <Clock size={14} className="text-yellow-400" />
+        <div className="bg-card border border-prize/30 rounded-xl p-4">
+          <h3 className="text-sm font-semibold text-foreground mb-1 flex items-center gap-2">
+            <Clock size={14} className="text-prize" />
             Setores Aguardando Resolução
-            <span className="px-1.5 py-0.5 bg-yellow-500/20 text-yellow-400 rounded text-xs">{pendingResolving.length}</span>
+            <span className="px-1.5 py-0.5 bg-prize/20 text-prize rounded text-xs">{pendingResolving.length}</span>
           </h3>
           <p className="text-xs text-muted-foreground mb-4">
             Oracle está processando. Se não resolver automaticamente, resolva manualmente abaixo.
@@ -157,15 +157,15 @@ export default function AdminResolve({ topics, allResolving }: Props) {
                 <div>
                   <CategoryBadge category={topic.category as any} className="mb-1.5" />
                   <div className="flex items-start gap-2">
-                    <p className="text-sm font-semibold text-white flex-1">{topic.title}</p>
-                    <Link href={`/liga/${topic.id}`} target="_blank" className="text-muted-foreground hover:text-white shrink-0">
+                    <p className="text-sm font-semibold text-foreground flex-1">{topic.title}</p>
+                    <Link href={`/liga/${topic.id}`} target="_blank" className="text-muted-foreground hover:text-foreground shrink-0">
                       <ExternalLink size={13} />
                     </Link>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
                     Encerrou: {new Date(topic.closes_at).toLocaleString("pt-BR")}
                     {(topic.oracle_retry_count ?? 0) > 0 && (
-                      <span className="ml-2 text-yellow-400">· Oracle tentou {topic.oracle_retry_count}x</span>
+                      <span className="ml-2 text-prize">· Oracle tentou {topic.oracle_retry_count}x</span>
                     )}
                   </p>
                 </div>
@@ -179,10 +179,10 @@ export default function AdminResolve({ topics, allResolving }: Props) {
       {/* Contradições oracle */}
       {hasSinalizado && (
         <div className="bg-card border border-border rounded-xl p-4">
-          <h3 className="text-sm font-semibold text-white mb-1 flex items-center gap-2">
-            <AlertTriangle size={14} className="text-yellow-400" />
+          <h3 className="text-sm font-semibold text-foreground mb-1 flex items-center gap-2">
+            <AlertTriangle size={14} className="text-prize" />
             Contradições Oracle — Revisão Manual
-            <span className="px-1.5 py-0.5 bg-yellow-500/20 text-yellow-400 rounded text-xs">{topics.length}</span>
+            <span className="px-1.5 py-0.5 bg-prize/20 text-prize rounded text-xs">{topics.length}</span>
           </h3>
           <p className="text-xs text-muted-foreground mb-4">
             API externa e IA discordaram. Revise e decida.
@@ -191,19 +191,19 @@ export default function AdminResolve({ topics, allResolving }: Props) {
             {topics.map((topic) => {
               const resolucao = topic.resolucoes?.[0];
               return (
-                <div key={topic.id} className="border border-yellow-500/30 rounded-lg p-4 space-y-3 bg-yellow-500/5">
+                <div key={topic.id} className="border border-prize/30 rounded-lg p-4 space-y-3 bg-prize/5">
                   <div>
                     <CategoryBadge category={topic.category as any} className="mb-1.5" />
                     <div className="flex items-start gap-2">
-                      <p className="text-sm font-semibold text-white flex-1">{topic.title}</p>
-                      <Link href={`/liga/${topic.id}`} target="_blank" className="text-muted-foreground hover:text-white shrink-0">
+                      <p className="text-sm font-semibold text-foreground flex-1">{topic.title}</p>
+                      <Link href={`/liga/${topic.id}`} target="_blank" className="text-muted-foreground hover:text-foreground shrink-0">
                         <ExternalLink size={13} />
                       </Link>
                     </div>
                   </div>
                   {resolucao && (
                     <div className="bg-card border border-border rounded-lg p-3 text-xs text-muted-foreground">
-                      API <span className="text-white font-mono">{resolucao.oracle_usado}</span> retornou resultado mas IA não confirmou ·{" "}
+                      API <span className="text-foreground font-mono">{resolucao.oracle_usado}</span> retornou resultado mas IA não confirmou ·{" "}
                       {formatDistanceToNow(new Date(resolucao.created_at), { addSuffix: true, locale: ptBR })}
                     </div>
                   )}

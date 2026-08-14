@@ -88,7 +88,7 @@ export default function FriendsList({ sent, received, currentUserId }: Props) {
     <>
       {pendingReceived.length > 0 && (
         <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-          <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
             Pedidos de amizade
             <span className="px-1.5 py-0.5 bg-primary/20 text-primary rounded text-xs">{pendingReceived.length}</span>
           </h3>
@@ -103,7 +103,7 @@ export default function FriendsList({ sent, received, currentUserId }: Props) {
                     </Avatar>
                   </Link>
                   <div>
-                    <Link href={`/u/${person.username}`} className="text-sm font-medium text-white hover:text-primary transition-colors">{person.full_name}</Link>
+                    <Link href={`/u/${person.username}`} className="text-sm font-medium text-foreground hover:text-primary transition-colors">{person.full_name}</Link>
                     <p className="text-xs text-muted-foreground">@{person.username}</p>
                   </div>
                 </div>
@@ -130,7 +130,7 @@ export default function FriendsList({ sent, received, currentUserId }: Props) {
       )}
 
       <div className="bg-card border border-border rounded-xl p-4">
-        <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
           <Users size={16} />
           Amigos ({accepted.length})
         </h3>
@@ -147,7 +147,7 @@ export default function FriendsList({ sent, received, currentUserId }: Props) {
                     </Avatar>
                   </Link>
                   <div>
-                    <Link href={`/u/${friend.username}`} className="text-sm font-medium text-white hover:text-primary transition-colors">{friend.full_name}</Link>
+                    <Link href={`/u/${friend.username}`} className="text-sm font-medium text-foreground hover:text-primary transition-colors">{friend.full_name}</Link>
                     <p className="text-xs text-muted-foreground">@{friend.username}</p>
                   </div>
                 </div>
@@ -175,7 +175,7 @@ export default function FriendsList({ sent, received, currentUserId }: Props) {
                       <button
                         onClick={() => blockUser(friend.id)}
                         disabled={blockingId === friend.id}
-                        className="px-2 py-1 text-xs bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors disabled:opacity-50"
+                        className="px-2 py-1 text-xs bg-nao/20 text-destructive rounded-lg hover:bg-nao/30 transition-colors disabled:opacity-50"
                       >
                         Sim
                       </button>
@@ -198,7 +198,7 @@ export default function FriendsList({ sent, received, currentUserId }: Props) {
                       <button
                         onClick={() => { setConfirmBlockId(friend.id); setConfirmRemoveId(null); }}
                         title="Bloquear usuário"
-                        className="p-1.5 text-muted-foreground rounded-lg hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                        className="p-1.5 text-muted-foreground rounded-lg hover:text-destructive hover:bg-nao/10 transition-colors"
                       >
                         <ShieldOff size={14} />
                       </button>

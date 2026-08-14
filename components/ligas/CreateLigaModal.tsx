@@ -4,8 +4,16 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { X, Loader2, Trophy, Globe, Lock, Check, Plus, UserPlus } from "lucide-react";
 
+/**
+ * Cor de identidade do grupo, escolhida pelo dono e gravada em `ligas.color`.
+ * É dado do usuário, não tema — por isso continua em hex e fora do mapa de
+ * tokens, na mesma categoria das cores por esporte e dos tons de pele.
+ * O que mudou: o primeiro slot (o padrão de todo grupo novo) era o roxo
+ * #B9AEFF da marca antiga. Virou o amarelo da marca nova, em sincronia com
+ * o fallback em app/api/ligas/criar/route.ts.
+ */
 const COLORS = [
-  "#B9AEFF", "#60a5fa", "#f472b6", "#fb923c", "#a78bfa", "#34d399", "#fbbf24",
+  "#FFC53D", "#60a5fa", "#f472b6", "#fb923c", "#a78bfa", "#34d399", "#fbbf24",
 ];
 
 interface Friend {
@@ -82,16 +90,16 @@ export default function CreateLigaModal({ onClose, parentLigaId, parentLigaName,
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-card border border-border rounded-xl p-5 w-full max-w-md z-10 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Trophy size={18} style={{ color }} />
-            <h3 className="text-white font-semibold">
+            <h3 className="text-foreground font-semibold">
               {isSubLiga ? "Criar Subgrupo" : "Criar Novo Grupo"}
             </h3>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-white">
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
             <X size={18} />
           </button>
         </div>
@@ -117,7 +125,7 @@ export default function CreateLigaModal({ onClose, parentLigaId, parentLigaName,
                   className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border text-sm font-medium transition-colors ${
                     !isPublic && !selectedParent
                       ? "border-primary bg-primary/10 text-primary"
-                      : "border-border text-muted-foreground hover:text-white"
+                      : "border-border text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   <Lock size={14} />
@@ -129,7 +137,7 @@ export default function CreateLigaModal({ onClose, parentLigaId, parentLigaName,
                   className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border text-sm font-medium transition-colors ${
                     isPublic
                       ? "border-sim bg-sim/10 text-sim"
-                      : "border-border text-muted-foreground hover:text-white"
+                      : "border-border text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   <Globe size={14} />
@@ -152,7 +160,7 @@ export default function CreateLigaModal({ onClose, parentLigaId, parentLigaName,
               <select
                 value={selectedParent}
                 onChange={(e) => setSelectedParent(e.target.value)}
-                className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50"
+                className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50"
               >
                 <option value="">— Grupo raiz —</option>
                 {(myPrivateLigas ?? []).map((l) => (
@@ -169,7 +177,7 @@ export default function CreateLigaModal({ onClose, parentLigaId, parentLigaName,
               onChange={(e) => setName(e.target.value)}
               maxLength={50}
               placeholder="Ex: Turma do Colégio, Família Silva..."
-              className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+              className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
             />
             <p className="text-[10px] text-muted-foreground text-right">{name.length}/50</p>
           </div>
@@ -181,7 +189,7 @@ export default function CreateLigaModal({ onClose, parentLigaId, parentLigaName,
               onChange={(e) => setDescription(e.target.value)}
               maxLength={200}
               placeholder="Sobre o que é esse grupo..."
-              className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+              className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
             />
           </div>
 
@@ -208,8 +216,8 @@ export default function CreateLigaModal({ onClose, parentLigaId, parentLigaName,
                           onClick={() => toggleFriend(f.id)}
                           className={`w-full flex items-center justify-between px-3 py-2 rounded-lg border text-sm transition-colors ${
                             sel
-                              ? "border-primary bg-primary/10 text-white"
-                              : "border-border text-muted-foreground hover:text-white"
+                              ? "border-primary bg-primary/10 text-foreground"
+                              : "border-border text-muted-foreground hover:text-foreground"
                           }`}
                         >
                           <span className="truncate text-left">{f.full_name}</span>
@@ -250,7 +258,7 @@ export default function CreateLigaModal({ onClose, parentLigaId, parentLigaName,
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-lg font-bold text-sm text-black transition-colors"
+            className="w-full py-3 rounded-lg font-bold text-sm text-primary-foreground transition-colors"
             style={{ backgroundColor: color }}
           >
             {loading ? <Loader2 size={16} className="animate-spin mx-auto" /> : isSubLiga ? "Criar Subgrupo" : "Criar Grupo"}

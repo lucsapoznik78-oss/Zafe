@@ -98,6 +98,23 @@ const config: Config = {
         },
         ring: token("--c-accent"),
       },
+      /**
+       * `text-sim` / `text-nao` (268 usos) precisam do tom claro: #2E9E63 e
+       * #E5484D funcionam como preenchimento, mas a paleta manda usar #3FBE7B /
+       * #EE5F63 quando viram texto. Separar em `textColor` resolve isso sem
+       * tocar em nenhum componente — `bg-sim` continua no tom de preenchimento.
+       */
+      textColor: {
+        sim: { DEFAULT: token("--c-yes-text"), text: token("--c-yes-text") },
+        nao: { DEFAULT: token("--c-no-text"), text: token("--c-no-text") },
+        /**
+         * Mesma razão para os estados de sistema: `text-destructive` no tom de
+         * preenchimento (#E5484D) dá 4.44:1 sobre o fundo — reprova. O tom de
+         * texto (#EE5F63) dá 5.34:1. `bg-destructive` fica no tom fechado.
+         */
+        destructive: { DEFAULT: token("--c-no-text"), foreground: token("--c-text-on-accent") },
+        success: { DEFAULT: token("--c-yes-text"), text: token("--c-yes-text") },
+      },
       boxShadow: {
         base: "var(--shadow-base)",
       },

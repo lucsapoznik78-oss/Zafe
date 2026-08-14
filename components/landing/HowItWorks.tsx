@@ -11,23 +11,23 @@ const steps = [
   },
   {
     icon: Target,
-    color: "text-blue-400",
-    bg: "bg-blue-400/10",
+    color: "text-primary",
+    bg: "bg-primary/10",
     title: "Palpite no que você acompanha",
     body: "Esporte e e-sports. Centenas de eventos abertos toda semana. Diga SIM ou NÃO e aloque seus Z$ na previsão.",
   },
   CONCURSO_ABERTO
     ? {
         icon: Trophy,
-        color: "text-yellow-400",
-        bg: "bg-yellow-400/10",
+        color: "text-prize",
+        bg: "bg-prize/10",
         title: "Top do mês ganha em PIX",
         body: "Os melhores previsores do mês ganham prêmio em dinheiro real via PIX. O critério é o saldo: quem termina o mês com mais ZC$ fica na frente. Cada palpite certo aumenta seu saldo, cada erro diminui.",
       }
     : {
         icon: Trophy,
-        color: "text-yellow-400",
-        bg: "bg-yellow-400/10",
+        color: "text-prize",
+        bg: "bg-prize/10",
         title: "Suba no ranking",
         body: "Quem termina o mês com mais Z$ fica na frente no ranking dos melhores previsores do Brasil. Cada palpite certo aumenta seu saldo, cada erro diminui.",
       },
@@ -38,7 +38,7 @@ export default function HowItWorks() {
     <section className="py-16 px-4">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-10">
-          <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">
+          <h2 className="text-2xl sm:text-3xl font-black text-foreground mb-2">
             Como funciona
           </h2>
           <p className="text-muted-foreground text-sm">Três passos. Zero confusão.</p>
@@ -56,7 +56,7 @@ export default function HowItWorks() {
               <div className="text-xs text-muted-foreground/50 font-semibold uppercase tracking-widest">
                 Passo {i + 1}
               </div>
-              <h3 className="text-base font-bold text-white leading-snug">
+              <h3 className="text-base font-bold text-foreground leading-snug">
                 {step.title}
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">

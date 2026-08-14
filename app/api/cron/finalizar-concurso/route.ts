@@ -34,21 +34,26 @@ function emailVencedorHtml(params: {
 }): string {
   const { titulo, posicao, valor, nome } = params;
   const valorTxt = valor != null ? `R$ ${valor.toLocaleString("pt-BR")}` : "um prêmio";
+  // ÚNICA exceção legítima ao "zero hex fora da camada de tokens": cliente de
+  // email não resolve `var()` nem carrega CSS externo, então a paleta precisa
+  // vir chapada no atributo `style`. Estes valores são a paleta arquibancada
+  // copiada à mão e NÃO seguem o interruptor `data-theme` — trocar para
+  // `legacy` não desfaz este arquivo. Está anotado em ROLLBACK.md.
   return `
-  <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:520px;margin:0 auto;background:#0a0a0a;color:#fafafa;padding:32px;border-radius:16px">
-    <div style="font-size:13px;color:#facc15;font-weight:700;letter-spacing:.05em;text-transform:uppercase">Zafe Concurso</div>
+  <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:520px;margin:0 auto;background:#0D1B2A;color:#F2F4F8;padding:32px;border-radius:16px">
+    <div style="font-size:13px;color:#FFC53D;font-weight:700;letter-spacing:.05em;text-transform:uppercase">Zafe Concurso</div>
     <h1 style="font-size:22px;margin:8px 0 4px">Parabéns, ${nome}! 🏆</h1>
-    <p style="color:#d4d4d8;font-size:15px;line-height:1.6">
+    <p style="color:#93A5BC;font-size:15px;line-height:1.6">
       Você terminou o concurso <strong>${titulo}</strong> na <strong>${posicao}ª posição</strong>
-      do ranking e conquistou <strong style="color:#facc15">${valorTxt}</strong> em dinheiro.
+      do ranking e conquistou <strong style="color:#FFC53D">${valorTxt}</strong> em dinheiro.
     </p>
-    <div style="background:rgba(250,204,21,.1);border:1px solid rgba(250,204,21,.25);border-radius:12px;padding:16px;margin:20px 0">
-      <p style="margin:0;font-size:14px;color:#fde68a;line-height:1.6">
+    <div style="background:rgba(255,197,61,.1);border:1px solid rgba(255,197,61,.25);border-radius:12px;padding:16px;margin:20px 0">
+      <p style="margin:0;font-size:14px;color:#FFC53D;line-height:1.6">
         <strong>Como resgatar:</strong> responda este email com a sua chave PIX e o nome completo
         do titular da conta. Confirmaremos os dados e faremos o pagamento em até 7 dias úteis.
       </p>
     </div>
-    <p style="color:#71717a;font-size:12px;line-height:1.6">
+    <p style="color:#8494AC;font-size:12px;line-height:1.6">
       O pagamento é feito somente para a conta do titular cadastrado na Zafe. Em caso de dúvidas,
       responda este email. Obrigado por participar!
     </p>

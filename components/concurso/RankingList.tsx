@@ -20,28 +20,28 @@ export default async function RankingList({ concursoId }: Props) {
 
   if (!ranking || ranking.length === 0) {
     return (
-      <div className="bg-card border border-yellow-400/20 rounded-xl p-8 text-center">
-        <Medal size={32} className="mx-auto mb-2 text-yellow-400/40" />
-        <p className="text-white font-medium mb-1">Ranking vazio</p>
+      <div className="bg-card border border-prize/20 rounded-xl p-8 text-center">
+        <Medal size={32} className="mx-auto mb-2 text-prize/40" />
+        <p className="text-foreground font-medium mb-1">Ranking vazio</p>
         <p className="text-sm text-muted-foreground">Inscreva-se e faça seus primeiros palpites para aparecer aqui.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-card border border-yellow-400/20 rounded-xl overflow-hidden">
-      <div className="px-4 py-3 border-b border-yellow-400/10">
-        <h3 className="text-sm font-semibold text-yellow-400">Ranking ao vivo</h3>
+    <div className="bg-card border border-prize/20 rounded-xl overflow-hidden">
+      <div className="px-4 py-3 border-b border-prize/10">
+        <h3 className="text-sm font-semibold text-prize">Ranking ao vivo</h3>
         <p className="text-[11px] text-muted-foreground mt-0.5">Atualizado em tempo real conforme eventos são resolvidos</p>
       </div>
-      <div className="divide-y divide-yellow-400/10">
+      <div className="divide-y divide-prize/10">
         {ranking.map((row: any) => {
           const medalColor = Number(row.posicao) <= 3 ? MEDAL_COLORS[Number(row.posicao) - 1] : "text-muted-foreground";
           return (
-            <div key={row.user_id} className="flex items-center gap-3 px-4 py-3 hover:bg-yellow-400/5 transition-colors">
+            <div key={row.user_id} className="flex items-center gap-3 px-4 py-3 hover:bg-prize/5 transition-colors">
               <span className={`w-6 text-sm font-bold ${medalColor} text-center`}>{row.posicao}º</span>
               <div className="flex-1 min-w-0">
-                <Link href={`/u/${row.username}`} className="text-sm font-medium text-white hover:text-yellow-400 transition-colors truncate block">
+                <Link href={`/u/${row.username}`} className="text-sm font-medium text-foreground hover:text-prize transition-colors truncate block">
                   {row.full_name ?? row.username}
                 </Link>
                 <p className="text-[11px] text-muted-foreground">
@@ -49,11 +49,11 @@ export default async function RankingList({ concursoId }: Props) {
                 </p>
               </div>
               <div className="text-right shrink-0">
-                <p className="text-sm font-bold text-yellow-400">ZC$ {Number(row.balance).toLocaleString("pt-BR", { maximumFractionDigits: 0 })}</p>
+                <p className="text-sm font-bold text-prize">ZC$ {Number(row.balance).toLocaleString("pt-BR", { maximumFractionDigits: 0 })}</p>
                 {Number(row.balance) > 1000 ? (
-                  <p className="text-[10px] text-green-400">+ZC$ {(Number(row.balance) - 1000).toFixed(0)}</p>
+                  <p className="text-[10px] text-sim">+ZC$ {(Number(row.balance) - 1000).toFixed(0)}</p>
                 ) : Number(row.balance) < 1000 ? (
-                  <p className="text-[10px] text-red-400">-ZC$ {(1000 - Number(row.balance)).toFixed(0)}</p>
+                  <p className="text-[10px] text-destructive">-ZC$ {(1000 - Number(row.balance)).toFixed(0)}</p>
                 ) : (
                   <p className="text-[10px] text-muted-foreground">ZC$ 0</p>
                 )}

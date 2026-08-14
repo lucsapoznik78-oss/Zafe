@@ -44,8 +44,8 @@ export default async function GamesPage({ searchParams }: PageProps) {
     <div className="py-6 space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-white flex items-center gap-2">
-            <Gamepad2 size={20} className="text-violet-400" /> Zafe Games
+          <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
+            <Gamepad2 size={20} className="text-primary" /> Zafe Games
           </h1>
           <p className="text-xs text-muted-foreground mt-1">
             Palpite em quem ganha cada partida de e-sports. Acertou, pontua e sobe de rank.
@@ -56,7 +56,7 @@ export default async function GamesPage({ searchParams }: PageProps) {
             {stats && <RankBadge tier={stats.current_tier} size="md" />}
             <p className="text-[11px] text-muted-foreground">
               {stats ? `${stats.points_total} pts · ${stats.events_won} vitórias` : "Sem pontos ainda"} ·{" "}
-              <Link href="/games/ranking" className="text-violet-300 hover:underline">
+              <Link href="/games/ranking" className="text-primary hover:underline">
                 ranking
               </Link>
             </p>
@@ -76,14 +76,14 @@ export default async function GamesPage({ searchParams }: PageProps) {
           {user && (
             <Link
               href="/games/criar"
-              className="px-3 py-1.5 rounded-md text-sm text-violet-200 border border-violet-400/40 bg-violet-500/10 hover:bg-violet-500/20 transition-all flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-md text-sm text-primary border border-primary/40 bg-primary/10 hover:bg-primary/20 transition-all flex items-center gap-1.5"
             >
               <Plus size={13} /> Criar evento
             </Link>
           )}
           <Link
             href="/games/ranking"
-            className="px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-white border border-border hover:border-violet-400/40 transition-all flex items-center gap-1.5"
+            className="px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground border border-border hover:border-primary/40 transition-all flex items-center gap-1.5"
           >
             <Medal size={13} /> Ranking
           </Link>
@@ -92,13 +92,13 @@ export default async function GamesPage({ searchParams }: PageProps) {
 
       {events.length === 0 ? (
         <div className="py-16 text-center text-muted-foreground">
-          <Gamepad2 size={40} className="mx-auto mb-3 text-violet-400/40" />
-          <p className="text-white font-medium mb-1">Nenhum evento por aqui ainda</p>
+          <Gamepad2 size={40} className="mx-auto mb-3 text-primary/40" />
+          <p className="text-foreground font-medium mb-1">Nenhum evento por aqui ainda</p>
           <p className="text-sm">Os confrontos aparecem conforme o calendário — ou crie o seu e seja o juiz.</p>
           {user && (
             <Link
               href="/games/criar"
-              className="inline-flex items-center gap-1.5 mt-4 px-3 py-1.5 rounded-md text-sm text-violet-200 border border-violet-400/40 bg-violet-500/10 hover:bg-violet-500/20 transition-all"
+              className="inline-flex items-center gap-1.5 mt-4 px-3 py-1.5 rounded-md text-sm text-primary border border-primary/40 bg-primary/10 hover:bg-primary/20 transition-all"
             >
               <Plus size={13} /> Criar evento
             </Link>

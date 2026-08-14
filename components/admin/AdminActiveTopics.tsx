@@ -80,7 +80,7 @@ export default function AdminActiveTopics({ topics, showCategory, showConcurso }
   return (
     <div className="bg-card border border-border rounded-xl p-4">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-white">
+        <h3 className="text-sm font-semibold text-foreground">
           Setores Ativos — Editar Prazo
           <span className="ml-2 px-1.5 py-0.5 bg-primary/20 text-primary rounded text-xs">{topics.length}</span>
         </h3>
@@ -106,9 +106,9 @@ export default function AdminActiveTopics({ topics, showCategory, showConcurso }
               <div className="flex-1 min-w-0">
                    {showCategory && <CategoryBadge category={topic.category as any} className="mb-1" />}
                    {showConcurso && topic.concurso_id && (
-                     <span className="inline-block mb-1 px-1.5 py-0.5 bg-yellow-500/20 text-yellow-400 rounded text-xs mr-1">Concurso</span>
+                     <span className="inline-block mb-1 px-1.5 py-0.5 bg-prize/20 text-prize rounded text-xs mr-1">Concurso</span>
                    )}
-                   <p className="text-xs font-medium text-white leading-snug line-clamp-2">{topic.title}</p>
+                   <p className="text-xs font-medium text-foreground leading-snug line-clamp-2">{topic.title}</p>
                  </div>
                 {!isEditing && (
                   <div className="flex items-center gap-1 shrink-0">
@@ -134,7 +134,7 @@ export default function AdminActiveTopics({ topics, showCategory, showConcurso }
                     type="datetime-local"
                     value={value}
                     onChange={(e) => setValue(e.target.value)}
-                    className="flex-1 bg-background border border-border rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-primary/50"
+                    className="flex-1 bg-background border border-border rounded px-2 py-1 text-xs text-foreground focus:outline-none focus:border-primary/50"
                   />
                   <button
                     onClick={() => save(topic.id)}

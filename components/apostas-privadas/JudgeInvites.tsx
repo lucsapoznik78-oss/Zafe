@@ -34,11 +34,11 @@ export default function JudgeInvites({ nominations }: Props) {
   if (nominations.length === 0) return null;
 
   return (
-    <div className="bg-card border border-yellow-500/30 rounded-xl p-4 space-y-3">
-      <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-        <Gavel size={15} className="text-yellow-400" />
+    <div className="bg-card border border-prize/30 rounded-xl p-4 space-y-3">
+      <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+        <Gavel size={15} className="text-prize" />
         Convites de Juiz
-        <span className="px-1.5 py-0.5 bg-yellow-500/20 text-yellow-400 rounded text-xs">
+        <span className="px-1.5 py-0.5 bg-prize/20 text-prize rounded text-xs">
           {nominations.length}
         </span>
       </h3>
@@ -51,7 +51,7 @@ export default function JudgeInvites({ nominations }: Props) {
           <div className="flex-1 min-w-0">
             <Link
               href={`/privadas/${nom.topic_id}`}
-              className="text-sm font-medium text-white line-clamp-2 hover:text-primary transition-colors flex items-start gap-1"
+              className="text-sm font-medium text-foreground line-clamp-2 hover:text-primary transition-colors flex items-start gap-1"
             >
               {nom.topic.title}
               <ExternalLink size={11} className="mt-0.5 shrink-0 text-muted-foreground" />

@@ -62,9 +62,9 @@ export default function PrivateBetRoom({
           <span className="px-2 py-0.5 bg-primary/20 text-primary text-xs font-bold rounded">PRIVADA</span>
           {isSimpleModel ? (
             <span className={`px-2 py-0.5 text-xs font-bold rounded ${
-              topic.status === "cancelled" ? "bg-red-400/20 text-red-400" :
+              topic.status === "cancelled" ? "bg-nao/20 text-destructive" :
               topic.status === "resolved"  ? "bg-muted text-muted-foreground" :
-              "bg-yellow-400/20 text-yellow-400"
+              "bg-prize/20 text-prize"
             }`}>{
               topic.status === "resolved" ? "Resolvida" :
               topic.status === "cancelled" ? "Cancelada" :
@@ -72,19 +72,19 @@ export default function PrivateBetRoom({
             }</span>
           ) : (
             <span className={`px-2 py-0.5 text-xs font-bold rounded ${
-              phase === "cancelled" ? "bg-red-400/20 text-red-400" :
+              phase === "cancelled" ? "bg-nao/20 text-destructive" :
               phase === "resolved"  ? "bg-muted text-muted-foreground" :
-              "bg-yellow-400/20 text-yellow-400"
+              "bg-prize/20 text-prize"
             }`}>{phaseInfo.label}</span>
           )}
           <Link
             href={`/privadas/${topic.id}/participantes`}
-            className="ml-auto text-xs text-muted-foreground hover:text-white transition-colors"
+            className="ml-auto text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             Ver participantes →
           </Link>
         </div>
-        <h1 className="text-xl sm:text-2xl font-bold text-white">{topic.title}</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground">{topic.title}</h1>
         {topic.description && <p className="text-muted-foreground text-sm mt-1">{topic.description}</p>}
       </div>
 
@@ -151,13 +151,13 @@ export default function PrivateBetRoom({
       {/* Modelo simples: resultado final */}
       {isSimpleModel && topic.status === "resolved" && (
         <div className="bg-card border border-border rounded-xl p-5 text-center">
-          <p className="text-lg font-bold text-white mb-1">Bolão Resolvido</p>
+          <p className="text-lg font-bold text-foreground mb-1">Bolão Resolvido</p>
           <p className="text-muted-foreground text-sm">Resultado: {topic.resolution?.toUpperCase() ?? "—"}</p>
         </div>
       )}
       {isSimpleModel && topic.status === "cancelled" && (
-        <div className="bg-red-400/10 border border-red-400/20 rounded-xl p-5 text-center">
-          <p className="text-lg font-bold text-red-400">Bolão Cancelado</p>
+        <div className="bg-nao/10 border border-destructive/20 rounded-xl p-5 text-center">
+          <p className="text-lg font-bold text-destructive">Bolão Cancelado</p>
           <p className="text-muted-foreground text-sm mt-1">Os valores foram reembolsados.</p>
         </div>
       )}
@@ -206,14 +206,14 @@ export default function PrivateBetRoom({
       {/* Resolvido */}
       {phase === "resolved" && (
         <div className="bg-card border border-border rounded-xl p-5 text-center">
-          <p className="text-lg font-bold text-white mb-1">Bolão Resolvido</p>
+          <p className="text-lg font-bold text-foreground mb-1">Bolão Resolvido</p>
           <p className="text-muted-foreground text-sm">Resultado: {topic.resolution?.toUpperCase() ?? "—"}</p>
         </div>
       )}
 
       {phase === "cancelled" && (
-        <div className="bg-red-400/10 border border-red-400/20 rounded-xl p-5 text-center">
-          <p className="text-lg font-bold text-red-400">Bolão Cancelado</p>
+        <div className="bg-nao/10 border border-destructive/20 rounded-xl p-5 text-center">
+          <p className="text-lg font-bold text-destructive">Bolão Cancelado</p>
           <p className="text-muted-foreground text-sm mt-1">Os valores foram reembolsados.</p>
         </div>
       )}
@@ -239,7 +239,7 @@ function PhaseProgress({ currentStep }: { currentStep: number }) {
         <div key={s.n} className="flex items-center gap-1 flex-1">
           <div className={`flex flex-col items-center flex-1`}>
             <div className={`w-6 h-6 rounded-full text-[10px] font-bold flex items-center justify-center ${
-              s.n < currentStep ? "bg-primary text-white" :
+              s.n < currentStep ? "bg-primary text-primary-foreground" :
               s.n === currentStep ? "bg-primary/30 text-primary border border-primary" :
               "bg-border text-muted-foreground"
             }`}>{s.n < currentStep ? "✓" : s.n}</div>
@@ -305,7 +305,7 @@ function SidePanel({ side, label, color, leader, participants, isMySide, topicId
       )}
       <div className="space-y-1">
         {participants.slice(0, 5).map((p: any) => (
-          <p key={p.user_id} className="text-xs text-white">@{p.profile?.username}</p>
+          <p key={p.user_id} className="text-xs text-foreground">@{p.profile?.username}</p>
         ))}
         {participants.length > 5 && (
           <p className="text-xs text-muted-foreground">+{participants.length - 5} mais</p>
@@ -314,7 +314,7 @@ function SidePanel({ side, label, color, leader, participants, isMySide, topicId
       {isMySide && phase === "recruiting" && (
         <div className="pt-1 relative">
           <input
-            className="w-full bg-background border border-border rounded px-2 py-1.5 text-xs text-white"
+            className="w-full bg-background border border-border rounded px-2 py-1.5 text-xs text-foreground"
             placeholder="Buscar usuário para convidar..."
             value={filter}
             onChange={e => { setFilter(e.target.value); setShowList(true); }}
@@ -330,7 +330,7 @@ function SidePanel({ side, label, color, leader, participants, isMySide, topicId
                   onClick={() => convidar(u.id)}
                   className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-muted text-left"
                 >
-                  <span className="text-white font-medium">@{u.username}</span>
+                  <span className="text-foreground font-medium">@{u.username}</span>
                   {u.full_name && <span className="text-muted-foreground">{u.full_name}</span>}
                 </button>
               ))}
@@ -364,13 +364,13 @@ function AcceitarConvite({ topicId, minBet, onRefresh }: any) {
 
   return (
     <div className="bg-primary/10 border border-primary/30 rounded-xl p-4 text-center space-y-3">
-      <p className="text-white font-semibold">Você foi convidado para este bolão!</p>
+      <p className="text-foreground font-semibold">Você foi convidado para este bolão!</p>
       <p className="text-muted-foreground text-sm">
         Ao aceitar, Z$ {minBet?.toFixed(2)} serão debitados da sua carteira como palpite mínimo.
       </p>
       <div className="flex gap-3 justify-center">
         <button onClick={aceitar} disabled={loading || recusando}
-          className="px-6 py-2 bg-primary text-white font-bold rounded-lg disabled:opacity-50">
+          className="px-6 py-2 bg-primary text-primary-foreground font-bold rounded-lg disabled:opacity-50">
           {loading ? "Aceitando..." : "Aceitar e Palpitar"}
         </button>
         <button onClick={recusar} disabled={loading || recusando}
@@ -415,13 +415,13 @@ function CancelarAposta({ topicId, onRefresh }: any) {
 
   return (
     <div className="bg-nao/10 border border-nao/30 rounded-xl p-4 text-center space-y-3">
-      <p className="text-white font-semibold">Cancelar bolão?</p>
+      <p className="text-foreground font-semibold">Cancelar bolão?</p>
       <p className="text-muted-foreground text-sm">
         Todos os participantes aceitos serão reembolsados. Esta ação não pode ser desfeita.
       </p>
       <div className="flex gap-3 justify-center">
         <button onClick={cancelar} disabled={loading}
-          className="px-5 py-2 bg-nao text-white font-bold rounded-lg disabled:opacity-50">
+          className="px-5 py-2 bg-nao text-primary-foreground font-bold rounded-lg disabled:opacity-50">
           {loading ? "Cancelando..." : "Sim, cancelar"}
         </button>
         <button onClick={() => setConfirm(false)} disabled={loading}
@@ -455,7 +455,7 @@ function LeaderElectionPanel({ topicId, side, participants, currentUserId, myVot
     <div className="bg-card border border-border rounded-xl p-4 space-y-3">
       <div className="flex items-center gap-2">
         <Vote size={16} className="text-primary" />
-        <p className="text-sm font-semibold text-white">Eleja o líder do seu lado</p>
+        <p className="text-sm font-semibold text-foreground">Eleja o líder do seu lado</p>
       </div>
       <p className="text-xs text-muted-foreground">O líder vai negociar os juízes em nome do grupo.</p>
       <div className="space-y-2">
@@ -467,7 +467,7 @@ function LeaderElectionPanel({ topicId, side, participants, currentUserId, myVot
             className={`w-full flex items-center justify-between px-3 py-2 rounded-lg border text-sm transition-colors ${
               voted === p.user_id
                 ? "border-primary bg-primary/10 text-primary"
-                : "border-border text-white hover:border-primary/40"
+                : "border-border text-foreground hover:border-primary/40"
             }`}
           >
             <span>@{p.profile?.username}</span>
@@ -527,7 +527,7 @@ function JudgeNegotiationPanel({ topicId, nominations, currentUserId, isLeader, 
     <div className="bg-card border border-border rounded-xl p-4 space-y-4">
       <div className="flex items-center gap-2">
         <Shield size={16} className="text-primary" />
-        <p className="text-sm font-semibold text-white">Juízes ({activeNoms.length} confirmados)</p>
+        <p className="text-sm font-semibold text-foreground">Juízes ({activeNoms.length} confirmados)</p>
       </div>
 
       {/* Juízes ativos */}
@@ -535,8 +535,8 @@ function JudgeNegotiationPanel({ topicId, nominations, currentUserId, isLeader, 
         <div className="space-y-1">
           {activeNoms.map((n: any) => (
             <div key={n.id} className="flex items-center gap-2 text-sm">
-              <CheckCircle size={14} className="text-green-400" />
-              <span className="text-white">@{n.judge?.username}</span>
+              <CheckCircle size={14} className="text-sim" />
+              <span className="text-foreground">@{n.judge?.username}</span>
             </div>
           ))}
         </div>
@@ -545,21 +545,21 @@ function JudgeNegotiationPanel({ topicId, nominations, currentUserId, isLeader, 
       {/* Eu sou juiz aguardando confirmação */}
       {myPendingConfirm.map((n: any) => (
         <div key={n.id} className="bg-primary/10 border border-primary/30 rounded-lg p-3 space-y-2">
-          <p className="text-sm text-white font-semibold">Você foi escolhido como juiz!</p>
+          <p className="text-sm text-foreground font-semibold">Você foi escolhido como juiz!</p>
           <p className="text-xs text-muted-foreground">Aceita ser juiz deste bolão?</p>
           <div className="bg-muted/40 border border-border/60 rounded-lg px-3 py-2 text-xs text-muted-foreground leading-relaxed">
-            <span className="font-semibold text-white/70">Aviso:</span>{" "}
+            <span className="font-semibold text-foreground/70">Aviso:</span>{" "}
             Ao aceitar, você assume a responsabilidade de votar com imparcialidade.
             A Zafe não se responsabiliza por erros ou omissões do juiz — este foi indicado e aprovado
             pelos próprios participantes, sendo a escolha de responsabilidade exclusiva deles.
           </div>
           <div className="flex gap-2">
             <button onClick={() => confirmarDisponibilidade(n.id, true)} disabled={loading}
-              className="flex-1 py-1.5 bg-green-400/20 text-green-400 text-sm font-semibold rounded-lg">
+              className="flex-1 py-1.5 bg-sim/20 text-sim text-sm font-semibold rounded-lg">
               Aceitar
             </button>
             <button onClick={() => confirmarDisponibilidade(n.id, false)} disabled={loading}
-              className="flex-1 py-1.5 bg-red-400/20 text-red-400 text-sm font-semibold rounded-lg">
+              className="flex-1 py-1.5 bg-nao/20 text-destructive text-sm font-semibold rounded-lg">
               Recusar
             </button>
           </div>
@@ -574,7 +574,7 @@ function JudgeNegotiationPanel({ topicId, nominations, currentUserId, isLeader, 
         return (
           <div key={n.id} className="border border-border/60 rounded-lg p-3 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-white">@{n.judge?.username}</span>
+              <span className="text-sm text-foreground">@{n.judge?.username}</span>
               <span className="text-xs text-muted-foreground">
                 {n.status === "both_approved" ? "Aguardando juiz confirmar" : "Aguardando resposta"}
               </span>
@@ -582,11 +582,11 @@ function JudgeNegotiationPanel({ topicId, nominations, currentUserId, isLeader, 
             {needsMyResponse && (
               <div className="flex gap-2">
                 <button onClick={() => responder(n.id, true)} disabled={loading}
-                  className="flex-1 py-1 bg-green-400/20 text-green-400 text-xs font-semibold rounded">
+                  className="flex-1 py-1 bg-sim/20 text-sim text-xs font-semibold rounded">
                   Aceitar
                 </button>
                 <button onClick={() => responder(n.id, false)} disabled={loading}
-                  className="flex-1 py-1 bg-red-400/20 text-red-400 text-xs font-semibold rounded">
+                  className="flex-1 py-1 bg-nao/20 text-destructive text-xs font-semibold rounded">
                   Rejeitar
                 </button>
               </div>
@@ -597,7 +597,7 @@ function JudgeNegotiationPanel({ topicId, nominations, currentUserId, isLeader, 
 
       {/* Aviso de responsabilidade sobre juízes */}
       <div className="bg-muted/40 border border-border/60 rounded-lg px-3 py-2.5 text-xs text-muted-foreground leading-relaxed">
-        <span className="font-semibold text-white/70">Aviso:</span>{" "}
+        <span className="font-semibold text-foreground/70">Aviso:</span>{" "}
         O juiz é indicado e aprovado pelos líderes de ambos os lados. A Zafe não se responsabiliza por
         decisões incorretas ou desonestas do juiz — a escolha é de responsabilidade exclusiva dos participantes.
         Um único juiz aceito por ambos os lados é suficiente para o bolão avançar.
@@ -607,7 +607,7 @@ function JudgeNegotiationPanel({ topicId, nominations, currentUserId, isLeader, 
       {isLeader && activeNoms.length < 7 && (
         <div className="pt-1 border-t border-border/40 relative">
           <input
-            className="w-full bg-background border border-border rounded px-2 py-1.5 text-sm text-white"
+            className="w-full bg-background border border-border rounded px-2 py-1.5 text-sm text-foreground"
             placeholder="Buscar usuário para propor como juiz..."
             value={judgeFilter}
             onChange={e => { setJudgeFilter(e.target.value); setShowJudgeList(true); }}
@@ -640,7 +640,7 @@ function JudgeNegotiationPanel({ topicId, nominations, currentUserId, isLeader, 
                     }}
                     className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted text-left"
                   >
-                    <span className="text-white font-medium">@{u.username}</span>
+                    <span className="text-foreground font-medium">@{u.username}</span>
                     {u.full_name && <span className="text-muted-foreground text-xs">{u.full_name}</span>}
                   </button>
                 ))}
@@ -669,7 +669,7 @@ function JudgeVotingPanel({ topicId, round, deadline, myVote, onRefresh }: any) 
 
   return (
     <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-      <p className="text-sm font-semibold text-white">
+      <p className="text-sm font-semibold text-foreground">
         {round === 1 ? "Votação" : "Segunda Votação"} — Qual foi o resultado?
       </p>
       <p className="text-xs text-muted-foreground">
@@ -720,7 +720,7 @@ function SimpleJudgePanel({ topicId, status, closesAt, onRefresh }: any) {
   if (!canResolve) {
     return (
       <div className="bg-card border border-border rounded-xl p-4 text-center space-y-1">
-        <div className="flex items-center justify-center gap-2 text-white font-semibold text-sm">
+        <div className="flex items-center justify-center gap-2 text-foreground font-semibold text-sm">
           <Shield size={15} className="text-primary" /> Você é o juiz
         </div>
         <p className="text-xs text-muted-foreground">
@@ -734,7 +734,7 @@ function SimpleJudgePanel({ topicId, status, closesAt, onRefresh }: any) {
     <div className="bg-card border border-primary/30 rounded-xl p-4 space-y-3">
       <div className="flex items-center gap-2">
         <Shield size={16} className="text-primary" />
-        <p className="text-sm font-semibold text-white">Você é o juiz — qual foi o resultado?</p>
+        <p className="text-sm font-semibold text-foreground">Você é o juiz — qual foi o resultado?</p>
       </div>
       <p className="text-xs text-muted-foreground">
         Sua decisão paga os vencedores automaticamente. Esta ação é definitiva.
@@ -762,7 +762,7 @@ function VoteProgress({ votes, totalJudges }: { votes: any[]; totalJudges: numbe
 
   return (
     <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-      <p className="text-sm font-semibold text-white">Andamento da votação</p>
+      <p className="text-sm font-semibold text-foreground">Andamento da votação</p>
       <p className="text-xs text-muted-foreground">{voted}/{totalJudges} juízes votaram — precisa de {needed} votos no mesmo sentido</p>
       <div className="flex gap-4 text-sm">
         <span className="text-sim font-bold">SIM: {simCount}</span>

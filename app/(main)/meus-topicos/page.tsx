@@ -113,7 +113,7 @@ export default async function MinhasPosicoes() {
   return (
     <div className="py-6 space-y-6">
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-white">Minhas Posições</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground">Minhas Posições</h1>
         <p className="text-muted-foreground text-sm mt-0.5">
           {activeRows.length} posiç{activeRows.length !== 1 ? "ões" : "ão"} ativa{activeRows.length !== 1 ? "s" : ""}
           {decided > 0 && <> · {wins}V / {losses}D · {winRate.toFixed(0)}% de acerto</>}
@@ -122,9 +122,9 @@ export default async function MinhasPosicoes() {
 
       {activeRows.length === 0 && resolvedRows.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-white font-medium mb-1">Nenhuma posição ainda</p>
+          <p className="text-foreground font-medium mb-1">Nenhuma posição ainda</p>
           <p className="text-muted-foreground text-sm">Explore os eventos e faça seu primeiro palpite</p>
-          <Link href="/liga" className="inline-block mt-4 px-4 py-2 bg-primary text-white font-semibold rounded-lg text-sm">
+          <Link href="/liga" className="inline-block mt-4 px-4 py-2 bg-primary text-primary-foreground font-semibold rounded-lg text-sm">
             Ver eventos
           </Link>
         </div>
@@ -134,7 +134,7 @@ export default async function MinhasPosicoes() {
           {activeRows.length > 0 && (
             <section className="space-y-3">
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-white">Ativos</h2>
+                <h2 className="text-base font-bold text-foreground">Ativos</h2>
                 <span className="text-[11px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{activeRows.length}</span>
               </div>
               <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
@@ -155,15 +155,15 @@ export default async function MinhasPosicoes() {
                       return (
                         <tr key={`${r.topicId}-${r.side}`} className="border-b border-border/50 hover:bg-card/60 transition-colors">
                           <td className="py-3 pr-3 max-w-[260px]">
-                            <Link href={href(r.topic)} className="block text-white hover:text-primary transition-colors font-medium line-clamp-2">
+                            <Link href={href(r.topic)} className="block text-foreground hover:text-primary transition-colors font-medium line-clamp-2">
                               {r.topic.title}
                             </Link>
                             <div className="mt-1"><CategoryBadge category={r.topic.category} /></div>
                           </td>
                           <td className="py-3 px-3"><SideTag side={r.side} /></td>
-                          <td className="py-3 px-3 text-right text-white">{fmt(r.totalAmt)}</td>
+                          <td className="py-3 px-3 text-right text-foreground">{fmt(r.totalAmt)}</td>
                           <td className="py-3 px-3 text-right text-muted-foreground">{fmtPct(r.currentProb)}</td>
-                          <td className="py-3 px-3 text-right text-white font-medium">{fmt(r.currentValue)}</td>
+                          <td className="py-3 px-3 text-right text-foreground font-medium">{fmt(r.currentValue)}</td>
                           <td className={`py-3 pl-3 text-right font-bold ${positive ? "text-sim" : "text-nao"}`}>
                             <span className="inline-flex items-center gap-1 justify-end">
                               {positive ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
@@ -183,7 +183,7 @@ export default async function MinhasPosicoes() {
           {resolvedRows.length > 0 && (
             <section className="space-y-3">
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-white">Resolvidos</h2>
+                <h2 className="text-base font-bold text-foreground">Resolvidos</h2>
                 <span className="text-[11px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{resolvedRows.length}</span>
               </div>
               <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
@@ -212,7 +212,7 @@ export default async function MinhasPosicoes() {
                             </span>
                           </td>
                           <td className="py-3 px-3 max-w-[240px]">
-                            <Link href={href(r.topic)} className="block text-white hover:text-primary transition-colors font-medium line-clamp-2">
+                            <Link href={href(r.topic)} className="block text-foreground hover:text-primary transition-colors font-medium line-clamp-2">
                               {r.topic.title}
                             </Link>
                             <div className="mt-1"><CategoryBadge category={r.topic.category} /></div>
@@ -221,7 +221,7 @@ export default async function MinhasPosicoes() {
                           <td className="py-3 px-3">
                             {r.resultado ? <SideTag side={r.resultado === "SIM" ? "sim" : "nao"} /> : <span className="text-muted-foreground">—</span>}
                           </td>
-                          <td className="py-3 px-3 text-right text-white">{fmt(r.totalAmt)}</td>
+                          <td className="py-3 px-3 text-right text-foreground">{fmt(r.totalAmt)}</td>
                           <td className={`py-3 pl-3 text-right font-bold ${refunded ? "text-muted-foreground" : won ? "text-sim" : "text-nao"}`}>
                             {refunded ? fmt(r.totalAmt) : won ? `+${fmt(r.payout - r.totalAmt)}` : `-${fmt(r.totalAmt)}`}
                           </td>

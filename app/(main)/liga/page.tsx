@@ -63,7 +63,7 @@ async function LigaList({
   if (error || !topics || topics.length === 0) {
     return (
       <div className="text-center py-20 text-muted-foreground">
-        <p className="text-lg font-medium text-white mb-1">
+        <p className="text-lg font-medium text-foreground mb-1">
           {isEncerrados ? "Nenhum evento encerrado" : "Nenhum evento encontrado"}
         </p>
         <p className="text-sm">
@@ -129,7 +129,7 @@ export default async function LigaPage({ searchParams }: PageProps) {
   return (
     <div className="py-6 space-y-5">
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-white">Liga</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground">Liga</h1>
         <p className="text-muted-foreground text-sm mt-0.5">Faça seus palpites e suba no ranking</p>
       </div>
 
@@ -147,7 +147,7 @@ export default async function LigaPage({ searchParams }: PageProps) {
             key={t.key}
             href={buildHref(t.key)}
             className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-              tab === t.key ? "bg-card text-white" : "text-muted-foreground hover:text-white"
+              tab === t.key ? "bg-card text-foreground" : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {t.label}

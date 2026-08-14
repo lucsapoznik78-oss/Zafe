@@ -19,7 +19,7 @@ export default function MainLayoutError({
         <span className="text-2xl">⚠️</span>
       </div>
       <div className="space-y-2">
-        <h2 className="text-xl font-bold text-white">Algo deu errado</h2>
+        <h2 className="text-xl font-bold text-foreground">Algo deu errado</h2>
         <p className="text-muted-foreground text-sm max-w-sm">
           Não conseguimos carregar essa página. Tente novamente ou volte mais tarde.
         </p>
@@ -31,7 +31,7 @@ export default function MainLayoutError({
       </div>
       <button
         onClick={reset}
-        className="px-5 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors text-sm"
+        className="px-5 py-2 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-colors text-sm"
       >
         Tentar novamente
       </button>

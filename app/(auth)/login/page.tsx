@@ -8,7 +8,7 @@ interface Props {
 export default async function LoginPage({ searchParams }: Props) {
   const { next } = await searchParams;
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <img src="/zafe-logo-full.png" alt="Zafe" className="h-12 mx-auto mb-3" />

@@ -29,7 +29,7 @@ export default function ContatoPage() {
   return (
     <div className="py-6 space-y-8 max-w-3xl mx-auto">
       <div>
-        <h1 className="text-xl sm:text-2xl font-black text-white">Contato e Identificação</h1>
+        <h1 className="text-xl sm:text-2xl font-black text-foreground">Contato e Identificação</h1>
         <p className="text-sm text-muted-foreground">
           Quem opera a Zafe, por onde falar com a gente e em quanto tempo você recebe resposta.
         </p>
@@ -39,20 +39,20 @@ export default function ContatoPage() {
         <section className="bg-card border border-border rounded-xl px-5 py-4 space-y-3">
           <div className="flex items-center gap-2">
             <Building2 className="w-5 h-5 text-primary shrink-0" />
-            <h2 className="text-base font-bold text-white">Identificação do fornecedor</h2>
+            <h2 className="text-base font-bold text-foreground">Identificação do fornecedor</h2>
           </div>
           <dl className="space-y-2 text-sm">
             <div>
               <dt className="text-xs text-muted-foreground">Nome empresarial</dt>
-              <dd className="text-white">{EMPRESA.nome}</dd>
+              <dd className="text-foreground">{EMPRESA.nome}</dd>
             </div>
             <div>
               <dt className="text-xs text-muted-foreground">CNPJ</dt>
-              <dd className="text-white">{EMPRESA.cnpj}</dd>
+              <dd className="text-foreground">{EMPRESA.cnpj}</dd>
             </div>
             <div>
               <dt className="text-xs text-muted-foreground">Endereço</dt>
-              <dd className="text-white">{EMPRESA.endereco}</dd>
+              <dd className="text-foreground">{EMPRESA.endereco}</dd>
             </div>
             <div>
               <dt className="text-xs text-muted-foreground">Endereço eletrônico</dt>
@@ -68,7 +68,7 @@ export default function ContatoPage() {
 
       <section className="space-y-3">
         <div>
-          <h2 className="text-lg font-bold text-white">Canais de atendimento</h2>
+          <h2 className="text-lg font-bold text-foreground">Canais de atendimento</h2>
           <p className="text-xs text-muted-foreground">
             Toda demanda recebe confirmação de recebimento e resposta em até 5 dias, conforme o
             Art. 4º do Decreto 7.962/2013.
@@ -81,7 +81,7 @@ export default function ContatoPage() {
         >
           <MessagesSquare className="w-6 h-6 text-primary shrink-0 mt-0.5" />
           <div className="min-w-0 flex-1">
-            <p className="text-base font-bold text-white">Canal do Usuário</p>
+            <p className="text-base font-bold text-foreground">Canal do Usuário</p>
             <p className="text-sm text-muted-foreground mt-0.5 leading-relaxed">
               O caminho mais rápido para quem já tem conta: abre uma conversa com a equipe e o
               histórico fica registrado no seu perfil.
@@ -95,7 +95,7 @@ export default function ContatoPage() {
         >
           <Mail className="w-5 h-5 text-primary shrink-0 mt-0.5" />
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-bold text-white">E-mail</p>
+            <p className="text-sm font-bold text-foreground">E-mail</p>
             <p className="text-xs text-muted-foreground mt-0.5">{EMAIL}</p>
           </div>
         </a>
@@ -108,14 +108,14 @@ export default function ContatoPage() {
         >
           <AtSign className="w-5 h-5 text-primary shrink-0 mt-0.5" />
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-bold text-white">Instagram</p>
+            <p className="text-sm font-bold text-foreground">Instagram</p>
             <p className="text-xs text-muted-foreground mt-0.5">@zafe.app.br</p>
           </div>
         </a>
       </section>
 
       <section className="space-y-2">
-        <h2 className="text-lg font-bold text-white">Cancelamento e arrependimento</h2>
+        <h2 className="text-lg font-bold text-foreground">Cancelamento e arrependimento</h2>
         <p className="text-sm text-muted-foreground leading-relaxed">
           A Zafe é gratuita. As únicas cobranças em R$ são a assinatura Premium e, no futuro, a
           inscrição no Concurso — nunca há depósito, e Z$ não é comprado nem convertido em dinheiro.
@@ -129,7 +129,7 @@ export default function ContatoPage() {
       </section>
 
       <section className="space-y-2">
-        <h2 className="text-lg font-bold text-white">Privacidade e dados pessoais</h2>
+        <h2 className="text-lg font-bold text-foreground">Privacidade e dados pessoais</h2>
         <p className="text-sm text-muted-foreground leading-relaxed">
           Pedidos de acesso, correção, portabilidade ou exclusão de dados (LGPD) também entram pelos
           canais acima. Os detalhes de tratamento estão na{" "}

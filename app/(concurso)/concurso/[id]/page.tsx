@@ -21,11 +21,11 @@ interface PageProps {
 }
 
 const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
-  active:    { label: "Aberto",               cls: "bg-yellow-400/20 text-yellow-400" },
+  active:    { label: "Aberto",               cls: "bg-prize/20 text-prize" },
   resolved:  { label: "Resolvido",            cls: "bg-muted text-muted-foreground" },
-  cancelled: { label: "Cancelado",            cls: "bg-red-500/20 text-red-400" },
-  pending:   { label: "Em moderação",         cls: "bg-yellow-400/20 text-yellow-400" },
-  resolving: { label: "Aguardando resolução", cls: "bg-yellow-500/20 text-yellow-400" },
+  cancelled: { label: "Cancelado",            cls: "bg-nao/20 text-destructive" },
+  pending:   { label: "Em moderação",         cls: "bg-prize/20 text-prize" },
+  resolving: { label: "Aguardando resolução", cls: "bg-prize/20 text-prize" },
 };
 
 export default async function ConcursoTopicPage({ params }: PageProps) {
@@ -127,7 +127,7 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
     <div className="py-6 max-w-5xl mx-auto">
       {/* Breadcrumb concurso */}
       <div className="flex items-center gap-2 mb-4">
-        <Link href="/concurso" className="flex items-center gap-1.5 text-yellow-400 hover:text-yellow-300 text-sm transition-colors">
+        <Link href="/concurso" className="flex items-center gap-1.5 text-prize hover:text-prize text-sm transition-colors">
           <ArrowLeft size={14} />
           <Trophy size={14} />
           Concurso
@@ -144,7 +144,7 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
             {statusBadge.label}
           </span>
           {creatorUsername && (
-            <Link href={`/u/${creatorUsername}`} className="text-xs text-muted-foreground hover:text-white transition-colors">
+            <Link href={`/u/${creatorUsername}`} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
               por @{creatorUsername}
             </Link>
           )}
@@ -152,7 +152,7 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
         <CountdownTimer closesAt={topic.closes_at} />
       </div>
 
-      <h1 className="text-xl sm:text-2xl font-bold text-white leading-snug mb-2">{topic.title}</h1>
+      <h1 className="text-xl sm:text-2xl font-bold text-foreground leading-snug mb-2">{topic.title}</h1>
       {topic.description && (
         <p className="text-muted-foreground text-sm mb-4">{topic.description}</p>
       )}
@@ -167,7 +167,7 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
       {/* Resultado se resolvido */}
       {topic.status === "resolved" && topic.resolution && (
         <div className={`mb-4 rounded-xl px-4 py-3 font-bold text-center text-lg ${
-          topic.resolution === "sim" ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"
+          topic.resolution === "sim" ? "bg-sim/20 text-sim" : "bg-nao/20 text-destructive"
         }`}>
           Resultado: {topic.resolution.toUpperCase()}
         </div>
@@ -180,10 +180,10 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
           <div className="bg-card border border-border rounded-xl p-4">
             <p className="text-xs text-muted-foreground mb-2 font-medium">Probabilidade (pool do concurso)</p>
             <div className="flex rounded-lg overflow-hidden h-8 mb-2">
-              <div className="bg-sim flex items-center justify-center text-white text-xs font-bold transition-all" style={{ width: `${probSimPct}%` }}>
+              <div className="bg-sim flex items-center justify-center text-primary-foreground text-xs font-bold transition-all" style={{ width: `${probSimPct}%` }}>
                 {Number(probSimPct) > 12 ? `${probSimPct}%` : ""}
               </div>
-              <div className="bg-nao flex items-center justify-center text-white text-xs font-bold transition-all" style={{ width: `${probNaoPct}%` }}>
+              <div className="bg-nao flex items-center justify-center text-primary-foreground text-xs font-bold transition-all" style={{ width: `${probNaoPct}%` }}>
                 {Number(probNaoPct) > 12 ? `${probNaoPct}%` : ""}
               </div>
             </div>
@@ -195,10 +195,10 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
 
           {/* Aviso: só há palpites de um lado */}
           {aguardandoOponente && (
-            <div className="flex items-start gap-2 rounded-xl bg-yellow-400/5 border border-yellow-400/20 px-4 py-3">
-              <Clock size={15} className="text-yellow-400 shrink-0 mt-0.5" />
-              <p className="text-xs text-yellow-300/80 leading-relaxed">
-                <span className="font-bold text-yellow-400">Aguardando o outro lado.</span> Por enquanto só há
+            <div className="flex items-start gap-2 rounded-xl bg-prize/5 border border-prize/20 px-4 py-3">
+              <Clock size={15} className="text-prize shrink-0 mt-0.5" />
+              <p className="text-xs text-prize/80 leading-relaxed">
+                <span className="font-bold text-prize">Aguardando o outro lado.</span> Por enquanto só há
                 palpites em <span className="font-semibold">{poolSim > 0 ? "SIM" : "NÃO"}</span>. Este evento só
                 entra em disputa quando alguém palpitar no lado oposto — até lá os palpites ficam reservados.
               </p>
@@ -237,7 +237,7 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
             <div className="flex justify-end">
               <Link
                 href={`/concurso/${topic.slug ?? topicId}/participantes`}
-                className="text-xs text-muted-foreground hover:text-white transition-colors"
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
                 Ver histórico completo de participantes →
               </Link>
@@ -251,26 +251,26 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
 
           {/* Meus palpites no concurso */}
           {userConcursoBets.length > 0 && (
-            <div className="bg-yellow-400/5 border border-yellow-400/20 rounded-xl p-4">
-              <p className="text-sm font-semibold text-yellow-400 mb-3">Meus palpites no concurso</p>
+            <div className="bg-prize/5 border border-prize/20 rounded-xl p-4">
+              <p className="text-sm font-semibold text-prize mb-3">Meus palpites no concurso</p>
               <div className="space-y-2">
                 {userConcursoBets.map((bet: any) => {
                   const statusMap: Record<string, { label: string; cls: string }> = {
-                    matched:  { label: "Em jogo",   cls: "text-yellow-400" },
-                    won:      { label: "Ganhou",    cls: "text-green-400" },
-                    lost:     { label: "Perdeu",    cls: "text-red-400" },
+                    matched:  { label: "Em jogo",   cls: "text-prize" },
+                    won:      { label: "Ganhou",    cls: "text-sim" },
+                    lost:     { label: "Perdeu",    cls: "text-destructive" },
                     refunded: { label: "Reembolso", cls: "text-muted-foreground" },
                   };
                   const s = bet.status === "matched" && aguardandoOponente
-                    ? { label: "Aguardando oponente", cls: "text-yellow-400/70" }
+                    ? { label: "Aguardando oponente", cls: "text-prize/70" }
                     : statusMap[bet.status] ?? { label: bet.status, cls: "text-muted-foreground" };
                   return (
                     <div key={bet.id} className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
-                        <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${bet.side === "sim" ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}>
+                        <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${bet.side === "sim" ? "bg-sim/20 text-sim" : "bg-nao/20 text-destructive"}`}>
                           {bet.side.toUpperCase()}
                         </span>
-                        <span className="text-white">ZC$ {Number(bet.amount).toFixed(0)}</span>
+                        <span className="text-foreground">ZC$ {Number(bet.amount).toFixed(0)}</span>
                         <span className="text-muted-foreground text-xs">
                           {format(new Date(bet.created_at), "dd/MM HH:mm", { locale: ptBR })}
                         </span>
@@ -298,15 +298,15 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
                 outcomes={(topicOutcomes ?? []).map((o: any) => ({ id: o.id, label: o.label, pool: Number(o.pool) }))}
               />
             ) : (
-              <div className="bg-yellow-400/5 border border-yellow-400/30 rounded-xl p-4 text-center space-y-3">
-                <Trophy size={28} className="mx-auto text-yellow-400/60" />
-                <p className="text-yellow-400 font-semibold text-sm">Participe do Concurso</p>
-                <p className="text-xs text-yellow-300/60">
+              <div className="bg-prize/5 border border-prize/30 rounded-xl p-4 text-center space-y-3">
+                <Trophy size={28} className="mx-auto text-prize/60" />
+                <p className="text-prize font-semibold text-sm">Participe do Concurso</p>
+                <p className="text-xs text-prize/60">
                   Inscreva-se grátis e receba ZC$ {concurso.saldo_inicial} para competir.
                 </p>
                 <Link
                   href="/concurso"
-                  className="block w-full py-2.5 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors"
+                  className="block w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors"
                 >
                   Inscrever-se
                 </Link>
@@ -321,7 +321,7 @@ export default async function ConcursoTopicPage({ params }: PageProps) {
           {/* Link para a Liga */}
           <Link
             href="/liga"
-            className="block text-center text-xs text-muted-foreground hover:text-white transition-colors py-2"
+            className="block text-center text-xs text-muted-foreground hover:text-foreground transition-colors py-2"
           >
             Ver todos os eventos da Liga (Z$) →
           </Link>

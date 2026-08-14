@@ -57,7 +57,7 @@ export default async function TimesPage({ params }: Props) {
           >
             ← {card.titulo}
           </Link>
-          <h1 className="text-lg font-bold text-white">Inscrições</h1>
+          <h1 className="text-lg font-bold text-foreground">Inscrições</h1>
         </div>
         <span className="text-xs text-muted-foreground">{card.status}</span>
       </div>
@@ -66,7 +66,7 @@ export default async function TimesPage({ params }: Props) {
           é o único módulo que emite Z$ — o saldo negativo aqui é a torneira. */}
       <div className="bg-card border border-border rounded-xl p-4 space-y-3">
         <div className="flex items-baseline justify-between">
-          <h3 className="text-sm font-semibold text-white">Conferência</h3>
+          <h3 className="text-sm font-semibold text-foreground">Conferência</h3>
           <ConferirBotao cardId={cardId} />
         </div>
         <dl className="grid grid-cols-2 gap-y-1 text-xs">
@@ -75,7 +75,7 @@ export default async function TimesPage({ params }: Props) {
               <dt className="text-muted-foreground">{k}</dt>
               <dd
                 className={`text-right tabular-nums ${
-                  k === "Z$ a emitir" && totais.estoura_teto ? "text-nao font-bold" : "text-white"
+                  k === "Z$ a emitir" && totais.estoura_teto ? "text-nao font-bold" : "text-foreground"
                 }`}
               >
                 {v}
@@ -101,7 +101,7 @@ export default async function TimesPage({ params }: Props) {
           da decisão: nada aqui é reversível, e este é o único ponto da
           plataforma que cria Z$. */}
       <div className="bg-card border border-border rounded-xl p-4 space-y-2">
-        <h3 className="text-sm font-semibold text-white">Pagamento</h3>
+        <h3 className="text-sm font-semibold text-foreground">Pagamento</h3>
         <PagarCard
           cardId={cardId}
           status={card.status}
@@ -112,7 +112,7 @@ export default async function TimesPage({ params }: Props) {
       </div>
 
       <div className="bg-card border border-border rounded-xl p-4 space-y-2">
-        <h3 className="text-sm font-semibold text-white">Times ({times.length})</h3>
+        <h3 className="text-sm font-semibold text-foreground">Times ({times.length})</h3>
         {times.length === 0 ? (
           <p className="text-xs text-muted-foreground">Ninguém inscrito ainda.</p>
         ) : (
@@ -120,14 +120,14 @@ export default async function TimesPage({ params }: Props) {
             {times.map((t, i) => (
               <li key={t.time_id} className="py-2 space-y-1">
                 <div className="flex items-baseline justify-between gap-2 text-xs">
-                  <span className="text-white truncate">
+                  <span className="text-foreground truncate">
                     <span className="text-muted-foreground">
                       {t.status === "rascunho" ? "—" : `${i + 1}º`}{" "}
                     </span>
                     {t.nome || "(sem nome)"}
                     <span className="text-muted-foreground"> · @{t.username}</span>
                   </span>
-                  <span className="text-white tabular-nums shrink-0">
+                  <span className="text-foreground tabular-nums shrink-0">
                     {t.pontos_total === null ? "—" : t.pontos_total.toFixed(1)} pts
                   </span>
                 </div>

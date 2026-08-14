@@ -38,7 +38,7 @@ const STATUS_LABEL: Record<Thread["status"], string> = {
 };
 
 const STATUS_CLASS: Record<Thread["status"], string> = {
-  aberto: "bg-yellow-500/15 text-yellow-400",
+  aberto: "bg-prize/15 text-prize",
   respondido: "bg-primary/15 text-primary",
   fechado: "bg-muted text-muted-foreground",
 };
@@ -107,7 +107,7 @@ export default function CanalUsuario() {
             setSelectedId(null);
             router.replace("/canal", { scroll: false });
           }}
-          className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors"
+          className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors"
         >
           <Plus className="w-4 h-4" />
           Nova conversa
@@ -134,7 +134,7 @@ export default function CanalUsuario() {
               }`}
             >
               <div className="flex items-start gap-2">
-                <span className="text-sm font-semibold text-white leading-snug break-words flex-1">
+                <span className="text-sm font-semibold text-foreground leading-snug break-words flex-1">
                   {t.subject}
                 </span>
                 {t.unread_user && (
@@ -169,7 +169,7 @@ export default function CanalUsuario() {
         ) : (
           <div className="bg-card border border-border rounded-xl p-8 text-center">
             <MessagesSquare className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
-            <p className="text-sm text-white font-semibold">Fale com a equipe Zafe</p>
+            <p className="text-sm text-foreground font-semibold">Fale com a equipe Zafe</p>
             <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
               Dúvidas sobre previsões, conta, Z$ ou o Concurso? Abra uma conversa e a
               equipe responde por aqui.
@@ -219,7 +219,7 @@ function NovaConversa({
 
   return (
     <form onSubmit={submit} className="bg-card border border-border rounded-xl p-5 space-y-3">
-      <h2 className="text-sm font-bold text-white">Nova conversa</h2>
+      <h2 className="text-sm font-bold text-foreground">Nova conversa</h2>
 
       <div className="space-y-1">
         <label htmlFor="canal-assunto" className="text-xs text-muted-foreground">
@@ -230,7 +230,7 @@ function NovaConversa({
           value={subject}
           onChange={(e) => setSubject(e.target.value.slice(0, MAX_SUBJECT))}
           placeholder="Ex.: dúvida sobre a resolução de um evento"
-          className="w-full rounded-lg bg-background border border-border px-3 py-2 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+          className="w-full rounded-lg bg-background border border-border px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
         />
       </div>
 
@@ -244,7 +244,7 @@ function NovaConversa({
           onChange={(e) => setMessage(e.target.value.slice(0, MAX_MESSAGE))}
           rows={6}
           placeholder="Conte o que aconteceu com o máximo de detalhes."
-          className="w-full resize-none rounded-lg bg-background border border-border px-3 py-2 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+          className="w-full resize-none rounded-lg bg-background border border-border px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
         />
         <div className="flex items-center justify-between">
           {error ? (
@@ -264,14 +264,14 @@ function NovaConversa({
         <button
           type="submit"
           disabled={sending || !subject.trim() || !message.trim()}
-          className="px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           {sending ? "Enviando…" : "Enviar"}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 rounded-lg border border-border text-sm text-muted-foreground hover:text-white transition-colors"
+          className="px-4 py-2 rounded-lg border border-border text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           Cancelar
         </button>
@@ -356,12 +356,12 @@ function Conversa({
       <div className="flex items-center gap-2">
         <button
           onClick={onBack}
-          className="md:hidden text-muted-foreground hover:text-white"
+          className="md:hidden text-muted-foreground hover:text-foreground"
           aria-label="Voltar"
         >
           <ArrowLeft className="w-4 h-4" />
         </button>
-        <span className="text-sm font-bold text-white break-words">{subject || "Conversa"}</span>
+        <span className="text-sm font-bold text-foreground break-words">{subject || "Conversa"}</span>
         {status && (
           <span className={`ml-auto px-2 py-0.5 rounded text-[10px] font-bold shrink-0 ${STATUS_CLASS[status]}`}>
             {STATUS_LABEL[status]}
@@ -390,7 +390,7 @@ function Conversa({
                   </span>
                   <span className="text-[10px] text-muted-foreground">{formatarData(m.created_at)}</span>
                 </div>
-                <p className="text-sm text-white leading-snug break-words whitespace-pre-wrap">
+                <p className="text-sm text-foreground leading-snug break-words whitespace-pre-wrap">
                   {m.message}
                 </p>
               </div>
@@ -406,7 +406,7 @@ function Conversa({
             onChange={(e) => setText(e.target.value.slice(0, MAX_MESSAGE))}
             placeholder={status === "fechado" ? "Escreva para reabrir esta conversa…" : "Escreva uma mensagem…"}
             rows={2}
-            className="flex-1 resize-none rounded-lg bg-background border border-border px-3 py-2 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+            className="flex-1 resize-none rounded-lg bg-background border border-border px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
@@ -417,7 +417,7 @@ function Conversa({
           <button
             type="submit"
             disabled={sending || !text.trim()}
-            className="shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-lg bg-primary text-white hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             aria-label="Enviar"
           >
             <Send className="w-4 h-4" />

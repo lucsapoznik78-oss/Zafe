@@ -43,7 +43,7 @@ export default async function PremiumPage() {
           <Star size={11} />
           Zafe Premium
         </div>
-        <h1 className="text-xl sm:text-2xl font-bold text-white">Leve seus palpites a sério</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground">Leve seus palpites a sério</h1>
         <p className="text-muted-foreground text-sm">
           Recursos avançados para previsores que querem acompanhar o mercado de verdade.
         </p>
@@ -55,7 +55,7 @@ export default async function PremiumPage() {
         <div className="bg-card border border-border rounded-xl p-5 space-y-4">
           <div>
             <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Gratuito</p>
-            <p className="text-3xl font-bold text-white mt-1">R$ 0</p>
+            <p className="text-3xl font-bold text-foreground mt-1">R$ 0</p>
             <p className="text-xs text-muted-foreground">para sempre</p>
           </div>
           <ul className="space-y-2">
@@ -71,7 +71,7 @@ export default async function PremiumPage() {
               Seu plano atual
             </div>
           ) : (
-            <Link href="/login" className="block w-full py-2.5 rounded-lg border border-border text-center text-sm text-white font-medium hover:bg-muted/30 transition-colors">
+            <Link href="/login" className="block w-full py-2.5 rounded-lg border border-border text-center text-sm text-foreground font-medium hover:bg-muted/30 transition-colors">
               Começar grátis
             </Link>
           )}
@@ -79,7 +79,7 @@ export default async function PremiumPage() {
 
         {/* Premium plan */}
         <div className="bg-card border border-primary/50 rounded-xl p-5 space-y-4 relative overflow-hidden">
-          <div className="absolute top-0 right-0 bg-primary text-white text-[10px] font-bold px-2.5 py-1 rounded-bl-lg">
+          <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-[10px] font-bold px-2.5 py-1 rounded-bl-lg">
             MAIS POPULAR
           </div>
           <div>
@@ -88,14 +88,14 @@ export default async function PremiumPage() {
               Premium
             </p>
             <div className="flex items-end gap-1.5 mt-1">
-              <p className="text-3xl font-bold text-white">R$ 19,90</p>
+              <p className="text-3xl font-bold text-foreground">R$ 19,90</p>
               <p className="text-xs text-muted-foreground mb-1">/mês</p>
             </div>
             <p className="text-xs text-muted-foreground">ou R$ 179,90/ano — economize 25%</p>
           </div>
           <ul className="space-y-2">
             {FEATURES_PREMIUM.map((f) => (
-              <li key={f} className="flex items-center gap-2 text-sm text-white">
+              <li key={f} className="flex items-center gap-2 text-sm text-foreground">
                 <Check size={14} className="text-primary shrink-0" />
                 {f}
               </li>
@@ -126,7 +126,7 @@ export default async function PremiumPage() {
 
       {/* Feature highlights */}
       <div className="space-y-3">
-        <p className="text-sm font-semibold text-white">O que você ganha?</p>
+        <p className="text-sm font-semibold text-foreground">O que você ganha?</p>
         <div className="grid grid-cols-1 gap-3">
           {[
             {
@@ -148,7 +148,7 @@ export default async function PremiumPage() {
             <div key={item.title} className="flex items-start gap-3 bg-card border border-border rounded-xl p-4">
               <div className="shrink-0 mt-0.5">{item.icon}</div>
               <div>
-                <p className="text-sm font-semibold text-white">{item.title}</p>
+                <p className="text-sm font-semibold text-foreground">{item.title}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
               </div>
             </div>

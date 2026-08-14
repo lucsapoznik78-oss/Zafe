@@ -113,22 +113,22 @@ export default function CreateTopicForm({ excludeCategories = [] }: CreateTopicF
   return (
     <form onSubmit={handleSubmit} className="bg-card border border-border rounded-xl p-5 space-y-5">
       <div className="bg-muted/30 border border-border rounded-lg p-3 space-y-1.5 text-xs text-muted-foreground">
-        <p className="text-white font-semibold text-sm">Como criar um bom setor</p>
-        <p>✓ Use perguntas com resultado <strong className="text-white">binário e verificável</strong> (sim ou não, acima/abaixo de X)</p>
-        <p>✓ Inclua <strong className="text-white">números, datas e fontes</strong> na descrição (ex: segundo o IBGE, acima de R$ 6,00)</p>
+        <p className="text-foreground font-semibold text-sm">Como criar um bom setor</p>
+        <p>✓ Use perguntas com resultado <strong className="text-foreground">binário e verificável</strong> (sim ou não, acima/abaixo de X)</p>
+        <p>✓ Inclua <strong className="text-foreground">números, datas e fontes</strong> na descrição (ex: segundo o IBGE, acima de R$ 6,00)</p>
         <p>✗ Evite termos vagos: vai escalar, será grande, melhorar muito — o oráculo não consegue verificar</p>
       </div>
 
       {/* Tipo de mercado */}
       <div className="space-y-2">
-        <label className="text-sm font-medium text-white">Tipo de mercado</label>
+        <label className="text-sm font-medium text-foreground">Tipo de mercado</label>
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={() => setMarketType("binary")}
             className={`py-2.5 rounded-lg text-sm font-semibold border transition-all ${
               marketType === "binary"
-                ? "bg-primary text-white border-primary"
+                ? "bg-primary text-primary-foreground border-primary"
                 : "bg-input text-muted-foreground border-border hover:border-primary/50"
             }`}
           >
@@ -139,7 +139,7 @@ export default function CreateTopicForm({ excludeCategories = [] }: CreateTopicF
             onClick={() => setMarketType("multi")}
             className={`py-2.5 rounded-lg text-sm font-semibold border transition-all ${
               marketType === "multi"
-                ? "bg-primary text-white border-primary"
+                ? "bg-primary text-primary-foreground border-primary"
                 : "bg-input text-muted-foreground border-border hover:border-primary/50"
             }`}
           >
@@ -153,7 +153,7 @@ export default function CreateTopicForm({ excludeCategories = [] }: CreateTopicF
         )}
       </div>
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-white">
+        <label className="text-sm font-medium text-foreground">
           Pergunta <span className="text-nao">*</span>
         </label>
         <input
@@ -161,24 +161,24 @@ export default function CreateTopicForm({ excludeCategories = [] }: CreateTopicF
           onChange={(e) => set("title", e.target.value)}
           maxLength={120}
           placeholder="Ex: O Brasil vai ganhar a Copa 2026?"
-          className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+          className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
         />
         <p className="text-[10px] text-muted-foreground text-right">{form.title.length}/120</p>
         {detectSubjectiveTitle(form.title) && (
-          <div className="flex items-start gap-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-3 py-2.5 mt-1">
-            <AlertTriangle size={13} className="text-yellow-400 shrink-0 mt-0.5" />
-            <div className="text-xs text-yellow-300 space-y-1">
+          <div className="flex items-start gap-2 bg-prize/10 border border-prize/30 rounded-lg px-3 py-2.5 mt-1">
+            <AlertTriangle size={13} className="text-prize shrink-0 mt-0.5" />
+            <div className="text-xs text-prize space-y-1">
               <p className="font-semibold">Evento pode ser subjetivo</p>
-              <p className="text-yellow-400/80">O oráculo de IA só consegue verificar fatos objetivos e mensuráveis. Prefira perguntas com threshold numérico ou resultado binário claro.</p>
-              <p className="text-yellow-400/70">✗ A inflação vai subir muito? — subjetivo</p>
-              <p className="text-yellow-400/70">✓ O IPCA de abril 2026 vai superar 0,5%? — verificável</p>
+              <p className="text-prize/80">O oráculo de IA só consegue verificar fatos objetivos e mensuráveis. Prefira perguntas com threshold numérico ou resultado binário claro.</p>
+              <p className="text-prize/70">✗ A inflação vai subir muito? — subjetivo</p>
+              <p className="text-prize/70">✓ O IPCA de abril 2026 vai superar 0,5%? — verificável</p>
             </div>
           </div>
         )}
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-white">
+        <label className="text-sm font-medium text-foreground">
           Descrição <span className="text-nao">*</span>
         </label>
         <textarea
@@ -187,18 +187,18 @@ export default function CreateTopicForm({ excludeCategories = [] }: CreateTopicF
           maxLength={500}
           rows={3}
           placeholder="Descreva os critérios de resolução com clareza..."
-          className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 resize-none"
+          className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 resize-none"
         />
         <p className="text-[10px] text-muted-foreground text-right">{form.description.length}/500</p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-white">Categoria</label>
+          <label className="text-sm font-medium text-foreground">Categoria</label>
           <select
             value={form.category}
             onChange={(e) => set("category", e.target.value)}
-            className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50"
+            className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50"
           >
             {categories.map((cat) => (
               <option key={cat.value} value={cat.value}>{cat.label}</option>
@@ -207,20 +207,20 @@ export default function CreateTopicForm({ excludeCategories = [] }: CreateTopicF
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-white">Palpite mínimo (Z$)</label>
+          <label className="text-sm font-medium text-foreground">Palpite mínimo (Z$)</label>
           <input
             type="number"
             value={form.min_bet}
             onChange={(e) => set("min_bet", e.target.value)}
             min="1"
             step="0.50"
-            className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50"
+            className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50"
           />
         </div>
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-white">
+        <label className="text-sm font-medium text-foreground">
           Prazo de resolução <span className="text-nao">*</span>
         </label>
         <input
@@ -228,14 +228,14 @@ export default function CreateTopicForm({ excludeCategories = [] }: CreateTopicF
           value={form.closes_at}
           onChange={(e) => set("closes_at", e.target.value)}
           min={minDateStr}
-          className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50"
+          className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50"
         />
       </div>
 
       {/* Resultados possíveis (somente multi) */}
       {marketType === "multi" && (
         <div className="space-y-2">
-          <label className="text-sm font-medium text-white">Resultados possíveis</label>
+          <label className="text-sm font-medium text-foreground">Resultados possíveis</label>
           <div className="space-y-2">
             {outcomes.map((o, i) => (
               <div key={i} className="flex gap-2 items-center">
@@ -244,7 +244,7 @@ export default function CreateTopicForm({ excludeCategories = [] }: CreateTopicF
                   onChange={(e) => setOutcome(i, e.target.value)}
                   placeholder={`Resultado ${i + 1}`}
                   maxLength={80}
-                  className="flex-1 bg-input border border-border rounded-lg px-3 py-2 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+                  className="flex-1 bg-input border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
                 />
                 {outcomes.length > 2 && (
                   <button
@@ -279,7 +279,7 @@ export default function CreateTopicForm({ excludeCategories = [] }: CreateTopicF
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-3 bg-primary text-white font-bold rounded-lg text-sm hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full py-3 bg-primary text-primary-foreground font-bold rounded-lg text-sm hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         {loading ? <Loader2 size={16} className="animate-spin mx-auto" /> : "Enviar para Moderação"}
       </button>

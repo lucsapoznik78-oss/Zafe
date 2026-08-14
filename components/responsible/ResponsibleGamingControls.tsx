@@ -45,7 +45,7 @@ export default function ResponsibleGamingControls() {
     <div className="space-y-6">
       <div className="rounded-xl border border-border bg-card p-4 space-y-3">
         <div>
-          <p className="text-sm font-semibold text-white">Fazer uma pausa</p>
+          <p className="text-sm font-semibold text-foreground">Fazer uma pausa</p>
           <p className="text-xs text-muted-foreground">
             Bloqueia o acesso à plataforma pelo período escolhido. Você poderá voltar
             automaticamente quando o prazo terminar.
@@ -57,7 +57,7 @@ export default function ResponsibleGamingControls() {
               key={o.days}
               disabled={!!loading}
               onClick={() => call("cooloff", o.days)}
-              className="py-2 px-3 rounded-lg border border-border bg-input text-sm font-medium text-white hover:border-violet-400/50 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="py-2 px-3 rounded-lg border border-border bg-input text-sm font-medium text-foreground hover:border-primary/50 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading === `cooloff-${o.days}` && <Loader2 size={13} className="animate-spin" />}
               {o.label}
@@ -66,9 +66,9 @@ export default function ResponsibleGamingControls() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-red-500/30 bg-red-500/5 p-4 space-y-3">
+      <div className="rounded-xl border border-destructive/30 bg-nao/5 p-4 space-y-3">
         <div>
-          <p className="text-sm font-semibold text-red-300">Autoexclusão</p>
+          <p className="text-sm font-semibold text-destructive">Autoexclusão</p>
           <p className="text-xs text-muted-foreground">
             Bloqueia sua conta por tempo prolongado. Para reverter antes do prazo, será
             necessário falar com o suporte. Use se sentir que precisa parar.
@@ -78,7 +78,7 @@ export default function ResponsibleGamingControls() {
           <button
             disabled={!!loading}
             onClick={() => setConfirming(true)}
-            className="py-2 px-3 rounded-lg border border-red-500/40 bg-red-500/10 text-sm font-bold text-red-300 hover:bg-red-500/20 disabled:opacity-50"
+            className="py-2 px-3 rounded-lg border border-destructive/40 bg-nao/10 text-sm font-bold text-destructive hover:bg-nao/20 disabled:opacity-50"
           >
             Quero me autoexcluir
           </button>
@@ -87,7 +87,7 @@ export default function ResponsibleGamingControls() {
             <button
               disabled={!!loading}
               onClick={() => call("self_exclude")}
-              className="flex-1 py-2 px-3 rounded-lg border border-red-500/50 bg-red-500/20 text-sm font-bold text-red-200 hover:bg-red-500/30 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 py-2 px-3 rounded-lg border border-destructive/50 bg-nao/20 text-sm font-bold text-destructive hover:bg-nao/30 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading === "self_exclude" && <Loader2 size={13} className="animate-spin" />}
               Confirmar autoexclusão
@@ -95,7 +95,7 @@ export default function ResponsibleGamingControls() {
             <button
               disabled={!!loading}
               onClick={() => setConfirming(false)}
-              className="py-2 px-3 rounded-lg border border-border bg-input text-sm font-medium text-white hover:border-border/80 disabled:opacity-50"
+              className="py-2 px-3 rounded-lg border border-border bg-input text-sm font-medium text-foreground hover:border-border/80 disabled:opacity-50"
             >
               Cancelar
             </button>
@@ -103,7 +103,7 @@ export default function ResponsibleGamingControls() {
         )}
       </div>
 
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-sm text-destructive">{error}</p>}
     </div>
   );
 }

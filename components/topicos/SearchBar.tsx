@@ -51,12 +51,12 @@ export default function SearchBar() {
         value={value}
         onChange={handleChange}
         placeholder="Buscar eventos..."
-        className="w-full bg-card border border-border rounded-lg pl-9 pr-8 py-2.5 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors"
+        className="w-full bg-card border border-border rounded-lg pl-9 pr-8 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors"
       />
       {value && (
         <button
           onClick={handleClear}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
         >
           <X size={14} />
         </button>

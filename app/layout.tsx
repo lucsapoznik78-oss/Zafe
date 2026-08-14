@@ -15,7 +15,7 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.zafe.app.br";
  * Trocar o fallback abaixo tem o mesmo efeito, sem depender da Vercel.
  */
 const THEME =
-  process.env.NEXT_PUBLIC_THEME === "arquibancada" ? "arquibancada" : "legacy";
+  process.env.NEXT_PUBLIC_THEME === "legacy" ? "legacy" : "arquibancada";
 const THEME_COLOR = { legacy: "#0A0A0F", arquibancada: "#0D1B2A" }[THEME];
 
 export const metadata: Metadata = {
@@ -120,7 +120,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="antialiased bg-background text-white min-h-screen">
+      <body className="antialiased bg-background text-foreground min-h-screen">
         {children}
         <CookieNotice />
       </body>

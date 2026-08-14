@@ -4,7 +4,7 @@ import { Star } from "lucide-react";
 export default function PremiumBadge({ className = "" }: { className?: string }) {
   return (
     <span
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-yellow-400/15 text-yellow-400 border border-yellow-400/30 ${className}`}
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-prize/15 text-prize border border-prize/30 ${className}`}
     >
       <Star size={10} fill="currentColor" />
       Premium

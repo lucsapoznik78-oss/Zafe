@@ -35,6 +35,6 @@ export const CATEGORIES = [
 ] as const;
 
 export const CATEGORY_COLORS: Record<string, string> = {
-  esportes: "bg-orange-500/20 text-orange-300",
+  esportes: "bg-nao/20 text-destructive",
   esports: "bg-cyan-500/20 text-cyan-300",
 };

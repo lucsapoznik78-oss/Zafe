@@ -24,11 +24,11 @@ interface Resolucao {
 }
 
 const RESULTADO_COLOR: Record<string, string> = {
-  SIM: "text-green-400",
-  NAO: "text-red-400",
-  INCERTO: "text-yellow-400",
-  REEMBOLSO: "text-blue-400",
-  SINALIZADO_REVISAO: "text-orange-400",
+  SIM: "text-sim",
+  NAO: "text-destructive",
+  INCERTO: "text-prize",
+  REEMBOLSO: "text-primary",
+  SINALIZADO_REVISAO: "text-destructive",
 };
 
 const ORACLE_LABEL: Record<string, string> = {
@@ -64,7 +64,7 @@ export default function OracleLog() {
         <div key={r.id} className="bg-card border border-border rounded-xl p-4 space-y-2">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <p className="text-sm font-semibold text-white line-clamp-1">
+              <p className="text-sm font-semibold text-foreground line-clamp-1">
                 {r.topic?.title ?? r.mercado_id}
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
@@ -72,7 +72,7 @@ export default function OracleLog() {
               </p>
             </div>
             <div className="text-right shrink-0">
-              <span className={`text-sm font-bold ${RESULTADO_COLOR[r.resultado_final] ?? "text-white"}`}>
+              <span className={`text-sm font-bold ${RESULTADO_COLOR[r.resultado_final] ?? "text-foreground"}`}>
                 {r.resultado_final}
               </span>
               <p className="text-[10px] text-muted-foreground mt-0.5">
@@ -100,7 +100,7 @@ export default function OracleLog() {
               ].map((c) => (
                 <div key={c.n} className="bg-background/50 rounded-lg p-2">
                   <p className="text-[9px] text-muted-foreground mb-1">Check {c.n}</p>
-                  <p className={`text-xs font-bold ${RESULTADO_COLOR[c.res ?? ""] ?? "text-white"}`}>
+                  <p className={`text-xs font-bold ${RESULTADO_COLOR[c.res ?? ""] ?? "text-foreground"}`}>
                     {c.res ?? "—"}
                   </p>
                   <p className="text-[9px] text-muted-foreground">

@@ -52,7 +52,7 @@ export default function FotoAtleta({ nome, esporte, fotoUrl, tamanho = "md" }: P
         alt={nome}
         loading="lazy"
         onError={() => setQuebrou(true)}
-        className={`${base} object-cover bg-black/40`}
+        className={`${base} object-cover bg-background/40`}
       />
     );
   }

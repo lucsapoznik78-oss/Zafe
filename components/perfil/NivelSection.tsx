@@ -27,7 +27,7 @@ export default function NivelSection({ totalWins }: { totalWins: number }) {
     <div className="bg-card border border-border rounded-xl p-4 space-y-3">
       <div className="flex items-center gap-2 flex-wrap">
         <Shield size={15} className="text-primary" />
-        <h3 className="text-sm font-semibold text-white">Seu nível</h3>
+        <h3 className="text-sm font-semibold text-foreground">Seu nível</h3>
         <span className="ml-auto"><RankBadge tier={tier} size="md" /></span>
       </div>
 
@@ -54,14 +54,14 @@ export default function NivelSection({ totalWins }: { totalWins: number }) {
       {prog ? (
         <>
           <p className="text-xs text-muted-foreground">
-            Você tem <span className="text-white font-semibold">{totalWins}</span>{" "}
+            Você tem <span className="text-foreground font-semibold">{totalWins}</span>{" "}
             {totalWins === 1 ? "acerto" : "acertos"}. Acerte mais{" "}
             <span className="text-primary font-semibold">{prog.winsNeeded}</span> para virar{" "}
-            <span className="text-white font-semibold">{prog.label}</span>.
+            <span className="text-foreground font-semibold">{prog.label}</span>.
           </p>
-          <div className="h-2 rounded-full bg-black/30 overflow-hidden">
+          <div className="h-2 rounded-full bg-background/30 overflow-hidden">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-primary/60 to-primary transition-all"
+              className="h-full rounded-full bg-primary transition-all"
               style={{ width: `${pct}%` }}
             />
           </div>
@@ -72,7 +72,7 @@ export default function NivelSection({ totalWins }: { totalWins: number }) {
       ) : (
         <p className="text-xs text-muted-foreground">
           Você atingiu o nível máximo com{" "}
-          <span className="text-white font-semibold">{totalWins}</span> acertos. Lenda da Zafe.
+          <span className="text-foreground font-semibold">{totalWins}</span> acertos. Lenda da Zafe.
         </p>
       )}
     </div>

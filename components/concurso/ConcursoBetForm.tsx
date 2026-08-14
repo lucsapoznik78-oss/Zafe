@@ -96,20 +96,20 @@ export default function ConcursoBetForm({
 
   if (isClosed) {
     return (
-      <div className="bg-yellow-400/5 border border-yellow-400/20 rounded-xl p-4 text-center">
-        <p className="text-yellow-300/70 text-sm">Evento encerrado para palpites</p>
+      <div className="bg-prize/5 border border-prize/20 rounded-xl p-4 text-center">
+        <p className="text-prize/70 text-sm">Evento encerrado para palpites</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-yellow-400/5 border border-yellow-400/30 rounded-xl p-4 space-y-4">
+    <div className="bg-prize/5 border border-prize/30 rounded-xl p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Trophy size={14} className="text-yellow-400" />
-          <h3 className="text-sm font-semibold text-yellow-400">Palpite do Concurso</h3>
+          <Trophy size={14} className="text-prize" />
+          <h3 className="text-sm font-semibold text-prize">Palpite do Concurso</h3>
         </div>
-        <span className={`text-xs font-semibold ${insufficientBalance && amountNum > 0 ? "text-red-400" : "text-yellow-300"}`}>
+        <span className={`text-xs font-semibold ${insufficientBalance && amountNum > 0 ? "text-destructive" : "text-prize"}`}>
           Z$ {zcBalance.toFixed(2)}
         </span>
       </div>
@@ -117,9 +117,9 @@ export default function ConcursoBetForm({
       {isMulti ? (
         /* Multi: pool total + lista de outcomes */
         <div className="space-y-2">
-          <div className="bg-yellow-400/10 rounded-lg px-3 py-2 text-center">
-            <p className="text-[10px] text-yellow-300/60 font-medium">POOL TOTAL</p>
-            <p className="text-sm font-bold text-yellow-300">Z$ {totalMultiPool.toFixed(0)}</p>
+          <div className="bg-prize/10 rounded-lg px-3 py-2 text-center">
+            <p className="text-[10px] text-prize/60 font-medium">POOL TOTAL</p>
+            <p className="text-sm font-bold text-prize">Z$ {totalMultiPool.toFixed(0)}</p>
           </div>
           {outcomes.map((o) => {
             const active = selectedOutcomeId === o.id;
@@ -130,13 +130,13 @@ export default function ConcursoBetForm({
                 onClick={() => setSelectedOutcomeId(o.id)}
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg border text-sm transition-all text-left ${
                   active
-                    ? "bg-yellow-400/20 border-yellow-400 text-white ring-1 ring-yellow-400/40"
-                    : "bg-yellow-400/5 border-yellow-400/20 text-yellow-300/70 hover:border-yellow-400/40 hover:text-yellow-200"
+                    ? "bg-prize/20 border-prize text-foreground ring-1 ring-prize/40"
+                    : "bg-prize/5 border-prize/20 text-prize/70 hover:border-prize/40 hover:text-prize"
                 }`}
               >
                 <span className="font-medium flex-1 pr-2 text-sm">{o.label}</span>
                 <div className="flex gap-3 text-xs shrink-0">
-                  <span className={active ? "text-yellow-300 font-bold" : "text-yellow-400/60"}>{prob}%</span>
+                  <span className={active ? "text-prize font-bold" : "text-prize/60"}>{prob}%</span>
                 </div>
               </button>
             );
@@ -146,23 +146,23 @@ export default function ConcursoBetForm({
         <>
           {/* Pool do concurso para este evento */}
           <div className="grid grid-cols-2 gap-2 text-center">
-            <div className="bg-green-500/10 rounded-lg px-3 py-2">
-              <p className="text-[10px] text-green-400/70 font-medium">POOL SIM</p>
+            <div className="bg-sim/10 rounded-lg px-3 py-2">
+              <p className="text-[10px] text-sim/70 font-medium">POOL SIM</p>
               {poolSim > 0 ? (
                 <>
-                  <p className="text-sm font-bold text-green-400">{probSimPct}%</p>
-                  <p className="text-[10px] text-green-400/60">Z$ {poolSim.toFixed(0)}</p>
+                  <p className="text-sm font-bold text-sim">{probSimPct}%</p>
+                  <p className="text-[10px] text-sim/60">Z$ {poolSim.toFixed(0)}</p>
                 </>
               ) : (
                 <p className="text-xs text-muted-foreground mt-1">Vazio</p>
               )}
             </div>
-            <div className="bg-red-500/10 rounded-lg px-3 py-2">
-              <p className="text-[10px] text-red-400/70 font-medium">POOL NÃO</p>
+            <div className="bg-nao/10 rounded-lg px-3 py-2">
+              <p className="text-[10px] text-destructive/70 font-medium">POOL NÃO</p>
               {poolNao > 0 ? (
                 <>
-                  <p className="text-sm font-bold text-red-400">{probNaoPct}%</p>
-                  <p className="text-[10px] text-red-400/60">Z$ {poolNao.toFixed(0)}</p>
+                  <p className="text-sm font-bold text-destructive">{probNaoPct}%</p>
+                  <p className="text-[10px] text-destructive/60">Z$ {poolNao.toFixed(0)}</p>
                 </>
               ) : (
                 <p className="text-xs text-muted-foreground mt-1">Vazio</p>
@@ -181,11 +181,11 @@ export default function ConcursoBetForm({
                   className={`py-3 rounded-lg font-bold text-sm transition-all ${
                     active
                       ? s === "sim"
-                        ? "bg-green-500 text-white ring-2 ring-green-500/50"
-                        : "bg-red-500 text-white ring-2 ring-red-500/50"
+                        ? "bg-sim text-foreground ring-2 ring-sim/50"
+                        : "bg-nao text-foreground ring-2 ring-destructive/50"
                       : s === "sim"
-                        ? "bg-green-500/10 text-green-400 hover:bg-green-500/20"
-                        : "bg-red-500/10 text-red-400 hover:bg-red-500/20"
+                        ? "bg-sim/10 text-sim hover:bg-sim/20"
+                        : "bg-nao/10 text-destructive hover:bg-nao/20"
                   }`}
                 >
                   {s.toUpperCase()}
@@ -198,9 +198,9 @@ export default function ConcursoBetForm({
 
       {/* Input */}
       <div>
-        <label className="text-xs text-yellow-300/60 mb-1.5 block">Valor em Z$ (mín. 1)</label>
+        <label className="text-xs text-prize/60 mb-1.5 block">Valor em Z$ (mín. 1)</label>
         <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-yellow-400/60 text-sm">Z$</span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-prize/60 text-sm">Z$</span>
           <input
             type="number"
             value={amount}
@@ -208,7 +208,7 @@ export default function ConcursoBetForm({
             placeholder="0"
             min={1}
             step="1"
-            className="w-full bg-black/30 border border-yellow-400/30 rounded-lg pl-12 pr-3 py-2.5 text-sm text-white focus:outline-none focus:border-yellow-400/60 transition-colors"
+            className="w-full bg-background/30 border border-prize/30 rounded-lg pl-12 pr-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-prize/60 transition-colors"
           />
         </div>
         <div className="flex gap-2 mt-2">
@@ -217,7 +217,7 @@ export default function ConcursoBetForm({
               key={val}
               onClick={() => { setAmount(String(val)); setError(""); }}
               disabled={val > zcBalance}
-              className="flex-1 py-1 text-xs bg-yellow-400/10 hover:bg-primary/90/20 text-yellow-400 rounded transition-colors disabled:opacity-30"
+              className="flex-1 py-1 text-xs bg-prize/10 hover:bg-primary/90/20 text-prize rounded transition-colors disabled:opacity-30"
             >
               {val}
             </button>
@@ -226,7 +226,7 @@ export default function ConcursoBetForm({
         {zcBalance > 0 && (
           <button
             onClick={() => setAmount(Math.floor(zcBalance).toString())}
-            className="text-[10px] text-yellow-400/50 hover:text-yellow-400 mt-1 transition-colors"
+            className="text-[10px] text-prize/50 hover:text-prize mt-1 transition-colors"
           >
             Usar tudo
           </button>
@@ -235,53 +235,53 @@ export default function ConcursoBetForm({
 
       {/* Preview */}
       {amountNum > 0 && (
-        <div className="bg-yellow-400/5 border border-yellow-400/20 rounded-lg p-3 space-y-1 text-xs">
+        <div className="bg-prize/5 border border-prize/20 rounded-lg p-3 space-y-1 text-xs">
           {isMulti ? (
             selectedOutcome ? (
               <>
                 <div className="flex justify-between">
-                  <span className="text-yellow-300/60">Resultado</span>
-                  <span className="text-yellow-300 font-semibold truncate max-w-[140px]">{selectedOutcome.label}</span>
+                  <span className="text-prize/60">Resultado</span>
+                  <span className="text-prize font-semibold truncate max-w-[140px]">{selectedOutcome.label}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-yellow-300/60">Retorno estimado</span>
-                  <span className="text-yellow-300 font-semibold">Z$ {multiReturn.toFixed(2)}</span>
+                  <span className="text-prize/60">Retorno estimado</span>
+                  <span className="text-prize font-semibold">Z$ {multiReturn.toFixed(2)}</span>
                 </div>
               </>
             ) : (
-              <p className="text-yellow-300/50">Selecione um resultado para ver o retorno estimado.</p>
+              <p className="text-prize/50">Selecione um resultado para ver o retorno estimado.</p>
             )
           ) : poolSim > 0 && poolNao > 0 ? (
             <>
               <div className="flex justify-between">
-                <span className="text-yellow-300/60">Probabilidade de {side.toUpperCase()}</span>
-                <span className="text-yellow-400 font-bold">{currentProbPct ? `${currentProbPct}%` : "—"}</span>
+                <span className="text-prize/60">Probabilidade de {side.toUpperCase()}</span>
+                <span className="text-prize font-bold">{currentProbPct ? `${currentProbPct}%` : "—"}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-yellow-300/60">Retorno estimado</span>
-                <span className="text-yellow-300 font-semibold">Z$ {expectedReturn.toFixed(2)}</span>
+                <span className="text-prize/60">Retorno estimado</span>
+                <span className="text-prize font-semibold">Z$ {expectedReturn.toFixed(2)}</span>
               </div>
             </>
           ) : (
-            <p className="text-yellow-300/50">Você será o primeiro neste lado — probabilidades definidas conforme outros entram.</p>
+            <p className="text-prize/50">Você será o primeiro neste lado — probabilidades definidas conforme outros entram.</p>
           )}
           {!isMulti && (
-            <div className="flex justify-between border-t border-yellow-400/10 pt-1">
-              <span className="text-yellow-300/50">Lucro potencial</span>
-              <span className="text-green-400 font-semibold">+Z$ {expectedProfit.toFixed(2)}</span>
+            <div className="flex justify-between border-t border-prize/10 pt-1">
+              <span className="text-prize/50">Lucro potencial</span>
+              <span className="text-sim font-semibold">+Z$ {expectedProfit.toFixed(2)}</span>
             </div>
           )}
-          <p className="text-yellow-300/40 text-[10px]">100% parimutuel — retorno proporcional ao pool.</p>
+          <p className="text-prize/40 text-[10px]">100% parimutuel — retorno proporcional ao pool.</p>
         </div>
       )}
 
-      {error && <p className="text-red-400 text-xs">{error}</p>}
-      {success && <p className="text-yellow-400 text-xs">{success}</p>}
+      {error && <p className="text-destructive text-xs">{error}</p>}
+      {success && <p className="text-prize text-xs">{success}</p>}
 
       <button
         onClick={handleBet}
         disabled={loading || !amountNum || insufficientBalance}
-        className="w-full py-3 rounded-lg font-bold text-sm bg-primary text-white hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full py-3 rounded-lg font-bold text-sm bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         {loading ? (
           <Loader2 size={16} className="animate-spin mx-auto" />

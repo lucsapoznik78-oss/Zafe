@@ -52,7 +52,7 @@ export default function GameCreateForm() {
   }
 
   const inputClass =
-    "w-full rounded-lg bg-input border border-border px-3 py-2 text-sm text-white focus:border-violet-400/60 focus:outline-none";
+    "w-full rounded-lg bg-input border border-border px-3 py-2 text-sm text-foreground focus:border-primary/60 focus:outline-none";
 
   return (
     <form onSubmit={submit} className="space-y-4">
@@ -118,12 +118,12 @@ export default function GameCreateForm() {
         Os palpites devem fechar antes do início do jogo. Você será o juiz e resolve o vencedor depois que fechar — vale pontos e rank (sem Z$).
       </p>
 
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-sm text-destructive">{error}</p>}
 
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-2.5 rounded-lg bg-violet-500/20 border border-violet-400/50 text-violet-200 font-bold text-sm hover:bg-violet-500/30 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+        className="w-full py-2.5 rounded-lg bg-primary/20 border border-primary/50 text-primary font-bold text-sm hover:bg-primary/30 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
       >
         {loading && <Loader2 size={14} className="animate-spin" />}
         Criar evento

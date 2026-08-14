@@ -59,19 +59,19 @@ export default async function PalpiteDoDia() {
           <CategoryBadge category={pick.category} />
         </div>
 
-        <p className="text-sm sm:text-base font-bold text-white leading-snug line-clamp-2 mb-3">
+        <p className="text-sm sm:text-base font-bold text-foreground leading-snug line-clamp-2 mb-3">
           {pick.title}
         </p>
 
         <div className="flex overflow-hidden rounded-md h-4 mb-1.5">
           <div
-            className="bg-sim flex items-center justify-center text-[9px] font-bold text-white min-w-[28px]"
+            className="bg-sim flex items-center justify-center text-[9px] font-bold text-primary-foreground min-w-[28px]"
             style={{ width: `${probSim}%` }}
           >
             {probSim}%
           </div>
           <div
-            className="bg-nao flex items-center justify-center text-[9px] font-bold text-white min-w-[28px]"
+            className="bg-nao flex items-center justify-center text-[9px] font-bold text-primary-foreground min-w-[28px]"
             style={{ width: `${probNao}%` }}
           >
             {probNao}%

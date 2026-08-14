@@ -16,7 +16,17 @@ interface FeaturedTopic {
 }
 
 function Confetti() {
-  const colors = ["#7C5CFC", "#f87171", "#facc15", "#60a5fa", "#e879f9", "#fb923c"];
+  // Confete tirado da própria paleta. Eram 6 hex soltos (roxo, coral, amarelo,
+  // azul, magenta, laranja) — festa de cassino. Seis tokens dão variedade
+  // suficiente e acompanham a troca de tema.
+  const colors = [
+    "var(--accent)",
+    "var(--yes-text)",
+    "var(--no-text)",
+    "var(--text)",
+    "var(--accent-press)",
+    "var(--text-secondary)",
+  ];
   const pieces = Array.from({ length: 36 });
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl">
@@ -99,48 +109,48 @@ export default function WelcomeModal() {
   const probNao = parseFloat(featured?.prob_nao ?? "0.5") * 100;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
       <div className="relative w-full max-w-sm max-h-[calc(100dvh-2rem)] overflow-y-auto bg-card border border-border rounded-2xl shadow-2xl">
 
         {/* Step 0: Boas-vindas */}
         {step === 0 && (
           <div className="p-6 space-y-5">
-            <button onClick={dismiss} className="absolute top-3 right-3 text-muted-foreground hover:text-white transition-colors">
+            <button onClick={dismiss} className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors">
               <X size={16} />
             </button>
             <div className="text-center space-y-1">
               <div className="w-14 h-14 rounded-2xl bg-primary/20 flex items-center justify-center mx-auto mb-3">
                 <TrendingUp size={28} className="text-primary" />
               </div>
-              <h2 className="text-xl font-black text-white">Bem-vindo à Zafe!</h2>
+              <h2 className="text-xl font-black text-foreground">Bem-vindo à Zafe!</h2>
               <p className="text-sm text-muted-foreground">A liga de previsões brasileira</p>
             </div>
             <div className="space-y-3">
               <div className="flex items-start gap-3 p-3 bg-muted/30 rounded-xl">
-                <Zap size={16} className="text-yellow-400 shrink-0 mt-0.5" />
+                <Zap size={16} className="text-prize shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-semibold text-white">Palpite em eventos reais</p>
+                  <p className="text-sm font-semibold text-foreground">Palpite em eventos reais</p>
                   <p className="text-xs text-muted-foreground">Esporte e e-sports — tudo verificável</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-3 bg-muted/30 rounded-xl">
                 <TrendingUp size={16} className="text-sim shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-semibold text-white">Ganhe com suas previsões</p>
+                  <p className="text-sm font-semibold text-foreground">Ganhe com suas previsões</p>
                   <p className="text-xs text-muted-foreground">Quem acerta divide o prêmio dos perdedores</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-3 bg-muted/30 rounded-xl">
-                <Trophy size={16} className="text-yellow-400 shrink-0 mt-0.5" />
+                <Trophy size={16} className="text-prize shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-semibold text-white">Compita em ligas</p>
+                  <p className="text-sm font-semibold text-foreground">Compita em ligas</p>
                   <p className="text-xs text-muted-foreground">Crie ligas com amigos e suba no ranking</p>
                 </div>
               </div>
             </div>
             <button
               onClick={next}
-              className="w-full py-3 bg-primary text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
+              className="w-full py-3 bg-primary text-primary-foreground font-bold rounded-xl text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
             >
               Começar <ArrowRight size={15} />
             </button>
@@ -150,12 +160,12 @@ export default function WelcomeModal() {
         {/* Step 1: Tópico em destaque */}
         {step === 1 && (
           <div className="p-6 space-y-4">
-            <button onClick={dismiss} className="absolute top-3 right-3 text-muted-foreground hover:text-white transition-colors">
+            <button onClick={dismiss} className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors">
               <X size={16} />
             </button>
             <div className="text-center space-y-1">
               <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Evento em destaque</p>
-              <h2 className="text-lg font-black text-white leading-tight">
+              <h2 className="text-lg font-black text-foreground leading-tight">
                 {loadingTopic ? "Carregando..." : featured?.title ?? "Explore os eventos"}
               </h2>
             </div>
@@ -166,13 +176,13 @@ export default function WelcomeModal() {
                 <div className="space-y-2">
                   <div className="flex overflow-hidden rounded-lg h-5">
                     <div
-                      className="bg-sim flex items-center justify-center text-[10px] font-bold text-white"
+                      className="bg-sim flex items-center justify-center text-[10px] font-bold text-primary-foreground"
                       style={{ width: `${probSim}%` }}
                     >
                       {probSim.toFixed(0)}%
                     </div>
                     <div
-                      className="bg-nao flex items-center justify-center text-[10px] font-bold text-white"
+                      className="bg-nao flex items-center justify-center text-[10px] font-bold text-primary-foreground"
                       style={{ width: `${probNao}%` }}
                     >
                       {probNao.toFixed(0)}%
@@ -187,13 +197,13 @@ export default function WelcomeModal() {
 
                 <button
                   onClick={goToTopic}
-                  className="w-full py-3 bg-primary text-white font-bold rounded-xl text-sm hover:bg-primary/90 transition-colors"
+                  className="w-full py-3 bg-primary text-primary-foreground font-bold rounded-xl text-sm hover:bg-primary/90 transition-colors"
                 >
                   Ver e palpitar
                 </button>
                 <button
                   onClick={next}
-                  className="w-full text-xs text-muted-foreground hover:text-white transition-colors"
+                  className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Explorar depois
                 </button>
@@ -203,7 +213,7 @@ export default function WelcomeModal() {
             {(!featured || loadingTopic) && (
               <button
                 onClick={next}
-                className="w-full py-3 bg-primary text-white font-bold rounded-xl text-sm hover:bg-primary/90 transition-colors"
+                className="w-full py-3 bg-primary text-primary-foreground font-bold rounded-xl text-sm hover:bg-primary/90 transition-colors"
               >
                 Explorar eventos
               </button>
@@ -220,7 +230,7 @@ export default function WelcomeModal() {
                 <Check size={32} className="text-sim" />
               </div>
               <div className="space-y-1">
-                <h2 className="text-xl font-black text-white">Tudo pronto!</h2>
+                <h2 className="text-xl font-black text-foreground">Tudo pronto!</h2>
                 <p className="text-sm text-muted-foreground">
                   Você ganhou <span className="text-primary font-bold">Z$200</span> de bônus de boas-vindas para começar.
                 </p>
@@ -233,7 +243,7 @@ export default function WelcomeModal() {
               </div>
               <button
                 onClick={dismiss}
-                className="w-full py-3 bg-primary text-white font-bold rounded-xl text-sm hover:bg-primary/90 transition-colors"
+                className="w-full py-3 bg-primary text-primary-foreground font-bold rounded-xl text-sm hover:bg-primary/90 transition-colors"
               >
                 Começar a palpitar
               </button>

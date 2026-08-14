@@ -50,19 +50,19 @@ export default function ConcursoNav() {
     .toUpperCase() ?? "?";
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b border-yellow-400/20 bg-black/90 backdrop-blur-sm pt-[env(safe-area-inset-top)]">
+    <header className="fixed top-0 left-0 right-0 z-50 border-b border-prize/20 bg-background/90 backdrop-blur-sm pt-[env(safe-area-inset-top)]">
       <div className="flex items-center justify-between h-14 px-3 sm:px-4 max-w-5xl mx-auto">
         <Link href="/concurso" className="flex items-center gap-2">
-          <Trophy size={18} className="text-yellow-400" />
-          <span className="font-black text-white text-sm">
-            Concurso <span className="text-yellow-400">Zafe</span>
+          <Trophy size={18} className="text-prize" />
+          <span className="font-black text-foreground text-sm">
+            Concurso <span className="text-prize">Zafe</span>
           </span>
         </Link>
 
         <div className="flex items-center gap-2">
           <Link
             href="/liga"
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-white hover:bg-white/5 transition-colors border border-border/60"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors border border-border/60"
           >
             <ArrowLeft size={13} />
             <span>Zona grátis</span>
@@ -73,7 +73,7 @@ export default function ConcursoNav() {
           <DropdownMenu>
             <DropdownMenuTrigger>
               <Avatar className="h-8 w-8 cursor-pointer border border-border">
-                <AvatarFallback className="bg-yellow-400/20 text-yellow-400 text-xs font-semibold">
+                <AvatarFallback className="bg-prize/20 text-prize text-xs font-semibold">
                   {initials}
                 </AvatarFallback>
               </Avatar>

@@ -55,12 +55,12 @@ export default function CommunityCreateForm({ creatorScore }: { creatorScore: nu
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="flex items-center gap-2 text-xs text-muted-foreground bg-card border border-border rounded-lg p-3">
-        <Star size={14} className={creatorScore >= 90 ? "text-yellow-400" : ""} />
-        Sua nota de criador: <span className="text-white font-bold">{creatorScore}</span>
+        <Star size={14} className={creatorScore >= 90 ? "text-prize" : ""} />
+        Sua nota de criador: <span className="text-foreground font-bold">{creatorScore}</span>
       </div>
 
       <div>
-        <label className="text-sm text-white font-medium mb-1 block">
+        <label className="text-sm text-foreground font-medium mb-1 block">
           Pergunta <span className="text-muted-foreground font-normal">(SIM ou NÃO)</span>
         </label>
         <input
@@ -69,13 +69,13 @@ export default function CommunityCreateForm({ creatorScore }: { creatorScore: nu
           onChange={(e) => setTitle(e.target.value)}
           maxLength={120}
           placeholder="Ex: Vai chover amanhã em SP?"
-          className="w-full bg-card border border-border rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+          className="w-full bg-card border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
         />
         <p className="text-[10px] text-muted-foreground mt-1">{title.length}/120</p>
       </div>
 
       <div>
-        <label className="text-sm text-white font-medium mb-1 block">
+        <label className="text-sm text-foreground font-medium mb-1 block">
           Critério de resolução
         </label>
         <textarea
@@ -84,17 +84,17 @@ export default function CommunityCreateForm({ creatorScore }: { creatorScore: nu
           maxLength={500}
           rows={3}
           placeholder="Descreva como o resultado será determinado..."
-          className="w-full bg-card border border-border rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+          className="w-full bg-card border border-border rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
         />
         <p className="text-[10px] text-muted-foreground mt-1">{description.length}/500</p>
       </div>
 
       <div>
-        <label className="text-sm text-white font-medium mb-1 block">Categoria</label>
+        <label className="text-sm text-foreground font-medium mb-1 block">Categoria</label>
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="w-full bg-card border border-border rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50"
+          className="w-full bg-card border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50"
         >
           {CATEGORIES.map((c) => (
             <option key={c.value} value={c.value}>{c.label}</option>
@@ -103,14 +103,14 @@ export default function CommunityCreateForm({ creatorScore }: { creatorScore: nu
       </div>
 
       <div>
-        <label className="text-sm text-white font-medium mb-1 block">Prazo de fechamento</label>
+        <label className="text-sm text-foreground font-medium mb-1 block">Prazo de fechamento</label>
         <input
           type="datetime-local"
           value={closesAt}
           onChange={(e) => setClosesAt(e.target.value)}
           min={minDate}
           max={maxDate}
-          className="w-full bg-card border border-border rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-primary/50"
+          className="w-full bg-card border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50"
         />
         <p className="text-[10px] text-muted-foreground mt-1">
           Você terá 72h após o fechamento para resolver o evento.
@@ -122,7 +122,7 @@ export default function CommunityCreateForm({ creatorScore }: { creatorScore: nu
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-3 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+        className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
       >
         {loading && <Loader2 size={14} className="animate-spin" />}
         Criar evento

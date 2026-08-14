@@ -45,7 +45,7 @@ export default function PaginasPage() {
   return (
     <div className="py-6 space-y-8 max-w-3xl mx-auto">
       <div>
-        <h1 className="text-xl sm:text-2xl font-black text-white">Todas as páginas</h1>
+        <h1 className="text-xl sm:text-2xl font-black text-foreground">Todas as páginas</h1>
         <p className="text-sm text-muted-foreground">
           Índice das páginas públicas da Zafe, sem precisar de conta para navegar.
         </p>
@@ -53,7 +53,7 @@ export default function PaginasPage() {
 
       {SECOES.map((secao) => (
         <section key={secao.titulo} className="space-y-3">
-          <h2 className="text-lg font-bold text-white">{secao.titulo}</h2>
+          <h2 className="text-lg font-bold text-foreground">{secao.titulo}</h2>
           <ul className="space-y-2">
             {secao.paginas.map((p) => (
               <li key={p.href}>
@@ -61,7 +61,7 @@ export default function PaginasPage() {
                   href={p.href}
                   className="block bg-card border border-border rounded-xl px-4 py-3 hover:border-primary/40 transition-colors"
                 >
-                  <p className="text-sm font-bold text-white">{p.label}</p>
+                  <p className="text-sm font-bold text-foreground">{p.label}</p>
                   <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{p.desc}</p>
                 </Link>
               </li>

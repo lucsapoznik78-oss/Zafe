@@ -125,16 +125,16 @@ export default async function ConcursoEntrar() {
     <div className="min-h-[calc(100vh-56px)] flex flex-col items-center justify-center py-8 px-4">
       <div className="w-full max-w-sm space-y-5">
         {/* Header do concurso */}
-        <div className="rounded-xl border border-yellow-400/30 bg-yellow-400/5 p-4 space-y-3">
+        <div className="rounded-xl border border-prize/30 bg-prize/5 p-4 space-y-3">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-yellow-400/20 flex items-center justify-center shrink-0">
-              <Trophy size={16} className="text-yellow-400" />
+            <div className="w-8 h-8 rounded-lg bg-prize/20 flex items-center justify-center shrink-0">
+              <Trophy size={16} className="text-prize" />
             </div>
             <div>
-              <p className="text-xs font-bold text-yellow-300">
+              <p className="text-xs font-bold text-prize">
                 {concurso?.titulo ?? "Concurso Liga Zafe"}
               </p>
-              <p className="text-[10px] text-yellow-400/60">
+              <p className="text-[10px] text-prize/60">
                 {concurso?.valor_inscricao_centavos
                   ? `Inscrição ${(concurso.valor_inscricao_centavos / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`
                   : "Inscrição grátis"}{" "}
@@ -143,7 +143,7 @@ export default async function ConcursoEntrar() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4 text-[10px] text-yellow-400/50">
+          <div className="flex items-center gap-4 text-[10px] text-prize/50">
             {(inscritos ?? 0) > 0 && (
               <span className="flex items-center gap-1">
                 <Users size={10} />
@@ -161,7 +161,7 @@ export default async function ConcursoEntrar() {
 
         <p className="text-center text-xs text-muted-foreground">
           Primeira vez?{" "}
-          <Link href="/concurso/como-funciona" className="text-yellow-400 hover:underline">
+          <Link href="/concurso/como-funciona" className="text-prize hover:underline">
             Veja como o concurso funciona
           </Link>
         </p>

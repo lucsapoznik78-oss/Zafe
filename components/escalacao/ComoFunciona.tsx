@@ -64,7 +64,7 @@ export default function ComoFunciona({ cards }: { cards: CardPublico[] }) {
   return (
     <section className="rounded-2xl border border-border bg-card overflow-hidden">
       <header className="flex items-center gap-2 px-4 py-3 border-b border-border">
-        <h2 className="text-sm font-semibold text-white flex-1">Como funciona</h2>
+        <h2 className="text-sm font-semibold text-foreground flex-1">Como funciona</h2>
         {PASSOS.map((p, i) => (
           <button
             key={p}
@@ -72,8 +72,8 @@ export default function ComoFunciona({ cards }: { cards: CardPublico[] }) {
             aria-current={i === passo ? "step" : undefined}
             className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-colors ${
               i === passo
-                ? "bg-primary text-white"
-                : "bg-input text-muted-foreground hover:text-white"
+                ? "bg-primary text-primary-foreground"
+                : "bg-input text-muted-foreground hover:text-foreground"
             }`}
           >
             {i + 1}. {p}
@@ -109,7 +109,7 @@ function PassoEscolha({ cards }: { cards: CardPublico[] }) {
       <p className="text-xs text-muted-foreground">
         Cada Convocação é uma competição e tem o próprio time, a própria entrada e o
         próprio ranking. Você pode entrar em{" "}
-        <strong className="text-white">todas as {cards.length}</strong> — são{" "}
+        <strong className="text-foreground">todas as {cards.length}</strong> — são{" "}
         {cards.length} times seus, não um.
       </p>
 
@@ -118,8 +118,11 @@ function PassoEscolha({ cards }: { cards: CardPublico[] }) {
           <button
             key={card.id}
             onClick={() => setI(idx)}
+            // Pill ativa: `text-background`, não `text-primary-foreground`. A
+            // pill é clara nos dois temas e no `legacy` o on-accent é branco —
+            // daria branco sobre branco.
             className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-colors ${
-              idx === i ? "bg-white text-black" : "bg-input text-muted-foreground hover:text-white"
+              idx === i ? "bg-foreground text-background" : "bg-input text-muted-foreground hover:text-foreground"
             }`}
           >
             {card.modo === "mix" ? "Mix" : card.titulo.split(" — ")[0]}
@@ -129,7 +132,7 @@ function PassoEscolha({ cards }: { cards: CardPublico[] }) {
 
       {c && (
         <div className="rounded-xl bg-input/60 border border-border p-3 space-y-1">
-          <p className="text-xs font-semibold text-white">{c.titulo}</p>
+          <p className="text-xs font-semibold text-foreground">{c.titulo}</p>
           <p className="text-[11px] text-muted-foreground">
             {c.n_titulares} titulares e {c.n_reservas}{" "}
             {c.n_reservas === 1 ? "reserva" : "reservas"} ·{" "}
@@ -141,17 +144,17 @@ function PassoEscolha({ cards }: { cards: CardPublico[] }) {
           <p className="text-[11px] text-muted-foreground">
             {c.modo === "fixo" ? (
               <>
-                Um time <strong className="text-white">para o mês inteiro</strong>: trava no
+                Um time <strong className="text-foreground">para o mês inteiro</strong>: trava no
                 fechamento e pontua em todas as partidas do mês, somadas.
               </>
             ) : (
               <>
-                Cada atleta disputa <strong className="text-white">um evento</strong> no mês.
+                Cada atleta disputa <strong className="text-foreground">um evento</strong> no mês.
               </>
             )}
           </p>
           <p className="text-[11px] text-muted-foreground">
-            Entrada de <strong className="text-white">{c.entrada_z} Z$</strong>, debitada na
+            Entrada de <strong className="text-foreground">{c.entrada_z} Z$</strong>, debitada na
             inscrição.
           </p>
         </div>
@@ -185,7 +188,7 @@ function PassoEscale() {
         — tente furar a regra abaixo.
       </p>
 
-      <div className="rounded-xl bg-gradient-to-b from-emerald-800 to-emerald-950 border border-white/10 p-3 flex justify-center gap-3">
+      <div className="rounded-xl bg-gradient-to-b from-emerald-800 to-emerald-950 border border-foreground/10 p-3 flex justify-center gap-3">
         {DEMO.map((slot, idx) => {
           const escolhido = escolhidos[idx];
           return (
@@ -200,13 +203,13 @@ function PassoEscale() {
               <span
                 className={`h-11 w-11 rounded-full flex items-center justify-center text-[10px] font-bold ${
                   escolhido
-                    ? "bg-white/15 ring-2 ring-white/50 text-white"
-                    : "border-2 border-dashed border-white/40 text-white/60"
+                    ? "bg-foreground/15 ring-2 ring-foreground/50 text-foreground"
+                    : "border-2 border-dashed border-foreground/40 text-foreground/60"
                 }`}
               >
                 {escolhido ? iniciaisCurtas(escolhido.nome) : slot.rotulo}
               </span>
-              <span className="text-[10px] text-white/80 leading-tight truncate w-full text-center">
+              <span className="text-[10px] text-foreground/80 leading-tight truncate w-full text-center">
                 {escolhido?.nome ?? "Escalar"}
               </span>
             </button>
@@ -220,10 +223,10 @@ function PassoEscale() {
             <li key={c.nome}>
               <button
                 onClick={() => tentar(aberto, c)}
-                className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-white/5 transition-colors"
+                className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-foreground/5 transition-colors"
               >
                 <span className="flex-1 min-w-0">
-                  <span className="block text-xs text-white truncate">{c.nome}</span>
+                  <span className="block text-xs text-foreground truncate">{c.nome}</span>
                   <span className="block text-[10px] text-muted-foreground">
                     {c.clube} · {c.pos}
                   </span>
@@ -260,13 +263,13 @@ function PassoPontue() {
     <div className="space-y-3">
       <p className="text-xs text-muted-foreground">
         Ninguém aposta em placar: seu atleta pontua pelo que ele fizer de verdade na
-        competição, lance a lance. Abaixo, <strong className="text-white">uma rodada</strong>.
+        competição, lance a lance. Abaixo, <strong className="text-foreground">uma rodada</strong>.
       </p>
 
       <div className="rounded-xl bg-input/60 border border-border p-3 space-y-2">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-xs font-semibold text-white">Pedro · Flamengo</span>
-          <span className="text-sm font-black text-white tabular-nums">{total} pts</span>
+          <span className="text-xs font-semibold text-foreground">Pedro · Flamengo</span>
+          <span className="text-sm font-black text-foreground tabular-nums">{total} pts</span>
         </div>
 
         <ul className="space-y-1 min-h-[5rem]">
@@ -288,7 +291,7 @@ function PassoPontue() {
 
         <button
           onClick={() => setN(fim ? 0 : n + 1)}
-          className="w-full py-1.5 rounded-lg bg-input border border-border text-[11px] font-semibold text-white hover:bg-white/5 transition-colors inline-flex items-center justify-center gap-1.5"
+          className="w-full py-1.5 rounded-lg bg-input border border-border text-[11px] font-semibold text-foreground hover:bg-foreground/5 transition-colors inline-flex items-center justify-center gap-1.5"
         >
           <Play size={11} /> {fim ? "Rodar de novo" : n === 0 ? "Simular a rodada" : "Próximo lance"}
         </button>
@@ -298,7 +301,7 @@ function PassoPontue() {
           acumula o mês. Quem lê "17 pts" e imagina que é isso o mês inteiro
           escala errado — e quem imagina o contrário espera 4× mais Z$. */}
       {fim && (
-        <p className="text-xs text-white">
+        <p className="text-xs text-foreground">
           Isso foi <strong>uma rodada</strong>. Nas ligas — Brasileirão, NBA, NFL, Valorant —
           o time é um só para o mês e joga todas as rodadas: a pontuação do atleta é a soma
           delas.
@@ -309,7 +312,7 @@ function PassoPontue() {
         <Coins size={13} className="text-primary shrink-0 mt-0.5" />
         <span>
           Cada titular pontua assim, e a soma dos titulares é a pontuação do seu time.{" "}
-          <strong className="text-white">1 ponto = 1 Z$</strong> na sua carteira quando a
+          <strong className="text-foreground">1 ponto = 1 Z$</strong> na sua carteira quando a
           Convocação é apurada. Reserva só entra se um titular não competir.
         </span>
       </p>

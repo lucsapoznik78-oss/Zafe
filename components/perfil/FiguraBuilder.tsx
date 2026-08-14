@@ -282,7 +282,7 @@ export default function FiguraBuilder({ figuraInicial, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-3 overflow-y-auto"
+      className="fixed inset-0 z-50 bg-background/80 flex items-center justify-center p-3 overflow-y-auto"
       onClick={onClose}
     >
       <div
@@ -291,14 +291,14 @@ export default function FiguraBuilder({ figuraInicial, onClose }: Props) {
       >
         {/* Preview grande — GeoGuessr coloca ele à esquerda e fixo enquanto o
             usuário mexe. Bom feedback visual + serve de "espelho". */}
-        <div className="bg-gradient-to-br from-primary/15 via-black/70 to-black md:w-[42%] p-6 flex flex-col items-center justify-center gap-4 border-b md:border-b-0 md:border-r border-border">
+        <div className="bg-background md:w-[42%] p-6 flex flex-col items-center justify-center gap-4 border-b md:border-b-0 md:border-r border-border">
           <div
             className="rounded-2xl p-2 shadow-inner"
             style={{
               background:
                 figura.backgroundColor && figura.backgroundColor !== "#00000000"
                   ? figura.backgroundColor
-                  : "rgba(255,255,255,0.05)",
+                  : "rgb(var(--c-text) / 0.05)",
             }}
           >
             <FiguraAvatar figura={figura} size={240} />
@@ -306,13 +306,13 @@ export default function FiguraBuilder({ figuraInicial, onClose }: Props) {
           <div className="flex flex-col gap-2 w-full max-w-[220px]">
             <button
               onClick={() => setFigura(randomFigura())}
-              className="flex items-center justify-center gap-2 text-xs bg-white/5 hover:bg-white/10 border border-border rounded-full px-3 py-2 text-white transition-colors"
+              className="flex items-center justify-center gap-2 text-xs bg-foreground/5 hover:bg-foreground/10 border border-border rounded-full px-3 py-2 text-foreground transition-colors"
             >
               <Shuffle size={12} /> Sortear tudo
             </button>
             <button
               onClick={() => setFigura((f) => randomizarCategoria(f, cat))}
-              className="flex items-center justify-center gap-2 text-[11px] bg-transparent hover:bg-white/5 border border-border/60 rounded-full px-3 py-1.5 text-muted-foreground hover:text-white transition-colors"
+              className="flex items-center justify-center gap-2 text-[11px] bg-transparent hover:bg-foreground/5 border border-border/60 rounded-full px-3 py-1.5 text-muted-foreground hover:text-foreground transition-colors"
             >
               <Shuffle size={11} /> Sortear {cat.toLowerCase()}
             </button>
@@ -323,14 +323,14 @@ export default function FiguraBuilder({ figuraInicial, onClose }: Props) {
         <div className="flex-1 flex flex-col min-h-0">
           <div className="flex items-center justify-between p-4 border-b border-border">
             <div>
-              <h2 className="text-sm font-bold text-white">Monte seu personagem</h2>
+              <h2 className="text-sm font-bold text-foreground">Monte seu personagem</h2>
               <p className="text-[10px] text-muted-foreground mt-0.5">
                 Cada opção mostra prévia com o seu boneco atual.
               </p>
             </div>
             <button
               onClick={onClose}
-              className="text-muted-foreground hover:text-white p-1"
+              className="text-muted-foreground hover:text-foreground p-1"
               aria-label="Fechar"
             >
               <X size={18} />
@@ -344,7 +344,7 @@ export default function FiguraBuilder({ figuraInicial, onClose }: Props) {
                 key={c}
                 onClick={() => setCat(c)}
                 className={`text-[11px] font-semibold px-3 py-1.5 rounded-md whitespace-nowrap transition-colors ${
-                  cat === c ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-white hover:bg-white/5"
+                  cat === c ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
                 }`}
               >
                 {c}
@@ -502,14 +502,14 @@ export default function FiguraBuilder({ figuraInicial, onClose }: Props) {
             <div className="flex gap-2">
               <button
                 onClick={onClose}
-                className="flex-1 py-2.5 text-sm font-semibold text-muted-foreground hover:text-white border border-border rounded-lg transition-colors"
+                className="flex-1 py-2.5 text-sm font-semibold text-muted-foreground hover:text-foreground border border-border rounded-lg transition-colors"
               >
                 Cancelar
               </button>
               <button
                 onClick={salvar}
                 disabled={pending}
-                className="flex-1 py-2.5 text-sm font-bold bg-primary text-black rounded-lg hover:brightness-110 disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 py-2.5 text-sm font-bold bg-primary text-primary-foreground rounded-lg hover:brightness-110 disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 <Save size={14} />
                 {pending ? "Salvando…" : "Salvar personagem"}
@@ -548,7 +548,7 @@ function SwatchRow({
             key={c}
             onClick={() => onSelect(c)}
             className={`w-9 h-9 rounded-full border-2 transition-all ${
-              sel ? "border-primary scale-110" : "border-border hover:border-white/40"
+              sel ? "border-primary scale-110" : "border-border hover:border-foreground/40"
             }`}
             style={{ background: c }}
             aria-label={c}
@@ -615,14 +615,14 @@ const PreviewChip = memo(function PreviewChip({
       className={`group flex flex-col items-center gap-1 p-1.5 rounded-lg border-2 transition-all ${
         selecionado
           ? "border-primary bg-primary/10"
-          : "border-border/40 bg-white/5 hover:border-white/40 hover:bg-white/10"
+          : "border-border/40 bg-foreground/5 hover:border-foreground/40 hover:bg-foreground/10"
       }`}
     >
-      <div className="w-14 h-14 overflow-hidden rounded-md bg-black/30 flex items-center justify-center">
+      <div className="w-14 h-14 overflow-hidden rounded-md bg-background/30 flex items-center justify-center">
         <FiguraAvatar figura={preview} size={56} />
       </div>
       <span className={`text-[9px] font-medium leading-tight text-center ${
-        selecionado ? "text-primary" : "text-muted-foreground group-hover:text-white"
+        selecionado ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
       }`}>
         {label}
       </span>
@@ -643,17 +643,20 @@ function BackgroundRow({
             key={c}
             onClick={() => onSelect(c)}
             className={`w-11 h-11 rounded-lg border-2 transition-all overflow-hidden relative ${
-              sel ? "border-primary scale-105" : "border-border hover:border-white/40"
+              sel ? "border-primary scale-105" : "border-border hover:border-foreground/40"
             }`}
             style={{
+              // Xadrez = convenção universal de "transparente". É informação,
+              // não decoração, então sobrevive à regra "sem gradiente" — mas
+              // passa a usar os tokens de superfície em vez de cinza cravado.
               background: isTransp
-                ? "repeating-conic-gradient(#4a4a4a 0% 25%, #2a2a2a 0% 50%) 50% / 10px 10px"
+                ? "repeating-conic-gradient(var(--surface-2) 0% 25%, var(--surface) 0% 50%) 50% / 10px 10px"
                 : c,
             }}
             aria-label={isTransp ? "Sem fundo" : c}
           >
             {isTransp && (
-              <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-white/70">
+              <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-ink-muted">
                 sem
               </span>
             )}

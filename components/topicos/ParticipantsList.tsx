@@ -30,11 +30,11 @@ interface Props {
 const STATUS_DOT: Record<string, string> = {
   won:      "bg-sim",
   lost:     "bg-nao",
-  pending:  "bg-yellow-400",
+  pending:  "bg-prize",
   matched:  "bg-primary",
   partial:  "bg-primary",
-  refunded: "bg-zinc-500",
-  exited:   "bg-zinc-500",
+  refunded: "bg-muted",
+  exited:   "bg-muted",
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -105,7 +105,7 @@ export default function ParticipantsList({ bets, totalSim, totalNao, marketType,
       {/* Header */}
       <div className="px-4 py-3 border-b border-border/50 flex items-center gap-2 flex-wrap">
         <Users size={14} className="text-muted-foreground" />
-        <p className="text-sm font-semibold text-white">Participantes</p>
+        <p className="text-sm font-semibold text-foreground">Participantes</p>
         <span className="text-xs text-muted-foreground">
           {totalParticipants} usuário{totalParticipants !== 1 ? "s" : ""} · {bets.length} palpite{bets.length !== 1 ? "s" : ""}
         </span>
@@ -163,7 +163,7 @@ export default function ParticipantsList({ bets, totalSim, totalNao, marketType,
 
           const pctTotal = totalVolume > 0 ? (Number(bet.amount) / totalVolume) * 100 : 0;
 
-          const dotCls   = STATUS_DOT[bet.status]   ?? "bg-zinc-500";
+          const dotCls   = STATUS_DOT[bet.status]   ?? "bg-muted";
           const statusTx = STATUS_LABEL[bet.status] ?? bet.status;
           const isSim    = bet.side === "sim";
 
@@ -177,11 +177,11 @@ export default function ParticipantsList({ bets, totalSim, totalNao, marketType,
           const pctSide = sideVolume > 0 ? (Number(bet.amount) / sideVolume) * 100 : 0;
 
           return (
-            <div key={bet.id} className="px-4 py-3 flex items-center gap-3 group hover:bg-white/[0.02] transition-colors">
+            <div key={bet.id} className="px-4 py-3 flex items-center gap-3 group hover:bg-foreground/[0.02] transition-colors">
 
               {/* Posição + Avatar */}
               <div className="flex items-center gap-2 shrink-0">
-                <span className="text-[10px] text-zinc-600 w-4 text-center font-mono">
+                <span className="text-[10px] text-muted-foreground w-4 text-center font-mono">
                   {idx + 1}
                 </span>
                 <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
@@ -197,7 +197,7 @@ export default function ParticipantsList({ bets, totalSim, totalNao, marketType,
                   {username ? (
                     <Link
                       href={`/u/${username}`}
-                      className="text-sm font-semibold text-white hover:text-primary transition-colors"
+                      className="text-sm font-semibold text-foreground hover:text-primary transition-colors"
                     >
                       @{username}
                     </Link>
@@ -230,7 +230,7 @@ export default function ParticipantsList({ bets, totalSim, totalNao, marketType,
                     </span>
                   </div>
 
-                  <span className="text-[10px] text-zinc-600">
+                  <span className="text-[10px] text-muted-foreground">
                     {formatDay(bet.created_at)}
                   </span>
                 </div>
@@ -238,7 +238,7 @@ export default function ParticipantsList({ bets, totalSim, totalNao, marketType,
 
               {/* Valores */}
               <div className="text-right shrink-0">
-                <p className="text-sm font-bold text-white">
+                <p className="text-sm font-bold text-foreground">
                   Z$ {formatZ(Number(bet.amount))}
                 </p>
                 <p className="text-[10px] text-muted-foreground">

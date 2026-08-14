@@ -85,7 +85,7 @@ export default function WatchlistButton({ topicId }: Props) {
         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
           watching
             ? "bg-primary/10 border-primary/40 text-primary hover:bg-nao/10 hover:border-nao/40 hover:text-nao"
-            : "border-border text-muted-foreground hover:text-white hover:border-border/80"
+            : "border-border text-muted-foreground hover:text-foreground hover:border-border/80"
         }`}
       >
         {saving ? <Loader2 size={12} className="animate-spin" /> : watching ? <BellRing size={12} /> : <Bell size={12} />}
@@ -94,14 +94,14 @@ export default function WatchlistButton({ topicId }: Props) {
 
       {open && (
         <div className="absolute right-0 top-full mt-2 w-64 bg-card border border-border rounded-xl p-4 space-y-3 z-50 shadow-xl">
-          <p className="text-sm font-semibold text-white">Seguir este setor</p>
+          <p className="text-sm font-semibold text-foreground">Seguir este setor</p>
           <p className="text-xs text-muted-foreground">
             Você receberá notificações quando a probabilidade mudar, quando faltar 2h para fechar e quando for resolvido.
           </p>
 
           <div className="space-y-1.5">
             <label className="text-xs text-muted-foreground">
-              Me avise se mudar mais de <span className="text-white font-semibold">{threshold}%</span>
+              Me avise se mudar mais de <span className="text-foreground font-semibold">{threshold}%</span>
             </label>
             <input
               type="range"
@@ -120,12 +120,12 @@ export default function WatchlistButton({ topicId }: Props) {
           <button
             onClick={confirm}
             disabled={saving}
-            className="w-full py-2 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-1.5"
+            className="w-full py-2 bg-primary text-primary-foreground text-xs font-bold rounded-lg hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-1.5"
           >
             {saving ? <Loader2 size={12} className="animate-spin" /> : saved ? <><Check size={12} /> Salvo!</> : <><BellRing size={12} /> Ativar alertas</>}
           </button>
 
-          <button onClick={() => setOpen(false)} className="w-full text-xs text-muted-foreground hover:text-white transition-colors">
+          <button onClick={() => setOpen(false)} className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors">
             Cancelar
           </button>
         </div>

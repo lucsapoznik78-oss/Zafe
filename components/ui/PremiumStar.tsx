@@ -35,18 +35,18 @@ export default function PremiumStar({ size = 12 }: { size?: number }) {
         aria-label="Membro Premium"
         className="inline-flex items-center"
       >
-        <Star size={size} className="text-yellow-400" fill="currentColor" />
+        <Star size={size} className="text-prize" fill="currentColor" />
       </button>
 
       {open && (
         <div
-          className="absolute left-1/2 top-full z-50 mt-1.5 w-52 -translate-x-1/2 rounded-lg border border-yellow-400/30 bg-card px-3 py-2.5 shadow-lg"
+          className="absolute left-1/2 top-full z-50 mt-1.5 w-52 -translate-x-1/2 rounded-lg border border-prize/30 bg-card px-3 py-2.5 shadow-lg"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
           }}
         >
-          <p className="flex items-center gap-1 text-xs font-bold text-yellow-400">
+          <p className="flex items-center gap-1 text-xs font-bold text-prize">
             <Star size={11} fill="currentColor" />
             Membro Premium
           </p>

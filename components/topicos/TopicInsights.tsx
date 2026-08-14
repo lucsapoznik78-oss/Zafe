@@ -44,8 +44,8 @@ export default function TopicInsights({ topicId }: { topicId: string }) {
     return (
       <div className="bg-card border border-border rounded-xl p-5">
         <div className="flex items-center gap-2 mb-3">
-          <Star className="w-4 h-4 text-yellow-400" />
-          <span className="text-sm font-bold text-white">Insights Premium</span>
+          <Star className="w-4 h-4 text-prize" />
+          <span className="text-sm font-bold text-foreground">Insights Premium</span>
         </div>
         <div className="space-y-2 animate-pulse">
           <div className="h-3 bg-muted rounded w-3/4" />
@@ -70,8 +70,8 @@ export default function TopicInsights({ topicId }: { topicId: string }) {
     return (
       <div className="bg-card border border-primary/30 rounded-xl p-5 relative overflow-hidden">
         <div className="flex items-center gap-2 mb-3">
-          <Star className="w-4 h-4 text-yellow-400" />
-          <span className="text-sm font-bold text-white">Insights Premium</span>
+          <Star className="w-4 h-4 text-prize" />
+          <span className="text-sm font-bold text-foreground">Insights Premium</span>
         </div>
 
         <div className="relative">
@@ -88,12 +88,12 @@ export default function TopicInsights({ topicId }: { topicId: string }) {
             <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/15 border border-primary/30">
               <Lock className="w-5 h-5 text-primary" />
             </div>
-            <p className="text-sm text-white font-semibold max-w-xs">
+            <p className="text-sm text-foreground font-semibold max-w-xs">
               Pesquisas, histórico e contexto exclusivos deste evento
             </p>
             <Link
               href="/premium"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors"
             >
               <Star className="w-4 h-4" />
               Desbloquear com Premium
@@ -111,15 +111,15 @@ export default function TopicInsights({ topicId }: { topicId: string }) {
   return (
     <div className="bg-card border border-primary/30 rounded-xl p-5 space-y-5">
       <div className="flex items-center gap-2">
-        <Star className="w-4 h-4 text-yellow-400" />
-        <span className="text-sm font-bold text-white">Insights Premium</span>
-        <span className="ml-auto px-2 py-0.5 rounded text-[10px] font-bold bg-yellow-400/15 text-yellow-400">
+        <Star className="w-4 h-4 text-prize" />
+        <span className="text-sm font-bold text-foreground">Insights Premium</span>
+        <span className="ml-auto px-2 py-0.5 rounded text-[10px] font-bold bg-prize/15 text-prize">
           PREMIUM
         </span>
       </div>
 
       {c.resumo && (
-        <p className="text-sm text-white leading-relaxed">{c.resumo}</p>
+        <p className="text-sm text-foreground leading-relaxed">{c.resumo}</p>
       )}
 
       {c.pontos_chave.length > 0 && (

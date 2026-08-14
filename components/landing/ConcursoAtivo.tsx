@@ -60,7 +60,7 @@ export default async function ConcursoAtivo() {
     <section className="py-16 px-4">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-8">
-          <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">
+          <h2 className="text-2xl sm:text-3xl font-black text-foreground mb-2">
             {CONCURSO_ABERTO ? "Concurso em andamento" : "O Concurso está chegando"}
           </h2>
           <p className="text-muted-foreground text-sm">
@@ -70,16 +70,16 @@ export default async function ConcursoAtivo() {
           </p>
         </div>
 
-        <div className="rounded-2xl border border-yellow-400/30 bg-yellow-400/5 p-6 sm:p-8 space-y-6">
+        <div className="rounded-2xl border border-prize/30 bg-prize/5 p-6 sm:p-8 space-y-6">
           {/* Header do concurso */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-yellow-400/20 flex items-center justify-center shrink-0">
-                <Trophy size={20} className="text-yellow-400" />
+              <div className="w-10 h-10 rounded-xl bg-prize/20 flex items-center justify-center shrink-0">
+                <Trophy size={20} className="text-prize" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-yellow-300">{titulo}</h3>
-                <div className="flex items-center gap-3 mt-1 text-xs text-yellow-400/60">
+                <h3 className="text-base font-bold text-prize">{titulo}</h3>
+                <div className="flex items-center gap-3 mt-1 text-xs text-prize/60">
                   <span className="flex items-center gap-1">
                     <Calendar size={11} />
                     {format(new Date(inicio), "dd/MM", { locale: ptBR })} –{" "}
@@ -95,10 +95,10 @@ export default async function ConcursoAtivo() {
               </div>
             </div>
             <div className="text-left sm:text-right shrink-0">
-              <p className="text-xs text-yellow-400/60 mb-0.5">
+              <p className="text-xs text-prize/60 mb-0.5">
                 {CONCURSO_ABERTO ? "Prêmio total" : "Prêmio total previsto"}
               </p>
-              <p className="text-2xl font-black text-yellow-400">
+              <p className="text-2xl font-black text-prize">
                 R$ {Number(premioTotal).toLocaleString("pt-BR")}
               </p>
             </div>
@@ -106,17 +106,17 @@ export default async function ConcursoAtivo() {
 
           {/* Distribuição de prêmios */}
           <div>
-            <p className="text-[10px] text-yellow-400/50 font-semibold uppercase tracking-widest mb-3 flex items-center gap-1">
+            <p className="text-[10px] text-prize/50 font-semibold uppercase tracking-widest mb-3 flex items-center gap-1">
               <Medal size={10} /> Distribuição
             </p>
             <div className="flex flex-wrap gap-2">
               {premios.map((p) => (
                 <div
                   key={p.pos}
-                  className="px-3 py-1.5 rounded-lg bg-yellow-400/10 border border-yellow-400/20"
+                  className="px-3 py-1.5 rounded-lg bg-prize/10 border border-prize/20"
                 >
-                  <span className="text-xs text-yellow-400 font-bold">{p.pos}</span>
-                  <span className="text-xs text-yellow-300/60 ml-1.5">{p.valor}</span>
+                  <span className="text-xs text-prize font-bold">{p.pos}</span>
+                  <span className="text-xs text-prize/60 ml-1.5">{p.valor}</span>
                 </div>
               ))}
             </div>
@@ -126,11 +126,11 @@ export default async function ConcursoAtivo() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 pt-1">
             <Link
               href={CONCURSO_ABERTO ? "/concurso/entrar" : "/concurso"}
-              className="px-5 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-colors"
+              className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors"
             >
               {CONCURSO_ABERTO ? "Inscrever-se grátis" : "Ver o Concurso"}
             </Link>
-            <p className="text-xs text-yellow-400/50">
+            <p className="text-xs text-prize/50">
               {CONCURSO_ABERTO
                 ? "Inscrição automática ao criar conta. Você recebe ZC$ 1.000 pra competir."
                 : "As inscrições ainda não abriram — nada do que você fizer hoje conta pro Concurso."}

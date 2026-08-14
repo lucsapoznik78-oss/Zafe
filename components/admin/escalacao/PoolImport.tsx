@@ -43,10 +43,10 @@ export default function PoolImport({ cardId, esportes, bloqueado }: Props) {
   return (
     <div className="bg-card border border-border rounded-xl p-4 space-y-3">
       <div>
-        <h3 className="text-sm font-semibold text-white">Pool do card</h3>
+        <h3 className="text-sm font-semibold text-foreground">Pool do card</h3>
         <p className="text-[11px] text-muted-foreground">
           Uma linha por atleta:{" "}
-          <code className="text-white">esporte,competicao_slug,nome,genero,referencia</code>. Esportes
+          <code className="text-foreground">esporte,competicao_slug,nome,genero,referencia</code>. Esportes
           aceitos neste card: {esportes.join(", ") || "nenhum"}. Reimportar é idempotente.
         </p>
       </div>
@@ -62,12 +62,12 @@ export default function PoolImport({ cardId, esportes, bloqueado }: Props) {
             onChange={(e) => setCsv(e.target.value)}
             rows={8}
             placeholder={"ufc,ufc,Islam Makhachev,m,\nsurf,wsl-ct,Gabriel Medina,m,"}
-            className="w-full bg-input border border-border rounded-lg px-3 py-2 text-xs font-mono text-white"
+            className="w-full bg-input border border-border rounded-lg px-3 py-2 text-xs font-mono text-foreground"
           />
           <button
             onClick={importar}
             disabled={enviando || !csv.trim()}
-            className="w-full py-2 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
+            className="w-full py-2 bg-primary text-primary-foreground font-bold text-sm rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
           >
             {enviando ? <Loader2 size={14} className="animate-spin mx-auto" /> : "Importar pool"}
           </button>

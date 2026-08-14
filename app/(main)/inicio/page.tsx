@@ -68,18 +68,17 @@ export default async function InicioPage() {
 
       {/* ─────────── HERÓI: CONCURSO (mundo pago) ─────────── */}
       {CONCURSO_ENABLED && (
-      <section className="relative overflow-hidden rounded-3xl border border-yellow-400/30 bg-gradient-to-br from-yellow-400/15 via-yellow-500/5 to-black p-6 sm:p-10">
-        <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-yellow-400/20 blur-3xl" />
+      <section className="relative overflow-hidden rounded-3xl border border-prize/30 bg-prize/10 p-6 sm:p-10">
         <div className="relative">
-          <div className="inline-flex items-center gap-2 rounded-full border border-yellow-400/40 bg-yellow-400/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-yellow-300">
+          <div className="inline-flex items-center gap-2 rounded-full border border-prize/40 bg-prize/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-prize">
             <Crown size={13} />
             {CONCURSO_ABERTO ? "Mundo principal · Prêmio em R$" : `Em breve · Estreia em ${CONCURSO_ESTREIA}`}
           </div>
 
-          <h1 className="mt-4 text-4xl sm:text-5xl font-black leading-tight text-white">
+          <h1 className="mt-4 text-4xl sm:text-5xl font-black leading-tight text-foreground">
             {titulo}
           </h1>
-          <p className="mt-2 max-w-xl text-sm sm:text-base text-yellow-100/70">
+          <p className="mt-2 max-w-xl text-sm sm:text-base text-prize/70">
             {CONCURSO_ABERTO
               ? "O fantasy game de esporte e e-sports onde os melhores previsores levam dinheiro de verdade por PIX. Prêmio fixo, anunciado na abertura."
               : `O Concurso ainda não começou. A primeira edição valendo é a de ${CONCURSO_ESTREIA} — até lá não há inscrição aberta, palpite que conte nem prêmio em disputa.`}
@@ -87,14 +86,14 @@ export default async function InicioPage() {
 
           <div className="mt-6 flex flex-wrap items-end gap-x-8 gap-y-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-yellow-400/60">
+              <p className="text-xs font-semibold uppercase tracking-wider text-prize/60">
                 {CONCURSO_ABERTO ? "Prêmio total" : "Prêmio total previsto"}
               </p>
-              <p className="text-5xl font-black text-yellow-400">
+              <p className="text-5xl font-black text-prize">
                 R$ {premioTotal.toLocaleString("pt-BR")}
               </p>
             </div>
-            <div className="flex flex-col gap-1.5 text-xs text-yellow-200/60">
+            <div className="flex flex-col gap-1.5 text-xs text-prize/60">
               {inicio && fim && (
                 <span className="flex items-center gap-1.5">
                   <Calendar size={12} />
@@ -113,9 +112,9 @@ export default async function InicioPage() {
 
           <div className="mt-5 flex flex-wrap gap-2">
             {premios.map((p) => (
-              <div key={p.pos} className="rounded-lg border border-yellow-400/20 bg-yellow-400/10 px-3 py-1.5">
-                <span className="text-xs font-bold text-yellow-400">{p.pos}</span>
-                <span className="ml-1.5 text-xs text-yellow-300/60">{p.valor}</span>
+              <div key={p.pos} className="rounded-lg border border-prize/20 bg-prize/10 px-3 py-1.5">
+                <span className="text-xs font-bold text-prize">{p.pos}</span>
+                <span className="ml-1.5 text-xs text-prize/60">{p.valor}</span>
               </div>
             ))}
           </div>
@@ -123,7 +122,7 @@ export default async function InicioPage() {
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <Link
               href="/concurso"
-              className="group inline-flex items-center gap-2 rounded-2xl bg-yellow-400 px-7 py-3.5 text-base font-black text-black transition-colors hover:bg-primary/90"
+              className="group inline-flex items-center gap-2 rounded-2xl bg-prize px-7 py-3.5 text-base font-black text-primary-foreground transition-colors hover:bg-primary/90"
             >
               <Trophy size={18} />
               {CONCURSO_ABERTO ? "Entrar no Concurso" : "Ver o Concurso"}
@@ -131,7 +130,7 @@ export default async function InicioPage() {
             </Link>
             <Link
               href="/concurso/como-funciona"
-              className="text-sm font-semibold text-yellow-400 hover:text-yellow-300 transition-colors"
+              className="text-sm font-semibold text-prize hover:text-prize transition-colors"
             >
               Como funciona →
             </Link>
@@ -154,7 +153,7 @@ export default async function InicioPage() {
       {/* ─────────── ZONA GRÁTIS ─────────── */}
       <section>
         <div className="mb-5">
-          <h2 className="text-xl font-black text-white">
+          <h2 className="text-xl font-black text-foreground">
             {CONCURSO_ENABLED ? "Zona grátis" : "Módulos"}
           </h2>
           <p className="text-sm text-muted-foreground">
@@ -172,7 +171,7 @@ export default async function InicioPage() {
                 <Icon size={18} />
               </div>
               <div>
-                <p className="flex items-center gap-1 font-bold text-white">
+                <p className="flex items-center gap-1 font-bold text-foreground">
                   {label}
                   <ArrowRight size={13} className="opacity-0 transition-opacity group-hover:opacity-60" />
                 </p>

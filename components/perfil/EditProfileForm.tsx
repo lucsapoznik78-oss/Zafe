@@ -54,7 +54,7 @@ export default function EditProfileForm({ fullName, username }: EditProfileFormP
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full bg-input border border-border rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-primary/50 mt-1"
+          className="w-full bg-input border border-border rounded-lg px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-primary/50 mt-1"
         />
       </div>
       <div>
@@ -62,7 +62,7 @@ export default function EditProfileForm({ fullName, username }: EditProfileFormP
         <input
           value={user}
           onChange={(e) => setUser(e.target.value)}
-          className="w-full bg-input border border-border rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-primary/50 mt-1"
+          className="w-full bg-input border border-border rounded-lg px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-primary/50 mt-1"
         />
       </div>
       {error && <p className="text-destructive text-xs">{error}</p>}
@@ -70,14 +70,14 @@ export default function EditProfileForm({ fullName, username }: EditProfileFormP
         <button
           onClick={handleSave}
           disabled={loading}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary/90 disabled:opacity-50"
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground text-xs font-semibold rounded-lg hover:bg-primary/90 disabled:opacity-50"
         >
           {loading ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
           Salvar
         </button>
         <button
           onClick={() => { setEditing(false); setName(fullName); setUser(username); }}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-muted text-muted-foreground text-xs rounded-lg hover:text-white"
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-muted text-muted-foreground text-xs rounded-lg hover:text-foreground"
         >
           <X size={12} />
           Cancelar

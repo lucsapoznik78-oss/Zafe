@@ -51,7 +51,7 @@ export default async function EscalacaoPage({
   if (cards.length === 0) {
     return (
       <div className="py-10 text-center space-y-2">
-        <h1 className="text-xl font-bold text-white">Escalação</h1>
+        <h1 className="text-xl font-bold text-foreground">Escalação</h1>
         <p className="text-sm text-muted-foreground">
           Nenhuma Convocação aberta agora. A próxima abre no começo do mês.
         </p>
@@ -75,12 +75,12 @@ export default async function EscalacaoPage({
   return (
     <div className="py-6 space-y-5">
       <header className="space-y-1">
-        <h1 className="text-xl font-bold text-white flex items-center gap-2">
+        <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
           <Users size={20} className="text-primary" /> Escalação
         </h1>
         <p className="text-xs text-muted-foreground">
           Monte um time de atletas reais. Cada um pontua pelo que fizer de verdade na
-          competição, e <strong className="text-white">1 ponto = 1 Z$</strong>.
+          competição, e <strong className="text-foreground">1 ponto = 1 Z$</strong>.
         </p>
       </header>
 
@@ -94,11 +94,11 @@ export default async function EscalacaoPage({
           cada esporte) desceu para o `<details>` de regras lá embaixo, onde só
           quem procura paga o custo de ler. */}
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-        <h2 className="text-base font-bold text-white">{card.titulo}</h2>
+        <h2 className="text-base font-bold text-foreground">{card.titulo}</h2>
         <p className="text-[11px] text-muted-foreground">
           {card.n_titulares}+{card.n_reservas} · {card.entrada_z} Z$ ·{" "}
           {aberto ? "fecha " : "fechou "}
-          <strong className="text-white">{FMT_DATA.format(new Date(card.fecha_em))}</strong>
+          <strong className="text-foreground">{FMT_DATA.format(new Date(card.fecha_em))}</strong>
         </p>
       </div>
 
@@ -133,7 +133,7 @@ export default async function EscalacaoPage({
           />
           <Link
             href="/login"
-            className="block w-full py-2.5 bg-primary text-white font-bold text-sm rounded-xl text-center hover:bg-primary/90 transition-colors"
+            className="block w-full py-2.5 bg-primary text-primary-foreground font-bold text-sm rounded-xl text-center hover:bg-primary/90 transition-colors"
           >
             Entrar para escalar
           </Link>
@@ -154,7 +154,7 @@ export default async function EscalacaoPage({
 
       {!aberto && (
         <div className="bg-card border border-border rounded-xl p-4">
-          <h2 className="text-sm font-semibold text-white flex items-center gap-2 mb-2">
+          <h2 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-2">
             <Trophy size={15} className="text-primary" /> Ranking
           </h2>
           {ranking.length === 0 ? (
@@ -164,11 +164,11 @@ export default async function EscalacaoPage({
               {ranking.map((l) => (
                 <li key={l.time_id} className="flex items-center gap-3 py-2">
                   <span className="text-xs text-muted-foreground w-6 shrink-0">{l.posicao}º</span>
-                  <span className="flex-1 text-sm text-white truncate">
+                  <span className="flex-1 text-sm text-foreground truncate">
                     {l.nome || l.username}
                   </span>
                   <span className="text-right shrink-0">
-                    <span className="block text-sm text-white">{l.pontos_total ?? 0} pts</span>
+                    <span className="block text-sm text-foreground">{l.pontos_total ?? 0} pts</span>
                     {/* Só existe depois de `escalacao_pagar_card`. Antes disso o
                         valor é uma projeção, e mostrar projeção de Z$ como se
                         fosse saldo é promessa que o card ainda pode não cumprir. */}
@@ -189,7 +189,7 @@ export default async function EscalacaoPage({
           campo, e empurravam o produto para baixo da dobra — quem já entendeu o
           modo lia tudo de novo toda visita. */}
       <details className="bg-card border border-border rounded-xl">
-        <summary className="p-4 text-sm font-semibold text-white cursor-pointer">
+        <summary className="p-4 text-sm font-semibold text-foreground cursor-pointer">
           Como funciona
         </summary>
         <div className="px-4 pb-4">
@@ -198,7 +198,7 @@ export default async function EscalacaoPage({
       </details>
 
       <details className="bg-card border border-border rounded-xl">
-        <summary className="p-4 text-sm font-semibold text-white cursor-pointer">
+        <summary className="p-4 text-sm font-semibold text-foreground cursor-pointer">
           Regras desta Convocação
         </summary>
         <div className="px-4 pb-4 space-y-3">
@@ -225,12 +225,12 @@ export default async function EscalacaoPage({
 
           {esportes.map((e) => (
             <div key={e.esporte_key} className="space-y-1">
-              <p className="text-xs font-semibold text-white">{e.nome}</p>
+              <p className="text-xs font-semibold text-foreground">{e.nome}</p>
               <ul className="space-y-0.5">
                 {e.regras.map((r, i) => (
                   <li key={i} className="text-[11px] text-muted-foreground">
                     {r.rotulo}
-                    {r.resumo && <span className="text-white"> — {r.resumo}</span>}
+                    {r.resumo && <span className="text-foreground"> — {r.resumo}</span>}
                   </li>
                 ))}
               </ul>

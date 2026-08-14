@@ -72,7 +72,7 @@ function WinBanner({
       {/* Varredura dourada de celebração */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 animate-shimmer-sweep bg-gradient-to-r from-transparent via-yellow-300/15 to-transparent"
+        className="pointer-events-none absolute inset-0 animate-shimmer-sweep bg-gradient-to-r from-transparent via-prize/15 to-transparent"
       />
       <div className="w-10 h-10 rounded-full bg-sim/20 flex items-center justify-center shrink-0">
         <TrendingUp size={20} className="text-sim" />
@@ -148,12 +148,12 @@ export default function UserResultBanner({ bets, resolution, winningLabel }: Pro
 
   if (refundedBets.length > 0) {
     return (
-      <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl px-5 py-4 flex items-center gap-4">
-        <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center shrink-0">
-          <RotateCcw size={20} className="text-yellow-400" />
+      <div className="bg-prize/10 border border-prize/30 rounded-xl px-5 py-4 flex items-center gap-4">
+        <div className="w-10 h-10 rounded-full bg-prize/20 flex items-center justify-center shrink-0">
+          <RotateCcw size={20} className="text-prize" />
         </div>
         <div>
-          <p className="text-yellow-400 font-bold text-base">Reembolso de {formatCurrency(totalRefunded)}</p>
+          <p className="text-prize font-bold text-base">Reembolso de {formatCurrency(totalRefunded)}</p>
           <p className="text-xs text-muted-foreground mt-0.5">Setor cancelado ou sem cobertura</p>
         </div>
       </div>

@@ -33,7 +33,7 @@ export default function ShareButton({ title, probSim, slug, topicId, pagePath }:
     <div className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-muted-foreground text-xs hover:text-white hover:border-white/30 transition-colors"
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-muted-foreground text-xs hover:text-foreground hover:border-foreground/30 transition-colors"
       >
         <Share2 size={13} />
         Compartilhar
@@ -45,16 +45,16 @@ export default function ShareButton({ title, probSim, slug, topicId, pagePath }:
           <div className="absolute right-0 top-9 z-20 bg-card border border-border rounded-xl p-3 space-y-2 w-48 shadow-xl">
             <a href={whatsappUrl} target="_blank" rel="noopener noreferrer"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-xs text-white hover:bg-white/5 transition-colors">
+              className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-xs text-foreground hover:bg-foreground/5 transition-colors">
               <span className="text-base">💬</span> WhatsApp
             </a>
             <a href={twitterUrl} target="_blank" rel="noopener noreferrer"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-xs text-white hover:bg-white/5 transition-colors">
+              className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-xs text-foreground hover:bg-foreground/5 transition-colors">
               <span className="text-base">𝕏</span> Twitter / X
             </a>
             <button onClick={() => { handleCopy(); setOpen(false); }}
-              className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-xs text-white hover:bg-white/5 transition-colors">
+              className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-xs text-foreground hover:bg-foreground/5 transition-colors">
               {copied ? <Check size={13} className="text-sim" /> : <Copy size={13} />}
               {copied ? "Copiado!" : "Copiar link"}
             </button>

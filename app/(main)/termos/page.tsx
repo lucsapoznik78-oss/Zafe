@@ -15,12 +15,12 @@ export default function TermosPage() {
       className="py-8 max-w-2xl mx-auto space-y-8 text-sm text-muted-foreground"
     >
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-white mb-1">Termos de Uso</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground mb-1">Termos de Uso</h1>
         <p className="text-xs">Versão {LEGAL_DOCS.termos.version} · vigente desde 29 de julho de 2026</p>
       </div>
 
       <section className="space-y-3">
-        <h2 className="text-base font-semibold text-white">1. Sobre a Zafe</h2>
+        <h2 className="text-base font-semibold text-foreground">1. Sobre a Zafe</h2>
         <p>
           A Zafe é uma liga de previsões onde usuários competem palpitando sobre o resultado de eventos do Brasil e do mundo.
           Ao criar uma conta, você concorda com estes termos e com nossa política de privacidade.
@@ -32,7 +32,7 @@ export default function TermosPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-base font-semibold text-white">2. Elegibilidade</h2>
+        <h2 className="text-base font-semibold text-foreground">2. Elegibilidade</h2>
         <p>
           Para usar a Zafe você deve ter pelo menos 18 anos de idade e capacidade legal para celebrar contratos.
           Ao criar uma conta, você declara que atende a esses requisitos.
@@ -40,7 +40,7 @@ export default function TermosPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-base font-semibold text-white">3. Moeda virtual (Z$)</h2>
+        <h2 className="text-base font-semibold text-foreground">3. Moeda virtual (Z$)</h2>
         <p>
           A Zafe utiliza Z$ como moeda virtual exclusiva da plataforma. O Z$ não tem valor monetário real,
           não é conversível em dinheiro e não pode ser sacado. Você não deposita dinheiro real para obter Z$.
@@ -53,7 +53,7 @@ export default function TermosPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-base font-semibold text-white">4. Como funcionam os palpites</h2>
+        <h2 className="text-base font-semibold text-foreground">4. Como funcionam os palpites</h2>
         <p>
           Usuários alocam Z$ em palpites SIM ou NÃO sobre eventos. Quando o evento é resolvido, os vencedores
           recebem o Z$ do lado perdedor proporcional ao valor alocado, sem comissão da plataforma (100% do pool é distribuído).
@@ -62,14 +62,14 @@ export default function TermosPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-base font-semibold text-white">5. Concurso e prêmios em dinheiro real</h2>
+        <h2 className="text-base font-semibold text-foreground">5. Concurso e prêmios em dinheiro real</h2>
         <p>
           A Zafe promove o Concurso, um fantasy game de habilidade sobre eventos reais de esporte e
           e-sports, enquadrado como fantasy sport pelo Art. 49 da Lei 14.790/2023. O prêmio é fixo,
           definido na abertura e independente do número de inscritos ou do valor arrecadado.
         </p>
         <p>
-          A inscrição em cada edição do Concurso custa <strong className="text-white">R$ 20,00</strong>,
+          A inscrição em cada edição do Concurso custa <strong className="text-foreground">R$ 20,00</strong>,
           salvo edições expressamente anunciadas como promocionais ou gratuitas. O valor é devido por
           edição e por participante, dá direito ao saldo inicial de ZC$ da edição e não é convertido
           em Z$ nem em qualquer saldo sacável. O valor e as condições de cada edição são informados
@@ -88,7 +88,7 @@ export default function TermosPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-base font-semibold text-white">6. Zafe Premium</h2>
+        <h2 className="text-base font-semibold text-foreground">6. Zafe Premium</h2>
         <p>
           A assinatura Zafe Premium concede acesso a ferramentas de curadoria de informação, análise de
           calibração pessoal e outros benefícios de plataforma. A assinatura é cobrada mensalmente via PIX
@@ -101,7 +101,7 @@ export default function TermosPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-base font-semibold text-white">7. Conduta do usuário, suspensão e defesa</h2>
+        <h2 className="text-base font-semibold text-foreground">7. Conduta do usuário, suspensão e defesa</h2>
         <p>
           É proibido usar a plataforma para fraude, manipulação de resultados, criação de múltiplas contas
           ou qualquer atividade ilegal.
@@ -114,7 +114,7 @@ export default function TermosPage() {
           enviada em até 48 horas.
         </p>
         <p>
-          O usuário tem direito a apresentar defesa no prazo de <strong className="text-white">15 dias
+          O usuário tem direito a apresentar defesa no prazo de <strong className="text-foreground">15 dias
           corridos</strong> contados da comunicação, pelos canais de contato desta política. A Zafe
           analisará a defesa e responderá de forma fundamentada em até 15 dias corridos.
         </p>
@@ -127,9 +127,9 @@ export default function TermosPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-base font-semibold text-white">8. Proteção de dados pessoais e cookies</h2>
+        <h2 className="text-base font-semibold text-foreground">8. Proteção de dados pessoais e cookies</h2>
         <p>
-          A Zafe é a <strong className="text-white">controladora</strong> dos dados pessoais tratados na
+          A Zafe é a <strong className="text-foreground">controladora</strong> dos dados pessoais tratados na
           plataforma, nos termos da Lei nº 13.709/2018 (LGPD). Seus dados não são vendidos, alugados nem
           cedidos a terceiros para fins de marketing.
         </p>
@@ -143,7 +143,7 @@ export default function TermosPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-base font-semibold text-white">9. Limitação de responsabilidade</h2>
+        <h2 className="text-base font-semibold text-foreground">9. Limitação de responsabilidade</h2>
         <p>
           O Z$ não tem valor monetário real. A participação em concursos envolve habilidade preditiva, não
           garantia de prêmio. A Zafe não é responsável por decisões tomadas com base em curadoria de informação.
@@ -151,7 +151,7 @@ export default function TermosPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-base font-semibold text-white">10. Alterações nos termos</h2>
+        <h2 className="text-base font-semibold text-foreground">10. Alterações nos termos</h2>
         <p>
           A Zafe pode alterar estes termos, mas nunca de forma retroativa: qualquer alteração produz
           efeitos apenas para o futuro e não altera relações já constituídas nem direitos já adquiridos
@@ -160,19 +160,19 @@ export default function TermosPage() {
         <p>
           Mudanças relevantes — em especial as que afetem preço, regras de premiação, obrigações do
           usuário ou tratamento de dados pessoais — serão comunicadas por email e na plataforma com
-          antecedência mínima de <strong className="text-white">30 dias corridos</strong> antes de
+          antecedência mínima de <strong className="text-foreground">30 dias corridos</strong> antes de
           entrarem em vigor. Correções de erro material e ajustes exigidos por lei ou por determinação
           de autoridade podem ter vigência imediata, com comunicação no mesmo ato.
         </p>
         <p>
-          <strong className="text-white">Nenhuma alteração se aplica a edição do Concurso já em
+          <strong className="text-foreground">Nenhuma alteração se aplica a edição do Concurso já em
           andamento.</strong> As regras de uma edição são as vigentes na data da sua abertura e valem
           até a apuração e o pagamento dos prêmios daquela edição, inclusive quanto a critério de
           ranking, distribuição de premiação, desempate e taxa de inscrição.
         </p>
         <p>
           Nenhuma versão nova vale por uso continuado: ao entrar em vigor, a plataforma pede seu{" "}
-          <strong className="text-white">aceite expresso</strong>, com o resumo das mudanças, antes de
+          <strong className="text-foreground">aceite expresso</strong>, com o resumo das mudanças, antes de
           você continuar navegando. Se você não concordar, pode encerrar sua conta sem qualquer ônus e
           terá devolvida a taxa de inscrição de edição que ainda não tenha começado.
         </p>
@@ -184,7 +184,7 @@ export default function TermosPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-base font-semibold text-white">11. Contato</h2>
+        <h2 className="text-base font-semibold text-foreground">11. Contato</h2>
         <p>
           Para dúvidas, suporte, defesa nos termos da seção 7 ou solicitações relacionadas à
           privacidade:{" "}

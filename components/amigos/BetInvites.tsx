@@ -28,16 +28,16 @@ export default function BetInvites({ invites }: { invites: Invite[] }) {
 
   return (
     <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-      <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+      <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
         Convites de Palpite
         <span className="px-1.5 py-0.5 bg-primary/20 text-primary rounded text-xs">{invites.length}</span>
       </h3>
       {invites.map((invite) => (
         <div key={invite.id} className="border border-border rounded-lg p-3 space-y-2">
           <p className="text-xs text-muted-foreground">
-            <span className="text-white font-medium">{invite.inviter.full_name}</span> te convidou para palpitar
+            <span className="text-foreground font-medium">{invite.inviter.full_name}</span> te convidou para palpitar
           </p>
-          <p className="text-sm text-white font-medium line-clamp-2">{invite.topic?.title}</p>
+          <p className="text-sm text-foreground font-medium line-clamp-2">{invite.topic?.title}</p>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 text-xs">
               <span className={`font-bold ${invite.invitee_side === "sim" ? "text-sim" : "text-nao"}`}>

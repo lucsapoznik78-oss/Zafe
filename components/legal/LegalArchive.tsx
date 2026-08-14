@@ -29,7 +29,7 @@ export async function LegalVersion({ doc, version }: { doc: LegalDoc; version: s
     return (
       <div className="py-8 max-w-2xl mx-auto space-y-4 text-sm text-muted-foreground">
         <p>
-          A versão <strong className="text-white">{version}</strong> é a vigente.
+          A versão <strong className="text-foreground">{version}</strong> é a vigente.
         </p>
         <Link href={meta.route} className="text-primary hover:underline">
           Ver {meta.label}
@@ -52,24 +52,24 @@ export async function LegalVersion({ doc, version }: { doc: LegalDoc; version: s
     <div className="py-8 max-w-2xl mx-auto space-y-6 text-sm text-muted-foreground">
       <Link
         href={`${meta.route}/historico`}
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-white transition-colors"
+        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
         <ArrowLeft size={15} />
         Todas as versões
       </Link>
 
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-white mb-1">
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground mb-1">
           {meta.label} — versão {data.version}
         </h1>
         <p className="text-xs">Vigorou a partir de {dataBR(data.effective_from)}</p>
       </div>
 
-      <div className="rounded-lg border border-yellow-400/30 bg-yellow-400/5 p-4 space-y-2">
-        <p className="text-xs text-white font-semibold">Versão arquivada</p>
+      <div className="rounded-lg border border-prize/30 bg-prize/5 p-4 space-y-2">
+        <p className="text-xs text-foreground font-semibold">Versão arquivada</p>
         <p className="text-xs leading-relaxed">
           Este texto não está mais em vigor. A versão vigente é a{" "}
-          <strong className="text-white">{meta.version}</strong> —{" "}
+          <strong className="text-foreground">{meta.version}</strong> —{" "}
           <Link href={meta.route} className="text-primary hover:underline">
             ler agora
           </Link>
@@ -79,7 +79,7 @@ export async function LegalVersion({ doc, version }: { doc: LegalDoc; version: s
 
       {data.summary_of_changes && (
         <div className="space-y-2">
-          <h2 className="text-base font-semibold text-white">O que mudou nesta versão</h2>
+          <h2 className="text-base font-semibold text-foreground">O que mudou nesta versão</h2>
           <ul className="list-disc pl-5 space-y-1">
             {data.summary_of_changes.split("\n").filter(Boolean).map((linha: string) => (
               <li key={linha}>{linha}</li>
@@ -89,15 +89,15 @@ export async function LegalVersion({ doc, version }: { doc: LegalDoc; version: s
       )}
 
       <div className="space-y-2">
-        <h2 className="text-base font-semibold text-white">Texto integral</h2>
+        <h2 className="text-base font-semibold text-foreground">Texto integral</h2>
         <p className="whitespace-pre-wrap leading-relaxed">{data.content_md}</p>
       </div>
 
       <div className="pt-4 border-t border-border/40 space-y-1">
-        <p className="text-xs text-white font-semibold">Integridade</p>
+        <p className="text-xs text-foreground font-semibold">Integridade</p>
         <p className="text-[11px] leading-relaxed break-all">
           SHA-256 do texto acima:{" "}
-          <code className="text-white/80">{data.document_hash}</code>
+          <code className="text-foreground/80">{data.document_hash}</code>
         </p>
         <p className="text-[11px] leading-relaxed">
           É este hash que fica registrado junto ao aceite de cada usuário, para que se possa verificar
@@ -124,14 +124,14 @@ export async function LegalHistory({ doc }: { doc: LegalDoc }) {
     <div className="py-8 max-w-2xl mx-auto space-y-6 text-sm text-muted-foreground">
       <Link
         href={meta.route}
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-white transition-colors"
+        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
         <ArrowLeft size={15} />
         Voltar para {meta.label}
       </Link>
 
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-white mb-1 flex items-center gap-2">
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground mb-1 flex items-center gap-2">
           <FileClock size={20} className="text-primary" />
           Histórico — {meta.label}
         </h1>
@@ -149,7 +149,7 @@ export async function LegalHistory({ doc }: { doc: LegalDoc }) {
               <div className="flex items-baseline justify-between gap-3">
                 <Link
                   href={`${meta.route}/${v.version}`}
-                  className="text-white font-semibold hover:text-primary transition-colors"
+                  className="text-foreground font-semibold hover:text-primary transition-colors"
                 >
                   Versão {v.version}
                 </Link>

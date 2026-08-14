@@ -88,7 +88,7 @@ export default async function ApuracaoPage({ params }: Props) {
         <Link href={`/admin/escalacao/${cardId}`} className="text-[11px] text-muted-foreground">
           ← {card.titulo}
         </Link>
-        <h1 className="text-lg font-bold text-white">Apuração</h1>
+        <h1 className="text-lg font-bold text-foreground">Apuração</h1>
         <p className="text-[11px] text-muted-foreground">
           1 Z$ por {Number(card.pontos_por_z)} pontos · teto de emissão{" "}
           {Number(card.teto_emissao_z)} Z$
@@ -123,7 +123,7 @@ export default async function ApuracaoPage({ params }: Props) {
       </div>
 
       <div className="bg-card border border-border rounded-xl p-4 space-y-2">
-        <h3 className="text-sm font-semibold text-white">Ranking</h3>
+        <h3 className="text-sm font-semibold text-foreground">Ranking</h3>
         {(ranking ?? []).length === 0 ? (
           <p className="text-xs text-muted-foreground">Nenhum time apurado.</p>
         ) : (
@@ -133,11 +133,11 @@ export default async function ApuracaoPage({ params }: Props) {
                 key={`${r.posicao}-${r.username}`}
                 className="py-1.5 flex items-baseline justify-between gap-2 text-xs"
               >
-                <span className="text-white">
+                <span className="text-foreground">
                   {r.posicao}. {r.nome ?? r.username}
                   <span className="text-muted-foreground"> @{r.username}</span>
                 </span>
-                <span className="text-white tabular-nums">
+                <span className="text-foreground tabular-nums">
                   {r.pontos_total === null ? "—" : Number(r.pontos_total).toFixed(1)}
                 </span>
               </li>
