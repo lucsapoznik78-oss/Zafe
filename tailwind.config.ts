@@ -62,6 +62,9 @@ const config: Config = {
           DEFAULT: token("--c-accent"),
           foreground: token("--c-text-on-accent"),
         },
+        // Véu de modal. Separado de `background` porque num tema claro o fundo
+        // é branco, e véu branco sobre página branca não escurece nada.
+        overlay: token("--c-overlay"),
         border: token("--c-line", "var(--line-a)"),
         input: token("--c-surface-2"),
         card: {

@@ -282,7 +282,7 @@ export default function FiguraBuilder({ figuraInicial, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-background/80 flex items-center justify-center p-3 overflow-y-auto"
+      className="fixed inset-0 z-50 bg-overlay/70 flex items-center justify-center p-3 overflow-y-auto"
       onClick={onClose}
     >
       <div

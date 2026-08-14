@@ -72,6 +72,8 @@
     --c-line-strong:     46 46 62;    /* #2E2E3E */
     --line-a:            1;           /* borda opaca no visual antigo */
 
+    --c-overlay:          0 0 0;      /* véu atrás de modal */
+
     --shadow-base:      0 1px 2px rgba(0, 0, 0, 0.5);
   }
 
@@ -118,7 +120,217 @@
     --c-line-strong:    242 244 248;
     --line-a:            0.10;
 
+    --c-overlay:          0 0 0;
+
     --shadow-base:      0 1px 0 rgba(0, 0, 0, 0.35);
+  }
+
+  /* ========================================================================
+     CANDIDATAS EM AVALIAÇÃO
+     ========================================================================
+
+     O diagnóstico que motivou estas quatro: o problema da `arquibancada` não
+     era o roxo, era o escuro. Fundo escuro com verde/vermelho saturado é o
+     vocabulário visual de terminal de trading, e é exatamente o que as casas
+     de aposta copiaram. Trocar o tom do escuro não sai desse vizinho.
+
+     Pior: azul-marinho com destaque amarelo é a identidade da EstrelaBet e das
+     Loterias Caixa. A `arquibancada` fugiu da Blaze e caiu na EstrelaBet.
+
+     A referência que o próprio produto declara — Cartola FC — é clara. É o que
+     separa "fantasy" de "casa de aposta" antes de o usuário ler uma palavra.
+
+     São aditivas: nada muda sem trocar o `data-theme`. Nenhuma delas é padrão.
+     ------------------------------------------------------------------------ */
+
+  /* --------------------------------------------------------------- CLARO
+     Cinza-papel com card branco e azul-royal. A linha Sofascore/FPL: limpa,
+     esportiva, sem gramatura de cassino. O azul puro é o acento menos ocupado
+     pelas bets brasileiras — laranja é Betano/KTO, verde+ouro é bet365,
+     roxo é Blaze, azul+amarelo é EstrelaBet. */
+  :root[data-theme="claro"] {
+    --c-bg:             245 246 248;  /* #F5F6F8 — não branco puro: o card precisa ter de onde saltar */
+    --c-surface:        255 255 255;  /* #FFFFFF */
+    --c-surface-2:      237 239 243;  /* #EDEFF3 */
+    --c-surface-3:      228 231 236;  /* #E4E7EC */
+
+    --c-text:            20  24  31;  /* #14181F */
+    --c-text-secondary:  86  96 112;  /* #566070 */
+    --c-text-muted:      92 102 118;  /* #5C6676 */
+    --c-text-on-accent: 255 255 255;  /* branco sobre acento saturado */
+
+    --c-accent:          11  95 255;  /* #0B5FFF */
+    --c-accent-hover:    10  84 224;  /* #0A54E0 */
+    --c-accent-press:     9  71 190;  /* #0947BE */
+    --c-accent-text:      8  76 204;  /* #084CCC — tom fechado para o azul virar texto */
+    --c-accent-surface:  11  95 255;
+    --c-accent-border:   11  95 255;
+
+    --c-brand:           11  95 255;
+    --c-brand-on-light:  11  95 255;
+
+    --c-yes:              6 122  70;  /* #067A46 */
+    --c-yes-text:         5 105  60;  /* #05693C */
+    --c-no:             196  42  47;  /* #C42A2F */
+    --c-no-text:        176  32  37;  /* #B02025 */
+
+    /* Ouro não existe no claro: #FFC53D sobre branco é ilegível. Prêmio vira
+       âmbar queimado, que ainda lê como "valioso" e passa no contraste. */
+    --c-prize:          138  82   0;  /* #8A5200 */
+    --c-prize-text:     138  82   0;
+
+    --c-danger:         196  42  47;
+    --c-success:          6 122  70;
+    --c-live:             6 122  70;
+
+    --c-line:            20  24  31;
+    --c-line-strong:     20  24  31;
+    --line-a:            0.12;
+
+    --c-overlay:         20  24  31;  /* véu escuro: no claro, preto sobre branco é o que separa o modal */
+
+    --shadow-base:      0 1px 2px rgba(16, 24, 40, 0.08);
+  }
+
+  /* --------------------------------------------------------------- PAPEL
+     Creme de jornal com verde-petróleo. Mesma tese do `claro`, temperatura
+     oposta: em vez de tech-esportivo, caderno de esportes. O petróleo é
+     escuro o bastante para não ser confundido com o verde do SIM. */
+  :root[data-theme="papel"] {
+    --c-bg:             250 247 242;  /* #FAF7F2 */
+    --c-surface:        255 255 255;  /* #FFFFFF */
+    --c-surface-2:      243 238 229;  /* #F3EEE5 */
+    --c-surface-3:      235 228 216;  /* #EBE4D8 */
+
+    --c-text:            26  24  22;  /* #1A1816 */
+    --c-text-secondary:  90  82  74;  /* #5A524A */
+    --c-text-muted:      96  88  79;  /* #60584F */
+    --c-text-on-accent: 250 247 242;
+
+    --c-accent:          13  94  92;  /* #0D5E5C */
+    --c-accent-hover:    17 116 113;  /* #117471 */
+    --c-accent-press:    10  76  74;  /* #0A4C4A */
+    --c-accent-text:     13  94  92;
+    --c-accent-surface:  13  94  92;
+    --c-accent-border:   13  94  92;
+
+    --c-brand:           13  94  92;
+    --c-brand-on-light:  13  94  92;
+
+    --c-yes:             27 106  62;  /* #1B6A3E */
+    --c-yes-text:        22  92  54;  /* #165C36 */
+    --c-no:             178  42  38;  /* #B22A26 */
+    --c-no-text:        158  36  33;  /* #9E2421 */
+
+    --c-prize:          141  94  20;  /* #8D5E14 */
+    --c-prize-text:     141  94  20;
+
+    --c-danger:         178  42  38;
+    --c-success:         27 106  62;
+    --c-live:            27 106  62;
+
+    --c-line:            26  24  22;
+    --c-line-strong:     26  24  22;
+    --line-a:            0.14;
+
+    --c-overlay:         26  24  22;
+
+    --shadow-base:      0 1px 2px rgba(40, 32, 24, 0.10);
+  }
+
+  /* ------------------------------------------------------------- GRAFITE
+     Se o escuro tem de ficar, que seja monocromático. Cinza neutro sem
+     nenhum viés de cor, e a cor de ação é o próprio branco — a linguagem de
+     ferramenta (Linear, Vercel), não de mesa de jogo. Aqui não existe ouro:
+     o prêmio é branco. Sem dourado, sem néon, sem nada que pisque.
+     As únicas cores da tela passam a ser o SIM e o NÃO — que é o dado. */
+  :root[data-theme="grafite"] {
+    --c-bg:              15  16  18;  /* #0F1012 */
+    --c-surface:         24  25  28;  /* #18191C */
+    --c-surface-2:       33  35  39;  /* #212327 */
+    --c-surface-3:       42  44  49;  /* #2A2C31 */
+
+    --c-text:           240 241 243;  /* #F0F1F3 */
+    --c-text-secondary: 158 162 170;  /* #9EA2AA */
+    --c-text-muted:     138 143 152;  /* #8A8F98 */
+    --c-text-on-accent:  15  16  18;  /* escuro sobre o branco de ação */
+
+    --c-accent:         240 241 243;  /* branco-giz é o CTA */
+    --c-accent-hover:   255 255 255;
+    --c-accent-press:   210 212 216;
+    --c-accent-text:    240 241 243;
+    --c-accent-surface: 240 241 243;
+    --c-accent-border:  240 241 243;
+
+    --c-brand:          240 241 243;
+    --c-brand-on-light:  15  16  18;
+
+    --c-yes:             46 158  99;
+    --c-yes-text:        63 190 123;
+    --c-no:             229  72  77;
+    --c-no-text:        238  95  99;
+
+    --c-prize:          240 241 243;  /* sem ouro, de propósito */
+    --c-prize-text:     240 241 243;
+
+    --c-danger:         229  72  77;
+    --c-success:         46 158  99;
+    --c-live:            46 158  99;
+
+    --c-line:           240 241 243;
+    --c-line-strong:    240 241 243;
+    --line-a:            0.10;
+
+    --c-overlay:          0   0   0;
+
+    --shadow-base:      0 1px 0 rgba(0, 0, 0, 0.4);
+  }
+
+  /* --------------------------------------------------------------- CAMPO
+     Escuro de base verde-gramado com lima de refletor. A única das quatro que
+     tenta ter personalidade em vez de sair do caminho. Risco conhecido: muito
+     verde na tela, e a lima disputa atenção com o verde do SIM. Está aqui
+     para ser comparada, não porque eu ache que ganha. */
+  :root[data-theme="campo"] {
+    --c-bg:              12  23  18;  /* #0C1712 */
+    --c-surface:         19  34  27;  /* #13221B */
+    --c-surface-2:       26  46  36;  /* #1A2E24 */
+    --c-surface-3:       33  57  45;  /* #21392D */
+
+    --c-text:           238 243 239;  /* #EEF3EF */
+    --c-text-secondary: 148 170 156;  /* #94AA9C */
+    --c-text-muted:     134 156 143;  /* #869C8F */
+    --c-text-on-accent:  12  23  18;
+
+    --c-accent:         201 226 101;  /* #C9E265 */
+    --c-accent-hover:   214 235 125;  /* #D6EB7D */
+    --c-accent-press:   176 200  80;  /* #B0C850 */
+    --c-accent-text:    201 226 101;
+    --c-accent-surface: 201 226 101;
+    --c-accent-border:  201 226 101;
+
+    --c-brand:          201 226 101;
+    --c-brand-on-light:  12  23  18;
+
+    --c-yes:             46 158  99;
+    --c-yes-text:        63 190 123;
+    --c-no:             229  72  77;
+    --c-no-text:        238  95  99;
+
+    --c-prize:          201 226 101;
+    --c-prize-text:     201 226 101;
+
+    --c-danger:         229  72  77;
+    --c-success:         46 158  99;
+    --c-live:            46 158  99;
+
+    --c-line:           238 243 239;
+    --c-line-strong:    238 243 239;
+    --line-a:            0.10;
+
+    --c-overlay:          0   0   0;
+
+    --shadow-base:      0 1px 0 rgba(0, 0, 0, 0.4);
   }
 
   /* ------------------------------------------------------------------------
@@ -162,6 +374,10 @@
     --success-text:    rgb(var(--c-yes-text));
     --success-bg:      rgb(var(--c-success) / 0.14);
     --live:            rgb(var(--c-live));
+
+    /* Véu atrás de modal. Não é `--bg`: num tema claro, branco sobre branco
+       não separa nada. Nos temas escuros continua sendo preto. */
+    --overlay:         rgb(var(--c-overlay));
 
     --radius: 0.75rem;
     /* NÃO definir --radius-md aqui. components/ui/* o referencia mas ele nunca

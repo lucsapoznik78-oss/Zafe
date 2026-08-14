@@ -617,7 +617,7 @@ function Seletor({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-background/70 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-overlay/70 backdrop-blur-sm"
       onClick={onFechar}
     >
       <div

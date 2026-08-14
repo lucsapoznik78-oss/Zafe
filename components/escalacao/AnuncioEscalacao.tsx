@@ -48,7 +48,7 @@ export default function AnuncioEscalacao() {
   if (!mostrar) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-overlay/70 backdrop-blur-sm">
       <div className="relative w-full max-w-sm max-h-[calc(100dvh-2rem)] overflow-y-auto bg-card border border-border rounded-2xl shadow-2xl">
         <button
           onClick={fechar}
