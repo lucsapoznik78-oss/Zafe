@@ -76,7 +76,7 @@ export default function AnuncioEscalacao() {
             <div>
               <p className="text-sm font-semibold text-foreground">Até 5 times ao mesmo tempo</p>
               <p className="text-xs text-muted-foreground">
-                Um no Mix e um em cada liga — Brasileirão, NBA, NFL e Valorant. São
+                Um no Mix e um em cada liga — Futebol Brasileiro, Basquete, Futebol Americano e Valorant. São
                 competições independentes, com ranking próprio.
               </p>
             </div>

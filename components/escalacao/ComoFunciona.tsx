@@ -302,7 +302,7 @@ function PassoPontue() {
           escala errado — e quem imagina o contrário espera 4× mais Z$. */}
       {fim && (
         <p className="text-xs text-foreground">
-          Isso foi <strong>uma rodada</strong>. Nas ligas — Brasileirão, NBA, NFL, Valorant —
+          Isso foi <strong>uma rodada</strong>. Nas ligas — Futebol Brasileiro, Basquete, Futebol Americano, Valorant —
           o time é um só para o mês e joga todas as rodadas: a pontuação do atleta é a soma
           delas.
         </p>

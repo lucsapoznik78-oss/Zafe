@@ -43,8 +43,8 @@ const ESPORTES = [
   { key: "surf", nome: "Surf", ordem: 4 },
   { key: "tenis", nome: "Tênis", ordem: 5 },
   { key: "futebol", nome: "Futebol", ordem: 6 },
-  { key: "nba", nome: "NBA", ordem: 7 },
-  { key: "nfl", nome: "NFL", ordem: 8 },
+  { key: "nba", nome: "Basquete", ordem: 7 },
+  { key: "nfl", nome: "Futebol Americano", ordem: 8 },
   { key: "valorant", nome: "Valorant", ordem: 9 },
 ];
 
@@ -64,8 +64,8 @@ const COMPETICOES = [
     modo: "mix",
     teto_titulares: 3,
   },
-  { slug: "nba", nome: "NBA", esporte_key: "nba", modo: "mix" },
-  { slug: "nfl", nome: "NFL", esporte_key: "nfl", modo: "mix" },
+  { slug: "nba", nome: "Basquete", esporte_key: "nba", modo: "mix" },
+  { slug: "nfl", nome: "Futebol Americano", esporte_key: "nfl", modo: "mix" },
   { slug: "vct", nome: "Valorant Champions Tour", esporte_key: "valorant", modo: "mix" },
 ];
 

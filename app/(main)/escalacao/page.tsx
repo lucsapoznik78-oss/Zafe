@@ -23,7 +23,7 @@ import { createClient } from "@/lib/supabase/server";
 export const metadata: Metadata = {
   title: "Escalação — monte seu time e pontue com atletas reais | Zafe",
   description:
-    "Monte um time no Brasileirão, na NBA, na NFL, no Valorant ou no mix de UFC, boxe, Fórmula 1 e surf. Cada atleta pontua pelo que fizer de verdade na competição, e os pontos viram Z$.",
+    "Monte um time no Futebol Brasileiro, no Basquete, no Futebol Americano, no Valorant ou no mix de UFC, boxe, Fórmula 1 e surf. Cada atleta pontua pelo que fizer de verdade na competição, e os pontos viram Z$.",
   alternates: { canonical: "/escalacao" },
 };
 
