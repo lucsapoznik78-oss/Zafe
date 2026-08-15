@@ -1,11 +1,18 @@
 # ROLLBACK — paleta de cores
 
-A migração da paleta antiga (quase-preto + violeta) para a **arquibancada**
-(azul-noite + amarelo-sol) foi feita de modo que a volta seja **um passo**, sem
-`git revert`.
+A migração da paleta antiga (quase-preto + violeta) para a **grafite** (escuro
+monocromático, ação em branco-giz) foi feita de modo que a volta seja **um
+passo**, sem `git revert`.
 
 As duas paletas convivem no repositório. O interruptor é o atributo `data-theme`
 no `<html>`, escrito em `app/layout.tsx` a partir de `NEXT_PUBLIC_THEME`.
+
+> Houve uma etapa intermediária, a `arquibancada` (azul-noite + amarelo-sol),
+> que chegou a ir para produção e foi descartada: azul-marinho com destaque
+> amarelo é a identidade da EstrelaBet e das Loterias Caixa, exatamente o
+> vizinho de que a migração queria sair. Junto com ela foram descartadas três
+> outras candidatas (`claro`, `papel`, `campo`). Nenhuma está mais no CSS; todas
+> vivem no histórico do git, no commit "quatro paletas candidatas".
 
 ---
 
@@ -19,16 +26,16 @@ Defina essa variável de ambiente (Vercel → Settings → Environment Variables
 `.env.local` em desenvolvimento) e faça o redeploy. Pronto: o app inteiro volta
 ao visual antigo.
 
-Se preferir não depender da Vercel, troque o fallback em `app/layout.tsx:17`:
+Se preferir não depender da Vercel, troque o fallback em `app/layout.tsx`:
 
 ```ts
-const THEME =
-  process.env.NEXT_PUBLIC_THEME === "legacy" ? "legacy" : "arquibancada";
-//                                                        ^^^^^^^^^^^^^^
+const THEME = PEDIDO in THEME_COLORS ? PEDIDO : "grafite";
+//                                              ^^^^^^^^^
 //  troque este literal para "legacy" e o padrão passa a ser o visual antigo
 ```
 
-Qualquer valor diferente de `legacy` cai em `arquibancada` — o padrão atual.
+Qualquer valor que não seja `legacy` nem `grafite` cai em `grafite` — o padrão
+atual.
 
 ### Como conferir que voltou
 
@@ -48,24 +55,30 @@ CTA violeta (`#7C5CFC`), verde `#22C55E` / vermelho `#F43F5E` no SIM/NÃO.
 | bloco | tema |
 |---|---|
 | `:root[data-theme="legacy"]` | quase-preto + violeta (o visual antigo, intacto) |
-| `:root, :root[data-theme="arquibancada"]` | azul-noite + amarelo (o padrão hoje) |
+| `:root, :root[data-theme="grafite"]` | escuro monocromático (o padrão hoje) |
 
-As cores são **canais RGB soltos** (`13 27 42`), não hex, porque o Tailwind só
+O `grafite` também responde pelo `:root` pelado: se `data-theme` sumir por
+qualquer motivo, o app cai nele em vez de ficar sem cor nenhuma —
+`rgb(var(--indefinido))` é inválido e apagaria a interface inteira.
+`[data-theme="legacy"]` tem especificidade maior (0,2,0 contra 0,1,0) e continua
+ganhando quando presente, que é o que faz o rollback funcionar.
+
+As cores são **canais RGB soltos** (`15 16 18`), não hex, porque o Tailwind só
 aplica modificador de opacidade (`bg-primary/10`) se receber os canais separados.
 
 **`tailwind.config.ts`** — só aponta para as variáveis, via `rgb(var(--c-x) / …)`.
 Não há hex neste arquivo, e não deve voltar a haver: hex aqui é invisível ao
 interruptor.
 
-Nada foi apagado. O bloco `legacy` é a paleta antiga literal, canal por canal.
+Nada foi apagado do `legacy`. O bloco é a paleta antiga literal, canal por canal.
 
 ---
 
 ## O que NÃO volta sozinho
 
-O interruptor cobre tudo que passa pelo CSS do documento. Estes cinco pontos
+O interruptor cobre tudo que passa pelo CSS do documento. Estes quatro pontos
 ficam fora dele — cada um por um motivo técnico, não por descuido. Todos estão
-fixados na paleta arquibancada e precisam de ação manual para reverter.
+fixados na paleta grafite e precisam de ação manual para reverter.
 
 ### 1. Favicon — `app/icon.svg`
 
@@ -88,14 +101,16 @@ cp favicon-32-legacy.png    favicon-32.png
 cp icon-192-legacy.png      icon-192.png
 cp icon-512-legacy.png      icon-512.png
 cp apple-icon-legacy.png    apple-icon.png
-cp zafe-icon-legacy.png     zafe-icon.png
-cp zafe-logo-full-legacy.png zafe-logo-full.png
 ```
 
-> Atenção: hoje esses arquivos **ainda são os roxos**. A migração não os
-> substituiu porque não dá para recriá-los por código — ver a lista de assets
-> pendentes na entrega. Quando os novos chegarem, as cópias `-legacy` continuam
-> sendo o caminho de volta.
+> Atenção: esses arquivos **ainda são os roxos**. Não dá para recriá-los por
+> código; precisam de arquivo novo desenhado. Quando os novos chegarem, as
+> cópias `-legacy` continuam sendo o caminho de volta.
+
+> `zafe-logo-full.png` e `zafe-icon.png` **saíram de uso**. O logo virou SVG
+> inline em `components/brand/Logo.tsx`, pintado pelos tokens, e por isso é o
+> único asset de marca que acompanha o interruptor. Os PNG seguem no `public/`
+> só como referência.
 
 ### 3. Manifest PWA — `public/manifest.json`
 
@@ -104,7 +119,7 @@ cp zafe-logo-full-legacy.png zafe-logo-full.png
 "theme_color":      "#0A0A0F"
 ```
 
-Hoje os dois estão em `#0D1B2A`. O `<meta name="theme-color">` do documento, em
+Hoje os dois estão em `#0F1012`. O `<meta name="theme-color">` do documento, em
 contrapartida, **acompanha o interruptor** (`app/layout.tsx`, const `THEME_COLOR`)
 — não precisa mexer.
 
@@ -132,18 +147,7 @@ os valores antigos eram:
 
 ---
 
-## Arquivos tocados
-
-Dois commits, nesta ordem — só o segundo precisa ser desfeito se você quiser
-voltar por git em vez de pelo interruptor:
-
-1. **camada de tokens** — `app/globals.css`, `tailwind.config.ts`, `app/layout.tsx`.
-   Cria as duas paletas e o interruptor. Zero mudança visual: o padrão desse
-   commit ainda é `legacy`.
-2. **substituição** — ~180 arquivos em `app/`, `components/`, mais os assets de
-   marca. Troca cor crua por token e vira o padrão para `arquibancada`.
-
-### Exceções declaradas (cor que continua em hex, de propósito)
+## Exceções declaradas (cor que continua em hex, de propósito)
 
 Não são esquecimento: são escalas em que a cor **é o dado**, e mapear para os
 tokens colapsaria estados distinguíveis num tom só.
@@ -154,5 +158,10 @@ tokens colapsaria estados distinguíveis num tom só.
 | `components/games/RankBadge.tsx` | escala ordinal de 7 degraus (ferro → o topo) |
 | `components/perfil/FiguraBuilder.tsx`, `app/api/perfil/figura/*` | tons de pele e cabelo |
 | `components/auth/LoginForm.tsx` | as 4 cores da marca Google no botão |
-| `components/ligas/CreateLigaModal.tsx` | cor de identidade escolhida pelo dono do grupo |
+| `components/ligas/CreateLigaModal.tsx`, `app/api/ligas/criar/route.ts` | cor de identidade escolhida pelo dono do grupo |
 | `components/topicos/ProbabilityChart.tsx` | paleta de séries para eventos multi-resultado |
+
+As duas últimas ainda trazem `#FFC53D` (o amarelo da `arquibancada`) no primeiro
+slot. São escalas categóricas, não cromo de interface: no grafite a marca é
+branca, e branco nesse lugar viraria a série "sem cor" — colidiria com o texto
+comum em vez de identificar. Ficam como estão até alguém decidir a escala nova.

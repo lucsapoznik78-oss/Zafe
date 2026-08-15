@@ -9,27 +9,28 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 /**
- * Paleta arquibancada, chapada. Satori (next/og) renderiza fora do documento:
+ * Paleta grafite, chapada. Satori (next/og) renderiza fora do documento:
  * não existe :root, então `var(--accent)` não resolve. Este arquivo NÃO segue o
  * interruptor `data-theme` — está anotado em ROLLBACK.md.
  */
 const C = {
-  bg:        "#0D1B2A", // --bg
-  brand:     "#FFC53D", // --brand
-  text:      "#F2F4F8", // --text
-  textSec:   "#93A5BC", // --text-secondary
-  textMuted: "#8494AC", // --text-muted
-  onAccent:  "#0D1B2A", // --text-on-accent
+  bg:        "#0F1012", // --bg
+  brand:     "#F0F1F3", // --brand — branco-giz: no grafite não existe ouro
+  text:      "#F0F1F3", // --text
+  textSec:   "#9EA2AA", // --text-secondary
+  textMuted: "#8A8F98", // --text-muted
+  onAccent:  "#0F1012", // --text-on-accent
   yes:       "#2E9E63", // --yes  (preenchimento)
   yesText:   "#3FBE7B", // --yes-text
   no:        "#E5484D", // --no   (preenchimento)
   noText:    "#EE5F63", // --no-text
 };
 
-// Chip de categoria: só há duas. Sem laranja nem ciano na paleta nova, então
-// vira acento vs. verde — dois tons que já existem e continuam distinguíveis.
+// Chip de categoria: só há duas. No grafite a marca é branca, então `brand`
+// deixaria o chip indistinguível do texto comum. Vira verde vs. cinza de
+// apoio — as duas únicas famílias que esta paleta admite.
 const CATEGORY_COLOR: Record<string, string> = {
-  esportes: C.brand,
+  esportes: C.textSec,
   esports: C.yesText,
 };
 

@@ -21,8 +21,8 @@
    `tailwind.config.ts` consome estes tokens como `rgb(var(--c-x) / <alpha>)`.
    O Tailwind só consegue aplicar modificador de opacidade (`bg-primary/90`,
    `border-border/40` — ~120 usos no app) se receber os canais separados. Com
-   `--x: #0D1B2A` o modificador é silenciosamente descartado e um `bg-primary/10`
-   viraria um bloco amarelo sólido.
+   `--x: #0F1012` o modificador é silenciosamente descartado e um `bg-primary/10`
+   viraria um bloco branco sólido.
 
    Regra: quem for consumido pelo Tailwind mora em `--c-*` (canais).
    Os tokens legíveis (`--bg`, `--accent`, …) logo abaixo são derivados deles e
@@ -77,173 +77,19 @@
     --shadow-base:      0 1px 2px rgba(0, 0, 0, 0.5);
   }
 
-  /* --------------------------------------------------------- ARQUIBANCADA
-     Também no `:root` pelado: se `data-theme` sumir por qualquer motivo, o app
-     cai na paleta padrão em vez de ficar sem cor nenhuma — `rgb(var(--indefinido))`
-     é inválido e apagaria a interface inteira. `[data-theme="legacy"]` tem
-     especificidade maior (0,2,0 contra 0,1,0) e continua ganhando quando presente. */
-  :root,
-  :root[data-theme="arquibancada"] {
-    --c-bg:              13 27 42;    /* #0D1B2A */
-    --c-surface:         22 38 58;    /* #16263A */
-    --c-surface-2:       27 48 73;    /* #1B3049 */
-    --c-surface-3:       27 48 73;    /* #1B3049 — sem 4o nível na paleta nova */
-
-    --c-text:           242 244 248;  /* #F2F4F8 */
-    --c-text-secondary: 147 165 188;  /* #93A5BC */
-    --c-text-muted:     132 148 172;  /* #8494AC */
-    --c-text-on-accent:  13 27 42;    /* #0D1B2A — nunca branco sobre acento */
-
-    --c-accent:         255 197 61;   /* #FFC53D */
-    --c-accent-hover:   255 207 92;   /* #FFCF5C */
-    --c-accent-press:   230 172 31;   /* #E6AC1F */
-    --c-accent-text:    255 197 61;   /* #FFC53D — 11.0 sobre --bg */
-    --c-accent-surface: 255 197 61;   /* usado a 8% via --accent-soft */
-    --c-accent-border:  255 197 61;   /* #FFC53D */
-
-    --c-brand:          255 197 61;   /* #FFC53D */
-    --c-brand-on-light:  13 27 42;    /* #0D1B2A — amarelo sobre branco não lê */
-
-    --c-yes:             46 158 99;   /* #2E9E63 */
-    --c-yes-text:        63 190 123;  /* #3FBE7B */
-    --c-no:             229 72 77;    /* #E5484D */
-    --c-no-text:        238 95 99;    /* #EE5F63 */
-
-    --c-prize:          255 197 61;   /* prêmio e acento são a mesma cor */
-    --c-prize-text:     255 197 61;
-
-    --c-danger:         229 72 77;    /* #E5484D */
-    --c-success:         46 158 99;   /* #2E9E63 */
-    --c-live:            46 158 99;   /* #2E9E63 */
-
-    --c-line:           242 244 248;  /* #F2F4F8 a 10% = --surface-line */
-    --c-line-strong:    242 244 248;
-    --line-a:            0.10;
-
-    --c-overlay:          0 0 0;
-
-    --shadow-base:      0 1px 0 rgba(0, 0, 0, 0.35);
-  }
-
-  /* ========================================================================
-     CANDIDATAS EM AVALIAÇÃO
-     ========================================================================
-
-     O diagnóstico que motivou estas quatro: o problema da `arquibancada` não
-     era o roxo, era o escuro. Fundo escuro com verde/vermelho saturado é o
-     vocabulário visual de terminal de trading, e é exatamente o que as casas
-     de aposta copiaram. Trocar o tom do escuro não sai desse vizinho.
-
-     Pior: azul-marinho com destaque amarelo é a identidade da EstrelaBet e das
-     Loterias Caixa. A `arquibancada` fugiu da Blaze e caiu na EstrelaBet.
-
-     A referência que o próprio produto declara — Cartola FC — é clara. É o que
-     separa "fantasy" de "casa de aposta" antes de o usuário ler uma palavra.
-
-     São aditivas: nada muda sem trocar o `data-theme`. Nenhuma delas é padrão.
-     ------------------------------------------------------------------------ */
-
-  /* --------------------------------------------------------------- CLARO
-     Cinza-papel com card branco e azul-royal. A linha Sofascore/FPL: limpa,
-     esportiva, sem gramatura de cassino. O azul puro é o acento menos ocupado
-     pelas bets brasileiras — laranja é Betano/KTO, verde+ouro é bet365,
-     roxo é Blaze, azul+amarelo é EstrelaBet. */
-  :root[data-theme="claro"] {
-    --c-bg:             245 246 248;  /* #F5F6F8 — não branco puro: o card precisa ter de onde saltar */
-    --c-surface:        255 255 255;  /* #FFFFFF */
-    --c-surface-2:      237 239 243;  /* #EDEFF3 */
-    --c-surface-3:      228 231 236;  /* #E4E7EC */
-
-    --c-text:            20  24  31;  /* #14181F */
-    --c-text-secondary:  86  96 112;  /* #566070 */
-    --c-text-muted:      92 102 118;  /* #5C6676 */
-    --c-text-on-accent: 255 255 255;  /* branco sobre acento saturado */
-
-    --c-accent:          11  95 255;  /* #0B5FFF */
-    --c-accent-hover:    10  84 224;  /* #0A54E0 */
-    --c-accent-press:     9  71 190;  /* #0947BE */
-    --c-accent-text:      8  76 204;  /* #084CCC — tom fechado para o azul virar texto */
-    --c-accent-surface:  11  95 255;
-    --c-accent-border:   11  95 255;
-
-    --c-brand:           11  95 255;
-    --c-brand-on-light:  11  95 255;
-
-    --c-yes:              6 122  70;  /* #067A46 */
-    --c-yes-text:         5 105  60;  /* #05693C */
-    --c-no:             196  42  47;  /* #C42A2F */
-    --c-no-text:        176  32  37;  /* #B02025 */
-
-    /* Ouro não existe no claro: #FFC53D sobre branco é ilegível. Prêmio vira
-       âmbar queimado, que ainda lê como "valioso" e passa no contraste. */
-    --c-prize:          138  82   0;  /* #8A5200 */
-    --c-prize-text:     138  82   0;
-
-    --c-danger:         196  42  47;
-    --c-success:          6 122  70;
-    --c-live:             6 122  70;
-
-    --c-line:            20  24  31;
-    --c-line-strong:     20  24  31;
-    --line-a:            0.12;
-
-    --c-overlay:         20  24  31;  /* véu escuro: no claro, preto sobre branco é o que separa o modal */
-
-    --shadow-base:      0 1px 2px rgba(16, 24, 40, 0.08);
-  }
-
-  /* --------------------------------------------------------------- PAPEL
-     Creme de jornal com verde-petróleo. Mesma tese do `claro`, temperatura
-     oposta: em vez de tech-esportivo, caderno de esportes. O petróleo é
-     escuro o bastante para não ser confundido com o verde do SIM. */
-  :root[data-theme="papel"] {
-    --c-bg:             250 247 242;  /* #FAF7F2 */
-    --c-surface:        255 255 255;  /* #FFFFFF */
-    --c-surface-2:      243 238 229;  /* #F3EEE5 */
-    --c-surface-3:      235 228 216;  /* #EBE4D8 */
-
-    --c-text:            26  24  22;  /* #1A1816 */
-    --c-text-secondary:  90  82  74;  /* #5A524A */
-    --c-text-muted:      96  88  79;  /* #60584F */
-    --c-text-on-accent: 250 247 242;
-
-    --c-accent:          13  94  92;  /* #0D5E5C */
-    --c-accent-hover:    17 116 113;  /* #117471 */
-    --c-accent-press:    10  76  74;  /* #0A4C4A */
-    --c-accent-text:     13  94  92;
-    --c-accent-surface:  13  94  92;
-    --c-accent-border:   13  94  92;
-
-    --c-brand:           13  94  92;
-    --c-brand-on-light:  13  94  92;
-
-    --c-yes:             27 106  62;  /* #1B6A3E */
-    --c-yes-text:        22  92  54;  /* #165C36 */
-    --c-no:             178  42  38;  /* #B22A26 */
-    --c-no-text:        158  36  33;  /* #9E2421 */
-
-    --c-prize:          141  94  20;  /* #8D5E14 */
-    --c-prize-text:     141  94  20;
-
-    --c-danger:         178  42  38;
-    --c-success:         27 106  62;
-    --c-live:            27 106  62;
-
-    --c-line:            26  24  22;
-    --c-line-strong:     26  24  22;
-    --line-a:            0.14;
-
-    --c-overlay:         26  24  22;
-
-    --shadow-base:      0 1px 2px rgba(40, 32, 24, 0.10);
-  }
-
   /* ------------------------------------------------------------- GRAFITE
-     Se o escuro tem de ficar, que seja monocromático. Cinza neutro sem
-     nenhum viés de cor, e a cor de ação é o próprio branco — a linguagem de
-     ferramenta (Linear, Vercel), não de mesa de jogo. Aqui não existe ouro:
-     o prêmio é branco. Sem dourado, sem néon, sem nada que pisque.
-     As únicas cores da tela passam a ser o SIM e o NÃO — que é o dado. */
+     A paleta do app. Escuro monocromático: cinza neutro sem nenhum viés de
+     cor, e a cor de ação é o próprio branco — a linguagem de ferramenta
+     (Linear, Vercel), não de mesa de jogo. Aqui não existe ouro: o prêmio é
+     branco. Sem dourado, sem néon, sem nada que pisque. As únicas cores da
+     tela passam a ser o SIM e o NÃO — que é o dado.
+
+     Também no `:root` pelado: se `data-theme` sumir por qualquer motivo, o
+     app cai aqui em vez de ficar sem cor nenhuma — `rgb(var(--indefinido))`
+     é inválido e apagaria a interface inteira. `[data-theme="legacy"]` tem
+     especificidade maior (0,2,0 contra 0,1,0) e continua ganhando quando
+     presente, que é o que faz o rollback funcionar. */
+  :root,
   :root[data-theme="grafite"] {
     --c-bg:              15  16  18;  /* #0F1012 */
     --c-surface:         24  25  28;  /* #18191C */
@@ -286,53 +132,6 @@
     --shadow-base:      0 1px 0 rgba(0, 0, 0, 0.4);
   }
 
-  /* --------------------------------------------------------------- CAMPO
-     Escuro de base verde-gramado com lima de refletor. A única das quatro que
-     tenta ter personalidade em vez de sair do caminho. Risco conhecido: muito
-     verde na tela, e a lima disputa atenção com o verde do SIM. Está aqui
-     para ser comparada, não porque eu ache que ganha. */
-  :root[data-theme="campo"] {
-    --c-bg:              12  23  18;  /* #0C1712 */
-    --c-surface:         19  34  27;  /* #13221B */
-    --c-surface-2:       26  46  36;  /* #1A2E24 */
-    --c-surface-3:       33  57  45;  /* #21392D */
-
-    --c-text:           238 243 239;  /* #EEF3EF */
-    --c-text-secondary: 148 170 156;  /* #94AA9C */
-    --c-text-muted:     134 156 143;  /* #869C8F */
-    --c-text-on-accent:  12  23  18;
-
-    --c-accent:         201 226 101;  /* #C9E265 */
-    --c-accent-hover:   214 235 125;  /* #D6EB7D */
-    --c-accent-press:   176 200  80;  /* #B0C850 */
-    --c-accent-text:    201 226 101;
-    --c-accent-surface: 201 226 101;
-    --c-accent-border:  201 226 101;
-
-    --c-brand:          201 226 101;
-    --c-brand-on-light:  12  23  18;
-
-    --c-yes:             46 158  99;
-    --c-yes-text:        63 190 123;
-    --c-no:             229  72  77;
-    --c-no-text:        238  95  99;
-
-    --c-prize:          201 226 101;
-    --c-prize-text:     201 226 101;
-
-    --c-danger:         229  72  77;
-    --c-success:         46 158  99;
-    --c-live:            46 158  99;
-
-    --c-line:           238 243 239;
-    --c-line-strong:    238 243 239;
-    --line-a:            0.10;
-
-    --c-overlay:          0   0   0;
-
-    --shadow-base:      0 1px 0 rgba(0, 0, 0, 0.4);
-  }
-
   /* ------------------------------------------------------------------------
      Tokens legíveis, derivados dos canais acima.
      Para CSS/SVG/inline style que não passa pelo Tailwind.
@@ -364,10 +163,12 @@
     --no-text:         rgb(var(--c-no-text));
 
     /* Estado de sistema. O tom de TEXTO é o claro (--c-no-text / --c-yes-text),
-       não o de preenchimento: #E5484D sobre #0D1B2A dá 4.44:1, abaixo do piso
-       de 4.5. #EE5F63 dá 5.34:1. O preenchimento continua no tom fechado, que
-       só aparece atrás de texto escuro. No `legacy` os dois canais são iguais,
-       então o rollback não muda nada. */
+       não o de preenchimento. Sobre o grafite os dois passariam (#E5484D dá
+       4.86:1 e #EE5F63 dá 5.85:1), mas a separação fica: é ela que segurou o
+       piso na `arquibancada`, onde o de preenchimento dava 4.44:1, e é o que
+       mantém a regra válida se o fundo clarear de novo. O preenchimento segue
+       no tom fechado, que só aparece atrás de texto escuro. No `legacy` os
+       dois canais são iguais, então o rollback não muda nada. */
     --danger-text:     rgb(var(--c-no-text));
     --danger-bg:       rgb(var(--c-danger) / 0.12);
     --danger-border:   rgb(var(--c-danger) / 0.45);

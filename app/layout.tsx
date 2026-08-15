@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import CookieNotice from "@/components/layout/CookieNotice";
-import ThemeLab from "@/components/dev/ThemeLab";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -19,15 +18,11 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.zafe.app.br";
  * valor vai numa <meta>, que o navegador lê antes de existir CSS.
  */
 const THEME_COLORS: Record<string, string> = {
-  legacy:       "#0A0A0F",
-  arquibancada: "#0D1B2A",
-  claro:        "#F5F6F8",
-  papel:        "#FAF7F2",
-  grafite:      "#0F1012",
-  campo:        "#0C1712",
+  legacy:  "#0A0A0F",
+  grafite: "#0F1012",
 };
 const PEDIDO = process.env.NEXT_PUBLIC_THEME ?? "";
-const THEME = PEDIDO in THEME_COLORS ? PEDIDO : "arquibancada";
+const THEME = PEDIDO in THEME_COLORS ? PEDIDO : "grafite";
 const THEME_COLOR = THEME_COLORS[THEME];
 
 export const metadata: Metadata = {
@@ -135,7 +130,6 @@ export default function RootLayout({
       <body className="antialiased bg-background text-foreground min-h-screen">
         {children}
         <CookieNotice />
-        <ThemeLab />
       </body>
     </html>
   );
