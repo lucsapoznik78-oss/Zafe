@@ -6,6 +6,11 @@ const STATUS_TABS: Array<{ key: string; label: string }> = [
   { key: "encerrados", label: "Encerrados" },
 ];
 
+// Enxuguei a lista pros 5 títulos que concentram o volume de bolão no BR
+// (Free Fire lidera, Valorant/CS2/LoL formam a base competitiva PC, EA FC
+// carrega o slot esportivo). "Outros" cobre TUDO que não está aqui — inclusive
+// Fortnite, Dota 2, GTA, Clash, Rocket League, PUBG, CODM, R6 e eventos
+// custom (jogos digitados no criar). Ver TOP_FILTER_GAMES em lib/games/queries.ts.
 const GAME_TABS: Array<{ key: string; label: string }> = [
   { key: "", label: "Todos" },
   { key: "free_fire", label: "Free Fire" },
@@ -13,14 +18,6 @@ const GAME_TABS: Array<{ key: string; label: string }> = [
   { key: "cs2", label: "CS2" },
   { key: "lol", label: "LoL" },
   { key: "ea_fc", label: "EA FC" },
-  { key: "fortnite", label: "Fortnite" },
-  { key: "gta", label: "GTA" },
-  { key: "clash_royale", label: "Clash Royale" },
-  { key: "rocket_league", label: "Rocket League" },
-  { key: "dota2", label: "Dota 2" },
-  { key: "pubg", label: "PUBG" },
-  { key: "codm", label: "COD Mobile" },
-  { key: "r6", label: "Rainbow Six" },
   { key: "outros", label: "Outros" },
 ];
 

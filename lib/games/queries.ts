@@ -19,6 +19,11 @@ export const STATUS_FILTERS: Record<string, GamesEvent["status"][]> = {
   encerrados: ["finished", "cancelled"],
 };
 
+// Top-5 dos jogos com maior volume de bolão no BR — o resto (inclusive
+// Fortnite, Dota 2, GTA, Clash, Rocket, PUBG, CODM, R6 e o literal "outros"
+// dos custom_game) cai no filtro "Outros" do GameFilterTabs.
+export const TOP_FILTER_GAMES = ["free_fire", "valorant", "cs2", "lol", "ea_fc"] as const;
+
 export async function getEvents(
   supabase: SupabaseClient,
   filter?: { status?: string; game?: string }
@@ -30,7 +35,14 @@ export async function getEvents(
 
   const statuses = filter?.status ? STATUS_FILTERS[filter.status] : undefined;
   if (statuses) q = q.in("status", statuses);
-  if (filter?.game) q = q.eq("game", filter.game);
+  if (filter?.game === "outros") {
+    // "Outros" = tudo fora do top-5. Assim os jogos que sumiram da barra de
+    // filtros (fortnite, gta, clash_royale, rocket_league, dota2, pubg, codm,
+    // r6) e os custom_game (game='outros') continuam alcançáveis.
+    q = q.not("game", "in", `(${TOP_FILTER_GAMES.join(",")})`);
+  } else if (filter?.game) {
+    q = q.eq("game", filter.game);
+  }
 
   const { data } = await q;
   return data ?? [];
