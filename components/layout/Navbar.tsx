@@ -12,7 +12,7 @@ import { formatCurrency } from "@/lib/utils";
 import { isPremium } from "@/lib/premium";
 import { CONCURSO_ABERTO, CONCURSO_ENABLED, CONCURSO_ESTREIA_CURTO, ESCALACAO_ENABLED, HOME_PATH, PREMIUM_ENABLED } from "@/lib/flags";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import FiguraAvatar, { type FiguraConfig } from "@/components/perfil/FiguraAvatar";
+import FiguraAvatar from "@/components/perfil/FiguraAvatar";
 import ZafeLogo, { ZafeMarca } from "@/components/brand/Logo";
 import {
   DropdownMenu,
@@ -151,10 +151,15 @@ export default function Navbar() {
                     premium ? "ring-2 ring-prize ring-offset-1 ring-offset-black" : "border border-border"
                   }`}
                 >
-                  {profile?.figura ? (
-                    // Se o usuário já montou o personagem, mostra ele mesmo no
-                    // canto. Fallback pra iniciais fica só pra quem ainda não fez.
-                    <FiguraAvatar figura={profile.figura as FiguraConfig} size={32} />
+                  {profile?.figura_retrato_url ? (
+                    // O retrato é o PNG que o próprio navegador fotografou do
+                    // canvas 3D na hora de salvar. Iniciais só para quem ainda
+                    // não montou o personagem.
+                    <FiguraAvatar
+                      url={profile.figura_retrato_url}
+                      nome={profile.full_name ?? profile.username}
+                      size={32}
+                    />
                   ) : (
                     <AvatarFallback className="bg-primary/20 text-primary text-xs font-semibold">
                       {initials}

@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import FiguraAvatar from "@/components/perfil/FiguraAvatar";
 import { Trophy, TrendingDown, Percent, TrendingUp, Flame, Star } from "lucide-react";
 import CategoryBadge from "@/components/topicos/CategoryBadge";
 import PremiumBadge from "@/components/ui/PremiumBadge";
@@ -47,7 +47,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
 
   const { data: profile } = await adminSupabase
     .from("profiles")
-    .select("id, full_name, username, created_at, is_premium, premium_until")
+    .select("id, full_name, username, created_at, is_premium, premium_until, figura_retrato_url")
     .eq("username", username)
     .single();
 
@@ -119,8 +119,6 @@ export default async function PublicProfilePage({ params }: PageProps) {
     }
   }
 
-  const initials = profile.full_name?.split(" ").map((n: string) => n[0]).slice(0, 2).join("").toUpperCase() ?? "?";
-
   const SIDE_STATUS: Record<string, { label: string; class: string }> = {
     won:      { label: "Ganhou",    class: "text-sim" },
     lost:     { label: "Perdeu",    class: "text-nao" },
@@ -135,9 +133,11 @@ export default async function PublicProfilePage({ params }: PageProps) {
 
       {/* Header */}
       <div className="bg-card border border-border rounded-xl p-5 flex items-center gap-4">
-        <Avatar className="h-16 w-16">
-          <AvatarFallback className="bg-primary/20 text-primary text-xl font-bold">{initials}</AvatarFallback>
-        </Avatar>
+        <FiguraAvatar
+          url={profile.figura_retrato_url}
+          nome={profile.full_name ?? profile.username}
+          size={64}
+        />
         <div>
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-xl font-bold text-foreground">{profile.full_name}</h1>

@@ -66,9 +66,15 @@ export interface Profile {
   bairro: string | null;
   cidade: string | null;
   uf: string | null;
-  // Avatar-personagem estilo Bitmoji/FIFA (DiceBear `avataaars`). Shape validado
-  // no POST /api/perfil/figura. Null = usuário ainda não montou o personagem.
-  figura: Record<string, string> | null;
+  // Personagem 3D. `figura` é a FiguraV2 (lib/figura/tipos.ts), saneada no POST
+  // /api/perfil/figura; as duas URLs são os PNGs que o navegador fotografou do
+  // canvas — é o que o resto do app mostra, para não rodar WebGL em toda rota.
+  figura: Record<string, unknown> | null;
+  figura_desbloqueada: boolean;
+  figura_url: string | null;
+  figura_retrato_url: string | null;
+  /** A figura v1 (DiceBear) de quem já tinha avatar. Não converte — é rollback. */
+  figura_legado: Record<string, string> | null;
   created_at: string;
 }
 

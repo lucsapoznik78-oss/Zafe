@@ -94,7 +94,11 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl, t
       {/* Personagem + Nível — lado a lado (FIFA card: figura à esquerda,
           escada de ranks à direita). No mobile empilha. */}
       <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-3">
-        <FiguraSection figura={profile?.figura ?? null} />
+        <FiguraSection
+          url={profile?.figura_retrato_url ?? null}
+          nome={profile?.full_name ?? profile?.username ?? null}
+          desbloqueada={profile?.figura_desbloqueada ?? false}
+        />
         <NivelSection totalWins={totalWins} />
       </div>
 

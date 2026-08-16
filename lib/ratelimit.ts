@@ -62,6 +62,19 @@ export const POLICIES: Array<{ pattern: RegExp; policy: Policy }> = [
     pattern: /^\/api\/escalacao\/inscrever$/,
     policy: { prefix: "rl:money:critical", limit: 10, window: "1 m", failClosed: true },
   },
+  {
+    pattern: /^\/api\/perfil\/figura\/(desbloquear|comprar)$/,
+    policy: { prefix: "rl:money:critical", limit: 10, window: "1 m", failClosed: true },
+  },
+
+  // Salvar o personagem — a ÚNICA escrita binária do app. Ganha prefixo próprio
+  // porque um loop aqui ataca o custo de storage/egress, não o saldo: a rota não
+  // move Z$. E `failClosed: false` pelo mesmo motivo — Redis fora do ar não pode
+  // impedir alguém de salvar um chapéu.
+  {
+    pattern: /^\/api\/perfil\/figura$/,
+    policy: { prefix: "rl:figura:save", limit: 12, window: "5 m", failClosed: false },
+  },
 
   // Dinheiro — palpites (débito imediato de Z$/ZC$).
   {
@@ -259,6 +272,7 @@ export const LIMIARES: Record<string, number> = {
   "rl:money:critical": 200,
   "rl:money:palpite": 200,
   "rl:money:ordem": 200,
+  "rl:figura:save": 300,
   "rl:pii:cpf": 200,
   "rl:pii:enum": 500,
 };

@@ -1,78 +1,63 @@
+// FiguraAvatar — o personagem em qualquer lugar do app que não seja o editor.
+//
+// É um `<img>`. O 3D roda UMA vez, na página do editor, e o navegador salva o
+// resultado como PNG no Storage. Aqui não há three, não há WebGL e não há
+// geração de SVG: a navbar aparece em toda rota do app, e qualquer coisa mais
+// pesada que uma tag de imagem sairia caro em toda navegação.
+//
+// (Antes isto era DiceBear, que gerava o SVG no cliente a cada render e fixava
+// dois pacotes no bundle de todas essas rotas.)
+//
+// Sem URL salva, cai nas iniciais. É o estado de quem ainda não desbloqueou o
+// personagem — e a lacuna é de propósito: é ela que dá vontade de ir montar um.
+
 "use client";
 
-// FiguraAvatar — render puro do avatar-personagem via DiceBear.
-//
-// Estilo fixo em "avataaars" (Bitmoji-like). O SVG é gerado sob demanda no
-// client a partir do JSON salvo em profiles.figura — nada de armazenar bytes.
-// Se `figura` for null (usuário ainda não montou o personagem), o componente
-// retorna null e quem chama mostra o fallback (iniciais, placeholder, etc).
+import { cn } from "@/lib/utils";
 
-import { useMemo } from "react";
-import { createAvatar } from "@dicebear/core";
-import { avataaars } from "@dicebear/collection";
-
-export type FiguraConfig = {
-  seed?: string;
-  backgroundColor?: string;
-  skinColor?: string;
-  top?: string;
-  hairColor?: string;
-  facialHair?: string;
-  facialHairColor?: string;
-  clothing?: string;
-  clothesColor?: string;
-  clothingGraphic?: string;
-  accessories?: string;
-  accessoriesColor?: string;
-  eyebrows?: string;
-  eyes?: string;
-  mouth?: string;
-};
-
-interface Props {
-  figura: FiguraConfig | null | undefined;
+type Props = {
+  url: string | null | undefined;
+  nome?: string | null;
   size?: number;
   className?: string;
+};
+
+function iniciais(nome: string | null | undefined): string {
+  const limpo = (nome ?? "").trim();
+  if (!limpo) return "?";
+  const partes = limpo.split(/\s+/);
+  return (partes[0][0] + (partes[1]?.[0] ?? "")).toUpperCase();
 }
 
-// Wrapper único de opções — DiceBear tipa cada campo como string[] mesmo quando
-// só vamos passar uma escolha, então converto sempre pra array.
-function toOpts(f: FiguraConfig) {
-  const o: Record<string, unknown> = { seed: f.seed || "zafe" };
-  if (f.backgroundColor)   o.backgroundColor   = [stripHash(f.backgroundColor)];
-  if (f.skinColor)         o.skinColor         = [f.skinColor];
-  if (f.top)               o.top               = [f.top];
-  if (f.hairColor)         o.hairColor         = [stripHash(f.hairColor)];
-  if (f.facialHair)        o.facialHair        = [f.facialHair];
-  if (f.facialHairColor)   o.facialHairColor   = [stripHash(f.facialHairColor)];
-  if (f.clothing)          o.clothing          = [f.clothing];
-  if (f.clothesColor)      o.clothesColor      = [stripHash(f.clothesColor)];
-  if (f.clothingGraphic)   o.clothingGraphic   = [f.clothingGraphic];
-  if (f.accessories)       o.accessories       = [f.accessories];
-  if (f.accessoriesColor)  o.accessoriesColor  = [stripHash(f.accessoriesColor)];
-  if (f.eyebrows)          o.eyebrows          = [f.eyebrows];
-  if (f.eyes)              o.eyes              = [f.eyes];
-  if (f.mouth)             o.mouth             = [f.mouth];
-  return o;
-}
-
-function stripHash(c: string) {
-  return c.startsWith("#") ? c.slice(1) : c;
-}
-
-export default function FiguraAvatar({ figura, size = 96, className }: Props) {
-  const svg = useMemo(() => {
-    if (!figura) return null;
-    return createAvatar(avataaars, toOpts(figura)).toString();
-  }, [figura]);
-
-  if (!svg) return null;
+export default function FiguraAvatar({ url, nome, size = 96, className }: Props) {
+  if (!url) {
+    return (
+      <div
+        className={cn(
+          "flex items-center justify-center rounded-full bg-muted font-bold text-muted-foreground",
+          className,
+        )}
+        style={{ width: size, height: size, fontSize: Math.max(10, size * 0.38) }}
+      >
+        {iniciais(nome)}
+      </div>
+    );
+  }
 
   return (
-    <div
-      className={className}
+    // `<img>` e não `next/image`: a URL traz `?v=<timestamp>` e muda a cada
+    // save, então o otimizador da Vercel geraria uma variante nova por save e
+    // por tamanho — custo por imagem, sem ganho, num PNG que já é pequeno.
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={url}
+      alt={nome ? `Personagem de ${nome}` : "Personagem"}
+      width={size}
+      height={size}
+      loading="lazy"
+      decoding="async"
+      className={cn("object-contain", className)}
       style={{ width: size, height: size }}
-      dangerouslySetInnerHTML={{ __html: svg }}
     />
   );
 }
