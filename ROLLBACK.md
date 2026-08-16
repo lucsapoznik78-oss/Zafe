@@ -91,26 +91,32 @@ cp public/icon-legacy.svg app/icon.svg
 
 ### 2. Ícones binários (PNG / ICO)
 
-São imagens rasterizadas — código não recolore PNG. O original de cada um está
-salvo ao lado, com sufixo `-legacy`. Para voltar, copie por cima:
+São imagens rasterizadas: não seguem o interruptor `data-theme` e precisam de
+ação manual. O original roxo de cada uma está salvo ao lado, com sufixo
+`-legacy`. Para voltar, copie por cima — repare que dois deles moram em `app/`,
+não em `public/`:
 
 ```bash
-cd public
-cp favicon-legacy.ico       favicon.ico
-cp favicon-32-legacy.png    favicon-32.png
-cp icon-192-legacy.png      icon-192.png
-cp icon-512-legacy.png      icon-512.png
-cp apple-icon-legacy.png    apple-icon.png
+cp public/favicon-legacy.ico    app/favicon.ico
+cp public/apple-icon-legacy.png app/apple-icon.png
+cp public/favicon-32-legacy.png public/favicon-32.png
+cp public/icon-192-legacy.png   public/icon-192.png
+cp public/icon-512-legacy.png   public/icon-512.png
+cp public/zafe-icon-legacy.png  public/zafe-icon.png
+cp public/zafe-logo-full-legacy.png public/zafe-logo-full.png
 ```
 
-> Atenção: esses arquivos **ainda são os roxos**. Não dá para recriá-los por
-> código; precisam de arquivo novo desenhado. Quando os novos chegarem, as
-> cópias `-legacy` continuam sendo o caminho de volta.
+Os grafite não foram redesenhados: são o mesmo traço recolorido por projeção de
+cor. Cada pixel é projetado no eixo `#151123 → #5E4BA7` (fundo → violeta mais
+claro da arte antiga) e o fator resultante reposicionado no eixo
+`#0F1012 → #F0F1F3`. Converter por luminância teria achatado o degradê do raio;
+a projeção preserva a profundidade. `public/zafe-icon.png` é o mestre — os
+outros tamanhos saem dele por Lanczos, e o `.ico` leva 16px e 32px.
 
-> `zafe-logo-full.png` e `zafe-icon.png` **saíram de uso**. O logo virou SVG
-> inline em `components/brand/Logo.tsx`, pintado pelos tokens, e por isso é o
-> único asset de marca que acompanha o interruptor. Os PNG seguem no `public/`
-> só como referência.
+> `zafe-logo-full.png` e `zafe-icon.png` **saíram de uso** no app. O logo virou
+> SVG inline em `components/brand/Logo.tsx`, pintado pelos tokens, e por isso é
+> o único asset de marca que acompanha o interruptor. O `zafe-icon.png` segue
+> valendo como mestre dos ícones binários acima.
 
 ### 3. Manifest PWA — `public/manifest.json`
 
