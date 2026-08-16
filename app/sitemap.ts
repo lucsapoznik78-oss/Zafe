@@ -1,13 +1,23 @@
 import type { MetadataRoute } from "next";
+import { CONCURSO_ENABLED } from "@/lib/flags";
 import { createClient } from "@/lib/supabase/server";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.zafe.app.br";
 
+// O SITEMAP SEGUE AS FLAGS, NÃO A LISTA DE ARQUIVOS.
+//
+// `/concurso` ficou aqui com prioridade 0.9 — dizendo ao Google "esta é a
+// segunda página mais importante do site" — enquanto o middleware devolve 307
+// para a home, porque `CONCURSO_ENABLED` é false. É por isso que quem procura
+// "zafe" ainda acha o Concurso: nós mesmos submetemos a URL. Rota atrás de flag
+// sai daqui junto com a flag.
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${BASE_URL}/`,          lastModified: new Date(), changeFrequency: "daily",   priority: 1.0 },
     { url: `${BASE_URL}/liga`,      lastModified: new Date(), changeFrequency: "hourly",  priority: 0.9 },
-    { url: `${BASE_URL}/concurso`,  lastModified: new Date(), changeFrequency: "daily",   priority: 0.9 },
+    ...(CONCURSO_ENABLED
+      ? [{ url: `${BASE_URL}/concurso`, lastModified: new Date(), changeFrequency: "daily" as const, priority: 0.9 }]
+      : []),
     { url: `${BASE_URL}/ranking`,   lastModified: new Date(), changeFrequency: "daily",   priority: 0.7 },
     { url: `${BASE_URL}/historico`, lastModified: new Date(), changeFrequency: "weekly",  priority: 0.5 },
     { url: `${BASE_URL}/ajuda`,     lastModified: new Date(), changeFrequency: "monthly", priority: 0.4 },

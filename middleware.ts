@@ -22,8 +22,20 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
   // Kill switch: com o Concurso desligado ninguém acessa o mundo pago direto por
   // link/anúncio. As páginas /concurso vão pra home; a API /api/concurso segue
   // fora daqui (prefixo diferente) e é inócua enquanto o PIX não está configurado.
+  //
+  // 308 E NÃO 307, DE PROPÓSITO. Redirect temporário diz ao Google "a página
+  // continua sendo essa, volte depois" — e ele mantém /concurso no índice. Era
+  // por isso que buscar "zafe" ainda trazia o Concurso, um resultado que leva a
+  // lugar nenhum. Permanente é o único status que faz o índice consolidar em /.
+  //
+  // O `no-store` é o que torna o 308 reversível: navegador cacheia redirect
+  // permanente por tempo indefinido, então sem ele, no dia em que a flag ligar,
+  // quem já tentou /concurso uma vez nunca mais chegaria lá — sem nada no
+  // servidor para consertar. Sem cache, só o índice do Google fica permanente.
   if (!CONCURSO_ENABLED && request.nextUrl.pathname.startsWith("/concurso")) {
-    return NextResponse.redirect(new URL("/", request.url));
+    const fora = NextResponse.redirect(new URL("/", request.url), 308);
+    fora.headers.set("Cache-Control", "no-store");
+    return fora;
   }
 
   // Mesma lógica pro Premium: enquanto a cobrança e o feature-set não estão
