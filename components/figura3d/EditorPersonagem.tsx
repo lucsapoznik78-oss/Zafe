@@ -7,20 +7,19 @@
 //    empurrá-lo para baixo. A página existe para olhar o boneco; qualquer
 //    caixa própria que roube altura dele está roubando do motivo da visita.
 //
-// 2. Não há abas. A versão anterior gastava uma faixa inteira num par
-//    PERSONAGEM/ACESSÓRIOS — dois botões gigantes para uma escolha binária que
-//    ainda escondia um segundo nível de navegação (rolar até a seção certa
-//    entre dez). Agora é uma única trilha horizontal com as 13 categorias
-//    reais (corpo, cabelo, feições + os 10 slots): mesma altura de uma linha,
-//    e um clique leva direto ao que se quer trocar, sem rolagem cega.
+// 2. A escolha é entre DUAS coisas — personagem ou acessórios — e a barra que a
+//    oferece é uma linha de texto sublinhado, não um par de retângulos. A
+//    versão original acertava a divisão e errava o peso: dois botões do tamanho
+//    de um banner para uma escolha binária que o usuário faz uma vez e esquece.
+//    Sublinhado ocupa a altura de uma linha e ainda diz onde se está.
 //
 // 3. Clicar num item não comprado VESTE o item. É de graça, é reversível e é
 //    muito melhor que miniatura: um canvas por card seriam 60 contextos WebGL
 //    e o navegador corta em ~16. O card só vira "Comprar Z$ X" depois que a
 //    pessoa viu a coisa no próprio boneco.
 //
-// O canvas mora fora do painel de categorias: se desmontasse na troca, o
-// contexto WebGL seria recriado e a rotação escolhida evaporaria a cada clique.
+// O canvas mora fora das abas: se desmontasse na troca, o contexto WebGL seria
+// recriado e a rotação escolhida evaporaria a cada ida e volta.
 
 "use client";
 
@@ -130,24 +129,6 @@ const ICONES: Record<string, LucideIcon> = {
 
 const z$ = (n: number) => `Z$ ${n.toLocaleString("pt-BR")}`;
 
-/**
- * A trilha de categorias — o que substituiu as abas.
- *
- * Corpo e loja são o MESMO nível de navegação aqui, e não dois mundos: do ponto
- * de vista de quem monta o boneco, "trocar o cabelo" e "trocar o boné" são a
- * mesma ação. Separá-los em abas obrigava a lembrar em qual metade estava cada
- * coisa antes de poder procurar. Numa trilha só, a ordem é a do corpo — da
- * cabeça aos pés, depois o que se carrega, e o veículo por último.
- */
-type Categoria = { id: string; rotulo: string; slot?: Slot };
-
-const CATEGORIAS: readonly Categoria[] = [
-  { id: "corpo", rotulo: "Corpo" },
-  { id: "cabelo", rotulo: "Cabelo" },
-  { id: "feicoes", rotulo: "Feições" },
-  ...SLOTS.map((slot) => ({ id: slot, rotulo: ROTULO_SLOT[slot], slot })),
-];
-
 type Props = {
   figuraInicial: FiguraV2;
   desbloqueada: boolean;
@@ -168,7 +149,7 @@ export default function EditorPersonagem({
   const [inventario, setInventario] = useState(() => new Set(inventarioInicial));
   const [saldo, setSaldo] = useState(saldoInicial);
   const [desbloqueada, setDesbloqueada] = useState(desbloqueadaInicial);
-  const [categoria, setCategoria] = useState<string>("corpo");
+  const [aba, setAba] = useState<"personagem" | "acessorios">("personagem");
   const [ocupado, setOcupado] = useState<string | null>(null);
   const [aviso, setAviso] = useState<{ tipo: "ok" | "erro"; texto: string } | null>(null);
 
@@ -289,8 +270,6 @@ export default function EditorPersonagem({
     );
   }
 
-  const atual = CATEGORIAS.find((c) => c.id === categoria) ?? CATEGORIAS[0];
-
   return (
     <div className="mx-auto max-w-6xl px-3 pb-4 pt-3 sm:px-4">
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(330px,1fr)]">
@@ -344,16 +323,13 @@ export default function EditorPersonagem({
             !desbloqueada && "pointer-events-none select-none opacity-40",
           )}
         >
-          <Trilha
-            atual={atual.id}
-            equipado={figura.equipado}
-            onPick={setCategoria}
-          />
+          <Abas atual={aba} onPick={setAba} />
 
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
-            {atual.slot ? (
-              <Prateleira
-                slot={atual.slot}
+            {aba === "personagem" ? (
+              <AbaCorpo figura={figura} mudar={mudar} />
+            ) : (
+              <AbaLoja
                 figura={figura}
                 inventario={inventario}
                 ocupado={ocupado}
@@ -361,8 +337,6 @@ export default function EditorPersonagem({
                 alternar={alternar}
                 comprar={comprar}
               />
-            ) : (
-              <PainelCorpo id={atual.id} figura={figura} mudar={mudar} />
             )}
           </div>
 
@@ -399,39 +373,43 @@ export default function EditorPersonagem({
   );
 }
 
-// =============================================================== TRILHA
+// ================================================================= ABAS
 /**
- * A lista de categorias, numa linha que rola de lado.
+ * Personagem | Acessórios, em duas palavras sublinhadas.
  *
- * O ponto ao lado do rótulo é o que as abas davam de graça e a trilha teria
- * perdido: com só uma categoria visível por vez, não haveria como saber que há
- * um item equipado em "Costas" sem visitar "Costas". O ponto devolve o
- * inventário vestido inteiro à primeira olhada.
+ * A escolha é a mesma de sempre e a divisão está certa — o que estava errado
+ * era o tamanho. Um par de retângulos preenchidos ocupa peso visual de botão
+ * primário para uma decisão que a pessoa toma uma vez e não pensa mais nela; e
+ * disputava atenção com o "Salvar", que é o único botão de verdade da tela.
+ * Sublinhado custa a altura de uma linha, mostra onde se está, e não parece um
+ * lugar para clicar duas vezes.
  */
-function Trilha({
+function Abas({
   atual,
-  equipado,
   onPick,
 }: {
-  atual: string;
-  equipado: FiguraV2["equipado"];
-  onPick: (id: string) => void;
+  atual: "personagem" | "acessorios";
+  onPick: (a: "personagem" | "acessorios") => void;
 }) {
   return (
-    <div className="scrollbar-hide -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-0.5">
-      {CATEGORIAS.map((c) => (
+    <div className="flex gap-5 border-b border-border">
+      {(
+        [
+          ["personagem", "Personagem"],
+          ["acessorios", "Acessórios"],
+        ] as const
+      ).map(([id, rotulo]) => (
         <button
-          key={c.id}
-          onClick={() => onPick(c.id)}
+          key={id}
+          onClick={() => onPick(id)}
           className={cn(
-            "flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors",
-            c.id === atual
-              ? "border-primary bg-primary/10 text-foreground"
-              : "border-border text-muted-foreground hover:text-foreground",
+            "-mb-px border-b-2 pb-2 text-sm font-bold transition-colors",
+            id === atual
+              ? "border-primary text-foreground"
+              : "border-transparent text-muted-foreground hover:text-foreground",
           )}
         >
-          {c.rotulo}
-          {c.slot && equipado[c.slot] && <span className="size-1.5 rounded-full bg-primary" />}
+          {rotulo}
         </button>
       ))}
     </div>
@@ -506,17 +484,21 @@ function Cores({
   );
 }
 
-function PainelCorpo({
-  id,
+function AbaCorpo({
   figura,
   mudar,
 }: {
-  id: string;
   figura: FiguraV2;
   mudar: (p: Partial<FiguraV2>) => void;
 }) {
-  if (id === "cabelo") {
-    return (
+  return (
+    <div>
+      <Secao titulo="Tom de pele">
+        <Cores cores={PELES} atual={figura.pele} onPick={(pele) => mudar({ pele })} />
+      </Secao>
+      <Secao titulo="Físico">
+        <Chips opcoes={CORPOS} atual={figura.corpo} onPick={(corpo) => mudar({ corpo })} />
+      </Secao>
       <Secao titulo="Cabelo">
         <Chips
           opcoes={CABELO_ESTILOS}
@@ -527,48 +509,26 @@ function PainelCorpo({
           <Cores cores={CABELOS} atual={figura.cabeloCor} onPick={(c) => mudar({ cabeloCor: c })} />
         </div>
       </Secao>
-    );
-  }
-
-  if (id === "feicoes") {
-    return (
-      <div>
-        <Secao titulo="Olhos">
-          <Chips opcoes={OLHOS} atual={figura.olhos} onPick={(olhos) => mudar({ olhos })} />
-        </Secao>
-        <Secao titulo="Sobrancelha">
-          <Chips
-            opcoes={SOBRANCELHAS}
-            atual={figura.sobrancelha}
-            onPick={(sobrancelha) => mudar({ sobrancelha })}
-          />
-        </Secao>
-        <Secao titulo="Boca">
-          <Chips opcoes={BOCAS} atual={figura.boca} onPick={(boca) => mudar({ boca })} />
-        </Secao>
-        <Secao titulo="Barba">
-          <Chips opcoes={BARBAS} atual={figura.barba} onPick={(barba) => mudar({ barba })} />
-          {figura.barba !== "nenhuma" && (
-            <div className="mt-2">
-              <Cores
-                cores={CABELOS}
-                atual={figura.barbaCor}
-                onPick={(c) => mudar({ barbaCor: c })}
-              />
-            </div>
-          )}
-        </Secao>
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <Secao titulo="Tom de pele">
-        <Cores cores={PELES} atual={figura.pele} onPick={(pele) => mudar({ pele })} />
+      <Secao titulo="Olhos">
+        <Chips opcoes={OLHOS} atual={figura.olhos} onPick={(olhos) => mudar({ olhos })} />
       </Secao>
-      <Secao titulo="Físico">
-        <Chips opcoes={CORPOS} atual={figura.corpo} onPick={(corpo) => mudar({ corpo })} />
+      <Secao titulo="Sobrancelha">
+        <Chips
+          opcoes={SOBRANCELHAS}
+          atual={figura.sobrancelha}
+          onPick={(sobrancelha) => mudar({ sobrancelha })}
+        />
+      </Secao>
+      <Secao titulo="Boca">
+        <Chips opcoes={BOCAS} atual={figura.boca} onPick={(boca) => mudar({ boca })} />
+      </Secao>
+      <Secao titulo="Barba">
+        <Chips opcoes={BARBAS} atual={figura.barba} onPick={(barba) => mudar({ barba })} />
+        {figura.barba !== "nenhuma" && (
+          <div className="mt-2">
+            <Cores cores={CABELOS} atual={figura.barbaCor} onPick={(c) => mudar({ barbaCor: c })} />
+          </div>
+        )}
       </Secao>
     </div>
   );
@@ -667,9 +627,7 @@ function Card({
   );
 }
 
-/** Os itens de um slot só — a trilha já disse qual. */
-function Prateleira({
-  slot,
+function AbaLoja({
   figura,
   inventario,
   ocupado,
@@ -677,7 +635,6 @@ function Prateleira({
   alternar,
   comprar,
 }: {
-  slot: Slot;
   figura: FiguraV2;
   inventario: Set<string>;
   ocupado: string | null;
@@ -686,18 +643,24 @@ function Prateleira({
   comprar: (id: string) => void;
 }) {
   return (
-    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-      {(ITENS_POR_SLOT[slot] ?? []).map((it) => (
-        <Card
-          key={it.id}
-          it={it}
-          vestido={figura.equipado[slot] === it.id}
-          meu={inventario.has(it.id)}
-          ocupado={ocupado}
-          folha={folha}
-          onVestir={() => alternar(slot, it.id)}
-          onComprar={() => comprar(it.id)}
-        />
+    <div>
+      {SLOTS.map((slot) => (
+        <Secao key={slot} titulo={ROTULO_SLOT[slot]}>
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+            {(ITENS_POR_SLOT[slot] ?? []).map((it) => (
+              <Card
+                key={it.id}
+                it={it}
+                vestido={figura.equipado[slot] === it.id}
+                meu={inventario.has(it.id)}
+                ocupado={ocupado}
+                folha={folha}
+                onVestir={() => alternar(slot, it.id)}
+                onComprar={() => comprar(it.id)}
+              />
+            ))}
+          </div>
+        </Secao>
       ))}
     </div>
   );

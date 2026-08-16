@@ -128,9 +128,7 @@ export const ITENS_POR_SLOT: Record<Slot, ItemCatalogo[]> = ITENS.reduce(
 
 export const ROTULO_SLOT: Record<Slot, string> = {
   chapeu: "Cabeça",
-  // "Rosto" seria ambíguo na lista de categorias do editor, que também tem uma
-  // entrada para as feições (olhos, boca, barba). Aqui é só o que se veste.
-  rosto: "Óculos e máscaras",
+  rosto: "Rosto",
   torso: "Parte de cima",
   pernas: "Parte de baixo",
   pes: "Calçado",
