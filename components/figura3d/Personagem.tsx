@@ -85,10 +85,16 @@ function Cabelo({
       );
     case "afro":
       // Debaixo do chapéu vira volume lateral: some a calota, ficam as laterais.
+      //
+      // Achatado em z e recuado, não esférico: uma esfera de raio 0.585 centrada
+      // em −0.02 ainda alcança z 0.40 na altura dos olhos — ou seja, passava na
+      // frente do rosto e engolia óculos e sobrancelha. Com raio 0.45 em z e
+      // centro em −0.1, o volume nunca ultrapassa 0.35, e o plano do rosto
+      // (0.39) fica sempre livre. De frente continua uma massa redonda.
       return (
         <Esfera
-          p={[0, topo - (sobChapeu ? 0.16 : 0.02), -0.02]}
-          t={[l * 1.5, l * (sobChapeu ? 0.9 : 1.35), l * 1.5]}
+          p={[0, topo - (sobChapeu ? 0.16 : 0.02), -0.1]}
+          t={[l * 1.5, l * (sobChapeu ? 0.9 : 1.35), l * 1.15]}
           c={cor}
         />
       );
@@ -110,10 +116,15 @@ function Cabelo({
         </group>
       );
     case "franja":
+      // A franja PARA na sobrancelha. Descendo até `topo - 0.24` ela cobria os
+      // olhos (que ficam entre yCabeca+0.015 e +0.145) e, pior, ocupava o mesmo
+      // z da lente dos óculos — dois sólidos no mesmo lugar, com o cabelo
+      // brotando por dentro do vidro. Aqui ela vai de +0.16 a +0.38: encosta na
+      // casca em cima e deixa a testa inteira livre embaixo.
       return (
         <group>
           {casca}
-          <Bloco p={[0, topo - 0.24, l * 0.48]} t={[l * 1.04, 0.26, 0.1]} c={cor} />
+          <Bloco p={[0, topo - 0.12, l * 0.48]} t={[l * 1.04, 0.22, 0.1]} c={cor} />
         </group>
       );
     case "coque":

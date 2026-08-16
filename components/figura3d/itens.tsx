@@ -367,10 +367,14 @@ const naMao = (lado: -1 | 1, conteudo: (p: PropsItem) => JSX.Element): Forma =>
     );
   };
 
+// O braço tem 0.19 de profundidade, ou seja, sua face da frente está em z 0.095;
+// a mão (e portanto este grupo) está em z 0.05. Qualquer coisa redonda que a mão
+// "segure" em z 0.16 tem o fundo em 0.03 — dentro do antebraço. Daí o 0.26: o
+// fundo da bola cai em 0.13 e ela fica encostada na mão, não enfiada nela.
 const bola = naMao(-1, ({ c }) => (
   <group>
-    <Esfera p={[0, -0.12, 0.16]} t={[0.36, 0.36, 0.36]} c={c[0]} />
-    <Esfera p={[0, -0.12, 0.16]} t={[0.38, 0.14, 0.14]} c={c[1] ?? c[0]} />
+    <Esfera p={[0, -0.12, 0.26]} t={[0.36, 0.36, 0.36]} c={c[0]} />
+    <Esfera p={[0, -0.12, 0.26]} t={[0.38, 0.14, 0.14]} c={c[1] ?? c[0]} />
   </group>
 ));
 
@@ -388,8 +392,12 @@ const taco = naMao(-1, ({ c }) => (
   </group>
 ));
 
+// A inclinação joga a ponta de BAIXO para dentro, na direção da coxa. Em z 0 o
+// canto inferior da prancha cruzava a perna. Trazendo o grupo para z 0.12 (0.17
+// em mundo) a prancha passa na frente da perna em vez de dentro dela, e ainda
+// encosta na mão.
 const skate = naMao(-1, ({ c }) => (
-  <group position={[0.12, 0.15, 0]} rotation={[0, 0, 0.25]}>
+  <group position={[0.02, 0.2, 0.12]} rotation={[0, 0, 0.25]}>
     <Bloco p={[0, 0, 0]} t={[0.24, 1.1, 0.06]} c={c[0]} />
     {[-0.36, 0.36].map((y) => (
       <Bloco key={y} p={[0, y, -0.09]} t={[0.28, 0.08, 0.1]} c={c[1] ?? c[0]} />
@@ -449,22 +457,38 @@ const lanterna = naMao(1, ({ c }) => (
   </group>
 ));
 
+// O escudo é largo (0.62 de "corda") e vem girado, então ocupa ~0.25 em x mesmo
+// tendo 0.1 de espessura. Centrado na mão, essa largura aparente engolia o
+// antebraço inteiro. Empurrado 0.2 para fora, ele passa a pender ao LADO do
+// braço — que é como um escudo de mão se usa.
 const escudo = naMao(1, ({ c, m }) => (
-  <group position={[0.02, 0.12, 0.16]} rotation={[0, -0.25, 0]}>
+  <group position={[0.2, 0.12, 0.16]} rotation={[0, -0.25, 0]}>
     <Bloco p={[0, 0, 0]} t={[0.1, m.torsoA * 0.85, 0.62]} c={c[0]} />
     <Bloco p={[0.04, 0, 0]} t={[0.04, m.torsoA * 0.5, 0.3]} c={c[1] ?? c[0]} />
   </group>
 ));
 
 // =============================================================== COSTAS
+//
+// TODO ITEM DE COSTAS TEM QUE PASSAR DA ROUPA, NÃO DO CORPO.
+//
+// `zCostas` é a superfície das costas NUAS. A peça de torso mais grossa é a
+// jaqueta (`casca(m, 0.11)`), cujas costas ficam em −(torsoP+0.11)/2 ≈ −0.30,
+// ou seja 0.055 atrás do tronco pelado. Item colado em `zCostas` fica dentro da
+// jaqueta e some/pisca. As folgas abaixo são medidas a partir dessa superfície,
+// não do corpo — por isso parecem exageradas para quem imagina o boneco nu.
+
 const mochila: Forma = ({ c, m }) => (
   <group position={[0, m.yTorso, m.zCostas - 0.16]}>
     <Bloco p={[0, 0, 0]} t={[m.torsoL * 0.78, m.torsoA * 0.85, 0.3]} c={c[0]} />
     <Bloco p={[0, -0.12, 0.02]} t={[m.torsoL * 0.6, 0.16, 0.34]} c={c2(c)} />
+    {/* as alças dão a volta e reaparecem no PEITO: precisam limpar a frente da
+        roupa (+0.30), não a do peito nu (+0.24), senão viram duas listras que
+        piscam por dentro do moletom. */}
     {[-1, 1].map((s) => (
       <Bloco
         key={s}
-        p={[s * m.torsoL * 0.3, 0.06, m.torsoP + 0.14]}
+        p={[s * m.torsoL * 0.3, 0.06, m.torsoP + 0.235]}
         t={[0.09, m.torsoA * 0.9, 0.05]}
         c={c2(c)}
       />
@@ -473,29 +497,31 @@ const mochila: Forma = ({ c, m }) => (
 );
 
 const capa: Forma = ({ c, m }) => (
-  <group position={[0, 0, m.zCostas - 0.06]}>
+  <group position={[0, 0, m.zCostas - 0.14]}>
     <Bloco
       p={[0, m.yTorso - 0.18, 0]}
       t={[m.torsoL * 1.12, m.torsoA + 0.9, 0.05]}
       c={c[0]}
     />
+    {/* a gola fica no plano do pano, e não adiantada: adiantada, ela atravessava
+        o ombro e aparecia na frente da jaqueta. */}
     <Bloco
-      p={[0, m.yTorso + m.torsoA / 2, 0.05]}
-      t={[m.torsoL * 1.1, 0.12, 0.14]}
+      p={[0, m.yTorso + m.torsoA / 2, 0]}
+      t={[m.torsoL * 1.1, 0.12, 0.12]}
       c={c2(c)}
     />
   </group>
 );
 
 const prancha: Forma = ({ c, m }) => (
-  <group position={[0, m.yTorso, m.zCostas - 0.14]} rotation={[0, 0, 0.35]}>
+  <group position={[0, m.yTorso, m.zCostas - 0.2]} rotation={[0, 0, 0.35]}>
     <Bloco p={[0, 0, 0]} t={[0.42, 1.9, 0.09]} c={c[0]} />
     <Bloco p={[0, 0, 0.05]} t={[0.09, 1.7, 0.02]} c={c2(c)} />
   </group>
 );
 
 const asas: Forma = ({ c, m }) => (
-  <group position={[0, m.yTorso + 0.12, m.zCostas - 0.06]}>
+  <group position={[0, m.yTorso + 0.12, m.zCostas - 0.16]}>
     {[-1, 1].map((s) => (
       <group key={s} rotation={[0, 0, s * -0.45]}>
         <Bloco p={[s * 0.44, 0.1, 0]} t={[0.8, 0.72, 0.07]} c={c[0]} />
@@ -541,8 +567,14 @@ const roda = (x: number, z: number, r = 0.3) => (
   <Anel key={`${x}-${z}`} p={[x, r, z]} t={[r * 2, r * 2, r * 2]} r={[0, T, 0]} c="#17181B" />
 );
 
+// O RECUO DE CADA VEÍCULO É A METADE DO COMPRIMENTO DELE MAIS FOLGA.
+//
+// Não é enquadramento, é colisão: com 3.4 de comprimento centrados em −1.5, o
+// capô terminava em +0.2 — na altura da canela, e dentro dela. Pior com item de
+// costas (a prancha desce até z −0.49). Cada recuo abaixo deixa a frente do
+// veículo atrás de −0.5, que é o ponto mais recuado que o boneco vestido ocupa.
 const carro: Forma = ({ c }) => (
-  <group position={[0, 0, -1.5]}>
+  <group position={[0, 0, -2.3]}>
     <Bloco p={[0, 0.42, 0]} t={[1.9, 0.4, 3.4]} c={c[0]} />
     <Bloco p={[0, 0.78, -0.25]} t={[1.6, 0.42, 1.5]} c={c[0]} />
     <Bloco p={[0, 0.78, -0.25]} t={[1.64, 0.24, 1.3]} c="#2A3138" opacidade={0.75} />
@@ -557,7 +589,7 @@ const carro: Forma = ({ c }) => (
 );
 
 const suv: Forma = ({ c }) => (
-  <group position={[0, 0, -1.6]}>
+  <group position={[0, 0, -2.5]}>
     <Bloco p={[0, 0.62, 0]} t={[2.05, 0.7, 3.6]} c={c[0]} />
     <Bloco p={[0, 1.15, -0.1]} t={[1.85, 0.5, 2.4]} c={c[0]} />
     <Bloco p={[0, 1.15, -0.1]} t={[1.89, 0.3, 2.2]} c="#2A3138" opacidade={0.75} />
@@ -572,7 +604,7 @@ const suv: Forma = ({ c }) => (
 );
 
 const moto: Forma = ({ c }) => (
-  <group position={[0, 0, -1.3]}>
+  <group position={[0, 0, -2.0]}>
     <Bloco p={[0, 0.62, 0]} t={[0.34, 0.34, 1.3]} c={c[0]} />
     <Bloco p={[0, 0.85, -0.15]} t={[0.4, 0.16, 0.6]} c={c[1] ?? c[0]} />
     <Bloco p={[0, 0.95, 0.6]} t={[0.7, 0.08, 0.08]} c="#3A3D45" />
@@ -583,7 +615,7 @@ const moto: Forma = ({ c }) => (
 );
 
 const bicicleta: Forma = ({ c }) => (
-  <group position={[0, 0, -1.2]}>
+  <group position={[0, 0, -1.85]}>
     <Bloco p={[0, 0.62, 0]} t={[0.08, 0.08, 1.2]} c={c[0]} />
     <Bloco p={[0, 0.5, 0.3]} t={[0.07, 0.5, 0.07]} r={[0.4, 0, 0]} c={c[0]} />
     <Bloco p={[0, 0.5, -0.35]} t={[0.07, 0.55, 0.07]} r={[-0.3, 0, 0]} c={c[0]} />
