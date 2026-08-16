@@ -29,12 +29,25 @@ export default async function PersonagemPage() {
   // vinha de lá começa do padrão, com a v1 preservada em `figura_legado`.
   const figura = ehFiguraV2(perfil?.figura) ? perfil.figura : FIGURA_PADRAO;
 
+  // Posição no ranking geral, que vai estampada na roupa.
+  //
+  // Contada, não lida de tabela: o /ranking é `wallets` ordenado por saldo, e
+  // não existe coluna nem view com a colocação. `head: true` traz só o número —
+  // puxar as linhas para achar o índice seria baixar a base inteira por uma
+  // estampa de camiseta.
+  const saldo = Number(wallet?.balance ?? 0);
+  const { count: acima } = await admin
+    .from("wallets")
+    .select("user_id", { count: "exact", head: true })
+    .gt("balance", saldo);
+
   return (
     <EditorPersonagem
       figuraInicial={figura}
       desbloqueada={perfil?.figura_desbloqueada ?? false}
-      saldoInicial={Number(wallet?.balance ?? 0)}
+      saldoInicial={saldo}
       inventarioInicial={(inventario ?? []).map((r) => r.item_id as string)}
+      posicao={acima === null ? null : acima + 1}
     />
   );
 }

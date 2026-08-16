@@ -17,10 +17,15 @@
 import { Instance, Instances } from "@react-three/drei";
 import { useMemo } from "react";
 
-import { Anel, Bloco, Cilindro, Cone, Esfera } from "./blocos";
-import { ESFERA, type Medidas, materialTransparente } from "./primitivas";
+import { Anel, Bloco, Cilindro, Cone, Esfera, Numero } from "./blocos";
+import { ESFERA, type Medidas, contraste, materialTransparente } from "./primitivas";
 
-export type PropsItem = { c: string[]; m: Medidas };
+export type PropsItem = {
+  c: string[];
+  m: Medidas;
+  /** Posição no ranking geral. Só as peças de torso usam — ver `estampa`. */
+  n?: number;
+};
 export type Forma = (p: PropsItem) => JSX.Element | null;
 
 const T = Math.PI / 2;
@@ -50,11 +55,29 @@ const bucket: Forma = ({ c, m }) => (
   </group>
 );
 
+/**
+ * A calota é deslocada PARA TRÁS e achatada, não centrada na cabeça.
+ *
+ * Um elipsoide centrado que envolva o crânio (raio horizontal > profundidade do
+ * rosto) engole a face inteira: os olhos ficam dentro da casca e o item lê como
+ * "cabeça derretida". Empurrando o centro para z negativo, o plano do rosto cai
+ * fora do elipsoide — a face aparece, e o capacete ainda cobre topo, orelhas e
+ * nuca. A aba fica na FRENTE do rosto (`zRosto + 0.02`), acima da sobrancelha;
+ * a versão anterior a colocava em `zRosto * 0.9`, ou seja, atravessando o nariz.
+ */
 const capacete: Forma = ({ c, m }) => (
   <group position={[0, m.yCabeca, 0]}>
-    <Esfera p={[0, 0.12, 0]} t={[m.cabeca * 1.12, m.cabeca * 1.15, m.cabeca * 1.12]} c={c[0]} />
-    <Bloco p={[0, 0.02, m.zRosto * 0.9]} t={[m.cabeca * 1.05, 0.14, 0.1]} c={c2(c)} />
-    <Bloco p={[0, m.cabeca * 0.62, 0]} t={[0.07, 0.12, m.cabeca * 1.1]} c={c2(c)} />
+    <Esfera
+      p={[0, m.cabeca * 0.21, -m.cabeca * 0.13]}
+      t={[m.cabeca * 1.13, m.cabeca * 0.77, m.cabeca * 1.18]}
+      c={c[0]}
+    />
+    <Bloco
+      p={[0, m.cabeca * 0.38, m.zRosto + 0.02]}
+      t={[m.cabeca * 1.04, 0.09, 0.2]}
+      c={c2(c)}
+    />
+    <Bloco p={[0, m.cabeca * 0.6, -m.cabeca * 0.08]} t={[0.08, 0.14, m.cabeca * 1.1]} c={c2(c)} />
   </group>
 );
 
@@ -156,7 +179,37 @@ const mangas = (m: Medidas, c: string, comprida: boolean) =>
     />
   ));
 
-const camiseta: Forma = ({ c, m }) => (
+/**
+ * O número do ranking geral, estampado na peça de cima.
+ *
+ * Mora aqui e não no `Personagem` porque a superfície onde ele encosta depende
+ * da ESPESSURA da roupa (`e`), que só a própria peça conhece: pintar num z fixo
+ * afundaria o número dentro da jaqueta e o deixaria flutuando sobre a camiseta.
+ *
+ * Grande nas costas, pequeno no peito — como camisa de time. O peito é o que
+ * sobrevive ao retrato frontal que vira avatar; as costas é o que se vê ao
+ * girar o boneco. `contraste` decide preto ou branco a partir do tecido, senão
+ * o número some em roupa clara.
+ *
+ * `n` vem do banco (posição por saldo) e não é editável: é a única parte do
+ * personagem que o dono não escolhe.
+ *
+ * `x` desloca só o número do peito: jaqueta e terno têm zíper/lapela salientes
+ * no meio, que passariam NA FRENTE do plano e cortariam o número ao meio.
+ */
+function estampa(m: Medidas, e: number, tecido: string, n?: number, x = 0) {
+  if (!n) return null;
+  const z = (m.torsoP + e) / 2 + 0.006;
+  const cor = contraste(tecido);
+  return (
+    <>
+      <Numero n={n} cor={cor} p={[x, m.yTorso + 0.2, z]} t={[0.17, 0.17]} />
+      <Numero n={n} cor={cor} p={[0, m.yTorso + 0.06, -z]} t={[0.44, 0.44]} r={[0, Math.PI, 0]} />
+    </>
+  );
+}
+
+const camiseta: Forma = ({ c, m, n }) => (
   <group>
     <Bloco p={[0, m.yTorso, 0]} t={casca(m)} c={c[0]} />
     {mangas(m, c[0], false)}
@@ -166,13 +219,15 @@ const camiseta: Forma = ({ c, m }) => (
         <Bloco p={[0, m.yTorso - 0.18, 0]} t={casca(m, 0.07)} c={c[1]} />
       </>
     )}
+    {estampa(m, c[1] ? 0.07 : 0.05, c[1] ?? c[0], n)}
   </group>
 );
 
-const moletom: Forma = ({ c, m }) => (
+const moletom: Forma = ({ c, m, n }) => (
   <group>
     <Bloco p={[0, m.yTorso, 0]} t={casca(m, 0.1)} c={c[0]} />
     {mangas(m, c[0], true)}
+    {estampa(m, 0.1, c[0], n)}
     {/* capuz caído nas costas — é o que distingue moletom de camiseta de longe */}
     <Bloco
       p={[0, m.yTorso + m.torsoA / 2 - 0.02, m.zCostas - 0.12]}
@@ -183,10 +238,11 @@ const moletom: Forma = ({ c, m }) => (
   </group>
 );
 
-const jaqueta: Forma = ({ c, m }) => (
+const jaqueta: Forma = ({ c, m, n }) => (
   <group>
     <Bloco p={[0, m.yTorso, 0]} t={casca(m, 0.11)} c={c[0]} />
     {mangas(m, c[0], true)}
+    {estampa(m, 0.11, c[0], n, -0.22)}
     <Bloco p={[0, m.yTorso, m.torsoP / 2 + 0.05]} t={[0.06, m.torsoA, 0.04]} c={c2(c)} />
     <Bloco
       p={[0, m.yTorso + m.torsoA / 2 - 0.04, m.torsoP / 2 + 0.03]}
@@ -196,20 +252,23 @@ const jaqueta: Forma = ({ c, m }) => (
   </group>
 );
 
-const terno: Forma = ({ c, m }) => (
+const terno: Forma = ({ c, m, n }) => (
   <group>
     <Bloco p={[0, m.yTorso, 0]} t={casca(m, 0.11)} c={c[0]} />
     {mangas(m, c[0], true)}
+    {estampa(m, 0.11, c[0], n, -0.24)}
     <Bloco p={[0, m.yTorso + 0.1, m.torsoP / 2 + 0.04]} t={[0.2, m.torsoA * 0.6, 0.04]} c={c2(c)} />
     <Bloco p={[0, m.yTorso + 0.08, m.torsoP / 2 + 0.07]} t={[0.09, 0.36, 0.03]} c={c[0]} />
   </group>
 );
 
-const uniforme: Forma = ({ c, m }) => (
+const uniforme: Forma = ({ c, m, n }) => (
   <group>
     <Bloco p={[0, m.yTorso, 0]} t={casca(m)} c={c[0]} />
     {mangas(m, c[0], false)}
     <Bloco p={[0, m.yTorso, 0]} t={[m.torsoL * 0.3, m.torsoA + 0.03, m.torsoP + 0.07]} c={c2(c)} />
+    {/* a faixa central é a c2: o número cai em cima dela, então contrasta com ela */}
+    {estampa(m, 0.07, c2(c), n)}
     <Bloco
       p={[0, m.yTorso + m.torsoA / 2 - 0.03, 0]}
       t={[m.torsoL + 0.08, 0.07, m.torsoP + 0.08]}

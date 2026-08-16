@@ -50,12 +50,19 @@ export type ItemCatalogo = {
   forma: string;
   /** Parâmetros de cor da geometria. Cor aqui é DADO, não tema — ver nota abaixo. */
   cores: string[];
-  /** Ícone lucide mostrado na grade da loja (não há miniatura 3D — ver nota). */
+  /** Ícone lucide — só o que aparece enquanto a miniatura 3D do item não fica pronta. */
   icone: string;
   /** Ocupa as duas mãos: equipar limpa o outro lado. */
   duasMaos?: boolean;
   /** Some com o cabelo (capacete, cabeça de tubarão). */
   escondeCabelo?: boolean;
+  /**
+   * Some com olhos e sobrancelha. Sem isso o olho continua desenhado atrás da
+   * lente e aparece como duas manchas dentro do óculos escuro.
+   */
+  escondeOlhos?: boolean;
+  /** Some com boca e barba — máscara e focinho de tubarão cobrem os dois. */
+  escondeBoca?: boolean;
   /** Preço 0 e já vem no inventário de todo mundo — ninguém fica pelado. */
   inicial?: boolean;
 };

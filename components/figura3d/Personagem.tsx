@@ -13,7 +13,7 @@ import type { FiguraV2 } from "@/lib/figura/tipos";
 import { CABELOS, PELES } from "@/lib/figura/paletas";
 import { POR_ID } from "@/lib/figura/catalogo";
 
-import { Bloco, Cilindro, Cone, Esfera } from "./blocos";
+import { Bloco, BlocoMacio, Cilindro, Cone, Esfera } from "./blocos";
 import { FORMAS } from "./itens";
 import { medidasDe, type Medidas } from "./primitivas";
 
@@ -30,7 +30,26 @@ function escurecer(hex: string, f = 0.78): string {
 }
 
 // -------------------------------------------------------------- CABELO
-function Cabelo({ estilo, cor, m }: { estilo: string; cor: string; m: Medidas }) {
+/**
+ * `sobChapeu` achata o que sobe acima do crânio.
+ *
+ * Sem isso, os espetos, o moicano, o coque e o afro atravessam o boné e saem
+ * pelo outro lado — foi o "acessório em cima de acessório" que o usuário viu.
+ * Não dá para simplesmente esconder o cabelo inteiro (chapéu de aba curta
+ * deixaria o boneco careca de lado e de trás), então o que fica é só a parte
+ * que caberia debaixo de um chapéu de verdade.
+ */
+function Cabelo({
+  estilo,
+  cor,
+  m,
+  sobChapeu,
+}: {
+  estilo: string;
+  cor: string;
+  m: Medidas;
+  sobChapeu?: boolean;
+}) {
   const l = m.cabeca;
   const topo = m.yTopo;
   const casca = <Bloco p={[0, topo - 0.07, 0]} t={[l * 1.04, 0.16, l * 1.04]} c={cor} />;
@@ -46,6 +65,7 @@ function Cabelo({ estilo, cor, m }: { estilo: string; cor: string; m: Medidas })
         </group>
       );
     case "espetado":
+      if (sobChapeu) return casca;
       return (
         <group>
           {casca}
@@ -59,12 +79,19 @@ function Cabelo({ estilo, cor, m }: { estilo: string; cor: string; m: Medidas })
     case "moicano":
       return (
         <group>
-          <Bloco p={[0, topo + 0.1, 0]} t={[0.17, 0.34, l * 1.02]} c={cor} />
+          {!sobChapeu && <Bloco p={[0, topo + 0.1, 0]} t={[0.17, 0.34, l * 1.02]} c={cor} />}
           <Bloco p={[0, topo - 0.08, 0]} t={[l * 1.04, 0.1, l * 1.04]} c={escurecer(cor, 0.6)} />
         </group>
       );
     case "afro":
-      return <Esfera p={[0, topo - 0.02, -0.02]} t={[l * 1.5, l * 1.35, l * 1.5]} c={cor} />;
+      // Debaixo do chapéu vira volume lateral: some a calota, ficam as laterais.
+      return (
+        <Esfera
+          p={[0, topo - (sobChapeu ? 0.16 : 0.02), -0.02]}
+          t={[l * 1.5, l * (sobChapeu ? 0.9 : 1.35), l * 1.5]}
+          c={cor}
+        />
+      );
     case "longo":
       return (
         <group>
@@ -93,7 +120,7 @@ function Cabelo({ estilo, cor, m }: { estilo: string; cor: string; m: Medidas })
       return (
         <group>
           {casca}
-          <Esfera p={[0, topo + 0.16, -0.14]} t={[0.32, 0.3, 0.32]} c={cor} />
+          {!sobChapeu && <Esfera p={[0, topo + 0.16, -0.14]} t={[0.32, 0.3, 0.32]} c={cor} />}
         </group>
       );
     case "dread":
@@ -136,7 +163,21 @@ function Cabelo({ estilo, cor, m }: { estilo: string; cor: string; m: Medidas })
 }
 
 // --------------------------------------------------------------- ROSTO
-function Rosto({ f, m, pele }: { f: FiguraV2; m: Medidas; pele: string }) {
+function Rosto({
+  f,
+  m,
+  pele,
+  semOlhos,
+  semBoca,
+}: {
+  f: FiguraV2;
+  m: Medidas;
+  pele: string;
+  /** Óculos/viseira por cima: o olho desenhado atrás vira mancha na lente. */
+  semOlhos?: boolean;
+  /** Máscara/focinho: cobre boca e barba. */
+  semBoca?: boolean;
+}) {
   const y = m.yCabeca;
   const z = m.zRosto + 0.005;
   const olho = (x: number) => {
@@ -299,16 +340,26 @@ function Rosto({ f, m, pele }: { f: FiguraV2; m: Medidas; pele: string }) {
 
   return (
     <group>
-      {[-0.18, 0.18].map(olho)}
-      {[-0.18, 0.18].map(sobrancelha)}
-      {boca()}
-      {barba()}
+      {!semOlhos && [-0.18, 0.18].map(olho)}
+      {!semOlhos && [-0.18, 0.18].map(sobrancelha)}
+      {!semBoca && boca()}
+      {!semBoca && barba()}
     </group>
   );
 }
 
 // ----------------------------------------------------------- PERSONAGEM
-export function Personagem({ figura }: { figura: FiguraV2 }) {
+export function Personagem({
+  figura,
+  posicao,
+}: {
+  figura: FiguraV2;
+  /**
+   * Posição no ranking geral. Vem do banco e é estampada na peça de torso —
+   * é a única parte do personagem que o dono não escolhe.
+   */
+  posicao?: number | null;
+}) {
   const m = medidasDe(figura.corpo);
   const pele = PELES[figura.pele] ?? PELES[0];
   const cabeloCor = CABELOS[figura.cabeloCor] ?? CABELOS[0];
@@ -322,14 +373,20 @@ export function Personagem({ figura }: { figura: FiguraV2 }) {
   // Capacete e cabeça de tubarão comem o cabelo. Sem isso o moicano atravessa o
   // capacete, que é o tipo de coisa que faz o item parecer quebrado.
   const semCabelo = equipados.some((e) => e.cat.escondeCabelo);
+  const semOlhos = equipados.some((e) => e.cat.escondeOlhos);
+  const semBoca = equipados.some((e) => e.cat.escondeBoca);
+  const comChapeu = equipados.some((e) => e.slot === "chapeu");
 
   // A pele das pernas e do tronco só aparece onde não há roupa. Desenhar o
   // corpo inteiro por baixo é mais barato que calcular recortes.
+  //
+  // As peças grandes usam `BlocoMacio` (canto bem mais arredondado) e os
+  // detalhes usam `Bloco`: é o que separa "boneco" de "pilha de cubos".
   return (
     <group>
       {/* pernas */}
       {[-1, 1].map((s) => (
-        <Bloco
+        <BlocoMacio
           key={s}
           p={[s * (m.perna / 2 + 0.015), m.pernaA / 2, 0]}
           t={[m.perna, m.pernaA, m.perna]}
@@ -338,11 +395,11 @@ export function Personagem({ figura }: { figura: FiguraV2 }) {
       ))}
 
       {/* tronco */}
-      <Bloco p={[0, m.yTorso, 0]} t={[m.torsoL, m.torsoA, m.torsoP]} c={pele} />
+      <BlocoMacio p={[0, m.yTorso, 0]} t={[m.torsoL, m.torsoA, m.torsoP]} c={pele} />
 
       {/* braços */}
       {[-1, 1].map((s) => (
-        <Bloco
+        <BlocoMacio
           key={s}
           p={[s * (m.torsoL / 2 + m.braco / 2), m.yTorso + m.torsoA / 2 - m.bracoA / 2, 0]}
           t={[m.braco, m.bracoA, m.braco]}
@@ -351,14 +408,25 @@ export function Personagem({ figura }: { figura: FiguraV2 }) {
       ))}
 
       {/* pescoço e cabeça */}
-      <Bloco p={[0, m.pernaA + m.torsoA + 0.03, 0]} t={[m.cabeca * 0.34, 0.12, m.cabeca * 0.34]} c={escurecer(pele, 0.9)} />
-      <Bloco p={[0, m.yCabeca, 0]} t={[m.cabeca, m.cabeca, m.cabeca]} c={pele} />
+      <Cilindro p={[0, m.pernaA + m.torsoA + 0.03, 0]} t={[m.cabeca * 0.36, 0.14, m.cabeca * 0.36]} c={escurecer(pele, 0.9)} />
+      <BlocoMacio p={[0, m.yCabeca, 0]} t={[m.cabeca, m.cabeca, m.cabeca]} c={pele} />
+      {/* orelhas — o crânio arredondado ficou liso demais sem elas */}
+      {[-1, 1].map((s) => (
+        <Esfera
+          key={s}
+          p={[s * m.cabeca * 0.5, m.yCabeca - 0.02, -0.01]}
+          t={[0.1, 0.16, 0.12]}
+          c={pele}
+        />
+      ))}
 
-      {!semCabelo && <Cabelo estilo={figura.cabelo} cor={cabeloCor} m={m} />}
-      <Rosto f={figura} m={m} pele={pele} />
+      {!semCabelo && (
+        <Cabelo estilo={figura.cabelo} cor={cabeloCor} m={m} sobChapeu={comChapeu} />
+      )}
+      <Rosto f={figura} m={m} pele={pele} semOlhos={semOlhos} semBoca={semBoca} />
 
       {equipados.map(({ slot, cat, Forma }) => (
-        <Forma key={slot} c={cat.cores} m={m} />
+        <Forma key={slot} c={cat.cores} m={m} n={posicao ?? undefined} />
       ))}
     </group>
   );

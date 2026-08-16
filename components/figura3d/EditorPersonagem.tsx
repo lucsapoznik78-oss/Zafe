@@ -30,6 +30,7 @@ import {
   Footprints,
   Gavel,
   Glasses,
+  GraduationCap,
   HardHat,
   Loader2,
   Lock,
@@ -39,6 +40,7 @@ import {
   Shirt,
   Skull,
   Smartphone,
+  Snowflake,
   Sparkles,
   Swords,
   Trash2,
@@ -55,7 +57,13 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useMemo, useRef, useState } from "react";
 
-import { ITENS_POR_SLOT, POR_ID, ROTULO_SLOT, precoDe } from "@/lib/figura/catalogo";
+import {
+  ITENS_POR_SLOT,
+  POR_ID,
+  ROTULO_SLOT,
+  precoDe,
+  type ItemCatalogo,
+} from "@/lib/figura/catalogo";
 import {
   BARBAS,
   BOCAS,
@@ -71,6 +79,8 @@ import {
 import { PRECO_DESBLOQUEIO, SLOTS, type FiguraV2, type Slot } from "@/lib/figura/tipos";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+
+import { recorte } from "@/lib/figura/miniaturas";
 
 import type { Alca } from "./PersonagemCanvas";
 import { temWebGL } from "./captura";
@@ -90,11 +100,23 @@ const PersonagemCanvas = dynamic(
   },
 );
 
-/** Só os ícones usados. `import * as Icons` traria as ~1500 do lucide junto. */
+// Descartável: monta uma vez, entrega o PNG das miniaturas e é desmontado.
+const AtlasMiniaturas = dynamic(() => import("./Miniaturas").then((m) => m.AtlasMiniaturas), {
+  ssr: false,
+});
+
+/**
+ * Só os ícones usados (`import * as Icons` traria as ~1500 do lucide junto).
+ *
+ * O ícone é o ESPAÇO RESERVADO: aparece enquanto a folha de miniaturas 3D não
+ * ficou pronta, e some quando ela chega. Sem ele o card pisca vazio no primeiro
+ * segundo e a loja parece quebrada.
+ */
 const ICONES: Record<string, LucideIcon> = {
   Backpack, Bike, Car, Crown, Cylinder, EyeOff, Feather, Fish, Flame, Flashlight,
-  Flower, Footprints, Gavel, Glasses, HardHat, Mic, ScanLine, Shield, Shirt, Skull,
-  Smartphone, Sparkles, Swords, Trophy, Truck, VenetianMask, Volleyball, Waves, Wind, Zap,
+  Flower, Footprints, Gavel, Glasses, GraduationCap, HardHat, Mic, ScanLine, Shield,
+  Shirt, Skull, Smartphone, Snowflake, Sparkles, Swords, Trophy, Truck, VenetianMask,
+  Volleyball, Waves, Wind, Zap,
 };
 
 const z$ = (n: number) => `Z$ ${n.toLocaleString("pt-BR")}`;
@@ -104,6 +126,8 @@ type Props = {
   desbloqueada: boolean;
   saldoInicial: number;
   inventarioInicial: string[];
+  /** Posição no ranking geral — estampada na roupa, não editável. */
+  posicao: number | null;
 };
 
 export default function EditorPersonagem({
@@ -111,6 +135,7 @@ export default function EditorPersonagem({
   desbloqueada: desbloqueadaInicial,
   saldoInicial,
   inventarioInicial,
+  posicao,
 }: Props) {
   const [figura, setFigura] = useState<FiguraV2>(figuraInicial);
   const [inventario, setInventario] = useState(() => new Set(inventarioInicial));
@@ -123,6 +148,8 @@ export default function EditorPersonagem({
   const canvas = useRef<Alca>(null);
   // Sonda uma vez só. Sem WebGL não há editor — nem canvas para montar.
   const [webgl] = useState(temWebGL);
+  // A folha de miniaturas. Enquanto for null, o card mostra o ícone lucide.
+  const [folha, setFolha] = useState<string | null>(null);
 
   const mudar = useCallback((patch: Partial<FiguraV2>) => {
     setFigura((f) => ({ ...f, ...patch }));
@@ -251,7 +278,7 @@ export default function EditorPersonagem({
         {/* ---- canvas: fora das abas, de propósito ---- */}
         <div className="relative md:sticky md:top-4 md:self-start">
           <div className="h-[42vh] min-h-[280px] overflow-hidden rounded-xl border border-border bg-gradient-to-b from-muted/60 to-background md:h-[62vh]">
-            <PersonagemCanvas ref={canvas} figura={figura} />
+            <PersonagemCanvas ref={canvas} figura={figura} posicao={posicao} />
           </div>
           {!desbloqueada && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-xl bg-background/85 p-6 text-center backdrop-blur-sm">
@@ -293,6 +320,7 @@ export default function EditorPersonagem({
                   figura={figura}
                   inventario={inventario}
                   ocupado={ocupado}
+                  folha={folha}
                   alternar={alternar}
                   comprar={comprar}
                 />
@@ -327,6 +355,9 @@ export default function EditorPersonagem({
           {ocupado === "salvar" ? "Salvando…" : "Salvar personagem"}
         </button>
       </div>
+
+      {/* Desenha os 57 itens uma vez e some. Ver o cabeçalho de Miniaturas.tsx. */}
+      {folha === null && <AtlasMiniaturas aoGerar={setFolha} />}
     </div>
   );
 }
@@ -450,16 +481,110 @@ function AbaCorpo({
 }
 
 // ========================================================== ABA ACESSÓRIOS
+/**
+ * O card é VERTICAL: miniatura em cima, nome embaixo em até duas linhas.
+ *
+ * A versão anterior era horizontal (ícone à esquerda, nome à direita) e o nome
+ * ficava com ~70px numa coluna de grade — "Bucket camuflado" virava "B…". Em
+ * pilha, o nome recebe a largura inteira do card, e `line-clamp-2` só corta o
+ * que realmente não cabe em duas linhas.
+ */
+function Card({
+  it,
+  vestido,
+  meu,
+  ocupado,
+  folha,
+  onVestir,
+  onComprar,
+}: {
+  it: ItemCatalogo;
+  vestido: boolean;
+  meu: boolean;
+  ocupado: string | null;
+  folha: string | null;
+  onVestir: () => void;
+  onComprar: () => void;
+}) {
+  const Icone = ICONES[it.icone] ?? Sparkles;
+  const mini = folha ? recorte(it.id, folha) : undefined;
+
+  return (
+    <div
+      className={cn(
+        "flex flex-col overflow-hidden rounded-xl border transition-colors",
+        vestido ? "border-primary bg-primary/5" : "border-border bg-card",
+      )}
+    >
+      <button onClick={onVestir} className="group text-left">
+        <span
+          className="relative flex aspect-square w-full items-center justify-center"
+          style={{
+            ...mini,
+            backgroundColor: `${COR_RARIDADE[it.raridade]}14`,
+          }}
+        >
+          {!mini && <Icone size={22} style={{ color: COR_RARIDADE[it.raridade] }} />}
+          {vestido && (
+            <span className="absolute right-1 top-1 rounded-full bg-primary p-0.5 text-primary-foreground">
+              <Check size={11} />
+            </span>
+          )}
+          {!meu && (
+            <span className="absolute left-1 top-1 rounded-full bg-background/80 p-1 text-muted-foreground">
+              <Lock size={10} />
+            </span>
+          )}
+        </span>
+        <span className="block px-2 pt-1.5">
+          <span className="line-clamp-2 text-xs font-semibold leading-snug">{it.nome}</span>
+          <span
+            className="mt-0.5 block text-[10px] font-medium"
+            style={{ color: COR_RARIDADE[it.raridade] }}
+          >
+            {NOME_RARIDADE[it.raridade]}
+          </span>
+        </span>
+      </button>
+
+      <div className="mt-auto p-2 pt-1.5">
+        {meu ? (
+          <span className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground">
+            {vestido ? (
+              <>
+                <Trash2 size={10} /> Tirar
+              </>
+            ) : (
+              "Seu"
+            )}
+          </span>
+        ) : (
+          <button
+            onClick={onComprar}
+            disabled={ocupado !== null}
+            className="flex w-full items-center justify-center gap-1 rounded-md bg-foreground/90 px-2 py-1 text-[11px] font-bold text-background hover:bg-foreground disabled:opacity-50"
+          >
+            {ocupado === it.id && <Loader2 size={11} className="animate-spin" />}
+            {z$(precoDe(it))}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function AbaLoja({
   figura,
   inventario,
   ocupado,
+  folha,
   alternar,
   comprar,
 }: {
   figura: FiguraV2;
   inventario: Set<string>;
   ocupado: string | null;
+  folha: string | null;
   alternar: (slot: Slot, id: string) => void;
   comprar: (id: string) => void;
 }) {
@@ -467,71 +592,19 @@ function AbaLoja({
     <div>
       {SLOTS.map((slot) => (
         <Secao key={slot} titulo={ROTULO_SLOT[slot]}>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {(ITENS_POR_SLOT[slot] ?? []).map((it) => {
-              const Icone = ICONES[it.icone] ?? Sparkles;
-              const vestido = figura.equipado[slot] === it.id;
-              const meu = inventario.has(it.id);
-              const preco = precoDe(it);
-              return (
-                <div
-                  key={it.id}
-                  className={cn(
-                    "rounded-lg border p-2 transition-colors",
-                    vestido ? "border-primary bg-primary/5" : "border-border",
-                  )}
-                >
-                  <button
-                    onClick={() => alternar(slot, it.id)}
-                    className="flex w-full items-start gap-2 text-left"
-                  >
-                    <span
-                      className="mt-0.5 rounded-md p-1.5"
-                      style={{ backgroundColor: `${COR_RARIDADE[it.raridade]}22` }}
-                    >
-                      <Icone size={16} style={{ color: COR_RARIDADE[it.raridade] }} />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-xs font-semibold">{it.nome}</span>
-                      <span
-                        className="block text-[10px] font-medium"
-                        style={{ color: COR_RARIDADE[it.raridade] }}
-                      >
-                        {NOME_RARIDADE[it.raridade]}
-                      </span>
-                    </span>
-                    {vestido && <Check size={14} className="mt-0.5 shrink-0 text-primary" />}
-                  </button>
-
-                  <div className="mt-1.5">
-                    {meu ? (
-                      <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                        {vestido ? (
-                          <>
-                            <Trash2 size={10} /> Toque para tirar
-                          </>
-                        ) : (
-                          "Seu"
-                        )}
-                      </span>
-                    ) : (
-                      <button
-                        onClick={() => comprar(it.id)}
-                        disabled={ocupado !== null}
-                        className="flex w-full items-center justify-center gap-1 rounded-md bg-foreground/90 px-2 py-1 text-[11px] font-bold text-background hover:bg-foreground disabled:opacity-50"
-                      >
-                        {ocupado === it.id ? (
-                          <Loader2 size={11} className="animate-spin" />
-                        ) : (
-                          <Lock size={10} />
-                        )}
-                        {z$(preco)}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+            {(ITENS_POR_SLOT[slot] ?? []).map((it) => (
+              <Card
+                key={it.id}
+                it={it}
+                vestido={figura.equipado[slot] === it.id}
+                meu={inventario.has(it.id)}
+                ocupado={ocupado}
+                folha={folha}
+                onVestir={() => alternar(slot, it.id)}
+                onComprar={() => comprar(it.id)}
+              />
+            ))}
           </div>
         </Secao>
       ))}

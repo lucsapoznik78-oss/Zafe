@@ -13,14 +13,17 @@ import type { BufferGeometry } from "three";
 
 import {
   CAIXA,
+  CAIXA_MACIA,
   CAPSULA,
   CILINDRO,
   CONE,
   DISCO,
   ESFERA,
+  PLANO,
   TORUS,
   material,
   materialBrilhante,
+  materialNumero,
   materialTransparente,
 } from "./primitivas";
 
@@ -62,9 +65,36 @@ function faz(geometria: BufferGeometry) {
 }
 
 export const Bloco = faz(CAIXA);
+/** Só para as peças grandes do corpo — ver a nota em `primitivas.ts`. */
+export const BlocoMacio = faz(CAIXA_MACIA);
 export const Esfera = faz(ESFERA);
 export const Cilindro = faz(CILINDRO);
 export const Cone = faz(CONE);
 export const Capsula = faz(CAPSULA);
 export const Anel = faz(TORUS);
 export const Disco = faz(DISCO);
+
+/** Um número impresso num plano — a posição do ranking, na roupa. */
+export function Numero({
+  n,
+  cor,
+  p,
+  t,
+  r,
+}: {
+  n: number;
+  cor: string;
+  p: Vec;
+  t: [number, number];
+  r?: Vec;
+}) {
+  return (
+    <mesh
+      geometry={PLANO}
+      material={materialNumero(n, cor)}
+      position={p}
+      scale={[t[0], t[1], 1]}
+      rotation={r}
+    />
+  );
+}

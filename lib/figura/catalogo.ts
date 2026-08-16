@@ -15,20 +15,20 @@ import { PRECO, type ItemCatalogo, type Raridade, type Slot } from "./tipos";
 
 export const ITENS: ItemCatalogo[] = [
   // ------------------------------------------------------------- CHAPÉUS
-  { id: "bone-preto",      nome: "Boné",            slot: "chapeu", raridade: "comum",    forma: "bone",     cores: ["#17181B", "#2A2C31"], icone: "Shirt" },
-  { id: "gorro-bege",      nome: "Gorro",           slot: "chapeu", raridade: "comum",    forma: "gorro",    cores: ["#C4A882"],            icone: "Shirt" },
-  { id: "bucket-camo",     nome: "Bucket camuflado", slot: "chapeu", raridade: "incomum", forma: "bucket",   cores: ["#4A5C3A", "#6B7F55"], icone: "Shirt" },
+  { id: "bone-preto",      nome: "Boné",            slot: "chapeu", raridade: "comum",    forma: "bone",     cores: ["#17181B", "#2A2C31"], icone: "GraduationCap" },
+  { id: "gorro-bege",      nome: "Gorro",           slot: "chapeu", raridade: "comum",    forma: "gorro",    cores: ["#C4A882"],            icone: "Snowflake" },
+  { id: "bucket-camo",     nome: "Bucket camuflado", slot: "chapeu", raridade: "incomum", forma: "bucket",   cores: ["#4A5C3A", "#6B7F55"], icone: "GraduationCap" },
   { id: "capacete",        nome: "Capacete",        slot: "chapeu", raridade: "incomum",  forma: "capacete", cores: ["#C9CDD4", "#E5484D"], icone: "HardHat",   escondeCabelo: true },
-  { id: "cabeca-tubarao",  nome: "Cabeça de tubarão", slot: "chapeu", raridade: "raro",   forma: "tubarao",  cores: ["#4A6E8F", "#F0F1F3"], icone: "Fish",      escondeCabelo: true },
+  { id: "cabeca-tubarao",  nome: "Cabeça de tubarão", slot: "chapeu", raridade: "raro",   forma: "tubarao",  cores: ["#4A6E8F", "#F0F1F3"], icone: "Fish",      escondeCabelo: true, escondeOlhos: true, escondeBoca: true },
   { id: "rolo-papel",      nome: "Rolo de papel",   slot: "chapeu", raridade: "raro",     forma: "rolo",     cores: ["#F5F2EA", "#8A6A4A"], icone: "Cylinder",  escondeCabelo: true },
   { id: "coroa",           nome: "Coroa",           slot: "chapeu", raridade: "epico",    forma: "coroa",    cores: ["#F0B429", "#E5484D"], icone: "Crown" },
 
   // --------------------------------------------------------------- ROSTO
-  { id: "oculos-escuros",  nome: "Óculos escuros",  slot: "rosto", raridade: "comum",   forma: "oculos",         cores: ["#0F1012", "#2A2C31"], icone: "Glasses" },
+  { id: "oculos-escuros",  nome: "Óculos escuros",  slot: "rosto", raridade: "comum",   forma: "oculos",         cores: ["#0F1012", "#2A2C31"], icone: "Glasses",      escondeOlhos: true },
   { id: "oculos-redondos", nome: "Óculos redondos", slot: "rosto", raridade: "comum",   forma: "oculosRedondos", cores: ["#C9A227", "#9EA2AA"], icone: "Glasses" },
-  { id: "mascara",         nome: "Máscara",         slot: "rosto", raridade: "incomum", forma: "mascara",        cores: ["#17181B"],            icone: "VenetianMask" },
+  { id: "mascara",         nome: "Máscara",         slot: "rosto", raridade: "incomum", forma: "mascara",        cores: ["#17181B"],            icone: "VenetianMask", escondeBoca: true },
   { id: "tapa-olho",       nome: "Tapa-olho",       slot: "rosto", raridade: "incomum", forma: "tapaOlho",       cores: ["#0F1012"],            icone: "EyeOff" },
-  { id: "viseira-neon",    nome: "Viseira neon",    slot: "rosto", raridade: "epico",   forma: "viseira",        cores: ["#00E5FF", "#0F1012"], icone: "ScanLine" },
+  { id: "viseira-neon",    nome: "Viseira neon",    slot: "rosto", raridade: "epico",   forma: "viseira",        cores: ["#00E5FF", "#0F1012"], icone: "ScanLine",     escondeOlhos: true },
 
   // --------------------------------------------------------------- TORSO
   { id: "camiseta-lisa",     nome: "Camiseta lisa",     slot: "torso", raridade: "comum",   forma: "camiseta", cores: ["#F0F1F3"],            icone: "Shirt", inicial: true },

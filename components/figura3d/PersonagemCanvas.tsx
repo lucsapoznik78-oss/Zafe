@@ -57,45 +57,46 @@ function Chao() {
   );
 }
 
-export const PersonagemCanvas = forwardRef<Alca, { figura: FiguraV2; className?: string }>(
-  function PersonagemCanvas({ figura, className }, ref) {
-    const tres = useRef<Tres | null>(null);
+export const PersonagemCanvas = forwardRef<
+  Alca,
+  { figura: FiguraV2; posicao?: number | null; className?: string }
+>(function PersonagemCanvas({ figura, posicao, className }, ref) {
+  const tres = useRef<Tres | null>(null);
 
-    useImperativeHandle(ref, () => ({
-      capturar: async () => {
-        const t = tres.current;
-        if (!t) throw new Error("canvas ainda não montou");
-        return capturarOsDois(t.gl, t.scene, t.camera);
-      },
-    }));
+  useImperativeHandle(ref, () => ({
+    capturar: async () => {
+      const t = tres.current;
+      if (!t) throw new Error("canvas ainda não montou");
+      return capturarOsDois(t.gl, t.scene, t.camera);
+    },
+  }));
 
-    return (
-      <Canvas
-        className={className}
-        // `alpha` deixa o PNG salvo transparente: o avatar entra em cima de
-        // qualquer fundo do app sem carregar um retângulo junto.
-        gl={{ preserveDrawingBuffer: true, alpha: true, antialias: true }}
-        frameloop="demand"
-        dpr={[1, 2]}
-        camera={{ position: [0, 2.4, 6.4], fov: 35 }}
-      >
-        <Publica para={tres} />
-        <hemisphereLight intensity={0.85} groundColor="#20232A" />
-        <directionalLight position={[3, 6, 4]} intensity={1.15} />
-        <Chao />
-        <Personagem figura={figura} />
-        <OrbitControls
-          // Trava tudo que não seja girar em torno do eixo vertical: sem isso o
-          // usuário arrasta uma vez e fica olhando para a sola do pé, sem saber
-          // como voltar.
-          enablePan={false}
-          minDistance={3.5}
-          maxDistance={9}
-          minPolarAngle={Math.PI * 0.22}
-          maxPolarAngle={Math.PI * 0.52}
-          target={[0, 1.45, 0]}
-        />
-      </Canvas>
-    );
-  },
-);
+  return (
+    <Canvas
+      className={className}
+      // `alpha` deixa o PNG salvo transparente: o avatar entra em cima de
+      // qualquer fundo do app sem carregar um retângulo junto.
+      gl={{ preserveDrawingBuffer: true, alpha: true, antialias: true }}
+      frameloop="demand"
+      dpr={[1, 2]}
+      camera={{ position: [0, 2.4, 6.4], fov: 35 }}
+    >
+      <Publica para={tres} />
+      <hemisphereLight intensity={0.85} groundColor="#20232A" />
+      <directionalLight position={[3, 6, 4]} intensity={1.15} />
+      <Chao />
+      <Personagem figura={figura} posicao={posicao} />
+      <OrbitControls
+        // Trava tudo que não seja girar em torno do eixo vertical: sem isso o
+        // usuário arrasta uma vez e fica olhando para a sola do pé, sem saber
+        // como voltar.
+        enablePan={false}
+        minDistance={3.5}
+        maxDistance={9}
+        minPolarAngle={Math.PI * 0.22}
+        maxPolarAngle={Math.PI * 0.52}
+        target={[0, 1.45, 0]}
+      />
+    </Canvas>
+  );
+});
