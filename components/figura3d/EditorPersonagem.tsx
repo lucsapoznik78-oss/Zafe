@@ -120,12 +120,24 @@ const AtlasMiniaturas = dynamic(() => import("./Miniaturas").then((m) => m.Atlas
   ssr: false,
 });
 
-// A folha do cast é a mais cara das duas — trinta corpos inteiros contra 57
-// acessórios avulsos — e só serve a quem abre a aba Avatares. Por isso ela não
-// monta junto com a tela: espera o clique.
-const AtlasAvatares = dynamic(() => import("./avatar/AtlasAvatares").then((m) => m.AtlasAvatares), {
-  ssr: false,
-});
+/**
+ * A folha do cast é um ARQUIVO, não um canvas.
+ *
+ * As miniaturas dos 57 acessórios ainda são desenhadas na hora, e faz sentido:
+ * o acessório é geometria gerada em código, então montar os 57 num canvas
+ * escondido não baixa nada. O cast não é mais assim — cada um dos trinta é um
+ * `.glb` de meio mega. Fotografá-los ao abrir a aba custaria ~16 MB baixados
+ * para produzir uma imagem que é sempre exatamente a mesma.
+ *
+ * Renderizada no Blender (`scripts/blender/build_avatars.py -- --miniaturas`) e
+ * versionada, ela chega em ~730 KB do cache, e a loja deixa de precisar de
+ * WebGL para se mostrar. O `.glb` de um personagem só é baixado quando ele é
+ * de fato escolhido.
+ *
+ * A grade é 5 colunas de célula retrato — o mesmo que `recorteAvatar` assume
+ * para achar a célula. Os dois lados estão amarrados; ver `lib/figura/miniaturas.ts`.
+ */
+const FOLHA_CAST = "/avatares/folha.png";
 
 /**
  * Só os ícones usados (`import * as Icons` traria as ~1500 do lucide junto).
@@ -174,9 +186,6 @@ export default function EditorPersonagem({
   const [webgl] = useState(temWebGL);
   // A folha de miniaturas. Enquanto for null, o card mostra o ícone lucide.
   const [folha, setFolha] = useState<string | null>(null);
-  // A do cast, desenhada só depois que a aba Avatares foi aberta uma vez.
-  const [folhaAv, setFolhaAv] = useState<string | null>(null);
-  const [pediuCast, setPediuCast] = useState(false);
 
   const mudar = useCallback((patch: Partial<FiguraV2>) => {
     setFigura((f) => ({ ...f, ...patch }));
@@ -209,7 +218,6 @@ export default function EditorPersonagem({
 
   const trocarAba = useCallback((a: Aba) => {
     setAba(a);
-    if (a === "avatares") setPediuCast(true);
   }, []);
 
   /** Nomes do que está vestido e ainda não foi pago — o servidor descartaria. */
@@ -384,7 +392,7 @@ export default function EditorPersonagem({
                 atual={figura.avatar}
                 inventario={inventario}
                 ocupado={ocupado}
-                folha={folhaAv}
+                folha={FOLHA_CAST}
                 escolher={escolherAvatar}
                 comprar={comprar}
               />
@@ -420,7 +428,6 @@ export default function EditorPersonagem({
 
       {/* Desenha os 57 itens uma vez e some. Ver o cabeçalho de Miniaturas.tsx. */}
       {folha === null && <AtlasMiniaturas aoGerar={setFolha} />}
-      {pediuCast && folhaAv === null && <AtlasAvatares aoGerar={setFolhaAv} />}
     </div>
   );
 }
@@ -751,11 +758,11 @@ function CardAvatar({
   atual: boolean;
   meu: boolean;
   ocupado: string | null;
-  folha: string | null;
+  folha: string;
   onEscolher: () => void;
   onComprar: () => void;
 }) {
-  const mini = folha ? recorteAvatar(av.id, folha) : undefined;
+  const mini = recorteAvatar(av.id, folha);
 
   return (
     <div
@@ -769,7 +776,6 @@ function CardAvatar({
           className="relative flex aspect-[3/4] w-full items-center justify-center"
           style={{ ...mini, backgroundColor: `${COR_RARIDADE[av.raridade]}14` }}
         >
-          {!mini && <Loader2 size={16} className="animate-spin text-muted-foreground" />}
           {atual && (
             <span className="absolute right-1 top-1 rounded-full bg-primary p-0.5 text-primary-foreground">
               <Check size={11} />
@@ -826,7 +832,8 @@ function AbaCast({
   atual: string | undefined;
   inventario: Set<string>;
   ocupado: string | null;
-  folha: string | null;
+  /** Sempre presente: a folha do cast é arquivo estático, não render em curso. */
+  folha: string;
   escolher: (id: string) => void;
   comprar: (id: string) => void;
 }) {

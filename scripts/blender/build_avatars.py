@@ -31,6 +31,7 @@
 import json
 import math
 import os
+import re
 import sys
 
 import bpy
@@ -365,7 +366,10 @@ RECEITAS = {
         # corpo inteiro dos packs, e de macacão vermelho com faixa ele lê como
         # piloto, não como astronauta vermelho.
         "base": ("h", "Spacesuit"),
-        "pose": ("Idle_Gun", 1),
+        # Não `Idle_Gun`: sem a pistola (que sai em `limpar_aderecos`) as duas
+        # mãos ficam fechadas no vazio à frente do peito, e o gesto não lê como
+        # nada. Andando, o macacão fechado lê como piloto indo para o grid.
+        "pose": ("Walk", 8),
         "cores": {
             "SciFi_Main": "#C8102E",
             "SciFi_MainDark": "#7A0A1C",
@@ -465,6 +469,21 @@ def malhas():
 
 def remover(obj):
     bpy.data.objects.remove(obj, do_unlink=True)
+
+
+def limpar_aderecos():
+    """Tira as armas que vêm presas ao corpo.
+
+    Quatro bases (`Suit` e `Swat` masculinos, `SciFi` feminino, `Medieval`)
+    trazem uma pistola ou espada como malha própria, pesada na mão. Isso não é
+    escolha de receita: quem pedir o terno para o Xadrezista Sombrio recebe o
+    terno E a pistola, e sete dos trinta saíram armados no primeiro render.
+
+    Numa plataforma de palpite esportivo brasileira, arma na mão de "Jogador de
+    Sinuca" está errado como ilustração e errado como marca. Some por padrão."""
+    for o in list(bpy.data.objects):
+        if o.type == "MESH" and o.name.split(".")[0] in ("Pistol", "Sword"):
+            remover(o)
 
 
 def limpar_lixo():
@@ -671,6 +690,7 @@ def montar(avatar_id, receita):
     sexo, personagem = receita["base"]
     bpy.ops.import_scene.gltf(filepath=caminho_base(sexo, personagem))
     limpar_lixo()
+    limpar_aderecos()
 
     arm = armadura()
     if not arm:
@@ -705,6 +725,43 @@ def montar(avatar_id, receita):
     verts = sum(len(o.data.vertices) for o in malhas())
     print(f"[montar] {avatar_id}: {kb} KB, {verts} vértices", flush=True)
     return {"id": avatar_id, "kb": kb, "vertices": verts}
+
+
+# -------------------------------------------------------------------- RENDER
+
+
+def iluminar(cena, fundo):
+    """Duas luzes de sol. `fundo=None` deixa o mundo preto (para alpha).
+
+    A de preenchimento não é enfeite: com um sol só, metade de cada personagem
+    vira silhueta preta e some justamente o lado onde estaria o defeito que a
+    folha existe para revelar.
+    """
+    sol = bpy.data.objects.new("sol", bpy.data.lights.new("sol", type="SUN"))
+    sol.data.energy = 4.0
+    sol.rotation_euler = (math.radians(55), 0, math.radians(35))
+    cena.collection.objects.link(sol)
+
+    preenche = bpy.data.objects.new("fill", bpy.data.lights.new("fill", type="SUN"))
+    preenche.data.energy = 1.5
+    preenche.rotation_euler = (math.radians(70), 0, math.radians(-130))
+    cena.collection.objects.link(preenche)
+
+    if fundo is not None:
+        mundo = bpy.data.worlds.new("mundo")
+        mundo.use_nodes = True
+        mundo.node_tree.nodes["Background"].inputs[0].default_value = fundo
+        cena.world = mundo
+
+
+def motor_eevee(cena):
+    """O nome do EEVEE mudou entre versões ("BLENDER_EEVEE_NEXT" no 4.2/4.3, de
+    volta a "BLENDER_EEVEE" no 5.x). Escolher pelo que a build oferece evita que
+    o render quebre em outra máquina com Blender diferente."""
+    motores = cena.render.bl_rna.properties["engine"].enum_items.keys()
+    cena.render.engine = (
+        "BLENDER_EEVEE_NEXT" if "BLENDER_EEVEE_NEXT" in motores else "BLENDER_EEVEE"
+    )
 
 
 # ------------------------------------------------------------ FOLHA DE CONTATO
@@ -745,23 +802,7 @@ def folha_contato(ids, largura=5):
             o.location.z += (linhas - 1 - lin) * passo_z
             o.rotation_euler.z = math.radians(-155)
 
-    # Duas luzes: o sol dá a forma, a de preenchimento evita que metade do
-    # personagem vire silhueta preta e esconda justamente o defeito que a folha
-    # existe para revelar.
-    sol = bpy.data.objects.new("sol", bpy.data.lights.new("sol", type="SUN"))
-    sol.data.energy = 4.0
-    sol.rotation_euler = (math.radians(55), 0, math.radians(35))
-    cena.collection.objects.link(sol)
-
-    preenche = bpy.data.objects.new("fill", bpy.data.lights.new("fill", type="SUN"))
-    preenche.data.energy = 1.5
-    preenche.rotation_euler = (math.radians(70), 0, math.radians(-130))
-    cena.collection.objects.link(preenche)
-
-    mundo = bpy.data.worlds.new("mundo")
-    mundo.use_nodes = True
-    mundo.node_tree.nodes["Background"].inputs[0].default_value = (0.18, 0.19, 0.22, 1)
-    cena.world = mundo
+    iluminar(cena, fundo=(0.18, 0.19, 0.22, 1))
 
     altura_grade = linhas * passo_z
     cam_dados = bpy.data.cameras.new("cam")
@@ -773,19 +814,133 @@ def folha_contato(ids, largura=5):
     cena.collection.objects.link(cam)
     cena.camera = cam
 
-    # O nome do EEVEE mudou entre versões ("BLENDER_EEVEE_NEXT" no 4.2/4.3,
-    # de volta a "BLENDER_EEVEE" no 5.x). Escolher pelo que existe evita que a
-    # folha quebre em outra máquina com Blender diferente.
-    motores = cena.render.bl_rna.properties["engine"].enum_items.keys()
-    cena.render.engine = (
-        "BLENDER_EEVEE_NEXT" if "BLENDER_EEVEE_NEXT" in motores else "BLENDER_EEVEE"
-    )
+    motor_eevee(cena)
     cena.render.film_transparent = False
     cena.render.resolution_x = largura * 300
     cena.render.resolution_y = int(largura * 300 * altura_grade / (largura * passo_x))
     cena.render.filepath = "/tmp/cast-folha.png"
     bpy.ops.render.render(write_still=True)
     print(f"[folha] {len(prontos)} personagens -> {cena.render.filepath}", flush=True)
+
+
+# --------------------------------------------------------- FOLHA DE MINIATURAS
+
+
+# Estes quatro números são um CONTRATO com `lib/figura/miniaturas.ts`. O card da
+# loja recorta a folha por porcentagem, então ele não descobre a grade olhando a
+# imagem: ele assume 5 colunas de célula retrato e calcula o deslocamento. Mudar
+# COLUNAS aqui sem mudar `COLUNAS_AVATAR` lá desalinha o elenco inteiro em um
+# card — e o defeito é sutil, cada personagem aparecendo com o ombro do vizinho.
+COLUNAS_MINI = 5
+ASPECTO_MINI = 0.75
+# Fração da altura da célula ocupada pelo boneco. Não é 1: braço erguido (Wave)
+# e chapéu pontudo passam do alto da cabeça, e a margem é o que evita o corte.
+OCUPACAO_MINI = 0.86
+CELULA_PX = 200
+
+
+def ordem_do_catalogo():
+    """Lê a ordem dos avatares direto de `lib/figura/avatares.ts`.
+
+    A posição na folha é o índice no catálogo — é assim que `recorteAvatar`
+    acha a célula. Se a ordem daqui divergir da de lá, cada card passa a mostrar
+    o personagem do vizinho: nada quebra, nada avisa, e a loja fica inteira
+    errada. Ler a fonte em vez de confiar que as duas listas continuam iguais
+    transforma esse desencontro num erro de build.
+    """
+    caminho = os.path.join(RAIZ, "lib", "figura", "avatares.ts")
+    with open(caminho, encoding="utf-8") as f:
+        ids = re.findall(r'^\s{4}id:\s*"(av-[a-z0-9-]+)"', f.read(), re.MULTILINE)
+    if not ids:
+        raise SystemExit(f"não achei nenhum id de avatar em {caminho}")
+
+    sem_receita = [i for i in ids if i not in RECEITAS]
+    if sem_receita:
+        raise SystemExit(f"sem receita para: {', '.join(sem_receita)}")
+    return ids
+
+
+def folha_miniaturas(ids):
+    """Rende a grade de miniaturas do cast que a loja consome como sprite sheet.
+
+    POR QUE ISTO É UM ARQUIVO E NÃO UM CANVAS
+
+    A versão anterior montava os 30 num canvas WebGL escondido e fotografava o
+    resultado ao abrir a aba. Aquilo era barato enquanto o cast era geometria
+    gerada em código. Com malha esculpida cada personagem passou a ser um `.glb`
+    de meio mega: montar os 30 para tirar uma foto custa ~16 MB baixados toda vez
+    que alguém abre a aba, para produzir uma imagem que é sempre a mesma.
+
+    Renderizada aqui, a folha vira um PNG versionado de algumas centenas de KB,
+    servido do cache — e o navegador deixa de precisar de WebGL para mostrar a
+    loja. Cada `.glb` só é baixado quando o personagem é de fato escolhido.
+
+    O enquadramento imita o do app de propósito: cada boneco é normalizado pela
+    própria altura antes de escalar, que é exatamente o que `Modelo.tsx` faz ao
+    carregar. Sem isso o Rei — mais alto por causa da coroa — apareceria maior
+    que o resto no card e menor que o resto no editor.
+    """
+    cena_vazia()
+    cena = bpy.context.scene
+
+    faltando = [i for i in ids if not os.path.exists(os.path.join(SAIDA, f"{i}.glb"))]
+    if faltando:
+        raise SystemExit(f"monte antes: {', '.join(faltando)}")
+
+    linhas = (len(ids) + COLUNAS_MINI - 1) // COLUNAS_MINI
+
+    for n, avatar_id in enumerate(ids):
+        antes = {o.name for o in bpy.data.objects}
+        bpy.ops.import_scene.gltf(filepath=os.path.join(SAIDA, f"{avatar_id}.glb"))
+        novos = [o for o in malhas() if o.name not in antes]
+        if not novos:
+            raise SystemExit(f"{avatar_id}: glb sem malha")
+
+        obj = novos[0]
+        alto = max(
+            (obj.matrix_world @ Vector(c)).z for c in obj.bound_box
+        ) - min((obj.matrix_world @ Vector(c)).z for c in obj.bound_box)
+        obj.scale = (OCUPACAO_MINI / alto,) * 3
+
+        col, lin = n % COLUNAS_MINI, n // COLUNAS_MINI
+        obj.location = (
+            (col - (COLUNAS_MINI - 1) / 2) * ASPECTO_MINI,
+            0,
+            (linhas - 1 - lin) + (1 - OCUPACAO_MINI) / 2,
+        )
+        obj.rotation_euler.z = math.radians(-155)
+
+    iluminar(cena, fundo=None)
+
+    cam_dados = bpy.data.cameras.new("cam")
+    cam_dados.type = "ORTHO"
+    # `ortho_scale` mede a MAIOR dimensão da imagem. A grade é mais alta que
+    # larga, então o número é a altura em células — e a largura sai da proporção
+    # da resolução, que precisa bater com `ASPECTO_MINI`.
+    cam_dados.ortho_scale = linhas
+    cam = bpy.data.objects.new("cam", cam_dados)
+    cam.location = (0, -12, linhas / 2)
+    cam.rotation_euler = (math.radians(90), 0, 0)
+    cena.collection.objects.link(cam)
+    cena.camera = cam
+
+    motor_eevee(cena)
+    # Fundo transparente: o card tem cor própria e muda com o tema. Fundo opaco
+    # aqui gravaria um retângulo cinza dentro de cada célula.
+    cena.render.film_transparent = True
+    cena.render.image_settings.file_format = "PNG"
+    cena.render.image_settings.color_mode = "RGBA"
+    cena.render.resolution_x = round(COLUNAS_MINI * CELULA_PX * ASPECTO_MINI)
+    cena.render.resolution_y = linhas * CELULA_PX
+    cena.render.filepath = os.path.join(SAIDA, "folha.png")
+    bpy.ops.render.render(write_still=True)
+
+    kb = round(os.path.getsize(cena.render.filepath) / 1024)
+    print(
+        f"[miniaturas] {len(ids)} em {COLUNAS_MINI}x{linhas}, {kb} KB"
+        f" -> {cena.render.filepath}",
+        flush=True,
+    )
 
 
 # ------------------------------------------------------------------- MAIN
@@ -796,6 +951,10 @@ def main():
 
     if "--folha" in argv:
         folha_contato(list(RECEITAS))
+        return
+
+    if "--miniaturas" in argv:
+        folha_miniaturas(ordem_do_catalogo())
         return
 
     pedidos = argv or list(RECEITAS)

@@ -13,11 +13,12 @@ import type { FiguraV2 } from "@/lib/figura/tipos";
 import { CABELOS, PELES } from "@/lib/figura/paletas";
 import { POR_ID } from "@/lib/figura/catalogo";
 import { avatar as avatarPorId } from "@/lib/figura/avatares";
+import { urlModelo } from "@/lib/figura/modelos";
 
 import { Bloco, BlocoMacio, Cilindro, Cone, Esfera } from "./blocos";
 import { FORMAS } from "./itens";
 import { medidasDe, type Medidas } from "./primitivas";
-import { Avatar3D } from "./avatar/Avatar3D";
+import { ModeloAvatar } from "./avatar/Modelo";
 
 const BRANCO = "#F7F8FA";
 const ESCURO = "#14151A";
@@ -380,7 +381,7 @@ export function Personagem({
   //
   // O `equipado` continua salvo por baixo e volta inteiro ao desmarcar.
   const doCast = figura.avatar ? avatarPorId(figura.avatar) : undefined;
-  if (doCast) return <Avatar3D av={doCast} />;
+  if (doCast) return <ModeloAvatar url={urlModelo(doCast.id)} />;
 
   const m = medidasDe(figura.corpo);
   const pele = PELES[figura.pele] ?? PELES[0];
