@@ -27,6 +27,7 @@ import { COLUNAS, LINHAS } from "@/lib/figura/miniaturas";
 import type { Slot } from "@/lib/figura/tipos";
 
 import { FORMAS } from "./itens";
+import { Luzes } from "./luzes";
 import { MEDIDAS } from "./primitivas";
 
 const M = MEDIDAS[1];
@@ -158,8 +159,7 @@ export function AtlasMiniaturas({ aoGerar }: { aoGerar: (url: string) => void })
         dpr={2}
         camera={{ fov: FOV, position: [0, 0, DIST], near: DIST - 20, far: DIST + 20 }}
       >
-        <hemisphereLight intensity={0.9} groundColor="#20232A" />
-        <directionalLight position={[3, 6, 8]} intensity={1.1} />
+        <Luzes />
         <Grade aoGerar={aoGerar} />
       </Canvas>
     </div>

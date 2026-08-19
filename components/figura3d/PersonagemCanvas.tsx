@@ -21,16 +21,16 @@
 "use client";
 
 import { Canvas, useThree } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { ContactShadows, OrbitControls } from "@react-three/drei";
 import { forwardRef, useImperativeHandle, useRef } from "react";
+import { ACESFilmicToneMapping } from "three";
 import type { PerspectiveCamera, Scene, WebGLRenderer } from "three";
 
 import type { FiguraV2 } from "@/lib/figura/tipos";
 
 import { Personagem } from "./Personagem";
+import { Luzes } from "./luzes";
 import { capturarOsDois } from "./captura";
-import { materialTransparente } from "./primitivas";
-import { DISCO } from "./primitivas";
 
 export type Alca = {
   capturar: () => Promise<{ retrato: Blob; corpo: Blob }>;
@@ -45,14 +45,29 @@ function Publica({ para }: { para: React.MutableRefObject<Tres | null> }) {
   return null;
 }
 
+/**
+ * Sombra de contato de verdade, no lugar do disco escuro que havia aqui.
+ *
+ * O disco era um círculo de opacidade fixa: mesmo tamanho e mesma intensidade
+ * com o boneco de pé, agachado ou em cima de um skate — ou seja, não era
+ * sombra, era um decalque. `ContactShadows` renderiza a silhueta real vista de
+ * baixo, então a mancha acompanha a pose, escurece onde o pé toca e some
+ * debaixo do que está no ar. É o que assenta o personagem no chão em vez de
+ * deixá-lo pairando.
+ *
+ * `blur` alto e `resolution` baixa de propósito: o que se quer é a mancha, não
+ * o recorte nítido dos dedos do pé — e é o que mantém o passe barato.
+ */
 function Chao() {
   return (
-    <mesh
-      geometry={DISCO}
-      material={materialTransparente("#000000", 0.22)}
-      rotation={[-Math.PI / 2, 0, 0]}
+    <ContactShadows
       position={[0, 0.002, 0]}
-      scale={[2.6, 2.6, 1]}
+      scale={5.5}
+      resolution={512}
+      blur={2.6}
+      opacity={0.5}
+      far={2.2}
+      color="#0B0D12"
     />
   );
 }
@@ -77,13 +92,19 @@ export const PersonagemCanvas = forwardRef<
       // `alpha` deixa o PNG salvo transparente: o avatar entra em cima de
       // qualquer fundo do app sem carregar um retângulo junto.
       gl={{ preserveDrawingBuffer: true, alpha: true, antialias: true }}
+      // ACES em vez do tone mapping linear: comprime o alto sem estourar, então
+      // o branco da gola e o neon da aura param de virar chapa saturada, e a
+      // rim light aparece como fio de luz em vez de borda queimada.
+      onCreated={({ gl }) => {
+        gl.toneMapping = ACESFilmicToneMapping;
+        gl.toneMappingExposure = 1.15;
+      }}
       frameloop="demand"
       dpr={[1, 2]}
       camera={{ position: [0, 2.4, 6.4], fov: 35 }}
     >
       <Publica para={tres} />
-      <hemisphereLight intensity={0.85} groundColor="#20232A" />
-      <directionalLight position={[3, 6, 4]} intensity={1.15} />
+      <Luzes />
       <Chao />
       <Personagem figura={figura} posicao={posicao} />
       <OrbitControls

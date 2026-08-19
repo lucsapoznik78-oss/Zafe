@@ -25,10 +25,12 @@
 
 import { Canvas, useThree } from "@react-three/fiber";
 import { useEffect } from "react";
+import { ACESFilmicToneMapping } from "three";
 
 import { AVATARES } from "@/lib/figura/avatares";
 import { COLUNAS_AVATAR, LINHAS_AVATAR } from "@/lib/figura/miniaturas";
 
+import { Luzes } from "../luzes";
 import { Avatar3D } from "./Avatar3D";
 import { R } from "./rig";
 
@@ -100,12 +102,17 @@ export function AtlasAvatares({ aoGerar }: { aoGerar: (url: string) => void }) {
     >
       <Canvas
         gl={{ preserveDrawingBuffer: true, alpha: true, antialias: true }}
+        onCreated={({ gl }) => {
+          gl.toneMapping = ACESFilmicToneMapping;
+          gl.toneMappingExposure = 1.15;
+        }}
         frameloop="demand"
         dpr={2}
         camera={{ fov: FOV, position: [0, 0, DIST], near: DIST - 20, far: DIST + 20 }}
       >
-        <hemisphereLight intensity={0.85} groundColor="#20232A" />
-        <directionalLight position={[3, 6, 4]} intensity={1.15} />
+        {/* As MESMAS luzes do editor: a miniatura é a propaganda do que o
+            editor entrega, e iluminação diferente venderia outro produto. */}
+        <Luzes />
         <Grade aoGerar={aoGerar} />
       </Canvas>
     </div>

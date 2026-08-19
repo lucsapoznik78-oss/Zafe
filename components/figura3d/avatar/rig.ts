@@ -129,15 +129,27 @@ const RETO: Pose3D = {
  * atravessaria o torso), e o tronco sempre acompanha o gesto em algum grau.
  */
 export const POSE_3D: Record<string, Pose3D> = {
-  // Parado, mas com peso: um ombro mais baixo, cabeça levemente de lado.
+  // Parado, mas com PESO. A versão anterior desta pose mexia no máximo 0,16 rad
+  // (9°) e por isso não era uma pose: era A-pose com ruído. Num card de 96px o
+  // olho não resolve 9°, então quatro personagens em `idle` liam como o mesmo
+  // boneco pintado de cores diferentes — que é exatamente o que mata o valor de
+  // comprar o segundo avatar.
+  //
+  // Agora o peso vai para uma perna de verdade (quadril desloca, tronco
+  // compensa, ombros desnivelam). Continua sendo a pose discreta do cast — quem
+  // quer o gesto grande usa `hipshot`, que põe a mão na cintura —, mas a
+  // silhueta já não é a de um manequim.
   idle: {
     ...RETO,
-    ombroDir: [0.1, 0, 0.16],
-    ombroEsq: [-0.05, 0, -0.1],
-    cotoveloDir: [0.35, 0, 0],
-    tronco: [0, 0.06, -0.02],
-    cabeca: [0.03, 0.1, 0.04],
-    desvioQuadril: 0.02,
+    ombroDir: [0.18, 0, 0.2],
+    cotoveloDir: [0.55, -0.1, 0.06],
+    ombroEsq: [-0.12, 0, -0.13],
+    cotoveloEsq: [0.22, 0, 0],
+    quadrilDir: [0.05, 0, -0.04],
+    quadrilEsq: [-0.1, 0, 0.07],
+    tronco: [0.01, 0.09, -0.045],
+    cabeca: [0.04, 0.14, 0.06],
+    desvioQuadril: 0.045,
   },
 
   // O clássico: peso todo numa perna, quadril jogado, mão na cintura.
@@ -244,6 +256,37 @@ export const POSE_3D: Record<string, Pose3D> = {
     tronco: [0.02, 0.14, -0.06],
     cabeca: [-0.1, -0.08, 0.07],
     desvioQuadril: 0.05,
+    punhoDir: true,
+  },
+
+  // Mão junto à orelha. Existe por causa do prop, não por variedade: rádio de
+  // pilha e celular pendurados na coxa não são rádio nem celular, são um
+  // tijolinho — e a descrição do card promete "colado no ouvido".
+  ouvido: {
+    ...RETO,
+    ombroDir: [-0.2, -0.12, 1.45],
+    cotoveloDir: [-0.5, 0, 1.05],
+    ombroEsq: [0.1, 0, -0.16],
+    cotoveloEsq: [0.42, 0, 0],
+    quadrilEsq: [-0.07, 0, 0.06],
+    tronco: [0, 0.05, 0.04],
+    cabeca: [0.03, 0.07, 0.11],
+    desvioQuadril: 0.04,
+    punhoDir: true,
+  },
+
+  // Luneta no olho: antebraço dobrado à frente do rosto, tronco girado para
+  // onde se olha. Mesmo motivo do `ouvido` — o prop define a pose.
+  mirar: {
+    ...RETO,
+    ombroDir: [-0.85, -0.2, 0.42],
+    cotoveloDir: [-1.85, 0.3, 0.15],
+    ombroEsq: [0.14, 0, -0.3],
+    cotoveloEsq: [-0.35, 0, 0],
+    quadrilDir: [0, 0, -0.05],
+    tronco: [0.02, -0.12, 0.03],
+    cabeca: [-0.02, -0.06, -0.03],
+    desvioQuadril: -0.04,
     punhoDir: true,
   },
 

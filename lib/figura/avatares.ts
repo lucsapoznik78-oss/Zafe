@@ -41,8 +41,13 @@ export const PRECO_AVATAR: Record<Raridade, number> = {
 };
 
 /**
- * As dez poses do cast. Nenhuma é simétrica — a T-pose foi o erro mais visível
- * da v1 e está proibida por especificação (doc §2, linha "Pose").
+ * As poses do cast. Nenhuma é simétrica — a T-pose foi o erro mais visível da
+ * v1 e está proibida por especificação (doc §2, linha "Pose").
+ *
+ * `ouvido` e `mirar` não são enfeite: são poses que existem porque um prop
+ * exige uma posição de mão. Rádio de pilha só é rádio de pilha na orelha, e
+ * luneta só é luneta no olho — nas outras poses os dois viram um tijolinho
+ * pendurado na coxa, e a descrição do card passa a mentir.
  */
 export const POSES = [
   "idle",
@@ -55,6 +60,8 @@ export const POSES = [
   "card",
   "cast",
   "scepter",
+  "ouvido",
+  "mirar",
 ] as const;
 export type Pose = (typeof POSES)[number];
 
@@ -211,9 +218,26 @@ export type Prop = {
     | "cronometro"
     | "garrafa";
   cores: string[];
-  /** Ocupa as duas mãos — o outro lado não recebe prop. */
+  /**
+   * UM objeto que ocupa AS DUAS mãos — a prancha erguida, o cachecol aberto na
+   * arquibancada. O outro lado fica vazio à força, senão o segundo prop
+   * atravessa o primeiro.
+   *
+   * CUIDADO COM O SENTIDO: isto NÃO é "vem aos pares". É o contrário. Luva de
+   * goleiro, luva de boxe e halter são PARES — um em cada mão — e marcá-los
+   * aqui apagava o segundo, entregando um goleiro de uma luva só enquanto a
+   * descrição prometia "luvas". Par se escreve pondo o mesmo prop em `maoDir` e
+   * `maoEsq`; `PARES` abaixo guarda quais são, e o teste cobra.
+   */
   duasMaos?: boolean;
 };
+
+/**
+ * Props que só fazem sentido aos pares. Existe para o teste conseguir cobrar —
+ * o erro que isto previne (uma luva só) é invisível na revisão de código e
+ * óbvio na tela.
+ */
+export const PARES: ReadonlySet<Prop["tipo"]> = new Set(["luvaGoleiro", "luvaBoxe", "halter"]);
 
 export type Costas = {
   tipo: "cauda" | "mochilaEspacial" | "capa" | "prancha" | "mochila";
@@ -303,7 +327,7 @@ export const AVATARES: AvatarCatalogo[] = [
     nome: "Vovô do Rádio",
     raridade: "comum",
     descricao: "Rádio de pilha colado no ouvido. Não confia em narração de TV desde 1994.",
-    pose: "idle",
+    pose: "ouvido",
     pele: 0,
     cabelo: { estilo: "grisalho", cores: ["#9EA2AA", "#C9CDD4", "#E6E8EC"] },
     rosto: {
@@ -347,7 +371,8 @@ export const AVATARES: AvatarCatalogo[] = [
     roupa: { base: "camisa", manga: "longa", gola: "redonda", cores: ["#2E9E63", "#1E7A4A", BRANCO], detalhe: "numero", numero: 7 },
     baixo: { tipo: "calcao", cores: ["#1E7A4A"] },
     calcado: { tipo: "chuteira", cores: ["#2E9E63", BRANCO] },
-    maoDir: { tipo: "luvaGoleiro", cores: [BRANCO, "#2E9E63"], duasMaos: true },
+    maoDir: { tipo: "luvaGoleiro", cores: [BRANCO, "#2E9E63"] },
+    maoEsq: { tipo: "luvaGoleiro", cores: [BRANCO, "#2E9E63"] },
   },
   {
     id: "av-vendedor-pipoca",
@@ -507,7 +532,8 @@ export const AVATARES: AvatarCatalogo[] = [
     roupa: { base: "roupao", manga: "longa", gola: "v", cores: ["#C0392B", "#8E2117", "#F0B429"], detalhe: "cordao" },
     baixo: { tipo: "shorts", cores: ["#8E2117", "#F0B429"] },
     calcado: { tipo: "bota", cores: ["#C0392B", BRANCO] },
-    maoDir: { tipo: "luvaBoxe", cores: ["#C0392B", BRANCO], duasMaos: true },
+    maoDir: { tipo: "luvaBoxe", cores: ["#C0392B", BRANCO] },
+    maoEsq: { tipo: "luvaBoxe", cores: ["#C0392B", BRANCO] },
   },
   {
     id: "av-jogador-sinuca",
@@ -535,7 +561,8 @@ export const AVATARES: AvatarCatalogo[] = [
     roupa: { base: "collant", manga: "sem", gola: "redonda", cores: ["#4A4E57", "#33363D", "#F0B429"], detalhe: "cinturao" },
     baixo: { tipo: "nenhum", cores: [] },
     calcado: { tipo: "bota", cores: [BRANCO, "#4A4E57"] },
-    maoDir: { tipo: "halter", cores: [GRAFITE, "#8A8F98"], duasMaos: true },
+    maoDir: { tipo: "halter", cores: [GRAFITE, "#8A8F98"] },
+    maoEsq: { tipo: "halter", cores: [GRAFITE, "#8A8F98"] },
   },
   {
     id: "av-dj-torcida",
@@ -609,6 +636,7 @@ export const AVATARES: AvatarCatalogo[] = [
     roupa: { base: "macacao", manga: "longa", gola: "alta", cores: [BRANCO, "#E5484D", "#F0B429"], detalhe: "peitoral" },
     baixo: { tipo: "calca", cores: [BRANCO, "#E5484D"] },
     calcado: { tipo: "bota", cores: ["#E5484D", BRANCO] },
+    maoDir: { tipo: "luvaGoleiro", cores: ["#E5484D", BRANCO] },
     maoEsq: { tipo: "luvaGoleiro", cores: ["#E5484D", BRANCO] },
   },
   {
@@ -630,7 +658,7 @@ export const AVATARES: AvatarCatalogo[] = [
     nome: "Capitã Náutica",
     raridade: "raro",
     descricao: "Quepe de capitã, blazer azul-marinho com botões dourados, luneta que nunca sai da mão.",
-    pose: "hipshot",
+    pose: "mirar",
     pele: 2,
     cabelo: { estilo: "chanel", cores: ["#9EA2AA", "#C9CDD4", "#E6E8EC"] },
     rosto: { olhos: "piscada", sobrancelha: "erguida", boca: "sorrisoTorto", lado: 1, blush: true },
