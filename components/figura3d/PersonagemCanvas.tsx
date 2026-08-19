@@ -22,7 +22,7 @@
 
 import { Canvas, useThree } from "@react-three/fiber";
 import { ContactShadows, OrbitControls } from "@react-three/drei";
-import { forwardRef, useImperativeHandle, useRef } from "react";
+import { Suspense, forwardRef, useImperativeHandle, useRef } from "react";
 import { ACESFilmicToneMapping } from "three";
 import type { PerspectiveCamera, Scene, WebGLRenderer } from "three";
 
@@ -106,7 +106,13 @@ export const PersonagemCanvas = forwardRef<
       <Publica para={tres} />
       <Luzes />
       <Chao />
-      <Personagem figura={figura} posicao={posicao} />
+      {/* Um personagem do cast já esculpido chega por rede (`.glb`). Sem este
+          limite, o carregamento derrubaria o Canvas inteiro — junto com as luzes,
+          o chão e a câmera que o usuário já girou. Com ele, some só o boneco, por
+          um instante. */}
+      <Suspense fallback={null}>
+        <Personagem figura={figura} posicao={posicao} />
+      </Suspense>
       <OrbitControls
         // Trava tudo que não seja girar em torno do eixo vertical: sem isso o
         // usuário arrasta uma vez e fica olhando para a sola do pé, sem saber

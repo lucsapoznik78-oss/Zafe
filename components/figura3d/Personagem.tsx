@@ -419,18 +419,36 @@ export function Personagem({
       {/* tronco */}
       <BlocoMacio p={[0, m.yTorso, 0]} t={[m.torsoL, m.torsoA, m.torsoP]} c={pele} />
 
-      {/* braços */}
+      {/* Braços, ENCAIXADOS no tronco e não encostados nele.
+          Colocados exatamente tangentes, dois blocos de canto arredondado não se
+          tocam: o arredondamento de cada um abre uma fresta em forma de gota na
+          junta, e o ombro lia como um braço protético pendurado. Enterrar um
+          quinto da espessura faz as duas superfícies se interpenetrarem e o
+          ombro virar volume contínuo. */}
       {[-1, 1].map((s) => (
         <BlocoMacio
           key={s}
-          p={[s * (m.torsoL / 2 + m.braco / 2), m.yTorso + m.torsoA / 2 - m.bracoA / 2, 0]}
+          p={[
+            s * (m.torsoL / 2 + m.braco / 2 - m.braco * 0.2),
+            m.yTorso + m.torsoA / 2 - m.bracoA / 2,
+            0,
+          ]}
           t={[m.braco, m.bracoA, m.braco]}
           c={pele}
         />
       ))}
 
-      {/* pescoço e cabeça */}
-      <Cilindro p={[0, m.pernaA + m.torsoA + 0.03, 0]} t={[m.cabeca * 0.36, 0.14, m.cabeca * 0.36]} c={escurecer(pele, 0.9)} />
+      {/* Pescoço.
+          Era um `Cilindro`, e num corpo feito só de caixas macias ele era a
+          única peça com aresta viva — as duas bordas do cilindro apareciam como
+          dois anéis nítidos no vão entre o queixo e o ombro, e a leitura era de
+          rosca de parafuso, não de pescoço. `BlocoMacio` é a mesma geometria da
+          cabeça e do tronco, então o encontro das três peças some. */}
+      <BlocoMacio
+        p={[0, m.pernaA + m.torsoA + 0.03, 0]}
+        t={[m.cabeca * 0.42, 0.16, m.cabeca * 0.38]}
+        c={escurecer(pele, 0.9)}
+      />
       <BlocoMacio p={[0, m.yCabeca, 0]} t={[m.cabeca, m.cabeca, m.cabeca]} c={pele} />
       {/* orelhas — o crânio arredondado ficou liso demais sem elas */}
       {[-1, 1].map((s) => (

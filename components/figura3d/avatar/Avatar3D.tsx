@@ -20,14 +20,33 @@
 "use client";
 
 import type { AvatarCatalogo } from "@/lib/figura/avatares";
+import { urlModelo } from "@/lib/figura/modelos";
 import { PELES } from "@/lib/figura/paletas";
 
 import { Aura, CostasAvatar, PropAvatar } from "./adornos";
 import { Braco, Perna, Tronco } from "./corpo";
+import { ModeloAvatar } from "./Modelo";
 import { CabecaAvatar } from "./partes";
 import { R, pose3d } from "./rig";
 
+/**
+ * Modelo esculpido quando existe; o corpo montado por código quando não.
+ *
+ * Os dois convivem durante a migração para `.glb` (ver `lib/figura/modelos.ts`)
+ * e o catálogo é o mesmo nos dois casos — quem já comprou um personagem não
+ * perde nada, e nem percebe, quando o arquivo dele entra.
+ *
+ * Não há `<Suspense>` aqui de propósito. Quem monta é que sabe o que fazer
+ * durante o carregamento: no editor, mostrar vazio por um instante; na folha de
+ * miniaturas, ESPERAR — fotografar antes da malha chegar produz um PNG de
+ * fundo transparente que depois fica em cache como se fosse o personagem.
+ */
 export function Avatar3D({ av }: { av: AvatarCatalogo }) {
+  const url = urlModelo(av.id);
+  return url ? <ModeloAvatar url={url} /> : <AvatarProcedural av={av} />;
+}
+
+function AvatarProcedural({ av }: { av: AvatarCatalogo }) {
   const pele = PELES[av.pele] ?? PELES[2];
   const pose = pose3d(av.pose);
 

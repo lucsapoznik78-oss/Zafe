@@ -24,7 +24,7 @@
 "use client";
 
 import { Canvas, useThree } from "@react-three/fiber";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { ACESFilmicToneMapping } from "three";
 
 import { AVATARES } from "@/lib/figura/avatares";
@@ -52,14 +52,25 @@ const ESCALA = OCUPACAO / R.altura;
 /** Três quartos: de frente o personagem é um retângulo, de lado é uma tira. */
 const GIRO = -0.45;
 
-function Grade({ aoGerar }: { aoGerar: (url: string) => void }) {
+/**
+ * Tira a foto.
+ *
+ * Vive DENTRO do `<Suspense>` de propósito, e é o irmão mais novo dos trinta
+ * personagens. Um limite suspenso não confirma os filhos, e efeito de filho não
+ * confirmado não roda — então este componente só monta quando todos os `.glb`
+ * do cast já chegaram. Se a captura morasse fora, ela dispararia enquanto os
+ * modelos ainda baixam e gravaria uma folha vazia, que o app guardaria em cache
+ * como se fosse o elenco.
+ *
+ * Dois `requestAnimationFrame` pelo mesmo motivo da folha de acessórios: o
+ * primeiro deixa o R3F montar a árvore, o segundo dá o quadro em que a aura
+ * (`InstancedMesh`) já preencheu as matrizes. `gl.render` na mão porque em
+ * `frameloop="demand"` ninguém garante um quadro agora, e buffer não desenhado
+ * devolve PNG transparente.
+ */
+function Captura({ aoGerar }: { aoGerar: (url: string) => void }) {
   const { gl, scene, camera } = useThree();
 
-  // Dois `requestAnimationFrame` pelo mesmo motivo da folha de acessórios: o
-  // primeiro deixa o R3F montar a árvore, o segundo dá o quadro em que a aura
-  // (`InstancedMesh`) já preencheu as matrizes. `gl.render` na mão porque em
-  // `frameloop="demand"` ninguém garante um quadro agora, e buffer não desenhado
-  // devolve PNG transparente.
   useEffect(() => {
     let id = requestAnimationFrame(() => {
       id = requestAnimationFrame(() => {
@@ -70,8 +81,12 @@ function Grade({ aoGerar }: { aoGerar: (url: string) => void }) {
     return () => cancelAnimationFrame(id);
   }, [gl, scene, camera, aoGerar]);
 
+  return null;
+}
+
+function Grade({ aoGerar }: { aoGerar: (url: string) => void }) {
   return (
-    <group>
+    <Suspense fallback={null}>
       {AVATARES.map((av, i) => (
         <group
           key={av.id}
@@ -88,7 +103,8 @@ function Grade({ aoGerar }: { aoGerar: (url: string) => void }) {
           </group>
         </group>
       ))}
-    </group>
+      <Captura aoGerar={aoGerar} />
+    </Suspense>
   );
 }
 
