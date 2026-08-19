@@ -86,6 +86,16 @@ export type FiguraV2 = {
   barba: string;
   barbaCor: number;
   equipado: Partial<Record<Slot, string>>;
+  /**
+   * Id de um personagem pronto (`av-*`, ver `lib/figura/avatares.ts`).
+   *
+   * QUANDO ISTO ESTÁ PREENCHIDO, TODO O RESTO DO OBJETO É IGNORADO NO RENDER.
+   * O avatar do cast é uma unidade fechada — pele, roupa, pose e prop vêm do
+   * catálogo, não do que o usuário montou. Os campos do boneco montável
+   * continuam salvos de propósito: tirar o avatar tem que devolver exatamente o
+   * personagem que estava lá antes, e não um boneco padrão.
+   */
+  avatar?: string;
 };
 
 /** Aceita tanto a v2 quanto a figura DiceBear antiga (que não tem `v`). */

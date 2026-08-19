@@ -21,6 +21,7 @@ import {
   PELES,
   SOBRANCELHAS,
 } from "./paletas";
+import { AVATAR_POR_ID } from "./avatares";
 import { POR_ID } from "./catalogo";
 import { SLOTS, type FiguraV2, type Slot } from "./tipos";
 
@@ -54,7 +55,12 @@ function escolha(v: unknown, permitidos: Set<string>, padrao: string): string {
   return typeof v === "string" && permitidos.has(v) ? v : padrao;
 }
 
-export type Descarte = { slot: Slot; itemId: string; motivo: "desconhecido" | "nao_possui" };
+export type Descarte = {
+  /** `"avatar"` não é um slot de acessório — é o cast, que substitui o boneco. */
+  slot: Slot | "avatar";
+  itemId: string;
+  motivo: "desconhecido" | "nao_possui";
+};
 
 export type ResultadoSaneamento = {
   figura: FiguraV2;
@@ -105,6 +111,20 @@ export function sanearFigura(bruto: unknown, inventario: Set<string>): Resultado
   // durante a varredura daria resultado diferente conforme o cliente serializou.
   const dir = figura.equipado.maoDir;
   if (dir && POR_ID.get(dir)?.duasMaos) delete figura.equipado.maoEsq;
+
+  // O avatar pronto passa pelo MESMO crivo dos acessórios: existe no catálogo e
+  // está no inventário. Ele não limpa `equipado` — o boneco montado continua
+  // salvo debaixo dele, e é o que volta quando o usuário escolhe "sem avatar".
+  const idAvatar = f.avatar;
+  if (typeof idAvatar === "string" && idAvatar.length > 0) {
+    if (!AVATAR_POR_ID.has(idAvatar)) {
+      descartados.push({ slot: "avatar", itemId: idAvatar.slice(0, 64), motivo: "desconhecido" });
+    } else if (!inventario.has(idAvatar)) {
+      descartados.push({ slot: "avatar", itemId: idAvatar, motivo: "nao_possui" });
+    } else {
+      figura.avatar = idAvatar;
+    }
+  }
 
   return { figura, descartados };
 }

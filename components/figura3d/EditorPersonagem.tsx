@@ -7,11 +7,12 @@
 //    empurrá-lo para baixo. A página existe para olhar o boneco; qualquer
 //    caixa própria que roube altura dele está roubando do motivo da visita.
 //
-// 2. A escolha é entre DUAS coisas — personagem ou acessórios — e a barra que a
-//    oferece é uma linha de texto sublinhado, não um par de retângulos. A
-//    versão original acertava a divisão e errava o peso: dois botões do tamanho
-//    de um banner para uma escolha binária que o usuário faz uma vez e esquece.
-//    Sublinhado ocupa a altura de uma linha e ainda diz onde se está.
+// 2. A escolha é entre TRÊS coisas — montar o boneco, vestir acessório ou pegar
+//    um personagem pronto do cast — e a barra que a oferece é uma linha de
+//    texto sublinhado, não três retângulos. A versão original acertava a
+//    divisão e errava o peso: botões do tamanho de um banner para uma escolha
+//    que o usuário faz uma vez e esquece. Sublinhado ocupa a altura de uma
+//    linha e ainda diz onde se está.
 //
 // 3. Clicar num item não comprado VESTE o item. É de graça, é reversível e é
 //    muito melhor que miniatura: um canvas por card seriam 60 contextos WebGL
@@ -67,6 +68,12 @@ import Link from "next/link";
 import { useCallback, useMemo, useRef, useState } from "react";
 
 import {
+  AVATARES_POR_RARIDADE,
+  AVATAR_POR_ID,
+  precoAvatar,
+  type AvatarCatalogo,
+} from "@/lib/figura/avatares";
+import {
   ITENS_POR_SLOT,
   POR_ID,
   ROTULO_SLOT,
@@ -88,7 +95,7 @@ import {
 import { PRECO_DESBLOQUEIO, SLOTS, type FiguraV2, type Slot } from "@/lib/figura/tipos";
 import { cn } from "@/lib/utils";
 
-import { recorte } from "@/lib/figura/miniaturas";
+import { recorte, recorteAvatar } from "@/lib/figura/miniaturas";
 
 import type { Alca } from "./PersonagemCanvas";
 import { temWebGL } from "./captura";
@@ -113,6 +120,13 @@ const AtlasMiniaturas = dynamic(() => import("./Miniaturas").then((m) => m.Atlas
   ssr: false,
 });
 
+// A folha do cast é a mais cara das duas — trinta corpos inteiros contra 57
+// acessórios avulsos — e só serve a quem abre a aba Avatares. Por isso ela não
+// monta junto com a tela: espera o clique.
+const AtlasAvatares = dynamic(() => import("./avatar/AtlasAvatares").then((m) => m.AtlasAvatares), {
+  ssr: false,
+});
+
 /**
  * Só os ícones usados (`import * as Icons` traria as ~1500 do lucide junto).
  *
@@ -128,6 +142,8 @@ const ICONES: Record<string, LucideIcon> = {
 };
 
 const z$ = (n: number) => `Z$ ${n.toLocaleString("pt-BR")}`;
+
+type Aba = "personagem" | "acessorios" | "avatares";
 
 type Props = {
   figuraInicial: FiguraV2;
@@ -149,7 +165,7 @@ export default function EditorPersonagem({
   const [inventario, setInventario] = useState(() => new Set(inventarioInicial));
   const [saldo, setSaldo] = useState(saldoInicial);
   const [desbloqueada, setDesbloqueada] = useState(desbloqueadaInicial);
-  const [aba, setAba] = useState<"personagem" | "acessorios">("personagem");
+  const [aba, setAba] = useState<Aba>("personagem");
   const [ocupado, setOcupado] = useState<string | null>(null);
   const [aviso, setAviso] = useState<{ tipo: "ok" | "erro"; texto: string } | null>(null);
 
@@ -158,6 +174,9 @@ export default function EditorPersonagem({
   const [webgl] = useState(temWebGL);
   // A folha de miniaturas. Enquanto for null, o card mostra o ícone lucide.
   const [folha, setFolha] = useState<string | null>(null);
+  // A do cast, desenhada só depois que a aba Avatares foi aberta uma vez.
+  const [folhaAv, setFolhaAv] = useState<string | null>(null);
+  const [pediuCast, setPediuCast] = useState(false);
 
   const mudar = useCallback((patch: Partial<FiguraV2>) => {
     setFigura((f) => ({ ...f, ...patch }));
@@ -176,15 +195,36 @@ export default function EditorPersonagem({
     });
   }, []);
 
-  /** Itens vestidos que ainda não foram pagos — o servidor descartaria. */
-  const pendentes = useMemo(
-    () =>
-      Object.values(figura.equipado)
-        .filter((id): id is string => !!id && !inventario.has(id))
-        .map((id) => POR_ID.get(id)!)
-        .filter(Boolean),
-    [figura.equipado, inventario],
-  );
+  /**
+   * Escolhe um personagem pronto, ou desiste dele.
+   *
+   * Desistir não é "voltar ao boneco padrão": `equipado` e os traços continuam
+   * no objeto o tempo todo, escondidos debaixo do avatar, e reaparecem
+   * exatamente como estavam. Provar o cast tem que ser tão reversível quanto
+   * provar um boné.
+   */
+  const escolherAvatar = useCallback((id: string) => {
+    setFigura((f) => ({ ...f, avatar: f.avatar === id ? undefined : id }));
+  }, []);
+
+  const trocarAba = useCallback((a: Aba) => {
+    setAba(a);
+    if (a === "avatares") setPediuCast(true);
+  }, []);
+
+  /** Nomes do que está vestido e ainda não foi pago — o servidor descartaria. */
+  const pendentes = useMemo(() => {
+    // Com um personagem do cast escolhido, o boneco montado nem é desenhado:
+    // avisar sobre um boné não pago que ninguém está vendo seria ruído.
+    if (figura.avatar) {
+      const av = AVATAR_POR_ID.get(figura.avatar);
+      return av && !inventario.has(av.id) ? [av.nome] : [];
+    }
+    return Object.values(figura.equipado)
+      .filter((id): id is string => !!id && !inventario.has(id))
+      .map((id) => POR_ID.get(id)?.nome)
+      .filter((n): n is string => !!n);
+  }, [figura.avatar, figura.equipado, inventario]);
 
   async function desbloquear() {
     setOcupado("desbloquear");
@@ -219,7 +259,9 @@ export default function EditorPersonagem({
       setSaldo((s) => s - (j.cobrado ?? 0));
       setAviso({
         tipo: "ok",
-        texto: j.ja_possui ? "Você já tinha esse item." : `${POR_ID.get(itemId)?.nome} é seu.`,
+        texto: j.ja_possui
+          ? "Você já tinha esse item."
+          : `${POR_ID.get(itemId)?.nome ?? AVATAR_POR_ID.get(itemId)?.nome} é seu.`,
       });
     } catch (e) {
       setAviso({ tipo: "erro", texto: (e as Error).message });
@@ -323,18 +365,27 @@ export default function EditorPersonagem({
             !desbloqueada && "pointer-events-none select-none opacity-40",
           )}
         >
-          <Abas atual={aba} onPick={setAba} />
+          <Abas atual={aba} onPick={trocarAba} />
 
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
             {aba === "personagem" ? (
-              <AbaCorpo figura={figura} mudar={mudar} />
-            ) : (
+              <AbaCorpo figura={figura} mudar={mudar} coberto={Boolean(figura.avatar)} />
+            ) : aba === "acessorios" ? (
               <AbaLoja
                 figura={figura}
                 inventario={inventario}
                 ocupado={ocupado}
                 folha={folha}
                 alternar={alternar}
+                comprar={comprar}
+              />
+            ) : (
+              <AbaCast
+                atual={figura.avatar}
+                inventario={inventario}
+                ocupado={ocupado}
+                folha={folhaAv}
+                escolher={escolherAvatar}
                 comprar={comprar}
               />
             )}
@@ -349,7 +400,7 @@ export default function EditorPersonagem({
               ) : pendentes.length > 0 ? (
                 <span className="text-muted-foreground">
                   {pendentes.length === 1
-                    ? `${pendentes[0].nome} ainda não é seu — compre para salvar.`
+                    ? `${pendentes[0]} ainda não é seu — compre para salvar.`
                     : `${pendentes.length} itens vestidos ainda não são seus.`}
                 </span>
               ) : (
@@ -369,34 +420,29 @@ export default function EditorPersonagem({
 
       {/* Desenha os 57 itens uma vez e some. Ver o cabeçalho de Miniaturas.tsx. */}
       {folha === null && <AtlasMiniaturas aoGerar={setFolha} />}
+      {pediuCast && folhaAv === null && <AtlasAvatares aoGerar={setFolhaAv} />}
     </div>
   );
 }
 
 // ================================================================= ABAS
 /**
- * Personagem | Acessórios, em duas palavras sublinhadas.
+ * Personagem | Acessórios | Avatares, em três palavras sublinhadas.
  *
- * A escolha é a mesma de sempre e a divisão está certa — o que estava errado
- * era o tamanho. Um par de retângulos preenchidos ocupa peso visual de botão
- * primário para uma decisão que a pessoa toma uma vez e não pensa mais nela; e
- * disputava atenção com o "Salvar", que é o único botão de verdade da tela.
- * Sublinhado custa a altura de uma linha, mostra onde se está, e não parece um
- * lugar para clicar duas vezes.
+ * Um trio de retângulos preenchidos ocuparia peso visual de botão primário para
+ * uma decisão que a pessoa toma uma vez e não pensa mais nela, e disputaria
+ * atenção com o "Salvar", que é o único botão de verdade da tela. Sublinhado
+ * custa a altura de uma linha, mostra onde se está, e não parece um lugar para
+ * clicar duas vezes.
  */
-function Abas({
-  atual,
-  onPick,
-}: {
-  atual: "personagem" | "acessorios";
-  onPick: (a: "personagem" | "acessorios") => void;
-}) {
+function Abas({ atual, onPick }: { atual: Aba; onPick: (a: Aba) => void }) {
   return (
     <div className="flex gap-5 border-b border-border">
       {(
         [
           ["personagem", "Personagem"],
           ["acessorios", "Acessórios"],
+          ["avatares", "Avatares"],
         ] as const
       ).map(([id, rotulo]) => (
         <button
@@ -487,12 +533,25 @@ function Cores({
 function AbaCorpo({
   figura,
   mudar,
+  coberto,
 }: {
   figura: FiguraV2;
   mudar: (p: Partial<FiguraV2>) => void;
+  /** Um avatar do cast está escolhido, então nada daqui aparece no canvas. */
+  coberto: boolean;
 }) {
   return (
     <div>
+      {/* Sem este aviso, quem escolheu um avatar volta para cá, troca o cabelo,
+          não vê nada mudar e conclui que a página quebrou. Os controles ficam
+          ativos de propósito: o boneco continua salvo por baixo e o usuário
+          pode arrumá-lo agora para achá-lo pronto quando tirar o avatar. */}
+      {coberto && (
+        <p className="mb-3 rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+          Você está usando um personagem pronto. Estas escolhas continuam
+          guardadas e voltam a aparecer quando você tirar o avatar.
+        </p>
+      )}
       <Secao titulo="Tom de pele">
         <Cores cores={PELES} atual={figura.pele} onPick={(pele) => mudar({ pele })} />
       </Secao>
@@ -644,6 +703,12 @@ function AbaLoja({
 }) {
   return (
     <div>
+      {figura.avatar && (
+        <p className="mb-3 rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+          O personagem pronto vem com a roupa dele. Para voltar a usar acessórios,
+          tire o avatar na aba Avatares.
+        </p>
+      )}
       {SLOTS.map((slot) => (
         <Secao key={slot} titulo={ROTULO_SLOT[slot]}>
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
@@ -657,6 +722,133 @@ function AbaLoja({
                 folha={folha}
                 onVestir={() => alternar(slot, it.id)}
                 onComprar={() => comprar(it.id)}
+              />
+            ))}
+          </div>
+        </Secao>
+      ))}
+    </div>
+  );
+}
+
+// ============================================================== AVATARES
+/**
+ * O card do cast é RETRATO e maior que o de acessório: o que ele mostra é uma
+ * pessoa de corpo inteiro, e num quadrado de 64px ela vira uma mancha. Duas
+ * colunas, portanto — cabem menos por tela, e é o certo: o usuário escolhe um
+ * personagem uma vez, não trinta.
+ */
+function CardAvatar({
+  av,
+  atual,
+  meu,
+  ocupado,
+  folha,
+  onEscolher,
+  onComprar,
+}: {
+  av: AvatarCatalogo;
+  atual: boolean;
+  meu: boolean;
+  ocupado: string | null;
+  folha: string | null;
+  onEscolher: () => void;
+  onComprar: () => void;
+}) {
+  const mini = folha ? recorteAvatar(av.id, folha) : undefined;
+
+  return (
+    <div
+      className={cn(
+        "flex flex-col overflow-hidden rounded-xl border transition-colors",
+        atual ? "border-primary bg-primary/5" : "border-border bg-card",
+      )}
+    >
+      <button onClick={onEscolher} className="text-left">
+        <span
+          className="relative flex aspect-[3/4] w-full items-center justify-center"
+          style={{ ...mini, backgroundColor: `${COR_RARIDADE[av.raridade]}14` }}
+        >
+          {!mini && <Loader2 size={16} className="animate-spin text-muted-foreground" />}
+          {atual && (
+            <span className="absolute right-1 top-1 rounded-full bg-primary p-0.5 text-primary-foreground">
+              <Check size={11} />
+            </span>
+          )}
+          {!meu && (
+            <span className="absolute left-1 top-1 rounded-full bg-background/80 p-1 text-muted-foreground">
+              <Lock size={10} />
+            </span>
+          )}
+        </span>
+        <span className="block px-2 pt-1.5">
+          <span className="line-clamp-2 text-xs font-semibold leading-snug">{av.nome}</span>
+          <span className="mt-0.5 line-clamp-2 block text-[10px] leading-snug text-muted-foreground">
+            {av.descricao}
+          </span>
+        </span>
+      </button>
+
+      <div className="mt-auto p-2 pt-1.5">
+        {meu ? (
+          <span className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground">
+            {atual ? (
+              <>
+                <Trash2 size={10} /> Tirar
+              </>
+            ) : (
+              "Seu"
+            )}
+          </span>
+        ) : (
+          <button
+            onClick={onComprar}
+            disabled={ocupado !== null}
+            className="flex w-full items-center justify-center gap-1 rounded-md bg-foreground/90 px-2 py-1 text-[11px] font-bold text-background hover:bg-foreground disabled:opacity-50"
+          >
+            {ocupado === av.id && <Loader2 size={11} className="animate-spin" />}
+            {z$(precoAvatar(av))}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function AbaCast({
+  atual,
+  inventario,
+  ocupado,
+  folha,
+  escolher,
+  comprar,
+}: {
+  atual: string | undefined;
+  inventario: Set<string>;
+  ocupado: string | null;
+  folha: string | null;
+  escolher: (id: string) => void;
+  comprar: (id: string) => void;
+}) {
+  return (
+    <div>
+      <p className="mb-3 text-xs text-muted-foreground">
+        Personagens prontos. Clicar em um veste no canvas de graça — o boneco que
+        você montou continua guardado e volta quando você tirar o avatar.
+      </p>
+      {AVATARES_POR_RARIDADE.map(([raridade, lista]) => (
+        <Secao key={raridade} titulo={NOME_RARIDADE[raridade]}>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {lista.map((av) => (
+              <CardAvatar
+                key={av.id}
+                av={av}
+                atual={atual === av.id}
+                meu={inventario.has(av.id)}
+                ocupado={ocupado}
+                folha={folha}
+                onEscolher={() => escolher(av.id)}
+                onComprar={() => comprar(av.id)}
               />
             ))}
           </div>

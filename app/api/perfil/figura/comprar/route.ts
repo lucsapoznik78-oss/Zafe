@@ -1,9 +1,20 @@
 /**
- * POST /api/perfil/figura/comprar — { itemId } → um acessório.
+ * POST /api/perfil/figura/comprar — { itemId } → um acessório OU um personagem
+ * pronto do cast.
  *
- * O corpo NÃO tem campo de preço. O preço sai de `precoPorId` aqui no servidor,
- * e a RPC `figura_comprar` só tem EXECUTE para o service_role — então o único
+ * O corpo NÃO tem campo de preço. O preço sai do catálogo aqui no servidor, e a
+ * RPC `figura_comprar` só tem EXECUTE para o service_role — então o único
  * caminho até um débito é este arquivo, com o número que este arquivo escolheu.
+ *
+ * OS DOIS CATÁLOGOS DIVIDEM A MESMA ROTA E A MESMA TABELA, DE PROPÓSITO.
+ *
+ * `figura_inventario.item_id` é `text` e a RPC é genérica em (user, item,
+ * preço) — então o cast não precisou de tabela, coluna, migration nem rota
+ * própria. O que separa os dois namespaces é o prefixo `av-` do id, e é só
+ * disso que se precisa: um id só pode existir em um dos dois catálogos, então a
+ * busca é "acessório, senão avatar" e nunca ambígua. Duplicar a máquina de
+ * compra para vender outro tipo de coisa seria duplicar a idempotência também —
+ * e é a idempotência que impede o duplo clique de cobrar duas vezes.
  *
  * Idempotência é do banco: a RPC insere no inventário ANTES de debitar, e o
  * índice único (user_id, item_id) decide a corrida entre dois cliques. Aqui não
@@ -13,6 +24,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { AVATAR_POR_ID, precoAvatar } from "@/lib/figura/avatares";
 import { POR_ID, precoDe } from "@/lib/figura/catalogo";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 
@@ -39,8 +51,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Requisição inválida" }, { status: 400 });
   }
 
-  const item = POR_ID.get(parsed.data.itemId);
-  if (!item) return NextResponse.json({ error: "Item não existe" }, { status: 404 });
+  const acessorio = POR_ID.get(parsed.data.itemId);
+  const avatarCat = acessorio ? undefined : AVATAR_POR_ID.get(parsed.data.itemId);
+  if (!acessorio && !avatarCat) {
+    return NextResponse.json({ error: "Item não existe" }, { status: 404 });
+  }
+
+  const item = acessorio
+    ? { id: acessorio.id, nome: acessorio.nome, preco: precoDe(acessorio) }
+    : { id: avatarCat!.id, nome: avatarCat!.nome, preco: precoAvatar(avatarCat!) };
 
   const admin = createAdminClient();
 
@@ -55,7 +74,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Desbloqueie o personagem primeiro" }, { status: 403 });
   }
 
-  const preco = precoDe(item);
+  const preco = item.preco;
   const { data, error } = await admin.rpc("figura_comprar", {
     p_user: user.id,
     p_item: item.id,

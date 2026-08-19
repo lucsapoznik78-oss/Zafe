@@ -12,10 +12,12 @@
 import type { FiguraV2 } from "@/lib/figura/tipos";
 import { CABELOS, PELES } from "@/lib/figura/paletas";
 import { POR_ID } from "@/lib/figura/catalogo";
+import { avatar as avatarPorId } from "@/lib/figura/avatares";
 
 import { Bloco, BlocoMacio, Cilindro, Cone, Esfera } from "./blocos";
 import { FORMAS } from "./itens";
 import { medidasDe, type Medidas } from "./primitivas";
+import { Avatar3D } from "./avatar/Avatar3D";
 
 const BRANCO = "#F7F8FA";
 const ESCURO = "#14151A";
@@ -371,6 +373,15 @@ export function Personagem({
    */
   posicao?: number | null;
 }) {
+  // O personagem pronto SUBSTITUI o boneco montado, não se soma a ele: é uma
+  // unidade fechada, com pose e prop próprios, e misturar os dois daria um
+  // avatar do cast usando o tênis que o usuário comprou avulso — exatamente o
+  // que faz o Lendário deixar de significar alguma coisa.
+  //
+  // O `equipado` continua salvo por baixo e volta inteiro ao desmarcar.
+  const doCast = figura.avatar ? avatarPorId(figura.avatar) : undefined;
+  if (doCast) return <Avatar3D av={doCast} />;
+
   const m = medidasDe(figura.corpo);
   const pele = PELES[figura.pele] ?? PELES[0];
   const cabeloCor = CABELOS[figura.cabeloCor] ?? CABELOS[0];

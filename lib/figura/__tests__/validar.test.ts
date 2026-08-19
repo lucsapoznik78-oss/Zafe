@@ -149,6 +149,41 @@ describe("sanearFigura — item de duas mãos", () => {
   });
 });
 
+describe("sanearFigura — personagem pronto", () => {
+  const REI = "av-rei-bolao";
+
+  it("avatar do cast passa quando está no inventário", () => {
+    const { figura, descartados } = sanearFigura({ avatar: REI }, new Set([REI]));
+    expect(figura.avatar).toBe(REI);
+    expect(descartados).toEqual([]);
+  });
+
+  it("avatar não comprado é descartado como tentativa, não como aba velha", () => {
+    const { figura, descartados } = sanearFigura({ avatar: REI }, NADA);
+    expect(figura.avatar).toBeUndefined();
+    expect(descartados).toEqual([{ slot: "avatar", itemId: REI, motivo: "nao_possui" }]);
+  });
+
+  it("id que não existe no cast sai como desconhecido", () => {
+    const { descartados } = sanearFigura({ avatar: "av-nao-existe" }, TUDO);
+    expect(descartados).toEqual([
+      { slot: "avatar", itemId: "av-nao-existe", motivo: "desconhecido" },
+    ]);
+  });
+
+  it("o boneco montado continua salvo debaixo do avatar", () => {
+    // É o que faz tirar o avatar devolver o personagem de antes, e não um
+    // boneco padrão.
+    const { figura } = sanearFigura(
+      { avatar: REI, cabelo: "afro", equipado: { chapeu: "coroa" } },
+      new Set([REI, "coroa"]),
+    );
+    expect(figura.avatar).toBe(REI);
+    expect(figura.cabelo).toBe("afro");
+    expect(figura.equipado.chapeu).toBe("coroa");
+  });
+});
+
 describe("sanearFigura — idempotência", () => {
   it("sanear duas vezes dá o mesmo resultado", () => {
     const bruto = {
