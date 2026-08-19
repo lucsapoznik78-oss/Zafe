@@ -32,9 +32,18 @@
 // NOTA SOBRE ENVIRONMENT/HDRI — `<Environment />` do drei preenche
 // `scene.environment`, e o three só aplica isso a `isMeshStandardMaterial`
 // (`WebGLRenderer.js`: `material.isMeshStandardMaterial ? scene.environment :
-// null`). Nossos materiais são `MeshLambertMaterial`, então um HDRI aqui seria
-// download e memória sem um pixel de diferença. Só passa a valer junto com a
-// troca para PBR — outra decisão, com outro custo em celular.
+// null`).
+//
+// Isto já foi um argumento para não ter HDRI: quando tudo em cena era
+// `MeshLambertMaterial` de `primitivas.ts`, o download não mudaria um pixel.
+// Deixou de ser verdade quando o cast virou `.glb` — o carregador de glTF cria
+// `MeshStandardMaterial`, então metade da cena hoje RESPONDE a um environment e
+// a outra metade (o boneco montável, ainda Lambert) não responde.
+//
+// É por isso que o HDRI continua fora, e agora por um motivo diferente: ligá-lo
+// faria o personagem pronto e o boneco montável passarem a ser iluminados por
+// modelos distintos na MESMA tela, e a incoerência entre as duas abas seria mais
+// visível que o ganho. Entra junto com a troca do boneco para PBR, não antes.
 
 "use client";
 

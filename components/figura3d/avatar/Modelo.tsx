@@ -9,20 +9,25 @@
 // escala e na origem que o Blender quis — normalmente 1 unidade = 1 metro, com
 // o personagem em torno de 1,8, contra os 2,86 daqui.
 //
-// A saída barata seria combinar "exporte sempre em tal altura". Não sobrevive:
-// são trinta arquivos feitos aos poucos, e o primeiro que sair fora do combinado
-// aparece como um personagem gigante ou minúsculo sem nenhum erro no console.
-// Medir a malha e normalizar transforma isso em não-problema — qualquer export
-// serve, e trocar um arquivo por uma versão nova nunca mexe numa câmera.
+// Houve aqui uma tentativa de resolver isso medindo cada malha e esticando-a
+// até `R.altura`. O argumento era que trinta arquivos feitos aos poucos sempre
+// teriam um fora do combinado, e medir tornaria a convenção desnecessária.
+//
+// O argumento estava errado por um motivo que só aparece em render: a caixa
+// envolvente não mede o personagem, mede a POSE. Quem chuta, agacha ou se
+// inclina ocupa menos altura, é ampliado para compensar, e sai maior que todo
+// mundo — o oposto do pretendido. E a convenção que se queria evitar não é
+// frágil: os trinta saem do mesmo script, que agora recusa exportar fora da
+// faixa. Escala é constante; só o assentamento no chão continua medido.
 
 "use client";
 
 import { useGLTF } from "@react-three/drei";
 import { useMemo } from "react";
-import { Box3, Vector3 } from "three";
+import { Box3 } from "three";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 
-import { R } from "./rig";
+import { ESCALA_GLB } from "./rig";
 
 export function ModeloAvatar({ url }: { url: string }) {
   const { scene } = useGLTF(url);
@@ -37,16 +42,17 @@ export function ModeloAvatar({ url }: { url: string }) {
   // uma pose só — mover um moveria o outro.
   const objeto = useMemo(() => clone(scene), [scene]);
 
-  // Medido uma vez por modelo, antes de qualquer escala nossa. `min.y` costuma
-  // ser 0, mas não em todo export (personagem afundado no chão ou pairando é
-  // erro comum de origem no Blender); apoiar pelo mínimo da caixa corrige os
-  // dois casos sem precisar abrir o arquivo.
-  const { escala, base } = useMemo(() => {
+  // A ESCALA é constante (ver `ALTURA_BASE_GLB`): medir cada arquivo mede a
+  // altura da pose, não a do personagem, e faz quem se inclina crescer.
+  //
+  // A POSIÇÃO continua medida, e por outro motivo: `min.y` deveria ser 0, mas
+  // sai alguns milímetros fora em quase todo export, e personagem afundado no
+  // chão ou pairando é o erro de origem mais comum do Blender. Apoiar pelo
+  // mínimo da caixa custa nada e não distorce nada — só translada.
+  const base = useMemo(() => {
     const caixa = new Box3().setFromObject(objeto);
-    const altura = caixa.getSize(new Vector3()).y;
-    const escala = altura > 0 ? R.altura / altura : 1;
-    return { escala, base: -caixa.min.y * escala };
+    return -caixa.min.y * ESCALA_GLB;
   }, [objeto]);
 
-  return <primitive object={objeto} scale={escala} position={[0, base, 0]} />;
+  return <primitive object={objeto} scale={ESCALA_GLB} position={[0, base, 0]} />;
 }

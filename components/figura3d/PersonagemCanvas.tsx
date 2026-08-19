@@ -30,7 +30,16 @@ import type { FiguraV2 } from "@/lib/figura/tipos";
 
 import { Personagem } from "./Personagem";
 import { Luzes } from "./luzes";
-import { capturarOsDois } from "./captura";
+import { CORPO, FOV, GIRO, capturarOsDois } from "./captura";
+
+const CAMERA_INICIAL: [number, number, number] = [
+  CORPO.distancia * Math.sin(GIRO),
+  CORPO.alvo[1] + CORPO.elevacao,
+  CORPO.distancia * Math.cos(GIRO),
+];
+
+/** Distância câmera→alvo do enquadramento padrão; os limites de zoom saem dela. */
+const RAIO = Math.hypot(CORPO.distancia, CORPO.elevacao);
 
 export type Alca = {
   capturar: () => Promise<{ retrato: Blob; corpo: Blob }>;
@@ -101,7 +110,11 @@ export const PersonagemCanvas = forwardRef<
       }}
       frameloop="demand"
       dpr={[1, 2]}
-      camera={{ position: [0, 2.4, 6.4], fov: 35 }}
+      // Os mesmos números da foto de corpo inteiro (`CORPO`), e não por
+      // economia: o usuário gira, aprova o que vê e aperta salvar. Se a lente
+      // do editor não for a lente da captura, o PNG que vai para a navbar é de
+      // um enquadramento que ele nunca viu.
+      camera={{ position: CAMERA_INICIAL, fov: FOV }}
     >
       <Publica para={tres} />
       <Luzes />
@@ -118,11 +131,11 @@ export const PersonagemCanvas = forwardRef<
         // usuário arrasta uma vez e fica olhando para a sola do pé, sem saber
         // como voltar.
         enablePan={false}
-        minDistance={3.5}
-        maxDistance={9}
+        minDistance={RAIO * 0.55}
+        maxDistance={RAIO * 1.3}
         minPolarAngle={Math.PI * 0.22}
         maxPolarAngle={Math.PI * 0.52}
-        target={[0, 1.45, 0]}
+        target={CORPO.alvo}
       />
     </Canvas>
   );

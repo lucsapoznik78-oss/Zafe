@@ -33,6 +33,7 @@ import math
 import os
 import re
 import sys
+import tempfile
 
 import bpy
 from mathutils import Vector
@@ -110,7 +111,11 @@ RECEITAS = {
         # de futebol, mas camiseta + calção + chuteira é o uniforme.
         "base": ("h", "Casual_2"),
         "pecas": {"Legs": ("h", "Beach")},
-        "pose": ("Kick_Right", 12),
+        # Quadro 4 e não 12: no 12 o pé de chute aponta para a câmera e a perna
+        # inteira colapsa em encurtamento — vira uma sola de tênis flutuando na
+        # frente do peito. No 4 o peso já está numa perna só e a outra vem de
+        # trás, então a silhueta lê como jogada mesmo em 64px.
+        "pose": ("Kick_Right", 4),
         "cores": {
             "Skin": PELE[2],
             "Red_Dark": "#0E7C3A",
@@ -185,7 +190,11 @@ RECEITAS = {
     },
     "av-menina-volei": {
         "base": ("m", "Casual"),
-        "pose": ("Punch_Left", 10),
+        # `Punch_Left` deixava os dois punhos fechados na altura do queixo:
+        # guarda de boxe, dentro do contorno do tronco, ilegível em miniatura e
+        # do esporte errado. `Wave` no 10 tem o braço estendido para cima com a
+        # mão aberta — o gesto mais próximo de uma cortada que os packs têm.
+        "pose": ("Wave", 10),
         "cores": {
             "Skin": PELE[1],
             "White": "#F5F5F5",
@@ -246,8 +255,10 @@ RECEITAS = {
         "base": ("h", "Casual_2"),
         "pecas": {"Legs": ("h", "Beach")},
         # Sword_Slash é o arco de raquete que o pack não tem: o braço cruza o
-        # corpo no mesmo caminho de um forehand.
-        "pose": ("Sword_Slash", 14),
+        # corpo no mesmo caminho de um forehand. Quadro 8, o alto do arco — no
+        # 14 o golpe já desceu e os dois braços voltaram para junto do tronco,
+        # que é o mesmo contorno de alguém parado.
+        "pose": ("Sword_Slash", 8),
         "cores": {
             "Skin": PELE[0],
             "Red_Dark": "#FFFFFF",
@@ -304,7 +315,12 @@ RECEITAS = {
     },
     "av-halterofilista": {
         "base": ("h", "Beach"),
-        "pose": ("HitRecieve", 6),
+        # `HitRecieve` é a animação de LEVAR um golpe: o corpo recua encolhido e
+        # o personagem lê como quem apanhou, não como quem treina — e encolhido
+        # ele ainda era o mais baixo do cast (1,75 m contra 1,85 de régua).
+        # `Punch_Right` no 6 abre o braço para fora do tronco com o peso numa
+        # perna, que é a silhueta que se quer.
+        "pose": ("Punch_Right", 6),
         "cores": {
             "Skin": PELE[3],
             "Red_Dark": "#1B1B1B",
@@ -390,7 +406,11 @@ RECEITAS = {
     },
     "av-capita-nautica": {
         "base": ("m", "Suit"),
-        "pose": ("Idle_Gun_Pointing", 1),
+        # A pistola sai em `limpar_aderecos`, e `Idle_Gun_Pointing` sem pistola
+        # é uma mulher apontando o dedo para o nada, com os dois braços à frente
+        # do peito. `Idle_Neutral` é parada e ereta — menos interessante, mas
+        # uma capitã de pé é uma leitura; apontar para o vazio não é nenhuma.
+        "pose": ("Idle_Neutral", 1),
         "cores": {
             "Skin": PELE[1],
             "Black": "#16233F",
@@ -400,7 +420,10 @@ RECEITAS = {
     },
     "av-ginasta-fita": {
         "base": ("m", "SciFi"),
-        "pose": ("Kick_Left", 12),
+        # Quadro 16: braço estendido na horizontal e perna levantada, os dois
+        # fora do contorno do tronco. É a única pose do cast que lembra ginástica
+        # — no 12 o chute ainda está subindo e ela parece só desequilibrada.
+        "pose": ("Kick_Left", 16),
         "cores": {
             "Skin": PELE[0],
             "Blue": "#D6266B",
@@ -682,8 +705,43 @@ def assentar():
 
 # ---------------------------------------------------------------- MONTAGEM
 
+# A régua do cast, em metros de Blender: o adulto de pé dos packs. Tem de bater
+# com `ALTURA_BASE_GLB` em `components/figura3d/avatar/rig.ts` — é lá que o app
+# converte para a altura da cena, e é o MESMO número para os trinta.
+ALTURA_BASE = 1.85
 
-def montar(avatar_id, receita):
+# Quanto um personagem pode legitimamente fugir da régua. Para cima é adereço na
+# cabeça (o chapéu de bico da bruxa chega a 2,03); para baixo é pose fechada.
+# Fora disso não é caracterização, é acidente — peça importada em escala de FBX,
+# personagem deitado, malha sem assentar.
+ALTURA_MIN, ALTURA_MAX = 1.66, 2.16
+
+
+def conferir_altura(avatar_id):
+    """Recusa exportar um modelo cuja altura não caiba na régua do cast.
+
+    O app escala todo `.glb` por um fator ÚNICO, e é isso que faz inclinar-se
+    diminuir a silhueta em vez de aumentá-la. O preço desse acerto é que o
+    arquivo não pode mais chegar em qualquer escala: um export fora da faixa
+    vira um gigante ou um anão na loja, e sem esta linha ele viraria isso em
+    silêncio — a montagem termina, o arquivo tem o tamanho esperado e nada no
+    console avisa. Só se descobre olhando a grade.
+    """
+    ms = malhas()
+    if not ms:
+        raise SystemExit(f"{avatar_id}: nada para medir")
+    zs = [(o.matrix_world @ Vector(c)).z for o in ms for c in o.bound_box]
+    alto = max(zs) - min(zs)
+    if not ALTURA_MIN <= alto <= ALTURA_MAX:
+        raise SystemExit(
+            f"{avatar_id}: {alto:.3f}m fora da faixa "
+            f"[{ALTURA_MIN}, {ALTURA_MAX}] (régua {ALTURA_BASE}m). "
+            "Pose extrema demais, peça em escala errada ou malha não assentada."
+        )
+    return alto
+
+
+def montar(avatar_id, receita, destino=None):
     print(f"[montar] {avatar_id}", flush=True)
     cena_vazia()
 
@@ -708,9 +766,12 @@ def montar(avatar_id, receita):
     congelar(arm)
     juntar()
     assentar()
+    conferir_altura(avatar_id)
 
-    os.makedirs(SAIDA, exist_ok=True)
-    destino = os.path.join(SAIDA, f"{avatar_id}.glb")
+    # `destino` só é passado pela prospecção de pose, que escreve em /tmp: um
+    # candidato descartado não pode encostar em `public/avatares`.
+    destino = destino or os.path.join(SAIDA, f"{avatar_id}.glb")
+    os.makedirs(os.path.dirname(destino), exist_ok=True)
     bpy.ops.export_scene.gltf(
         filepath=destino,
         export_format="GLB",
@@ -833,9 +894,14 @@ def folha_contato(ids, largura=5):
 # card — e o defeito é sutil, cada personagem aparecendo com o ombro do vizinho.
 COLUNAS_MINI = 5
 ASPECTO_MINI = 0.75
-# Fração da altura da célula ocupada pelo boneco. Não é 1: braço erguido (Wave)
-# e chapéu pontudo passam do alto da cabeça, e a margem é o que evita o corte.
-OCUPACAO_MINI = 0.86
+# Fração da célula ocupada por um personagem DE PÉ na régua (`ALTURA_BASE`) —
+# não pelo personagem mais alto. Quem tem chapéu de bico passa disso de
+# propósito; a folga até 1.0 é o que o deixa passar sem ser cortado. Contas com
+# o teto da faixa: 0.78 × 2.16 / 1.85 + 0.05 ≈ 0.96 de célula, ainda dentro.
+OCUPACAO_MINI = 0.78
+# Distância do pé até a base da célula. Fixa, porque é o que alinha os trinta na
+# mesma linha de chão.
+PISO_MINI = 0.05
 CELULA_PX = 200
 
 
@@ -897,16 +963,19 @@ def folha_miniaturas(ids):
             raise SystemExit(f"{avatar_id}: glb sem malha")
 
         obj = novos[0]
-        alto = max(
-            (obj.matrix_world @ Vector(c)).z for c in obj.bound_box
-        ) - min((obj.matrix_world @ Vector(c)).z for c in obj.bound_box)
-        obj.scale = (OCUPACAO_MINI / alto,) * 3
+        # Escala CONSTANTE, igual à do editor: dividir a célula pela altura
+        # medida de cada um faria o card mentir duas vezes — apagaria a coroa do
+        # Rei (que existe justamente para ele ser o mais alto) e inflaria quem
+        # está numa pose fechada, porque medir a caixa é medir a pose.
+        obj.scale = (OCUPACAO_MINI / ALTURA_BASE,) * 3
 
         col, lin = n % COLUNAS_MINI, n // COLUNAS_MINI
+        # Alinhados pelos PÉS, não centralizados: os trinta pisam na mesma linha
+        # e a diferença de altura entre eles vira leitura, não desalinhamento.
         obj.location = (
             (col - (COLUNAS_MINI - 1) / 2) * ASPECTO_MINI,
             0,
-            (linhas - 1 - lin) + (1 - OCUPACAO_MINI) / 2,
+            (linhas - 1 - lin) + PISO_MINI,
         )
         obj.rotation_euler.z = math.radians(-155)
 
@@ -943,6 +1012,72 @@ def folha_miniaturas(ids):
     )
 
 
+# ------------------------------------------------------------ PROSPECÇÃO DE POSE
+
+
+def tira_de_poses(avatar_id, nome_anim, quadros):
+    """Rende o mesmo personagem em vários quadros de uma animação, lado a lado.
+
+    POR QUE ISTO EXISTE
+
+    A receita de cada avatar congela um instante de uma das 24 animações, e
+    escolher esse instante no chute é o erro mais caro do pipeline: `Kick_Right`
+    no quadro 12 não é "chutando", é um corpo a 45° do chão que na loja lê como
+    tropeço, e nada no console diz isso. Só render diz.
+
+    A alternativa seria abrir o Blender e arrastar a linha do tempo. Isso não
+    escala para trinta personagens e, pior, não deixa registro: a escolha some
+    quando a janela fecha. Uma tira renderizada é comparável, é anexável a um
+    commit e mostra as opções lado a lado, que é como se escolhe pose — nunca
+    olhando um quadro isolado.
+
+    Usa a mesma iluminação e o mesmo ângulo da folha da loja de propósito: pose
+    escolhida sob outra luz é pose escolhida para outra imagem.
+    """
+    receita = RECEITAS[avatar_id]
+    arquivos = []
+    for q in quadros:
+        caminho = os.path.join(tempfile.gettempdir(), f"pose-{avatar_id}-{q}.glb")
+        montar(avatar_id, {**receita, "pose": (nome_anim, q)}, destino=caminho)
+        arquivos.append((q, caminho))
+
+    cena_vazia()
+    cena = bpy.context.scene
+    for n, (_, caminho) in enumerate(arquivos):
+        antes = {o.name for o in bpy.data.objects}
+        bpy.ops.import_scene.gltf(filepath=caminho)
+        for o in malhas():
+            if o.name in antes:
+                continue
+            o.scale = (OCUPACAO_MINI / ALTURA_BASE,) * 3
+            o.location = ((n - (len(arquivos) - 1) / 2) * ASPECTO_MINI, 0, PISO_MINI)
+            o.rotation_euler.z = math.radians(-155)
+
+    iluminar(cena, fundo=(0.18, 0.19, 0.22, 1))
+    cam_dados = bpy.data.cameras.new("cam")
+    cam_dados.type = "ORTHO"
+    cam_dados.ortho_scale = max(len(arquivos) * ASPECTO_MINI, 1.0)
+    cam = bpy.data.objects.new("cam", cam_dados)
+    cam.location = (0, -12, 0.5)
+    cam.rotation_euler = (math.radians(90), 0, 0)
+    cena.collection.objects.link(cam)
+    cena.camera = cam
+
+    motor_eevee(cena)
+    cena.render.image_settings.file_format = "PNG"
+    cena.render.resolution_x = round(len(arquivos) * CELULA_PX * ASPECTO_MINI)
+    cena.render.resolution_y = CELULA_PX
+    cena.render.filepath = os.path.join(
+        tempfile.gettempdir(), f"poses-{avatar_id}-{nome_anim}.png"
+    )
+    bpy.ops.render.render(write_still=True)
+    print(
+        f"[poses] {avatar_id} {nome_anim} quadros {[q for q, _ in arquivos]}"
+        f" -> {cena.render.filepath}",
+        flush=True,
+    )
+
+
 # ------------------------------------------------------------------- MAIN
 
 
@@ -951,6 +1086,17 @@ def main():
 
     if "--folha" in argv:
         folha_contato(list(RECEITAS))
+        return
+
+    # --poses <avatar_id> <Animacao> <q1,q2,...>
+    if "--poses" in argv:
+        resto = argv[argv.index("--poses") + 1 :]
+        if len(resto) < 3:
+            raise SystemExit("uso: --poses <avatar_id> <Animacao> <q1,q2,...>")
+        alvo, anim, quadros = resto[0], resto[1], [int(q) for q in resto[2].split(",")]
+        if alvo not in RECEITAS:
+            raise SystemExit(f"sem receita para: {alvo}")
+        tira_de_poses(alvo, anim, quadros)
         return
 
     if "--miniaturas" in argv:

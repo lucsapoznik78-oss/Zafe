@@ -14,6 +14,38 @@
 /** Altura total do personagem, do chão ao topo do crânio. */
 export const ALTURA = 2.86;
 
+/**
+ * Altura, em metros de Blender, do adulto de pé dos packs — a régua contra a
+ * qual TODO `.glb` do cast é escalado, sempre pelo mesmo número.
+ *
+ * A versão anterior media cada arquivo e o esticava até `ALTURA`. Parece mais
+ * robusto e é o contrário: a caixa que se mede não é a altura do personagem, é
+ * a altura da POSE. O boleiro no meio de um chute mede 1,76 e a bruxa de chapéu
+ * de bico mede 2,03; normalizar as duas para o mesmo número amplia o boleiro em
+ * 15% sobre a bruxa — ele fica maior, mais inclinado e estourando o
+ * enquadramento, exatamente por estar chutando. Quem agacha cresce.
+ *
+ * Com um fator único, inclinar-se volta a diminuir a silhueta (que é o certo) e
+ * a diferença de altura entre personagens passa a significar o que de fato é:
+ * coroa, chapéu, cabelo. `build_avatars.py` recusa exportar fora da faixa, então
+ * nenhum arquivo novo pode furar a régua em silêncio.
+ */
+export const ALTURA_BASE_GLB = 1.85;
+
+/** Fator único aplicado a todo modelo do cast. */
+export const ESCALA_GLB = ALTURA / ALTURA_BASE_GLB;
+
+/**
+ * O teto do cast na escala da cena — o personagem mais alto que pode existir.
+ *
+ * É o `ALTURA_MAX` de `build_avatars.py` convertido, e a câmera é enquadrada
+ * por ele, não pelo personagem em tela. Com enquadramento por personagem os
+ * trinta sairiam do mesmo tamanho no card e a coleção perderia a única pista
+ * de escala que tem; travando no teto, a bruxa de chapéu chega perto do topo e
+ * o boxeador encolhido sobra embaixo, que é a leitura correta.
+ */
+export const ALTURA_MAX_CENA = (2.16 / ALTURA_BASE_GLB) * ALTURA;
+
 export const R = {
   altura: ALTURA,
 } as const;

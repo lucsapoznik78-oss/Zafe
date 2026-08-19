@@ -17,12 +17,32 @@
 import type { PerspectiveCamera, Scene, WebGLRenderer } from "three";
 import { Vector3 } from "three";
 
+import { ALTURA_MAX_CENA } from "./avatar/rig";
+
+/**
+ * Teleobjetiva, não grande-angular.
+ *
+ * A 35° o que está mais perto da lente cresce muito em relação ao que está
+ * atrás: a cabeça infla, os pés encolhem e o personagem ganha aquele ar de
+ * foto de porta de geladeira. A 28° a projeção quase não converge dentro do
+ * corpo, e é essa compressão — mais do que luz ou material — que faz uma
+ * imagem ler como render de produto.
+ *
+ * Vale para os DOIS canvas e para as duas fotos: FOV diferente entre o editor
+ * e o PNG salvo significa que o usuário aprova um enquadramento e recebe outro.
+ */
+export const FOV = 28;
+
+/** Três quartos, em radianos. Câmera frontal achata o volume que a key light
+ *  acabou de construir — o nariz, o ombro e o peito viram um plano só. */
+export const GIRO = 0.33;
+
 export type Enquadramento = {
   largura: number;
   altura: number;
   /** Ponto para onde a câmera olha. */
   alvo: [number, number, number];
-  /** Distância da câmera até o alvo. */
+  /** Raio horizontal da câmera em torno do alvo. */
   distancia: number;
   /** Quanto a câmera sobe em relação ao alvo. */
   elevacao: number;
@@ -37,13 +57,23 @@ export const RETRATO: Enquadramento = {
   elevacao: 0.12,
 };
 
-/** Corpo inteiro, retrato 2:3. Folga para caber coroa, asas e veículo. */
+/**
+ * Corpo inteiro, retrato 2:3 — e a régua de enquadramento do app inteiro.
+ *
+ * A distância NÃO é escolhida por personagem. Ela é calculada uma vez, para o
+ * mais alto que o cast pode ter, e vale para os trinta: é o que dá a sensação
+ * de coleção — todos fotografados na mesma sessão, com a mesma lente, do mesmo
+ * lugar. Enquadrar cada um até preencher faria o anão e o gigante saírem do
+ * mesmo tamanho, que é justamente a informação que se quer preservar.
+ */
 export const CORPO: Enquadramento = {
   largura: 512,
   altura: 768,
-  alvo: [0, 1.45, 0],
-  distancia: 6.4,
-  elevacao: 0.9,
+  alvo: [0, ALTURA_MAX_CENA * 0.48, 0],
+  // Metade da altura visível dividida pela tangente da meia-abertura: a conta
+  // de "que distância enquadra tantos metros". A margem é o ar em volta.
+  distancia: (ALTURA_MAX_CENA * 1.18) / 2 / Math.tan((FOV * Math.PI) / 180 / 2),
+  elevacao: ALTURA_MAX_CENA * 0.14,
 };
 
 /**
@@ -68,6 +98,7 @@ async function tirar(
   const posAntes = camera.position.clone();
   const quatAntes = camera.quaternion.clone();
   const aspectAntes = camera.aspect;
+  const fovAntes = camera.fov;
 
   try {
     gl.setPixelRatio(1);
@@ -75,7 +106,12 @@ async function tirar(
 
     const alvo = new Vector3(...e.alvo);
     camera.aspect = e.largura / e.altura;
-    camera.position.set(0, alvo.y + e.elevacao, e.distancia);
+    camera.fov = FOV;
+    camera.position.set(
+      e.distancia * Math.sin(GIRO),
+      alvo.y + e.elevacao,
+      e.distancia * Math.cos(GIRO),
+    );
     camera.lookAt(alvo);
     camera.updateProjectionMatrix();
 
@@ -98,6 +134,7 @@ async function tirar(
     gl.setPixelRatio(pixelRatioAntes);
     gl.setSize(larguraAntes, alturaAntes, false);
     camera.aspect = aspectAntes;
+    camera.fov = fovAntes;
     camera.position.copy(posAntes);
     camera.quaternion.copy(quatAntes);
     camera.updateProjectionMatrix();
