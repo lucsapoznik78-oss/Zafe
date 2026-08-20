@@ -24,7 +24,8 @@
 
 import { useGLTF } from "@react-three/drei";
 import { useMemo } from "react";
-import { Box3 } from "three";
+import { Box3, Color } from "three";
+import type { Material } from "three";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 
 import { ESCALA_GLB } from "./rig";
@@ -44,6 +45,56 @@ import { ESCALA_GLB } from "./rig";
  * para `public/draco/` e servido do próprio domínio.
  */
 const DRACO = "/draco/";
+
+/**
+ * O fio de luz no contorno, por fresnel — em cima da luz de contorno que
+ * `luzes.tsx` já projeta.
+ *
+ * A direcional de rim só acende o lado dela: girado 180°, o personagem fica com
+ * o contorno apagado justamente onde o usuário parou de girar. O fresnel não
+ * tem lado — ele acende onde a superfície vira de perfil para a CÂMERA, então o
+ * contorno acompanha o giro e a silhueta se descola do fundo em qualquer
+ * ângulo. Custa um `pow` por fragmento e zero byte de download.
+ *
+ * ONDE ENTRA NO SHADER, E POR QUE NÃO NO FIM
+ *
+ * O lugar óbvio é depois do último include, e é errado: ali a cor já passou
+ * pelo ACES e pelo sRGB, então o acréscimo entra em valor de tela e vira borda
+ * queimada, exatamente o defeito que a Fase 1 tirou. Injetando antes do
+ * `tonemapping_fragment` o rim é luz linear como qualquer outra e o ACES o
+ * comprime junto — que é o que o faz ler como fio, e não como contorno branco.
+ */
+const RIM = { cor: new Color("#9DC4FF"), expoente: 2.6, forca: 0.55 };
+
+function comRim(material: Material) {
+  // A `useGLTF` guarda por URL e o `SkeletonUtils.clone` COMPARTILHA material:
+  // sem a trava, todo remonte reatribui `onBeforeCompile` e força recompilar o
+  // programa — que é a única coisa cara nesta função.
+  if (material.userData.rim) return;
+  material.userData.rim = true;
+  material.onBeforeCompile = (shader) => {
+    shader.uniforms.uRimCor = { value: RIM.cor };
+    shader.uniforms.uRimExp = { value: RIM.expoente };
+    shader.uniforms.uRimForca = { value: RIM.forca };
+    shader.fragmentShader = shader.fragmentShader
+      .replace(
+        "#include <common>",
+        "#include <common>\nuniform vec3 uRimCor;\nuniform float uRimExp;\nuniform float uRimForca;",
+      )
+      .replace(
+        "#include <tonemapping_fragment>",
+        // `normal` e `vViewPosition` são do próprio meshphysical: a normal em
+        // espaço de vista e o vetor fragmento->câmera. O produto escalar dos
+        // dois é 1 de frente e 0 de perfil — daí o `1.0 -`.
+        `{
+  float fresnel = 1.0 - clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0);
+  gl_FragColor.rgb += uRimCor * pow(fresnel, uRimExp) * uRimForca;
+}
+#include <tonemapping_fragment>`,
+      );
+  };
+  material.needsUpdate = true;
+}
 
 export function ModeloAvatar({ url }: { url: string }) {
   const { scene } = useGLTF(url, DRACO);
@@ -66,10 +117,16 @@ export function ModeloAvatar({ url }: { url: string }) {
     // malhas Lambert, e cada uma no passe de sombra é geometria redesenhada de
     // graça num celular — o custo lá não paga o ganho.
     c.traverse((o) => {
-      const malha = o as { isMesh?: boolean; castShadow?: boolean; receiveShadow?: boolean };
+      const malha = o as {
+        isMesh?: boolean;
+        castShadow?: boolean;
+        receiveShadow?: boolean;
+        material?: Material;
+      };
       if (!malha.isMesh) return;
       malha.castShadow = true;
       malha.receiveShadow = true;
+      if (malha.material) comRim(malha.material);
     });
     return c;
   }, [scene]);
