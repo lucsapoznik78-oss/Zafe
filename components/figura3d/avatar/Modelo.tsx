@@ -29,8 +29,24 @@ import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 
 import { ESCALA_GLB } from "./rig";
 
+/**
+ * Onde mora o decodificador do Draco.
+ *
+ * Os `.glb` do cast saem do `scripts/comprimir-avatares.mjs` com a geometria em
+ * `KHR_draco_mesh_compression` — 943 KB viram 94 KB, e são trinta arquivos. O
+ * preço é que o navegador precisa do descompressor, ~250 KB de wasm, uma vez
+ * para os trinta.
+ *
+ * O padrão do drei é buscá-lo no CDN do Google (`gstatic.com/draco/...`), e
+ * aqui isso não roda: a CSP de `next.config.mjs` declara `connect-src 'self'
+ * <supabase>`. O fetch morre bloqueado — em produção, em silêncio, e o
+ * personagem simplesmente nunca aparece. Por isso o decodificador é copiado
+ * para `public/draco/` e servido do próprio domínio.
+ */
+const DRACO = "/draco/";
+
 export function ModeloAvatar({ url }: { url: string }) {
-  const { scene } = useGLTF(url);
+  const { scene } = useGLTF(url, DRACO);
 
   // `useGLTF` guarda em cache POR URL e devolve sempre a mesma instância. Montar
   // o mesmo `Object3D` em dois lugares não duplica nada: o three tira do lugar

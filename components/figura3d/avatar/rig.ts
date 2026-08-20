@@ -20,17 +20,19 @@ export const ALTURA = 2.86;
  *
  * A versão anterior media cada arquivo e o esticava até `ALTURA`. Parece mais
  * robusto e é o contrário: a caixa que se mede não é a altura do personagem, é
- * a altura da POSE. O boleiro no meio de um chute mede 1,76 e a bruxa de chapéu
- * de bico mede 2,03; normalizar as duas para o mesmo número amplia o boleiro em
- * 15% sobre a bruxa — ele fica maior, mais inclinado e estourando o
- * enquadramento, exatamente por estar chutando. Quem agacha cresce.
+ * a altura da POSE. A capitã de braços fechados mede 1,34 e a bruxa de chapéu
+ * de bico mede 1,66; normalizar as duas para o mesmo número amplia a capitã em
+ * 24% sobre a bruxa — ela fica maior, mais inclinada e estourando o
+ * enquadramento, exatamente por estar fechada. Quem agacha cresce.
  *
  * Com um fator único, inclinar-se volta a diminuir a silhueta (que é o certo) e
  * a diferença de altura entre personagens passa a significar o que de fato é:
  * coroa, chapéu, cabelo. `build_avatars.py` recusa exportar fora da faixa, então
  * nenhum arquivo novo pode furar a régua em silêncio.
+ *
+ * É a mediana dos trinta e tem de bater com `ALTURA_BASE` do script.
  */
-export const ALTURA_BASE_GLB = 1.85;
+export const ALTURA_BASE_GLB = 1.42;
 
 /** Fator único aplicado a todo modelo do cast. */
 export const ESCALA_GLB = ALTURA / ALTURA_BASE_GLB;
@@ -44,7 +46,7 @@ export const ESCALA_GLB = ALTURA / ALTURA_BASE_GLB;
  * de escala que tem; travando no teto, a bruxa de chapéu chega perto do topo e
  * o boxeador encolhido sobra embaixo, que é a leitura correta.
  */
-export const ALTURA_MAX_CENA = (2.16 / ALTURA_BASE_GLB) * ALTURA;
+export const ALTURA_MAX_CENA = (1.8 / ALTURA_BASE_GLB) * ALTURA;
 
 export const R = {
   altura: ALTURA,

@@ -35,8 +35,9 @@ import re
 import sys
 import tempfile
 
+import bmesh
 import bpy
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 # ---------------------------------------------------------------- CAMINHOS
 
@@ -606,6 +607,206 @@ def pintar(cores):
                         no.inputs["Base Color"].default_value = rgba
 
 
+# ----------------------------------------------------------------- CHIBI
+#
+# A alavanca isolada mais forte do pipeline, e a única invisível como defeito:
+# ninguém olha o cast e pensa "a proporção está errada", olha e pensa "não
+# parece personagem de jogo". A auditoria mediu 6,80 cabeças de altura na
+# matéria-prima; o alvo é 3,2 a 3,8.
+#
+# A MATEMÁTICA
+#
+# Com R₀ = razão atual, R₁ = alvo, H = escala da cabeça e B = escala do corpo:
+#
+#     R₁ = (H + (R₀ − 1)·B) / H     →     B = H·(R₁ − 1)/(R₀ − 1)
+#
+# O corpo NÃO escala uniforme: chibi tem mão e pé grandes, não pequenos, e é
+# na perna que se corta altura. Daí a tabela por osso.
+#
+# O QUE A TABELA DO DOCUMENTO NÃO DIZ, E QUEBRA TUDO SE FOR IGNORADO
+#
+# Escala de osso é HERDADA pela cadeia. Escrever `pb.scale = f` com os números
+# da tabela — que é o que o script do documento faz — dá o resultado errado
+# neste rig: `Neck` a 0,45 multiplica `Head`, e a cabeça que deveria sair a
+# 1,70 sai a 0,45 × 1,70 = 0,765. Ou seja, o script que existe para AUMENTAR a
+# cabeça a encolhe em 24%, e sem erro nenhum no console.
+#
+# Então a tabela abaixo é de fatores ABSOLUTOS (o tamanho final da peça no
+# mundo), e `aplicar_chibi` converte para relativos dividindo pelo alvo do pai.
+# O produto ao longo da cadeia telescopa e devolve exatamente o absoluto.
+#
+# Osso sem entrada na tabela herda o alvo do pai — não 1,0. Sem isso os dedos
+# ficariam em tamanho normal pendurados numa mão 1,45×, que é o desenho de uma
+# luva vazia.
+#
+# A SEGUNDA ARMADILHA: ESCALA DE OSSO ALONGA, NÃO ENGROSSA
+#
+# Em espaço de osso o eixo Y é o comprimento. Um fator uniforme de 1,35 no
+# `Foot` não faz um pé graúdo de chibi: faz um pé com 35% mais de COMPRIMENTO,
+# e como o pé é um osso longo o tênis vira um espinho que atravessa o chão e
+# passa a definir o rodapé da caixa envolvente — a primeira versão saía com o
+# calçado de apoio descendo para fora do quadro. O simétrico vale para a perna:
+# 0,60 uniforme encurta a coxa e AFINA junto, e chibi de perna fina lê como
+# boneco de palito.
+#
+# Por isso são duas tabelas. `pb.scale = (espessura, comprimento, espessura)`.
+# Só o comprimento entra na conta de altura, então mexer em espessura nunca
+# desregula a razão de cabeças.
+
+# Os dois botões de calibragem. `CABECA` é o H da fórmula; `CORPO` multiplica
+# os COMPRIMENTOS do corpo (o B) — não as espessuras, que são absolutas. Mexer
+# neles é a decisão visual do dono; o resto do script só obedece. Cada montagem
+# imprime `cabeças X -> Y` e devolve a razão no RELATORIO, então a régua depois
+# de mexer sai da própria rodada — não há um modo de medir à parte.
+#
+# A razão medida é do TOPO DA CAIXA até a base do crânio, então cabelo espetado
+# e chapéu entram na conta como cabeça: a bruxa de chapéu de bico marca 2,35
+# sem que a proporção dela tenha nada de errado. O aviso de faixa é informativo,
+# não é portão.
+CHIBI_CABECA = 1.50
+CHIBI_CORPO = 0.85
+
+# Comprimento ao longo do osso. Alvos com B = 0,65, como o documento.
+CHIBI_COMPRIMENTO = {
+    "Neck": 0.45,  # chibi quase não tem pescoço
+    "Abdomen": 0.78,  # a "spine" deste rig são três ossos, não dois
+    "Torso": 0.78,
+    "Chest": 0.78,
+    "Shoulder": 0.88,
+    "UpperArm": 0.80,  # braço encurta menos que perna
+    "LowerArm": 0.78,
+    "Wrist": 1.05,  # mão só um respiro maior; o volume vem da espessura
+    "UpperLeg": 0.60,  # é na perna que se corta altura
+    "LowerLeg": 0.58,
+    "Foot": 1.00,  # NUNCA alongar: alonga para dentro do chão
+    "PT": 1.00,  # ponta do pé (este rig não tem `Toe`)
+}
+
+# Seção transversal. É aqui que mora o "gordinho" do chibi.
+CHIBI_ESPESSURA = {
+    "Neck": 0.90,
+    "Abdomen": 1.06,
+    "Torso": 1.06,
+    "Chest": 1.06,
+    "Shoulder": 1.00,
+    "UpperArm": 1.18,
+    "LowerArm": 1.14,
+    "Wrist": 1.40,  # mão grande é a marca registrada — em largura
+    "UpperLeg": 1.28,  # compensa o encurtamento: curta E grossa
+    "LowerLeg": 1.22,
+    "Foot": 1.30,  # pé graúdo, sem virar espinho
+    "PT": 1.20,
+}
+
+CHIBI_ALVO = 3.5
+CHIBI_FAIXA = (3.2, 3.8)
+
+
+def alvo_do_osso(nome, cache, ossos, tabela, corpo):
+    """Fator ABSOLUTO de um osso: o da tabela, ou o herdado do pai."""
+    if nome in cache:
+        return cache[nome]
+    prefixo = nome.split(".")[0]
+    if prefixo == "Head":
+        f = CHIBI_CABECA
+    elif prefixo in tabela:
+        f = tabela[prefixo] * corpo
+    else:
+        pai = ossos[nome].parent
+        f = alvo_do_osso(pai.name, cache, ossos, tabela, corpo) if pai else 1.0
+    cache[nome] = f
+    return f
+
+
+def tornozelos(arm):
+    """Onde a canela termina, agora, em espaço de pose."""
+    return {
+        lado: arm.pose.bones[f"LowerLeg.{lado}"].tail.copy()
+        for lado in ("L", "R")
+        if f"LowerLeg.{lado}" in arm.pose.bones
+    }
+
+
+def reencaixar_pes(arm, antes):
+    """Leva `Foot` e `PT` junto com a canela encurtada.
+
+    A TERCEIRA ARMADILHA, E A QUE ARRUINOU A PRIMEIRA FOLHA INTEIRA
+
+    Neste rig `Foot.L`, `Foot.R`, `PT.L` e `PT.R` são filhos de `Root` — não da
+    perna — e nenhum osso é conectado (`use_connect` é falso nos 63). Filho não
+    conectado herda a escala do pai, então o crânio acompanha o pescoço curto
+    sozinho; mas o pé pendura em `Root`, que ninguém escala, e simplesmente não
+    se move. Encurtar a perna a 0,6 sobe o tornozelo 15cm e deixa o tênis para
+    trás, no chão, solto embaixo de uma canela que agora acaba no ar.
+
+    O defeito não aparece no console, não aparece na razão de cabeças e nem
+    chega a parecer um bug de rig na folha da loja — parece que os trinta
+    ficaram com a perna terminando em ponta. Só se descobre listando a
+    hierarquia da armadura.
+
+    Reparentar o pé sob a canela seria a correção "certa" e quebraria as 24
+    animações do pack: a ação guarda a rotação do pé em espaço de `Root`, e sob
+    um novo pai ela passaria a somar com a rotação da perna. Então o pé
+    continua onde está na hierarquia e é reposicionado à mão, pelo mesmo
+    deslocamento que o tornozelo sofreu.
+    """
+    for lado, alvo in tornozelos(arm).items():
+        if lado not in antes:
+            continue
+        desloca = Matrix.Translation(alvo - antes[lado])
+        for nome in (f"Foot.{lado}", f"PT.{lado}"):
+            pb = arm.pose.bones.get(nome)
+            if not pb:
+                continue
+            pb.matrix = desloca @ pb.matrix
+            # `pose_bone.matrix` só resolve contra a avaliação corrente; sem o
+            # update aqui, o segundo osso lê a matriz velha do primeiro.
+            bpy.context.view_layer.update()
+
+
+def aplicar_chibi(arm):
+    ossos = {pb.name: pb for pb in arm.pose.bones}
+    caches = {"c": {}, "e": {}}
+
+    def rel(nome, pb, tabela, corpo, cache):
+        meu = alvo_do_osso(nome, cache, ossos, tabela, corpo)
+        do_pai = (
+            alvo_do_osso(pb.parent.name, cache, ossos, tabela, corpo)
+            if pb.parent
+            else 1.0
+        )
+        # Só a DIFERENÇA para o pai: a cadeia multiplica o resto sozinha.
+        return meu / do_pai
+
+    antes = tornozelos(arm)
+    for nome, pb in ossos.items():
+        c = rel(nome, pb, CHIBI_COMPRIMENTO, CHIBI_CORPO, caches["c"])
+        e = rel(nome, pb, CHIBI_ESPESSURA, 1.0, caches["e"])
+        # Y é o eixo do osso.
+        pb.scale = (e, c, e)
+    bpy.context.view_layer.update()
+    reencaixar_pes(arm, antes)
+
+
+def razao_cabecas(arm):
+    """Quantas cabeças de altura o personagem tem, AGORA.
+
+    `bone.head` é a ponta de origem do osso, nada a ver com crânio: a cabeça do
+    osso `Head` é a base do pescoço, e do topo da caixa até ali é a altura da
+    cabeça.
+
+    Tem de ser chamada com a armadura ainda viva, ou seja antes de `congelar`.
+    """
+    ms = malhas()
+    osso = arm.pose.bones.get("Head")
+    if not ms or not osso:
+        return None
+    zs = [(o.matrix_world @ Vector(c)).z for o in ms for c in o.bound_box]
+    total = max(zs) - min(zs)
+    alto = max(zs) - (arm.matrix_world @ osso.head).z
+    return (total / alto) if alto > 0 else None
+
+
 # ------------------------------------------------------------------ POSE
 
 
@@ -660,6 +861,119 @@ def congelar(arm):
         remover(arm)
 
 
+# --------------------------------------------------------------- SUPERFÍCIE
+#
+# Duas coisas diferentes que o olho lê como o mesmo defeito ("pixelado"):
+#
+#   SHADING  — a face marcada flat mostra a quina no MEIO da superfície. Custa
+#              zero triângulo consertar: é uma flag por face mais um ângulo.
+#   SILHUETA — o CONTORNO continua uma linha quebrada por mais suave que o
+#              sombreamento fique, porque ali não há geometria nenhuma. Só
+#              subdividir resolve, e custa triângulo de verdade.
+#
+# Ordem obrigatória: soldar → marcar quina → suavizar → subdividir. Invertida,
+# a subdivisão arredonda a sola do tênis e a aba do boné junto com o resto.
+
+ANGULO_QUINA = math.radians(40)
+NIVEL_SUBDIV = 1
+
+
+def soldar(obj, limite=0.0001):
+    """Funde vértices coincidentes.
+
+    Sem isto o smooth shading não tem efeito onde a malha veio partida: dois
+    vértices no mesmo ponto têm normais próprias e cada face continua com o
+    próprio degrau. O limite é apertado de propósito — solto demais funde dedo
+    com dedo e a bainha da calça com a perna."""
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=limite)
+    bm.to_mesh(obj.data)
+    bm.free()
+    obj.data.update()
+
+
+def suavizar(obj, angulo=ANGULO_QUINA):
+    """Suave em tudo, menos onde há quina de verdade.
+
+    Marca a aresta como dura pelo ÂNGULO entre as duas faces, e não pelo
+    operador `shade_auto_smooth`: aquele foi introduzido no 4.1 junto com a
+    remoção do `use_auto_smooth`, e um script que dependa de qualquer um dos
+    dois quebra em metade das versões. Ângulo é aritmética, e aritmética não
+    muda de API.
+
+    Aresta de borda aberta (uma face só) entra como dura sempre: é literalmente
+    o contorno de uma casca, e suavizá-la faz o material vazar para o vazio.
+    """
+    me = obj.data
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    bm.edges.ensure_lookup_table()
+
+    # A camada de crease é criada ANTES do laço, e não depois: criar uma camada
+    # realoca os dados do bmesh e invalida todo `BMEdge` que estiver numa lista
+    # Python — o erro que sai é "BMesh data of type BMEdge has been removed",
+    # que não parece ter nada a ver com a causa.
+    #
+    # Crease é o que faz a quina RESISTIR à subdivisão Catmull-Clark, que sem
+    # isto arredonda sola de tênis, aba de boné e bainha de calça. Uma quina
+    # perdida é mais visível que uma faceta a menos.
+    #
+    # O nome do atributo é `crease_edge` desde o 4.0; `layers.crease` sumiu.
+    cl = bm.edges.layers.float.get("crease_edge") or bm.edges.layers.float.new(
+        "crease_edge"
+    )
+
+    for e in bm.edges:
+        if len(e.link_faces) == 2:
+            e.smooth = e.calc_face_angle() < angulo
+        else:
+            e.smooth = False
+        if not e.smooth:
+            e[cl] = 1.0
+
+    bm.to_mesh(me)
+    bm.free()
+    for p in me.polygons:
+        p.use_smooth = True
+    me.update()
+
+
+def subdividir(obj, niveis=NIVEL_SUBDIV):
+    """Geometria de verdade no contorno.
+
+    `use_limit_surface` e os creases acima são o que contém os dois defeitos
+    conhecidos do Catmull-Clark: encolher o volume e arredondar o que deveria
+    ser reto."""
+    if niveis <= 0:
+        return
+    bpy.context.view_layer.objects.active = obj
+    mod = obj.modifiers.new(name="Subsurf", type="SUBSURF")
+    mod.subdivision_type = "CATMULL_CLARK"
+    mod.levels = niveis
+    mod.render_levels = niveis
+    mod.use_creases = True
+    mod.use_limit_surface = True
+    bpy.ops.object.modifier_apply(modifier=mod.name)
+
+
+def refinar():
+    """Roda a passagem de superfície em cada malha, antes de juntar.
+
+    Antes de `juntar` de propósito: depois da junção existe um objeto só, e a
+    solda passaria a fundir peças que se tocam — o pé com a barra da calça, o
+    pescoço com a gola."""
+    for obj in malhas():
+        bpy.context.view_layer.objects.active = obj
+        soldar(obj)
+        suavizar(obj)
+        subdividir(obj)
+        # De novo depois da subdivisão: os vértices novos nascem sem herdar a
+        # marcação, e sem isto o modelo volta a facetar exatamente onde ganhou
+        # geometria.
+        suavizar(obj)
+
+
 def juntar():
     """Uma malha só por personagem: cada malha separada é uma chamada de desenho
     a mais, e o editor já paga por sombra de contato e controles."""
@@ -705,16 +1019,21 @@ def assentar():
 
 # ---------------------------------------------------------------- MONTAGEM
 
-# A régua do cast, em metros de Blender: o adulto de pé dos packs. Tem de bater
-# com `ALTURA_BASE_GLB` em `components/figura3d/avatar/rig.ts` — é lá que o app
-# converte para a altura da cena, e é o MESMO número para os trinta.
-ALTURA_BASE = 1.85
+# A régua do cast, em metros de Blender: a mediana dos trinta DEPOIS do chibi.
+# Tem de bater com `ALTURA_BASE_GLB` em `components/figura3d/avatar/rig.ts` — é
+# lá que o app converte para a altura da cena, e é o MESMO número para os trinta.
+#
+# Caiu de 1,85 para 1,42 com o chibi: a perna encurta 40% e a cabeça, mesmo a
+# 1,5×, não repõe o que a perna tirou. O número em metros não significa mais
+# nada sozinho — é só a escala em que os arquivos saem, e existe para o app
+# dividir por ela.
+ALTURA_BASE = 1.42
 
 # Quanto um personagem pode legitimamente fugir da régua. Para cima é adereço na
-# cabeça (o chapéu de bico da bruxa chega a 2,03); para baixo é pose fechada.
-# Fora disso não é caracterização, é acidente — peça importada em escala de FBX,
-# personagem deitado, malha sem assentar.
-ALTURA_MIN, ALTURA_MAX = 1.66, 2.16
+# cabeça (o chapéu de bico da bruxa chega a 1,66); para baixo é pose fechada (a
+# capitã, 1,34). Fora disso não é caracterização, é acidente — peça importada em
+# escala de FBX, personagem deitado, malha sem assentar.
+ALTURA_MIN, ALTURA_MAX = 1.25, 1.80
 
 
 def conferir_altura(avatar_id):
@@ -763,10 +1082,23 @@ def montar(avatar_id, receita, destino=None):
     if pose:
         aplicar_pose(arm, pose[0], pose[1])
 
+    # Depois da pose e antes de congelar: é a única janela em que a armadura
+    # ainda existe e a pose final já está montada.
+    cru = razao_cabecas(arm)
+    aplicar_chibi(arm)
+    razao = razao_cabecas(arm)
+    if razao and not CHIBI_FAIXA[0] <= razao <= CHIBI_FAIXA[1]:
+        print(
+            f"  [aviso] {avatar_id}: {razao:.2f} cabeças, fora de {CHIBI_FAIXA}. "
+            f"Ajuste CHIBI_CABECA/CHIBI_CORPO.",
+            flush=True,
+        )
+
     congelar(arm)
+    refinar()
     juntar()
     assentar()
-    conferir_altura(avatar_id)
+    alto = conferir_altura(avatar_id)
 
     # `destino` só é passado pela prospecção de pose, que escreve em /tmp: um
     # candidato descartado não pode encostar em `public/avatares`.
@@ -784,8 +1116,24 @@ def montar(avatar_id, receita, destino=None):
     )
     kb = round(os.path.getsize(destino) / 1024)
     verts = sum(len(o.data.vertices) for o in malhas())
-    print(f"[montar] {avatar_id}: {kb} KB, {verts} vértices", flush=True)
-    return {"id": avatar_id, "kb": kb, "vertices": verts}
+    for o in malhas():
+        o.data.calc_loop_triangles()
+    tris = sum(len(o.data.loop_triangles) for o in malhas())
+    print(
+        f"[montar] {avatar_id}: {kb} KB, {verts} vértices, {tris} tris, "
+        f"cabeças {cru:.2f} -> {razao:.2f}"
+        if cru and razao
+        else f"[montar] {avatar_id}: {kb} KB, {verts} vértices, {tris} tris",
+        flush=True,
+    )
+    return {
+        "id": avatar_id,
+        "kb": kb,
+        "vertices": verts,
+        "tris": tris,
+        "cabecas": round(razao, 2) if razao else None,
+        "altura": round(alto, 3),
+    }
 
 
 # -------------------------------------------------------------------- RENDER
@@ -897,8 +1245,13 @@ ASPECTO_MINI = 0.75
 # Fração da célula ocupada por um personagem DE PÉ na régua (`ALTURA_BASE`) —
 # não pelo personagem mais alto. Quem tem chapéu de bico passa disso de
 # propósito; a folga até 1.0 é o que o deixa passar sem ser cortado. Contas com
-# o teto da faixa: 0.78 × 2.16 / 1.85 + 0.05 ≈ 0.96 de célula, ainda dentro.
-OCUPACAO_MINI = 0.78
+# o teto da faixa: 0.72 × 1.80 / 1.42 + 0.05 ≈ 0.96 de célula, ainda dentro.
+#
+# Baixou de 0,78 quando o chibi mudou a régua: com `ALTURA_BASE` em 1,42 o teto
+# passou a valer 1,27 célula, e o número velho cortava a cabeça de quem tem
+# moicano ou chapéu — pelo topo, que é o único lugar onde ninguém repara que
+# faltou, porque a silhueta continua plausível.
+OCUPACAO_MINI = 0.72
 # Distância do pé até a base da célula. Fixa, porque é o que alinha os trinta na
 # mesma linha de chão.
 PISO_MINI = 0.05
