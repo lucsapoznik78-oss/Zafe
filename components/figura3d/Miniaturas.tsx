@@ -159,7 +159,7 @@ export function AtlasMiniaturas({ aoGerar }: { aoGerar: (url: string) => void })
         dpr={2}
         camera={{ fov: FOV, position: [0, 0, DIST], near: DIST - 20, far: DIST + 20 }}
       >
-        <Luzes />
+        <Luzes ambiente="plano" />
         <Grade aoGerar={aoGerar} />
       </Canvas>
     </div>

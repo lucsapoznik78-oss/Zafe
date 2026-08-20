@@ -325,7 +325,13 @@ export default function EditorPersonagem({
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(330px,1fr)]">
         {/* ================= o palco ================= */}
         <div className="relative lg:sticky lg:top-3 lg:self-start">
-          <div className="relative h-[48vh] min-h-[320px] overflow-hidden rounded-3xl border border-border bg-[radial-gradient(120%_90%_at_50%_0%,hsl(var(--muted))_0%,hsl(var(--background))_70%)] lg:h-[calc(100vh-8.5rem)]">
+          {/* O palco é escuro FIXO, nos dois temas, e por isso não sai dos
+              tokens: aqui a cor não é cromo de interface, é o fundo contra o
+              qual a rim light desenha o contorno. Num fundo claro o fio de luz
+              some — e ele é metade do que separa o personagem da tela. Não é
+              preto absoluto pelo motivo oposto: #000 engole a silhueta e mata
+              a própria sombra de contato. */}
+          <div className="relative h-[48vh] min-h-[320px] overflow-hidden rounded-3xl border border-border bg-[radial-gradient(ellipse_65%_55%_at_50%_34%,#262C3C_0%,#171B25_52%,#0D1016_100%)] lg:h-[calc(100vh-8.5rem)]">
             <PersonagemCanvas ref={canvas} figura={figura} posicao={posicao} />
 
             {/* Sobre o canvas, não acima dele: cabeçalho não rouba altura do boneco. */}
@@ -341,7 +347,10 @@ export default function EditorPersonagem({
               </span>
             </div>
 
-            <p className="pointer-events-none absolute inset-x-0 bottom-2 text-center text-[11px] text-muted-foreground">
+            {/* Claro fixo, não `text-muted-foreground`: o palco é escuro nos
+                dois temas, então o token do tema claro sairia cinza sobre
+                cinza-escuro. */}
+            <p className="pointer-events-none absolute inset-x-0 bottom-2 text-center text-[11px] text-white/45">
               Arraste para girar
             </p>
           </div>

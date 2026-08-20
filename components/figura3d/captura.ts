@@ -24,14 +24,15 @@ import { ALTURA_MAX_CENA } from "./avatar/rig";
  *
  * A 35° o que está mais perto da lente cresce muito em relação ao que está
  * atrás: a cabeça infla, os pés encolhem e o personagem ganha aquele ar de
- * foto de porta de geladeira. A 28° a projeção quase não converge dentro do
- * corpo, e é essa compressão — mais do que luz ou material — que faz uma
- * imagem ler como render de produto.
+ * foto de porta de geladeira. A 26° a projeção quase não converge dentro do
+ * corpo — é praticamente ortográfica —, e é essa compressão, mais do que luz ou
+ * material, que faz uma imagem ler como render de produto. É o que o character
+ * select de qualquer jogo usa.
  *
  * Vale para os DOIS canvas e para as duas fotos: FOV diferente entre o editor
  * e o PNG salvo significa que o usuário aprova um enquadramento e recebe outro.
  */
-export const FOV = 28;
+export const FOV = 26;
 
 /** Três quartos, em radianos. Câmera frontal achata o volume que a key light
  *  acabou de construir — o nariz, o ombro e o peito viram um plano só. */
@@ -69,10 +70,12 @@ export const RETRATO: Enquadramento = {
 export const CORPO: Enquadramento = {
   largura: 512,
   altura: 768,
-  alvo: [0, ALTURA_MAX_CENA * 0.48, 0],
+  // Altura do peito, não centro geométrico: mirar no meio da caixa aponta a
+  // lente para o umbigo e joga a cabeça para o topo do quadro.
+  alvo: [0, ALTURA_MAX_CENA * 0.46, 0],
   // Metade da altura visível dividida pela tangente da meia-abertura: a conta
   // de "que distância enquadra tantos metros". A margem é o ar em volta.
-  distancia: (ALTURA_MAX_CENA * 1.18) / 2 / Math.tan((FOV * Math.PI) / 180 / 2),
+  distancia: (ALTURA_MAX_CENA * 1.2) / 2 / Math.tan((FOV * Math.PI) / 180 / 2),
   elevacao: ALTURA_MAX_CENA * 0.14,
 };
 

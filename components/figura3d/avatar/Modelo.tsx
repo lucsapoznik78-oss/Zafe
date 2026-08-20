@@ -40,7 +40,23 @@ export function ModeloAvatar({ url }: { url: string }) {
   // E é `SkeletonUtils.clone`, não `Object3D.clone`: o clone cru copia as malhas
   // mas continua apontando para os MESMOS ossos, então dois clones dividiriam
   // uma pose só — mover um moveria o outro.
-  const objeto = useMemo(() => clone(scene), [scene]);
+  const objeto = useMemo(() => {
+    const c = clone(scene);
+    // Sombra própria: o braço escurece o tronco, a aba do boné escurece o
+    // rosto. É a oclusão que o `ContactShadows` do canvas não dá, porque aquele
+    // é um passe visto de baixo que só sabe desenhar a mancha no chão.
+    //
+    // Só o cast entra nisto. O boneco montável de `primitivas.ts` são ~40
+    // malhas Lambert, e cada uma no passe de sombra é geometria redesenhada de
+    // graça num celular — o custo lá não paga o ganho.
+    c.traverse((o) => {
+      const malha = o as { isMesh?: boolean; castShadow?: boolean; receiveShadow?: boolean };
+      if (!malha.isMesh) return;
+      malha.castShadow = true;
+      malha.receiveShadow = true;
+    });
+    return c;
+  }, [scene]);
 
   // A ESCALA é constante (ver `ALTURA_BASE_GLB`): medir cada arquivo mede a
   // altura da pose, não a do personagem, e faz quem se inclina crescer.

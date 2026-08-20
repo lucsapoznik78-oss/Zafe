@@ -11,9 +11,17 @@
 // redesenha sozinho quando uma prop muda; o `OrbitControls` pede quadro
 // enquanto o dedo está na tela.
 //
-// Sem sombra projetada em lugar nenhum. Shadow map é o maior custo isolado numa
-// GPU de celular e num boneco de blocos rende quase nada — o contato com o chão
-// é um disco escuro translúcido, que custa uma malha.
+// UMA luz com sombra, e só uma. Shadow map é o maior custo isolado numa GPU de
+// celular, então o orçamento é um passe: a key de `luzes.tsx`. É ela que dá a
+// sombra do braço no tronco e da aba do boné no rosto — a oclusão que o
+// `ContactShadows` não faz, porque aquele é um passe de cima para baixo que só
+// conhece o chão.
+//
+// `shadowMap.autoUpdate` fica LIGADO. A tentação é congelar depois do primeiro
+// quadro (a cena é estática), mas o usuário troca de chapéu e de personagem sem
+// sair da página: com o mapa congelado, a sombra seria a do item anterior. Com
+// `frameloop="demand"` o passe só roda quando algo muda, que é o mesmo ganho
+// sem o bug.
 //
 // O canvas NÃO desmonta na troca de aba (ver a página): remontar recria o
 // contexto WebGL, perde a rotação escolhida e paga o init de novo.
@@ -100,7 +108,13 @@ export const PersonagemCanvas = forwardRef<
       className={className}
       // `alpha` deixa o PNG salvo transparente: o avatar entra em cima de
       // qualquer fundo do app sem carregar um retângulo junto.
-      gl={{ preserveDrawingBuffer: true, alpha: true, antialias: true }}
+      gl={{
+        preserveDrawingBuffer: true,
+        alpha: true,
+        antialias: true,
+        powerPreference: "high-performance",
+      }}
+      shadows="soft"
       // ACES em vez do tone mapping linear: comprime o alto sem estourar, então
       // o branco da gola e o neon da aura param de virar chapa saturada, e a
       // rim light aparece como fio de luz em vez de borda queimada.

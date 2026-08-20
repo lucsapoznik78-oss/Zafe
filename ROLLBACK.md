@@ -166,6 +166,7 @@ tokens colapsaria estados distinguíveis num tom só.
 | `components/auth/LoginForm.tsx` | as 4 cores da marca Google no botão |
 | `components/ligas/CreateLigaModal.tsx`, `app/api/ligas/criar/route.ts` | cor de identidade escolhida pelo dono do grupo |
 | `components/topicos/ProbabilityChart.tsx` | paleta de séries para eventos multi-resultado |
+| `components/figura3d/*` | o palco 3D: fundo, luzes e cores de material. Não é interface, é cena — a rim light só desenha contra fundo escuro, e o token do tema claro apagaria o efeito nos dois temas |
 
 As duas últimas ainda trazem `#FFC53D` (o amarelo da `arquibancada`) no primeiro
 slot. São escalas categóricas, não cromo de interface: no grafite a marca é
