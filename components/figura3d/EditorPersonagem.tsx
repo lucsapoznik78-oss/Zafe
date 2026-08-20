@@ -137,7 +137,10 @@ const AtlasMiniaturas = dynamic(() => import("./Miniaturas").then((m) => m.Atlas
  * A grade é 5 colunas de célula retrato — o mesmo que `recorteAvatar` assume
  * para achar a célula. Os dois lados estão amarrados; ver `lib/figura/miniaturas.ts`.
  */
-const FOLHA_CAST = "/avatares/folha.png";
+// O `?v` sobe junto com a folha. O nome do arquivo é fixo, então sem ele quem
+// já abriu a loja continua vendo o elenco antigo — e a folha atual é a que tem
+// os adereços; a anterior mostrava os mesmos trinta bonecos de mãos vazias.
+const FOLHA_CAST = "/avatares/folha.png?v=2";
 
 /**
  * Só os ícones usados (`import * as Icons` traria as ~1500 do lucide junto).

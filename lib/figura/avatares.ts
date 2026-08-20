@@ -5,9 +5,9 @@
 // A loja de acessórios vende PEÇAS e o jogador monta. Aqui o modelo é o oposto,
 // e é deliberado (doc "Zafe — Sistema de Avatares", §1): o personagem é uma
 // unidade indivisível, com nome, pose e narrativa. Não se compra o chapéu da
-// Bruxa da Sorte; compra-se a Bruxa da Sorte. É o modelo do GeoGuessr, e o que
-// faz o Lendário significar alguma coisa — se desse para comprar a coroa
-// separada, o Rei do Bolão viraria um chapéu de Z$ 800.
+// Feiticeira do Placar; compra-se a Feiticeira do Placar. É o modelo do
+// GeoGuessr, e o que faz o Lendário significar alguma coisa — se desse para
+// comprar a coroa separada, o Rei do Bolão viraria um chapéu de Z$ 800.
 //
 // Por isso não existe `slot` neste arquivo, e por isso o avatar escolhido
 // SUBSTITUI o boneco montado em vez de se somar a ele.
@@ -281,9 +281,9 @@ export const AVATARES: AvatarCatalogo[] = [
   // ============================================================== COMUNS (12)
   {
     id: "av-boleiro-varzea",
-    nome: "Boleiro de Várzea",
+    nome: "Craque da Várzea",
     raridade: "comum",
-    descricao: "Camisa de time de bairro puída, meião subido, joelho ralado de domingo.",
+    descricao: "Camisa verde do time do bairro e a bola parada no pé, esperando o domingo.",
     pose: "hipshot",
     pele: 3,
     cabelo: { estilo: "curto", cores: ["#1B1B1F", "#2C2A28", "#453B33"] },
@@ -295,9 +295,9 @@ export const AVATARES: AvatarCatalogo[] = [
   },
   {
     id: "av-torcedor-arquibancada",
-    nome: "Torcedor de Arquibancada",
+    nome: "Chefe da Geral",
     raridade: "comum",
-    descricao: "Rosto pintado, cachecol erguido, garganta já rouca no primeiro tempo.",
+    descricao: "Bandeira erguida, cachecol no pescoço e a garganta já rouca no primeiro tempo.",
     pose: "cheer",
     pele: 1,
     cabelo: { estilo: "espetado", cores: ["#4A2C17", "#6B4423", "#8C5E32"] },
@@ -310,9 +310,9 @@ export const AVATARES: AvatarCatalogo[] = [
   },
   {
     id: "av-estagiario-bolao",
-    nome: "Estagiário do Bolão",
+    nome: "Analista de Bolão",
     raridade: "comum",
-    descricao: "Gravata torta, planilha do bolão do escritório debaixo do braço, confiança acima da média.",
+    descricao: "Terno azul, prancheta na mão e uma planilha que ele jura ser infalível.",
     pose: "point",
     pele: 2,
     cabelo: { estilo: "curto", cores: ["#2A1E16", "#3A2A20", "#54402F"] },
@@ -324,9 +324,9 @@ export const AVATARES: AvatarCatalogo[] = [
   },
   {
     id: "av-vovo-radio",
-    nome: "Vovô do Rádio",
+    nome: "Vovô Onda Curta",
     raridade: "comum",
-    descricao: "Rádio de pilha colado no ouvido. Não confia em narração de TV desde 1994.",
+    descricao: "Boina na cabeça e o rádio de pilha na mão. Não confia em narração de TV desde 1994.",
     pose: "ouvido",
     pele: 0,
     cabelo: { estilo: "grisalho", cores: ["#9EA2AA", "#C9CDD4", "#E6E8EC"] },
@@ -346,9 +346,9 @@ export const AVATARES: AvatarCatalogo[] = [
   },
   {
     id: "av-corredor-rua",
-    nome: "Corredor de Rua",
+    nome: "Maratonista de Bairro",
     raridade: "comum",
-    descricao: "Regata fluorescente, número de peito ainda colado da corrida de domingo.",
+    descricao: "Faixa na testa e o número de peito ainda colado da corrida de domingo.",
     pose: "thumbsup",
     pele: 5,
     cabelo: { estilo: "curto", cores: ["#101014", "#1B1B1F", "#2C2C33"] },
@@ -360,9 +360,9 @@ export const AVATARES: AvatarCatalogo[] = [
   },
   {
     id: "av-goleiro-reserva",
-    nome: "Goleiro Reserva",
+    nome: "Luva Azul",
     raridade: "comum",
-    descricao: "Luvas grandes demais, banco aquecido há três temporadas.",
+    descricao: "As luvas mais chamativas do vestiário e o banco aquecido há três temporadas.",
     pose: "idle",
     pele: 4,
     cabelo: { estilo: "curto", cores: ["#1B1B1F", "#2A2320", "#3A302A"] },
@@ -376,9 +376,9 @@ export const AVATARES: AvatarCatalogo[] = [
   },
   {
     id: "av-vendedor-pipoca",
-    nome: "Vendedor de Pipoca",
+    nome: "Pipoca Quente",
     raridade: "comum",
-    descricao: "Sobe e desce a arquibancada inteira no intervalo. Conhece o placar antes do telão.",
+    descricao: "Sobe e desce a arquibancada com a bandeja no pescoço. Sabe o placar antes do telão.",
     pose: "point",
     pele: 3,
     cabelo: { estilo: "curto", cores: ["#241A12", "#3A2A20", "#4E3A2A"] },
@@ -391,9 +391,9 @@ export const AVATARES: AvatarCatalogo[] = [
   },
   {
     id: "av-menina-volei",
-    nome: "Menina do Vôlei",
+    nome: "Saque Certeiro",
     raridade: "comum",
-    descricao: "Joelheira sempre colocada, rabo de cavalo apertado, saque que ninguém defende.",
+    descricao: "Bola erguida na mão, rabo de cavalo apertado e um saque que ninguém defende.",
     pose: "cheer",
     pele: 1,
     cabelo: { estilo: "rabo", cores: ["#4A2C17", "#6B4423", "#96683A"] },
@@ -404,9 +404,9 @@ export const AVATARES: AvatarCatalogo[] = [
   },
   {
     id: "av-skatista-praca",
-    nome: "Skatista de Praça",
+    nome: "Manobra na Praça",
     raridade: "comum",
-    descricao: "Boné pra trás, camiseta larga, cicatriz no cotovelo de manobra que não deu.",
+    descricao: "Moicano verde-água e o shape sempre em pé ao lado do pé. A queda de ontem já sarou.",
     pose: "hipshot",
     pele: 2,
     cabelo: { estilo: "curto", cores: ["#1B1B1F", "#2C2A28", "#3E3833"] },
@@ -419,9 +419,9 @@ export const AVATARES: AvatarCatalogo[] = [
   },
   {
     id: "av-ciclista-urbano",
-    nome: "Ciclista Urbano",
+    nome: "Entregador Relâmpago",
     raridade: "comum",
-    descricao: "Capacete aero, óculos espelhados, 60 km antes do café da manhã.",
+    descricao: "Mochila azul nas costas, capacete travado no queixo. Cruza a cidade antes do sinal fechar.",
     pose: "thumbsup",
     pele: 2,
     cabelo: { estilo: "careca", cores: ["#2A1E16", "#3A2A20", "#54402F"] },
@@ -434,9 +434,9 @@ export const AVATARES: AvatarCatalogo[] = [
   },
   {
     id: "av-zelador-estadio",
-    nome: "Zelador do Estádio",
+    nome: "Guardião do Gramado",
     raridade: "comum",
-    descricao: "Conhece cada assoalho do estádio. Já viu mais jogo que qualquer sócio.",
+    descricao: "Vassoura na mão e o estádio inteiro na memória. Já viu mais jogo que qualquer sócio.",
     pose: "idle",
     pele: 5,
     cabelo: { estilo: "grisalho", cores: ["#8A8F98", "#C9CDD4", "#E6E8EC"] },
@@ -454,9 +454,9 @@ export const AVATARES: AvatarCatalogo[] = [
   },
   {
     id: "av-tiete-fantasy",
-    nome: "Tiete do Fantasy",
+    nome: "Viciada em Escalação",
     raridade: "comum",
-    descricao: "Escalação montada às 3h da manhã. Sabe o preço de cada jogador de cor.",
+    descricao: "Celular na mão às três da manhã. Sabe de cor o preço de cada jogador.",
     pose: "peace",
     pele: 1,
     cabelo: { estilo: "franja", cores: ["#8E2117", "#C0392B", "#E5484D"] },
@@ -471,9 +471,9 @@ export const AVATARES: AvatarCatalogo[] = [
   // ============================================================ INCOMUNS (8)
   {
     id: "av-tenista-clube",
-    nome: "Tenista de Clube",
+    nome: "Saque de Saibro",
     raridade: "incomum",
-    descricao: "Tudo branco impecável, faixa na testa, raquete que custa mais que a mensalidade.",
+    descricao: "Branco impecável dos pés à raquete, que custa mais que a mensalidade do clube.",
     pose: "point",
     pele: 0,
     cabelo: { estilo: "rabo", cores: ["#B99048", "#D8B26A", "#EBD49A"] },
@@ -486,9 +486,9 @@ export const AVATARES: AvatarCatalogo[] = [
   },
   {
     id: "av-surfista-fim-tarde",
-    nome: "Surfista de Fim de Tarde",
+    nome: "Caçador de Onda",
     raridade: "incomum",
-    descricao: "Cabelo salgado, bermuda desbotada, prancha sempre a tiracolo. Bronzeado o ano inteiro.",
+    descricao: "Cabelo salgado, prancha em pé ao lado do corpo e sempre uma série chegando.",
     pose: "thumbsup",
     pele: 2,
     cabelo: { estilo: "salgado", cores: ["#A9793F", "#D8B26A", "#F2DFA8"] },
@@ -500,9 +500,9 @@ export const AVATARES: AvatarCatalogo[] = [
   },
   {
     id: "av-nadadora-olimpica",
-    nome: "Nadadora Olímpica",
+    nome: "Raia Quatro",
     raridade: "incomum",
-    descricao: "Touca azul-marinho, óculos marcados na testa, ombros largos demais para o corpo.",
+    descricao: "Touca azul-marinho e óculos de raia. Nada dois quilômetros antes do café.",
     pose: "hipshot",
     pele: 3,
     cabelo: { estilo: "careca", cores: ["#1B1B1F", "#2C2A28", "#3E3833"] },
@@ -515,9 +515,9 @@ export const AVATARES: AvatarCatalogo[] = [
   },
   {
     id: "av-boxeador-aposentado",
-    nome: "Boxeador Aposentado",
+    nome: "Último Round",
     raridade: "incomum",
-    descricao: "Nariz torto, orelha de couve-flor, ainda enfaixa as mãos por puro costume.",
+    descricao: "Nariz torto e guarda alta. Aposentou as lutas, não as luvas.",
     pose: "flex",
     pele: 6,
     cabelo: { estilo: "careca", cores: ["#101014", "#1B1B1F", "#2C2C33"] },
@@ -537,9 +537,9 @@ export const AVATARES: AvatarCatalogo[] = [
   },
   {
     id: "av-jogador-sinuca",
-    nome: "Jogador de Sinuca",
+    nome: "Taco de Ouro",
     raridade: "incomum",
-    descricao: "Colete verde-mesa, giz azul no dedo, cigarro apagado atrás da orelha. Nunca perde em casa.",
+    descricao: "Terno verde-mesa, taco em riste, giz azul no dedo. Nunca perde em casa.",
     pose: "point",
     pele: 2,
     cabelo: { estilo: "curto", cores: ["#2A1E16", "#3A2A20", "#54402F"] },
@@ -551,9 +551,9 @@ export const AVATARES: AvatarCatalogo[] = [
   },
   {
     id: "av-halterofilista",
-    nome: "Halterofilista",
+    nome: "Ferro Puro",
     raridade: "incomum",
-    descricao: "Cinturão de couro, magnésio nas mãos, pescoço da largura da cabeça. Só faz dia de perna.",
+    descricao: "Anilha vermelha subindo devagar. Pescoço da largura da cabeça e nunca pula o dia de perna.",
     pose: "flex",
     pele: 6,
     cabelo: { estilo: "coque", cores: ["#101014", "#1B1B1F", "#2C2C33"] },
@@ -566,9 +566,9 @@ export const AVATARES: AvatarCatalogo[] = [
   },
   {
     id: "av-dj-torcida",
-    nome: "DJ da Torcida",
+    nome: "Grave da Geral",
     raridade: "incomum",
-    descricao: "Comanda o cântico da geral pelo som. Sabe exatamente quando soltar o grave.",
+    descricao: "Fone na orelha, moicano no alto. Sabe exatamente a hora de soltar o grave e puxar o cântico.",
     pose: "cheer",
     pele: 6,
     cabelo: { estilo: "coque", cores: ["#101014", "#1B1B1F", "#2C2C33"] },
@@ -580,9 +580,9 @@ export const AVATARES: AvatarCatalogo[] = [
   },
   {
     id: "av-reporter-campo",
-    nome: "Repórter de Campo",
+    nome: "Microfone na Mão",
     raridade: "incomum",
-    descricao: "Microfone erguido na beira do gramado, sempre a dois metros da confusão.",
+    descricao: "Na beira do gramado, sempre a dois metros da confusão e a um do furo.",
     pose: "point",
     pele: 1,
     cabelo: { estilo: "chanel", cores: ["#2A1E16", "#4A3320", "#6B4423"] },
@@ -596,9 +596,9 @@ export const AVATARES: AvatarCatalogo[] = [
   // ================================================================ RAROS (6)
   {
     id: "av-arbitro-vilao",
-    nome: "Árbitro Vilão",
+    nome: "Cartão Vermelho",
     raridade: "raro",
-    descricao: "Todo de preto, cartão vermelho já erguido antes do apito. Odiado por unanimidade.",
+    descricao: "Todo de preto, apito no peito e o cartão já erguido. Odiado por unanimidade.",
     pose: "card",
     pele: 6,
     cabelo: { estilo: "curto", cores: ["#101014", "#1B1B1F", "#2C2C33"] },
@@ -610,9 +610,9 @@ export const AVATARES: AvatarCatalogo[] = [
   },
   {
     id: "av-mascote-tigre",
-    nome: "Mascote Tigre",
+    nome: "Tigre da Sorte",
     raridade: "raro",
-    descricao: "Fantasia inteira de tigre. Suando dentro dela desde o aquecimento e ainda dançando.",
+    descricao: "Fantasia laranja, orelhas em pé e rabo listrado. Suando desde o aquecimento e ainda dançando.",
     pose: "cheer",
     pele: 1,
     cabelo: { estilo: "careca", cores: ["#8A5A1E", "#B87A2A", "#D89A3A"] },
@@ -625,9 +625,9 @@ export const AVATARES: AvatarCatalogo[] = [
   },
   {
     id: "av-piloto-kart",
-    nome: "Piloto de Kart",
+    nome: "Pole Position",
     raridade: "raro",
-    descricao: "Capacete integral com viseira dourada, macacão coberto de patrocínio de oficina do bairro.",
+    descricao: "Capacete integral vermelho e macacão coberto de patrocínio de oficina do bairro.",
     pose: "thumbsup",
     pele: 2,
     cabelo: { estilo: "careca", cores: ["#1B1B1F", "#2C2A28", "#3E3833"] },
@@ -641,9 +641,9 @@ export const AVATARES: AvatarCatalogo[] = [
   },
   {
     id: "av-xadrezista-sombrio",
-    nome: "Xadrezista Sombrio",
+    nome: "Xeque-Mate",
     raridade: "raro",
-    descricao: "Terno preto, olhar fixo, cronômetro parado na mão. Calcula doze jogadas à frente do seu palpite.",
+    descricao: "Terno preto e a torre branca na mão. Calcula doze jogadas à frente do seu palpite.",
     pose: "idle",
     pele: 0,
     cabelo: { estilo: "careca", cores: ["#3A3A40", "#55555C", "#6E6E76"] },
@@ -655,9 +655,9 @@ export const AVATARES: AvatarCatalogo[] = [
   },
   {
     id: "av-capita-nautica",
-    nome: "Capitã Náutica",
+    nome: "Capitã de Alto-Mar",
     raridade: "raro",
-    descricao: "Quepe de capitã, blazer azul-marinho com botões dourados, luneta que nunca sai da mão.",
+    descricao: "Quepe de brasão dourado e blazer azul-marinho. Já atravessou coisa pior que uma rodada ruim.",
     pose: "mirar",
     pele: 2,
     cabelo: { estilo: "chanel", cores: ["#9EA2AA", "#C9CDD4", "#E6E8EC"] },
@@ -670,9 +670,9 @@ export const AVATARES: AvatarCatalogo[] = [
   },
   {
     id: "av-ginasta-fita",
-    nome: "Ginasta de Fita",
+    nome: "Fita no Ar",
     raridade: "raro",
-    descricao: "Coque perfeito, collant com brilho, fita rodando num arco que parece não ter fim.",
+    descricao: "Collant rosa e uma fita que desenha o arco inteiro antes de tocar o chão.",
     pose: "cheer",
     pele: 1,
     cabelo: { estilo: "coque", cores: ["#2A1E16", "#4A3320", "#6B4423"] },
@@ -686,9 +686,9 @@ export const AVATARES: AvatarCatalogo[] = [
   // ================================================================ ÉPICOS (3)
   {
     id: "av-ninja-dojo",
-    nome: "Ninja do Dojo",
+    nome: "Lâmina Silenciosa",
     raridade: "epico",
-    descricao: "Só os olhos aparecem. Faixa preta na testa, shuriken entre os dedos. Silencioso até nos palpites.",
+    descricao: "Todo de preto, katana cruzando o corpo. Não fala, não erra e não avisa o palpite.",
     pose: "point",
     pele: 1,
     cabelo: { estilo: "careca", cores: ["#101014", "#1B1B1F", "#2C2C33"] },
@@ -703,9 +703,9 @@ export const AVATARES: AvatarCatalogo[] = [
   },
   {
     id: "av-bruxa-sorte",
-    nome: "Bruxa da Sorte",
+    nome: "Feiticeira do Placar",
     raridade: "epico",
-    descricao: "Chapéu pontudo torto, poção borbulhando na mão. Diz que prevê resultados — e às vezes acerta.",
+    descricao: "Chapéu pontudo e cajado de orbe dourado. Diz que prevê resultado — e às vezes acerta.",
     pose: "cast",
     pele: 0,
     cabelo: { estilo: "longo", cores: ["#2A1240", "#4A1F6B", "#7C3FB0"] },
@@ -719,9 +719,9 @@ export const AVATARES: AvatarCatalogo[] = [
   },
   {
     id: "av-astronauta-perdido",
-    nome: "Astronauta Perdido",
+    nome: "Perdido na Órbita",
     raridade: "epico",
-    descricao: "Visor dourado refletindo o estádio inteiro. Traje pressurizado. Não faz ideia de onde pousou.",
+    descricao: "Domo de vidro e traje pressurizado. Não faz ideia de onde pousou, mas já palpitou.",
     pose: "peace",
     pele: 1,
     cabelo: { estilo: "careca", cores: ["#3A2A20", "#54402F", "#6B4423"] },
@@ -740,7 +740,7 @@ export const AVATARES: AvatarCatalogo[] = [
     id: "av-rei-bolao",
     nome: "Rei do Bolão",
     raridade: "lendario",
-    descricao: "Coroa torta de tanto usar, manto de veludo arrastando, cetro com bola dourada. Invicto há três temporadas.",
+    descricao: "Coroa torta de tanto usar e o troféu erguido na mão direita. Invicto há três temporadas.",
     pose: "scepter",
     pele: 1,
     cabelo: { estilo: "longo", cores: ["#8A6A20", "#C79A2E", "#F0CB6A"] },

@@ -119,6 +119,9 @@ RECEITAS = {
         # Camisa de time por cima do calção do Beach: nenhum pack traz uniforme
         # de futebol, mas camiseta + calção + chuteira é o uniforme.
         "base": ("h", "Casual_2"),
+        "aderecos": [
+            {"peca": "bola-futebol", "onde": "pe.R", "pos": (0, 0.12, 0.24)},
+        ],
         "pecas": {"Legs": ("h", "Beach")},
         # Quadro 4 e não 12: no 12 o pé de chute aponta para a câmera e a perna
         # inteira colapsa em encurtamento — vira uma sola de tênis flutuando na
@@ -135,6 +138,27 @@ RECEITAS = {
     },
     "av-torcedor-arquibancada": {
         "base": ("h", "Casual_2"),
+        # `Wave` levanta a mão ESQUERDA — medido, não suposto. A bandeira vai
+        # nela; o cachecol fica no pescoço e é o que separa este corpo casual do
+        # corpo casual do boleiro em 64px.
+        "aderecos": [
+            # +0.09 e não +0.30: o osso do peito fica em z≈1.23 e o pescoço em
+            # ≈1.32 (medido com ZAFE_ENCAIXES). Trinta centímetros acima do
+            # peito é o MEIO DA CARA — a gola enlaçava a cabeça e as pontas
+            # desciam por cima do nariz.
+            {"peca": "cachecol", "onde": "peito", "pos": (0, 0.09, 0.02),
+             "cor": "#C8102E", "cor2": "#F5F5F5"},
+            # Na mão BAIXA. Na mão erguida do `Wave` o mastro cortava o rosto
+            # dele na diagonal e o pano tapava metade da cabeça — e o topo
+            # passava de 2,2 m, fora da régua do cast.
+            # 122° e não 58°: inclinada para o mesmo lado do corpo, a bandeira
+            # subia rente ao rosto e o pano cobria meia cabeça. Girar para o
+            # outro lado não é trocar o sinal (isso deita o mastro no chão) — é
+            # passar do ângulo agudo para o obtuso, que joga o pano para FORA
+            # da silhueta.
+            {"peca": "bandeira", "onde": "mao.R", "aprumar": True,
+             "giro": (0, 0, 122), "cor": "#C8102E", "cor2": "#F5F5F5"},
+        ],
         "pose": ("Wave", 14),
         "cores": {
             "Skin": PELE[1],
@@ -146,6 +170,20 @@ RECEITAS = {
     },
     "av-estagiario-bolao": {
         "base": ("h", "Suit"),
+        # `Interact` estende a mão DIREITA à frente do peito: é exatamente o
+        # gesto de quem segura uma prancheta e confere a tabela.
+        "aderecos": [
+            # Descida até a altura do peito e um pouco maior: colada na mão
+            # crua ela ficava rente ao queixo e, do tamanho original, lia como
+            # celular — não como a prancheta que define o personagem.
+            {"peca": "prancheta", "onde": "mao.R", "aprumar": True,
+            #
+            # 25° e não 70°: a prancheta é uma placa fina de face voltada para a
+            # frente, e deitá-la 70° entrega ao card exatamente a espessura de
+            # 12 mm. Inclinada de leve ela mostra o papel, que é o que se
+            # reconhece.
+             "pos": (0, -0.05, 0.07), "giro": (25, 0, 0), "escala": 1.2},
+        ],
         "pose": ("Interact", 18),
         "cores": {
             "Skin": PELE[1],
@@ -157,6 +195,11 @@ RECEITAS = {
     "av-vovo-radio": {
         # Cabelo branco é o que faz a idade aqui; o corpo é o mesmo casual.
         "base": ("h", "Casual_2"),
+        "aderecos": [
+            {"peca": "boina", "onde": "cabeca", "cor": "#4A4038"},
+            {"peca": "radinho", "onde": "mao.R", "aprumar": True,
+             "pos": (0, 0.02, 0.04)},
+        ],
         "pose": ("Interact", 22),
         "cores": {
             "Skin": PELE[1],
@@ -168,6 +211,13 @@ RECEITAS = {
     },
     "av-corredor-rua": {
         "base": ("h", "Beach"),
+        "aderecos": [
+            {"peca": "faixa-cabeca", "onde": "cabeca", "cor": "#D7F205"},
+            # O `peito` nasce na COLUNA, não na superfície do peito: sem empurrar
+            # em +Z o número fica dentro do tórax e não aparece em lugar nenhum.
+            {"peca": "numero-peito", "onde": "peito", "pos": (0, 0.09, 0.13),
+             "cor": "#F5F5F2", "tinta_cor": "#1B1B1B"},
+        ],
         "pose": ("Run", 6),
         "cores": {
             "Skin": PELE[3],
@@ -179,6 +229,16 @@ RECEITAS = {
     "av-goleiro-reserva": {
         "base": ("h", "Casual_2"),
         "pecas": {"Legs": ("h", "Beach")},
+        # As duas luvas: uma luva só lê como mão enfaixada.
+        #
+        # Azul, e não o dourado do uniforme: com o MESMO hex da camisa a luva
+        # sumia — de longe as mãos viravam continuação da manga e sobrava um
+        # goleiro sem luva nenhuma. Luva de goleiro é peça de contraste na vida
+        # real pelo mesmo motivo.
+        "aderecos": [
+            {"peca": "luva-goleiro", "onde": "mao.L", "cor": "#1F6FEB"},
+            {"peca": "luva-goleiro", "onde": "mao.R", "cor": "#1F6FEB"},
+        ],
         "pose": ("Idle_Neutral", 1),
         "cores": {
             "Skin": PELE[0],
@@ -190,6 +250,11 @@ RECEITAS = {
     },
     "av-vendedor-pipoca": {
         "base": ("h", "Worker"),
+        # A bandeja pendurada no pescoço é o personagem inteiro: sem ela o
+        # Worker é um operário, com ela é o cara que sobe a arquibancada.
+        "aderecos": [
+            {"peca": "bandeja-pipoca", "onde": "peito", "pos": (0, 0.12, 0.02)},
+        ],
         "pose": ("Walk", 10),
         "cores": {
             "Skin": PELE[2],
@@ -199,6 +264,10 @@ RECEITAS = {
     },
     "av-menina-volei": {
         "base": ("m", "Casual"),
+        "aderecos": [
+            {"peca": "bola-volei", "onde": "mao.L", "pos": (0, 0.10, 0),
+             "cor": "#F7F7F2", "cor2": "#1F6FEB"},
+        ],
         # `Punch_Left` deixava os dois punhos fechados na altura do queixo:
         # guarda de boxe, dentro do contorno do tronco, ilegível em miniatura e
         # do esporte errado. `Wave` no 10 tem o braço estendido para cima com a
@@ -214,6 +283,13 @@ RECEITAS = {
     },
     "av-skatista-praca": {
         "base": ("h", "Punk"),
+        # O shape em pé, apoiado no rabo ao lado do pé, e não deitado embaixo
+        # dele: `assentar` desce o conjunto até o ponto mais baixo, então um
+        # deck no chão faria o boneco afundar meio centímetro nele.
+        "aderecos": [
+            {"peca": "skate", "onde": "pe.R", "pos": (0.17, 0, 0.02),
+             "giro": (0, 0, -14), "deck": "#2E9E8F", "roda": "#F0B429"},
+        ],
         "pose": ("Idle", 1),
         "cores": {
             "Skin": PELE[1],
@@ -227,6 +303,10 @@ RECEITAS = {
         # O Swat é o único corpo com capacete e viseira. Em amarelo-neon com
         # viseira espelhada ele deixa de ser tropa de choque e vira ciclista.
         "base": ("h", "Swat"),
+        "aderecos": [
+            {"peca": "mochila-entrega", "onde": "costas", "pos": (0, 0.10, 0.06),
+             "escala": 0.85, "cor": "#1F6FEB"},
+        ],
         "pose": ("Run", 14),
         "cores": {
             "Skin": PELE[1],
@@ -238,6 +318,10 @@ RECEITAS = {
     },
     "av-zelador-estadio": {
         "base": ("h", "Worker"),
+        "aderecos": [
+            {"peca": "vassoura", "onde": "mao.R", "aprumar": True,
+             "giro": (0, 0, 64)},
+        ],
         "pose": ("Walk", 4),
         "cores": {
             "Skin": PELE[3],
@@ -250,6 +334,10 @@ RECEITAS = {
     },
     "av-tiete-fantasy": {
         "base": ("m", "Casual"),
+        "aderecos": [
+            {"peca": "celular", "onde": "mao.R", "aprumar": True,
+             "pos": (0, 0.02, 0.03), "giro": (60, 0, 0), "tela": "#F2B8D0"},
+        ],
         "pose": ("Interact", 20),
         "cores": {
             "Skin": PELE[0],
@@ -263,6 +351,11 @@ RECEITAS = {
     "av-tenista-clube": {
         "base": ("h", "Casual_2"),
         "pecas": {"Legs": ("h", "Beach")},
+        # A raquete é desenhada em linha com o eixo do punho, então o arco do
+        # `Sword_Slash` a carrega junto sem giro nenhum.
+        "aderecos": [
+            {"peca": "raquete", "onde": "mao.R", "aro": "#D7F205"},
+        ],
         # Sword_Slash é o arco de raquete que o pack não tem: o braço cruza o
         # corpo no mesmo caminho de um forehand. Quadro 8, o alto do arco — no
         # 14 o golpe já desceu e os dois braços voltaram para junto do tronco,
@@ -284,6 +377,10 @@ RECEITAS = {
     },
     "av-surfista-fim-tarde": {
         "base": ("h", "Beach"),
+        "aderecos": [
+            {"peca": "prancha-surfe", "onde": "pe.L", "pos": (-0.22, 0, 0.02),
+             "giro": (0, 0, 9), "cor": "#F5E6C8", "faixa": "#0E9AA7"},
+        ],
         "pose": ("Idle", 1),
         "cores": {
             "Skin": PELE[2],
@@ -296,6 +393,11 @@ RECEITAS = {
         # O corpo SciFi feminino é um macacão colado sem folgas — a única peça
         # dos packs que lê como maiô de competição depois de perder o brilho.
         "base": ("m", "SciFi"),
+        "aderecos": [
+            {"peca": "touca", "onde": "cabeca", "cor": "#12305C"},
+            {"peca": "oculos-natacao", "onde": "cabeca", "cor": "#7FD8FF",
+             "aro": "#12305C"},
+        ],
         "pose": ("Idle_Neutral", 1),
         "cores": {
             "Skin": PELE[1],
@@ -308,6 +410,10 @@ RECEITAS = {
     },
     "av-boxeador-aposentado": {
         "base": ("h", "Beach"),
+        "aderecos": [
+            {"peca": "luva-boxe", "onde": "mao.L", "cor": "#8E1B1B"},
+            {"peca": "luva-boxe", "onde": "mao.R", "cor": "#8E1B1B"},
+        ],
         "pose": ("Punch_Right", 14),
         "cores": {
             "Skin": PELE[2],
@@ -318,6 +424,12 @@ RECEITAS = {
     },
     "av-jogador-sinuca": {
         "base": ("h", "Suit"),
+        # `Idle_Sword` já deixa a mão fechada na altura da cintura, empunhando
+        # nada. O taco é o que aquela mão estava esperando.
+        "aderecos": [
+            {"peca": "taco", "onde": "mao.R", "aprumar": True,
+             "giro": (0, 0, 74)},
+        ],
         "pose": ("Idle_Sword", 1),
         "cores": {
             "Skin": PELE[1],
@@ -329,6 +441,11 @@ RECEITAS = {
     },
     "av-halterofilista": {
         "base": ("h", "Beach"),
+        "aderecos": [
+            # Anilha vermelha: o preto original ficava contra o rosto moreno e
+            # o fundo escuro da cena e o halter virava um borrão sem forma.
+            {"peca": "halter", "onde": "mao.R", "escala": 1.15, "disco": "#C8102E"},
+        ],
         # `HitRecieve` é a animação de LEVAR um golpe: o corpo recua encolhido e
         # o personagem lê como quem apanhou, não como quem treina — e encolhido
         # ele ainda era o mais baixo do cast (1,75 m contra 1,85 de régua).
@@ -344,6 +461,12 @@ RECEITAS = {
     },
     "av-dj-torcida": {
         "base": ("h", "Punk"),
+        "aderecos": [
+            # `coroar` mira o alto do CRÂNIO, e o crânio deste aqui termina na
+            # ponta do moicano: sem descer, o fone paira 20 cm acima do cabelo.
+            {"peca": "fone-ouvido", "onde": "cabeca", "pos": (0, -0.26, 0),
+             "cor": "#161616", "almofada": "#D7F205"},
+        ],
         "pose": ("Interact", 16),
         "cores": {
             "Skin": PELE[2],
@@ -355,6 +478,10 @@ RECEITAS = {
     },
     "av-reporter-campo": {
         "base": ("m", "Suit"),
+        "aderecos": [
+            {"peca": "microfone", "onde": "mao.R", "aprumar": True,
+             "giro": (0, 0, 68), "marca": "#C8102E"},
+        ],
         "pose": ("Interact", 22),
         "cores": {
             "Skin": PELE[1],
@@ -367,7 +494,15 @@ RECEITAS = {
     "av-arbitro-vilao": {
         "base": ("h", "Casual_2"),
         "pecas": {"Legs": ("h", "Beach")},
-        # Wave levanta o braço acima da cabeça: é o cartão erguido, sem cartão.
+        # Wave levanta o braço esquerdo acima da cabeça: agora com o cartão.
+        "aderecos": [
+            {"peca": "cartao", "onde": "mao.L", "aprumar": True,
+             "pos": (0, 0.05, 0), "cor": "#C8102E"},
+            # Sem subir nada: a peça já é desenhada com a alça indo até o
+            # pescoço (+0.16) e o apito caído no peito. Empurrada mais 0.18 para
+            # cima ela laçava o queixo. O +Z é só para o cordão sair da camisa.
+            {"peca": "apito", "onde": "peito", "pos": (0, -0.01, 0.03)},
+        ],
         "pose": ("Wave", 16),
         "cores": {
             "Skin": PELE[1],
@@ -382,13 +517,26 @@ RECEITAS = {
         # em laranja e preto, é o que mais perto chega de "pessoa dentro de uma
         # fantasia": corpo sem pele à mostra e cabeça grande.
         "base": ("h", "Spacesuit"),
+        # Orelhas e rabo são o que faz o macacão laranja virar fantasia. Sem
+        # eles é só um astronauta pintado de laranja.
+        "aderecos": [
+            {"peca": "orelhas-tigre", "onde": "cabeca", "cor": "#F07818",
+             "dentro": "#F5E0C0"},
+            # A cauda é desenhada para a FRENTE (+Z); a meia-volta em Y é o que
+            # a joga para trás do quadril, onde uma cauda fica.
+            {"peca": "cauda", "onde": "quadril", "pos": (0, 0.16, -0.10),
+             "giro": (0, 180, 0), "cor": "#F07818", "listra": "#1B1B1B"},
+        ],
         "pose": ("Wave", 14),
+        # `SciFi_MainDark` cobre metade do traje, não é detalhe: em preto o
+        # mascote saía cinza-escuro com três riscos laranja e ninguém enxergava
+        # o tigre. O preto foi para os acentos, onde listra de tigre mora.
         "cores": {
             "SciFi_Main": "#F07818",
-            "SciFi_MainDark": "#1B1B1B",
+            "SciFi_MainDark": "#C2560F",
             "SciFi_Light": "#F5E0C0",
             "SciFi_Light_Accent": "#1B1B1B",
-            "Grey": "#3A3A3A",
+            "Grey": "#1B1B1B",
         },
     },
     "av-piloto-kart": {
@@ -399,6 +547,10 @@ RECEITAS = {
         # Não `Idle_Gun`: sem a pistola (que sai em `limpar_aderecos`) as duas
         # mãos ficam fechadas no vazio à frente do peito, e o gesto não lê como
         # nada. Andando, o macacão fechado lê como piloto indo para o grid.
+        "aderecos": [
+            {"peca": "capacete-integral", "onde": "cabeca", "cor": "#C8102E",
+             "faixa": "#F2F2F2"},
+        ],
         "pose": ("Walk", 8),
         "cores": {
             "SciFi_Main": "#C8102E",
@@ -412,6 +564,10 @@ RECEITAS = {
     },
     "av-xadrezista-sombrio": {
         "base": ("h", "Suit"),
+        "aderecos": [
+            {"peca": "peca-xadrez", "onde": "mao.R", "aprumar": True,
+             "pos": (0, -0.02, 0.02), "cor": "#D8D8D8"},
+        ],
         "pose": ("Idle_Neutral", 1),
         "cores": {
             "Skin": PELE[0],
@@ -427,6 +583,11 @@ RECEITAS = {
         # é uma mulher apontando o dedo para o nada, com os dois braços à frente
         # do peito. `Idle_Neutral` é parada e ereta — menos interessante, mas
         # uma capitã de pé é uma leitura; apontar para o vazio não é nenhuma.
+        # O quepe é o que transforma o terno azul-marinho em farda.
+        "aderecos": [
+            {"peca": "quepe", "onde": "cabeca", "cor": "#16233F",
+             "aba": "#0C1526", "brasao": "#D4AF37"},
+        ],
         "pose": ("Idle_Neutral", 1),
         "cores": {
             "Skin": PELE[1],
@@ -437,6 +598,10 @@ RECEITAS = {
     },
     "av-ginasta-fita": {
         "base": ("m", "SciFi"),
+        "aderecos": [
+            {"peca": "fita", "onde": "mao.R", "cor": "#D6266B",
+             "bastao": "#F0B429"},
+        ],
         # Quadro 16: braço estendido na horizontal e perna levantada, os dois
         # fora do contorno do tronco. É a única pose do cast que lembra ginástica
         # — no 12 o chute ainda está subindo e ela parece só desequilibrada.
@@ -455,6 +620,18 @@ RECEITAS = {
         # Swat de novo, mas em preto absoluto e com a viseira escurecida a
         # leitura muda por completo: só a faixa dos olhos aparece.
         "base": ("h", "Swat"),
+        "aderecos": [
+            # Empunhada como o punho fechado do `Idle_Sword` pede, a lâmina sai
+            # para trás e some — preta sobre preto, atrás do corpo. Aprumada e
+            # inclinada ela cruza a silhueta, que é o único jeito de a katana
+            # existir num personagem todo preto.
+            # O giro em X é o que faz a katana existir: a lâmina é uma fita
+            # plana, e sem ele o plano da fita fica deitado — de frente vê-se só
+            # a espessura, um fio de 3 mm. Deitada em pé ela mostra a largura.
+            {"peca": "katana", "onde": "mao.R", "aprumar": True,
+             "giro": (90, 0, 50), "escala": 1.15,
+             "lamina": "#DCE3EA", "guarda": "#4A0F14"},
+        ],
         "pose": ("Idle_Sword", 1),
         "cores": {
             "Skin": PELE[1],
@@ -471,11 +648,22 @@ RECEITAS = {
     },
     "av-bruxa-sorte": {
         "base": ("m", "Witch"),
+        # Aprumado e girado 90° em Z: o cabo é desenhado ao longo do +X, e o
+        # giro o põe na vertical, plantado ao lado dela como um cajado.
+        "aderecos": [
+            {"peca": "cajado", "onde": "mao.L", "aprumar": True,
+             "giro": (0, 0, 90), "pos": (0, -0.28, 0), "orbe": "#D4AF37",
+             "enfeite": "#5B2D8E"},
+        ],
         "pose": ("Interact", 20),
         "cores": {"Skin": PELE[0], "Purple": "#5B2D8E", "Gold": "#D4AF37"},
     },
     "av-astronauta-perdido": {
         "base": ("h", "Spacesuit"),
+        "aderecos": [
+            {"peca": "capacete-domo", "onde": "cabeca", "cor": "#BFD8E8",
+             "aro": "#D4AF37"},
+        ],
         "pose": ("Idle", 1),
         "cores": {
             "SciFi_Main": "#E8EAF0",
@@ -488,6 +676,12 @@ RECEITAS = {
     # --------------------------------------------------------------- lendário
     "av-rei-bolao": {
         "base": ("h", "King"),
+        "aderecos": [
+            # Maior que o desenho base: o rei já tem ombreira e coroa douradas,
+            # e um troféu no tamanho natural some dentro do próprio dourado dele.
+            {"peca": "trofeu", "onde": "mao.R", "aprumar": True,
+             "pos": (0, -0.04, 0.05), "escala": 1.3, "ouro": "#D4AF37"},
+        ],
         "pose": ("Idle_Neutral", 1),
         "cores": {"Skin": PELE[1], "Blue": "#4C2A85", "Gold": "#D4AF37"},
     },
@@ -734,6 +928,869 @@ def acabar(overrides):
                 if no.type == "BSDF_PRINCIPLED":
                     no.inputs["Roughness"].default_value = rugosidade
                     no.inputs["Metallic"].default_value = metalico
+
+
+# --------------------------------------------------------------- ADEREÇOS
+#
+# Os packs não têm um único adereço utilizável: `Weapons/` tem pistola e espada,
+# e é isso. Nada de bola, raquete, taco, microfone, vassoura, coroa ou mochila.
+# Então o nome de cada personagem prometia uma coisa e o modelo mostrava outra —
+# "Vendedor de Pipoca" era um pedreiro de capacete, "Skatista" era um punk de
+# mãos vazias. Adereço não é enfeite aqui: é o que torna o nome verdadeiro.
+#
+# GEOMETRIA, NÃO ARQUIVO
+#
+# Cada peça abaixo é construída em bmesh, em metros, na escala final do boneco.
+# Isso mantém a promessa do pipeline (um `RECEITAS` reproduzível, sem asset
+# solto para versionar) e, mais concreto, deixa a peça sujeita aos MESMOS passos
+# que o corpo: solda, quina por ângulo, subdivisão com crease e o bake de AO.
+# Uma bola importada de fora entraria depois do AO e ficaria com a sombra de
+# contato faltando exatamente onde a mão a segura.
+#
+# ONDE ELAS ENTRAM
+#
+# Depois de `congelar` e ANTES de `refinar`. Depois de congelar porque aí o
+# personagem é geometria pura na pose final — o adereço é posicionado no lugar
+# onde a mão de fato está, não onde o rig a deixaria em repouso. Antes de
+# refinar porque é o que faz a peça atravessar suavização, subdivisão, junção e
+# AO junto com o resto, e sair do outro lado como parte da malha única (o
+# personagem continua custando UMA chamada de desenho).
+#
+# COMO SE ORIENTA UMA PEÇA NA MÃO
+#
+# `quadros_de_pose` mede referenciais ortonormais em mundo a partir dos ossos,
+# com a pose e o chibi já aplicados. A convenção é a mesma em todos:
+#
+#   mao.L / mao.R  origem no meio da palma; +X é o lado do polegar (para onde
+#                  aponta a cabeça de um martelo empunhado), +Y é a direção dos
+#                  dedos, +Z sai do dorso. Um cabo empunhado corre em X.
+#   cabeca         origem no ALTO DO CRÂNIO (medido na malha, não no osso), +Y
+#                  para cima, +Z para a frente, +X para a esquerda do boneco.
+#   peito/quadril  origem na base do osso, mesmos eixos da cabeça.
+#   pe.L / pe.R    origem no tornozelo, +Y para cima, +Z na direção da ponta do
+#                  pé, no plano do chão.
+#   pes            o ponto médio entre os dois tornozelos.
+#
+# O eixo X do punho ESPELHA entre as mãos (o rig é simétrico), então ele é
+# invertido na direita para as duas mãos significarem a mesma coisa. A inversão
+# é feita antes de recalcular Z pelo produto vetorial: um referencial de
+# determinante negativo viraria a normal de toda peça colocada nele, e o defeito
+# aparece como uma bola preta iluminada por dentro.
+
+
+def tinta(hexa, acabamento="plastico"):
+    """Material de adereço, reusado por (cor, acabamento).
+
+    Reusar importa: `palette` do gltf-transform funde materiais num atlas, e
+    dois materiais idênticos com nomes diferentes são duas entradas de atlas
+    para a mesma cor. Também roda DEPOIS de `acabar`, então cada peça declara o
+    próprio acabamento — não há passagem posterior que o faça por ela.
+    """
+    nome = f"Ad_{acabamento}_{hexa.lstrip('#')}"
+    mat = bpy.data.materials.get(nome)
+    if mat:
+        return mat
+    rugosidade, metalico = MATERIAL_PRESETS[acabamento]
+    rgba = hex_rgba(hexa)
+    mat = bpy.data.materials.new(nome)
+    mat.use_nodes = True
+    mat.diffuse_color = rgba
+    mat.roughness = rugosidade
+    mat.metallic = metalico
+    for no in mat.node_tree.nodes:
+        if no.type == "BSDF_PRINCIPLED":
+            no.inputs["Base Color"].default_value = rgba
+            no.inputs["Roughness"].default_value = rugosidade
+            no.inputs["Metallic"].default_value = metalico
+    return mat
+
+
+_EIXO = {
+    # `create_cone` nasce ao longo de Z; estes giros levam Z ao eixo pedido.
+    "X": Matrix.Rotation(math.radians(90), 4, "Y"),
+    "Y": Matrix.Rotation(math.radians(-90), 4, "X"),
+    "Z": Matrix.Identity(4),
+}
+
+
+def _giro(g):
+    gx, gy, gz = g
+    return (
+        Matrix.Rotation(math.radians(gz), 4, "Z")
+        @ Matrix.Rotation(math.radians(gy), 4, "Y")
+        @ Matrix.Rotation(math.radians(gx), 4, "X")
+    )
+
+
+class Peca:
+    """Acumula geometria de um adereço, agrupada por material.
+
+    Um objeto por material (o Blender só junta malhas de material único sem
+    embaralhar índice de face), todos com matriz identidade: quem posiciona é
+    `aplicar_aderecos`, aplicando o referencial do osso de uma vez só.
+    """
+
+    def __init__(self, nome):
+        self.nome = nome
+        self.partes = {}
+
+    def _bm(self, mat):
+        if mat.name not in self.partes:
+            self.partes[mat.name] = (mat, bmesh.new())
+        return self.partes[mat.name][1]
+
+    @staticmethod
+    def _base(em, giro, mira, escala):
+        M = Matrix.Translation(Vector(em))
+        if mira is not None:
+            M = M @ Vector((0, 0, 1)).rotation_difference(
+                Vector(mira).normalized()
+            ).to_matrix().to_4x4()
+        if giro is not None:
+            M = M @ _giro(giro)
+        if escala is not None:
+            M = M @ Matrix.Diagonal(Vector(escala).to_4d())
+        return M
+
+    def caixa(self, cor, tam, em=(0, 0, 0), giro=None, acab="plastico"):
+        bmesh.ops.create_cube(
+            self._bm(tinta(cor, acab)),
+            size=1.0,
+            matrix=self._base(em, giro, None, tam),
+        )
+        return self
+
+    def cilindro(
+        self,
+        cor,
+        raio,
+        alt,
+        em=(0, 0, 0),
+        eixo="Z",
+        raio2=None,
+        segs=16,
+        giro=None,
+        mira=None,
+        escala=None,
+        acab="plastico",
+    ):
+        bmesh.ops.create_cone(
+            self._bm(tinta(cor, acab)),
+            cap_ends=True,
+            cap_tris=False,
+            segments=segs,
+            radius1=raio,
+            radius2=raio if raio2 is None else raio2,
+            depth=alt,
+            matrix=self._base(em, giro, mira, escala) @ _EIXO[eixo],
+        )
+        return self
+
+    def esfera(
+        self,
+        cor,
+        raio,
+        em=(0, 0, 0),
+        segs=16,
+        aneis=10,
+        escala=None,
+        giro=None,
+        mira=None,
+        acab="plastico",
+    ):
+        bmesh.ops.create_uvsphere(
+            self._bm(tinta(cor, acab)),
+            u_segments=segs,
+            v_segments=aneis,
+            radius=raio,
+            matrix=self._base(em, giro, mira, escala),
+        )
+        return self
+
+    def anel(
+        self,
+        cor,
+        raio,
+        tubo,
+        em=(0, 0, 0),
+        giro=None,
+        segs=20,
+        lados=8,
+        arco=1.0,
+        escala=None,
+        acab="plastico",
+    ):
+        """Toro no plano XY. `arco<1` faz um arco aberto (arco de fone, alça)."""
+        bm = self._bm(tinta(cor, acab))
+        M = self._base(em, giro, None, escala)
+        fechado = arco >= 1.0
+        n = max(3, round(segs * arco))
+        aros = []
+        for i in range(n if fechado else n + 1):
+            a = 2 * math.pi * arco * i / n
+            radial = Vector((math.cos(a), math.sin(a), 0))
+            centro = radial * raio
+            aros.append(
+                [
+                    bm.verts.new(
+                        M
+                        @ (
+                            centro
+                            + radial * (math.cos(2 * math.pi * j / lados) * tubo)
+                            + Vector((0, 0, math.sin(2 * math.pi * j / lados) * tubo))
+                        )
+                    )
+                    for j in range(lados)
+                ]
+            )
+        for i in range(len(aros) if fechado else len(aros) - 1):
+            a, b = aros[i], aros[(i + 1) % len(aros)]
+            for j in range(lados):
+                k = (j + 1) % lados
+                bm.faces.new((a[j], b[j], b[k], a[k]))
+        return self
+
+    def superficie(self, cor, grade, espessura=0.0, acab="tecido"):
+        """Casca a partir de uma grade de pontos (pano, fita, deck).
+
+        Com `espessura` sai um sólido: a mesma grade deslocada pela normal e as
+        bordas costuradas. Casca aberta funciona no render, mas o AO enxerga o
+        avesso e a peça sai com uma face preta.
+        """
+        bm = self._bm(tinta(cor, acab))
+        linhas = len(grade)
+        colunas = len(grade[0])
+
+        def normal(i, j):
+            di = Vector(grade[min(i + 1, linhas - 1)][j]) - Vector(
+                grade[max(i - 1, 0)][j]
+            )
+            dj = Vector(grade[i][min(j + 1, colunas - 1)]) - Vector(
+                grade[i][max(j - 1, 0)]
+            )
+            n = di.cross(dj)
+            return n.normalized() if n.length > 1e-9 else Vector((0, 0, 1))
+
+        faces = [[bm.verts.new(Vector(p)) for p in linha] for linha in grade]
+        if espessura:
+            verso = [
+                [
+                    bm.verts.new(Vector(grade[i][j]) - normal(i, j) * espessura)
+                    for j in range(colunas)
+                ]
+                for i in range(linhas)
+            ]
+        for i in range(linhas - 1):
+            for j in range(colunas - 1):
+                bm.faces.new(
+                    (faces[i][j], faces[i][j + 1], faces[i + 1][j + 1], faces[i + 1][j])
+                )
+                if espessura:
+                    bm.faces.new(
+                        (
+                            verso[i][j],
+                            verso[i + 1][j],
+                            verso[i + 1][j + 1],
+                            verso[i][j + 1],
+                        )
+                    )
+        if espessura:
+            # As quatro bordas. A ordem dos vértices não precisa ser coerente
+            # entre elas: `objetos()` recalcula as normais no fim.
+            for j in (0, colunas - 1):
+                for i in range(linhas - 1):
+                    bm.faces.new(
+                        (faces[i][j], verso[i][j], verso[i + 1][j], faces[i + 1][j])
+                    )
+            for i in (0, linhas - 1):
+                for j in range(colunas - 1):
+                    bm.faces.new(
+                        (faces[i][j], verso[i][j], verso[i][j + 1], faces[i][j + 1])
+                    )
+        return self
+
+    def objetos(self):
+        saida = []
+        for n, (mat, bm) in enumerate(self.partes.values()):
+            bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+            me = bpy.data.meshes.new(f"{self.nome}_{n}")
+            bm.to_mesh(me)
+            bm.free()
+            me.materials.append(mat)
+            obj = bpy.data.objects.new(f"{self.nome}_{n}", me)
+            bpy.context.scene.collection.objects.link(obj)
+            saida.append(obj)
+        self.partes = {}
+        return saida
+
+
+# ------------------------------------------------------------- AS PEÇAS
+#
+# Cada função recebe a `Peca` e desenha em coordenadas LOCAIS do referencial em
+# que vai ser presa (a convenção está no cabeçalho da seção). Toda cor é
+# parâmetro: a mesma raquete serve para dois personagens em cores diferentes.
+
+
+def _bola_futebol(p, cor="#F5F5F5", cor2="#1B1B1B", **_):
+    p.esfera(cor, 0.115, segs=20, aneis=14, acab="couro")
+    for d in (
+        (0, 0, 1),
+        (0, 0, -1),
+        (0.86, 0, 0.5),
+        (-0.86, 0, 0.5),
+        (0, 0.86, -0.5),
+        (0, -0.86, -0.5),
+    ):
+        v = Vector(d).normalized()
+        p.cilindro(cor2, 0.038, 0.02, em=v * 0.108, mira=v, segs=5, acab="couro")
+
+
+def _bola_volei(p, cor="#F7F7F2", cor2="#1F6FEB", **_):
+    p.esfera(cor, 0.105, segs=20, aneis=14, acab="couro")
+    for giro in ((0, 0, 0), (90, 0, 0), (0, 90, 0)):
+        p.anel(cor2, 0.099, 0.012, giro=giro, segs=20, lados=6, acab="couro")
+
+
+def _cachecol(p, cor="#C8102E", cor2="#F5F5F5", **_):
+    """Gola em volta do pescoço e duas pontas caídas na frente."""
+    p.anel(cor, 0.105, 0.032, escala=(1.0, 0.85, 1.0), segs=18, lados=8, acab="tecido")
+    # As pontas descem pelo PEITO, que é mais grosso que o pescoço: no mesmo z do
+    # anel elas ficam dentro do tórax e o cachecol vira uma gravatinha vermelha.
+    for x, z in ((0.05, 0.155), (-0.05, 0.15)):
+        p.caixa(cor, (0.075, 0.30, 0.022), em=(x, -0.14, z), acab="tecido")
+        p.caixa(cor2, (0.075, 0.05, 0.024), em=(x, -0.27, z), acab="tecido")
+
+
+def _bandeira(p, cor="#C8102E", cor2="#F5F5F5", mastro="#6B4A2F", **_):
+    p.cilindro(mastro, 0.014, 0.95, eixo="X", em=(0.30, 0, 0), acab="couro")
+    grade = [
+        [
+            (0.30 + 0.36 * (1 - i / 5), 0.02 + 0.34 * (j / 6), 0.03 * math.sin(3.0 * j / 6 * math.pi))
+            for j in range(7)
+        ]
+        for i in range(6)
+    ]
+    p.superficie(cor, grade, espessura=0.008)
+    faixa = [
+        [
+            (0.30 + 0.36 * (1 - i / 5), 0.02 + 0.34 * (j / 6), 0.003 + 0.03 * math.sin(3.0 * j / 6 * math.pi))
+            for j in range(7)
+        ]
+        for i in (2, 3)
+    ]
+    p.superficie(cor2, faixa, espessura=0.004)
+
+
+def _prancheta(p, cor="#4A3524", papel="#F2EFE6", clipe="#9AA3A8", **_):
+    p.caixa(cor, (0.20, 0.27, 0.012), acab="couro")
+    p.caixa(papel, (0.175, 0.235, 0.006), em=(0, -0.012, 0.008), acab="tecido")
+    p.caixa(clipe, (0.075, 0.03, 0.016), em=(0, 0.115, 0.012), acab="metal")
+
+
+def _radinho(p, cor="#3B3F46", grelha="#C9A227", **_):
+    p.caixa(cor, (0.10, 0.15, 0.045), acab="plastico")
+    p.cilindro(grelha, 0.032, 0.008, em=(0, 0.03, 0.025), acab="metal")
+    p.cilindro(grelha, 0.014, 0.01, em=(0, -0.04, 0.025), acab="metal")
+    p.cilindro("#9AA3A8", 0.005, 0.22, em=(0.04, 0.19, 0.01), eixo="Y", acab="metal")
+
+
+# O crânio destes bonecos mede ~0,35 de largura por ~0,42 de profundidade (o
+# nariz e o cabelo entram na conta), ou seja RAIO ~0,18 na altura das orelhas, e
+# o topo fica em y=0 por construção do referencial. Peça de cabeça que ignore
+# isso não erra pouco: sai um chapéu de boneca num boneco chibi.
+RAIO_CRANIO = 0.18
+
+
+def _boina(p, cor="#4A4038", **_):
+    p.esfera(cor, RAIO_CRANIO + 0.02, em=(0, -0.10, 0.01), escala=(1.0, 0.55, 1.05), acab="tecido")
+    p.esfera(cor, 0.022, em=(0, 0.01, 0), acab="tecido")
+
+
+def _bone(p, cor="#1B1B1B", aba=None, **_):
+    aba = aba or cor
+    p.esfera(cor, RAIO_CRANIO + 0.015, em=(0, -0.12, 0), escala=(1.0, 0.85, 1.0), acab="tecido")
+    p.esfera(aba, 0.145, em=(0, -0.20, 0.17), escala=(1.0, 0.08, 1.05), acab="tecido")
+    p.esfera(cor, 0.024, em=(0, 0.005, 0), acab="tecido")
+
+
+def _quepe(p, cor="#16233F", aba="#0C1526", brasao="#D4AF37", **_):
+    p.cilindro(cor, RAIO_CRANIO + 0.005, 0.105, raio2=RAIO_CRANIO + 0.03, em=(0, -0.05, 0), eixo="Y", acab="tecido")
+    p.cilindro(cor, RAIO_CRANIO + 0.032, 0.016, em=(0, 0.005, 0), eixo="Y", acab="tecido")
+    p.cilindro(aba, RAIO_CRANIO + 0.01, 0.035, em=(0, -0.10, 0), eixo="Y", acab="couro")
+    p.esfera(aba, 0.155, em=(0, -0.105, 0.16), escala=(1.0, 0.08, 1.0), acab="couro")
+    p.caixa(brasao, (0.055, 0.04, 0.014), em=(0, -0.045, 0.185), acab="metal")
+
+
+def _touca(p, cor="#12305C", **_):
+    p.esfera(cor, RAIO_CRANIO + 0.012, em=(0, -0.115, 0), escala=(1.0, 0.92, 1.0), acab="plastico")
+
+
+def _oculos_natacao(p, cor="#7FD8FF", aro="#12305C", **_):
+    for x in (0.07, -0.07):
+        p.cilindro(aro, 0.055, 0.035, em=(x, -0.22, 0.155), eixo="Z", acab="plastico")
+        p.cilindro(cor, 0.04, 0.04, em=(x, -0.22, 0.165), eixo="Z", acab="plastico")
+    p.anel(aro, RAIO_CRANIO + 0.01, 0.013, em=(0, -0.22, 0), giro=(90, 0, 0), escala=(1.0, 1.12, 1.0), segs=20, lados=6, acab="tecido")
+
+
+def _faixa_cabeca(p, cor="#D7F205", **_):
+    p.anel(cor, RAIO_CRANIO + 0.012, 0.026, em=(0, -0.19, 0), giro=(90, 0, 0), escala=(1.0, 1.14, 1.0), segs=20, lados=8, acab="tecido")
+
+
+def _fone_ouvido(p, cor="#161616", almofada="#D7F205", **_):
+    p.anel(cor, RAIO_CRANIO + 0.03, 0.022, em=(0, -0.05, -0.02), giro=(0, 90, 0), arco=0.5, segs=22, lados=8, acab="plastico")
+    for x in (RAIO_CRANIO + 0.03, -(RAIO_CRANIO + 0.03)):
+        p.cilindro(cor, 0.065, 0.05, em=(x, -0.21, -0.02), eixo="X", acab="plastico")
+        p.cilindro(almofada, 0.055, 0.024, em=(x * 0.82, -0.21, -0.02), eixo="X", acab="tecido")
+
+
+def _orelhas_tigre(p, cor="#F07818", dentro="#F5E0C0", **_):
+    for x in (0.115, -0.115):
+        p.cilindro(cor, 0.075, 0.10, raio2=0.012, em=(x, 0.02, -0.03), eixo="Y", segs=3, acab="tecido")
+        p.cilindro(dentro, 0.045, 0.095, raio2=0.008, em=(x, 0.03, 0.005), eixo="Y", segs=3, acab="tecido")
+
+
+def _cauda(p, cor="#F07818", listra="#1B1B1B", **_):
+    passo, raio = 0.055, 0.032
+    for i in range(9):
+        t = i / 8
+        em = (
+            0.02 * math.sin(t * 3.4),
+            -0.10 - passo * i * 0.85,
+            0.05 + 0.42 * math.sin(t * 2.0),
+        )
+        p.esfera(listra if i % 2 else cor, raio * (1 - 0.55 * t), em=em, segs=10, aneis=7, acab="tecido")
+
+
+def _capacete_integral(p, cor="#C8102E", faixa="#F2F2F2", visor="#1B1B1B", **_):
+    p.esfera(cor, 0.165, em=(0, -0.05, -0.035), escala=(1.0, 1.02, 1.0), acab="plastico")
+    p.caixa(faixa, (0.045, 0.24, 0.1), em=(0, -0.05, 0.085), acab="plastico")
+    p.esfera(visor, 0.145, em=(0, -0.11, -0.035), escala=(0.92, 0.62, 0.42), acab="plastico")
+
+
+def _capacete_domo(p, cor="#BFD8E8", aro="#D4AF37", **_):
+    p.esfera(cor, 0.185, em=(0, -0.05, -0.055), acab="plastico")
+    p.anel(aro, 0.155, 0.02, em=(0, -0.05, -0.16), segs=20, lados=8, acab="metal")
+    p.caixa(aro, (0.05, 0.04, 0.05), em=(0.14, -0.05, 0.02), acab="metal")
+
+
+def _numero_peito(p, cor="#F5F5F2", tinta_cor="#1B1B1B", **_):
+    p.caixa(cor, (0.17, 0.13, 0.012), em=(0, -0.02, 0.11), giro=(-8, 0, 0), acab="tecido")
+    p.caixa(tinta_cor, (0.035, 0.075, 0.014), em=(-0.035, -0.02, 0.116), giro=(-8, 0, 0), acab="tecido")
+    p.caixa(tinta_cor, (0.035, 0.075, 0.014), em=(0.035, -0.02, 0.116), giro=(-8, 0, 0), acab="tecido")
+
+
+def _apito(p, cordao="#1B1B1B", cor="#D4AF37", **_):
+    p.anel(cordao, 0.115, 0.008, em=(0, 0.16, 0), giro=(94, 0, 0), escala=(1.0, 0.85, 1.0), segs=18, lados=6, acab="tecido")
+    p.caixa(cordao, (0.008, 0.14, 0.008), em=(0.03, 0.08, 0.07), acab="tecido")
+    p.caixa(cordao, (0.008, 0.14, 0.008), em=(-0.03, 0.08, 0.07), acab="tecido")
+    p.caixa(cor, (0.028, 0.055, 0.03), em=(0, 0.015, 0.115), acab="metal")
+
+
+def _avental(p, cor="#F5F0E6", faixa="#C8102E", **_):
+    p.caixa(cor, (0.26, 0.34, 0.02), em=(0, -0.05, 0.13), acab="tecido")
+    p.caixa(cor, (0.19, 0.16, 0.02), em=(0, -0.05, 0.33), acab="tecido")
+    p.caixa(faixa, (0.27, 0.05, 0.022), em=(0, -0.052, 0.24), acab="tecido")
+    for x in (0.075, -0.075):
+        p.caixa(cor, (0.03, 0.02, 0.14), em=(x, -0.045, 0.44), giro=(14, 0, 0), acab="tecido")
+
+
+def _mochila_entrega(p, cor="#1F6FEB", alca="#1B1B1B", **_):
+    """Caixa nas costas + alças que passam pelo ombro e reaparecem no peito.
+
+    O card da loja mostra a frente do personagem; a caixa, que fica atrás, não
+    entra em quadro nenhum. Sem as alças cruzando o peito o adereço simplesmente
+    não existe para quem olha o boneco — foi assim que ele saiu na primeira folha.
+    """
+    p.caixa(cor, (0.30, 0.26, 0.30), em=(0, 0.20, 0.18), acab="tecido")
+    p.caixa(alca, (0.31, 0.035, 0.31), em=(0, 0.20, 0.18), acab="tecido")
+    for x in (0.10, -0.10):
+        # De cima da caixa, por cima do ombro, até a altura do peito. `em` é o
+        # meio do cilindro e `mira` o alinha com o próprio comprimento.
+        #
+        # Na cor da MOCHILA, não na do reforço: preto sobre um tronco escuro é
+        # invisível, e a alça no peito é a única parte do adereço que o card
+        # chega a mostrar.
+        #
+        # O `b` é generoso em −Z de propósito. O referencial nasce na COLUNA:
+        # parar na superfície teórica do peito deixa a alça enterrada no tronco,
+        # que é o mesmo defeito do número do corredor.
+        a = Vector((x, 0.34, 0.06))
+        b = Vector((x, -0.08, -0.26))
+        p.cilindro(
+            cor, 0.030, (b - a).length,
+            em=tuple((a + b) / 2), mira=tuple(b - a), segs=6, acab="tecido",
+        )
+
+
+def _bandeja_pipoca(p, caixa="#C8102E", listra="#F5F0E6", milho="#F0DFA8", **_):
+    p.caixa(caixa, (0.34, 0.22, 0.11), em=(0, -0.21, 0.10), acab="tecido")
+    for x in (-0.11, 0, 0.11):
+        p.caixa(listra, (0.055, 0.225, 0.112), em=(x, -0.21, 0.10), acab="tecido")
+    for i in range(11):
+        a = i * 2.399
+        p.esfera(
+            milho,
+            0.028,
+            em=(0.11 * math.cos(a), -0.21 + 0.055 * math.sin(a), 0.155 + 0.02 * ((i * 7) % 3)),
+            segs=8,
+            aneis=6,
+            acab="tecido",
+        )
+    for x in (0.13, -0.13):
+        p.caixa("#3B3F46", (0.025, 0.02, 0.42), em=(x, -0.14, 0.30), giro=(-16, 0, 0), acab="tecido")
+
+
+def _skate(p, deck="#2E9E8F", lixa="#1B1B1B", roda="#F0B429", eixo="#9AA3A8", **_):
+    """Prancha em pé, apoiada pelo rabo. Local: origem no chão, Y para cima."""
+    comp = 0.62
+    grade = [
+        [
+            (-0.085 + 0.17 * j / 3, comp * i / 7, 0.028 * math.sin(math.pi * (i / 7) ** 1.4))
+            for j in range(4)
+        ]
+        for i in range(8)
+    ]
+    p.superficie(deck, grade, espessura=0.016, acab="couro")
+    p.superficie(lixa, [[(x, y + 0.004, z) for x, y, z in linha] for linha in grade], espessura=0.004, acab="tecido")
+    for y, z in ((0.13, 0.021), (0.49, 0.021)):
+        p.cilindro(eixo, 0.012, 0.15, em=(0, y, z + 0.03), eixo="X", acab="metal")
+        for x in (0.075, -0.075):
+            p.cilindro(roda, 0.028, 0.022, em=(x, y, z + 0.03), eixo="X", acab="plastico")
+
+
+def _prancha_surfe(p, cor="#F5E6C8", faixa="#0E9AA7", quilha="#1B1B1B", **_):
+    alt = 1.05
+    linhas = []
+    for i in range(9):
+        t = i / 8
+        larg = 0.135 * math.sin(math.pi * min(1.0, 0.08 + t * 0.94)) ** 0.55
+        linhas.append([(-larg + 2 * larg * j / 4, alt * t, 0.0) for j in range(5)])
+    p.superficie(cor, linhas, espessura=0.045, acab="plastico")
+    p.superficie(
+        faixa,
+        [[(x * 0.28, y, z + 0.004) for x, y, z in linha] for linha in linhas],
+        espessura=0.006,
+        acab="plastico",
+    )
+    p.caixa(quilha, (0.014, 0.10, 0.07), em=(0, 0.09, -0.06), giro=(0, 0, 0), acab="plastico")
+
+
+def _vassoura(p, cabo="#8A5A2B", cerda="#C9A227", aro="#9AA3A8", **_):
+    # A origem fica junto do TOPO do cabo, não no meio dele: vassoura se pega em
+    # cima. Com a origem no meio, a mão segurava a altura das cerdas e um metro
+    # de cabo saía por cima da cabeça — que foi o que apareceu na primeira folha.
+    p.cilindro(cabo, 0.017, 0.92, em=(-0.25, 0, 0), eixo="X", acab="couro")
+    p.cilindro(aro, 0.024, 0.05, em=(-0.69, 0, 0), eixo="X", acab="metal")
+    for i in range(6):
+        p.caixa(cerda, (0.03, 0.20, 0.06), em=(-0.74 - 0.032 * i, 0, 0), acab="tecido")
+
+
+def _celular(p, cor="#1B1B1B", tela="#7FD8FF", **_):
+    p.caixa(cor, (0.075, 0.145, 0.014), acab="plastico")
+    p.caixa(tela, (0.062, 0.125, 0.016), em=(0, 0, 0.002), acab="plastico")
+
+
+def _cartao(p, cor="#C8102E", **_):
+    p.caixa(cor, (0.085, 0.12, 0.008), em=(0.10, 0.02, 0), acab="plastico")
+
+
+def _microfone(p, cor="#2B2F36", cabeca="#9AA3A8", marca="#C8102E", **_):
+    p.cilindro(cor, 0.022, 0.20, em=(0.06, 0, 0), eixo="X", acab="plastico")
+    p.esfera(cabeca, 0.045, em=(0.185, 0, 0), acab="metal")
+    p.caixa(marca, (0.05, 0.05, 0.05), em=(0.06, 0, 0.005), acab="plastico")
+
+
+def _raquete(p, aro="#D7F205", corda="#F2F2EF", cabo="#1B1B1B", **_):
+    # A cabeça é um anel no plano XY: ele CONTÉM o eixo do cabo (X), que é o que
+    # faz a raquete ficar em linha com a mão e não atravessada nela.
+    p.cilindro(cabo, 0.022, 0.17, em=(0.075, 0, 0), eixo="X", acab="couro")
+    for y in (0.055, -0.055):
+        p.cilindro(aro, 0.011, 0.14, em=(0.235, y * 0.6, 0), eixo="X", acab="plastico")
+    p.anel(aro, 0.145, 0.014, em=(0.40, 0, 0), escala=(1.0, 0.78, 1.0), segs=22, lados=6, acab="plastico")
+    for k in range(-3, 4):
+        p.caixa(corda, (0.27, 0.005, 0.004), em=(0.40, k * 0.030, 0), acab="tecido")
+        p.caixa(corda, (0.005, 0.21, 0.004), em=(0.40 + k * 0.036, 0, 0), acab="tecido")
+
+
+def _taco(p, madeira="#C9A227", ponta="#F2EFE6", coice="#1B1B1B", **_):
+    p.cilindro(madeira, 0.016, 1.30, raio2=0.009, em=(0.35, 0, 0), eixo="X", acab="couro")
+    p.cilindro(coice, 0.017, 0.24, em=(-0.19, 0, 0), eixo="X", acab="couro")
+    p.cilindro(ponta, 0.009, 0.02, em=(1.005, 0, 0), eixo="X", acab="plastico")
+
+
+def _halter(p, barra="#9AA3A8", disco="#1B1B1B", **_):
+    p.cilindro(barra, 0.018, 0.42, em=(0, 0, 0), eixo="X", acab="metal")
+    for x in (0.15, -0.15):
+        p.cilindro(disco, 0.095, 0.045, em=(x, 0, 0), eixo="X", acab="plastico")
+        p.cilindro(disco, 0.07, 0.075, em=(x, 0, 0), eixo="X", acab="plastico")
+
+
+def _luva_boxe(p, cor="#8E1B1B", punho="#EDEDED", **_):
+    p.esfera(cor, 0.115, em=(0, 0.02, 0), escala=(0.92, 1.05, 1.0), acab="couro")
+    p.esfera(cor, 0.062, em=(0.075, -0.02, 0.03), acab="couro")
+    p.cilindro(punho, 0.082, 0.075, em=(0, -0.12, 0), eixo="Y", acab="tecido")
+
+
+def _luva_goleiro(p, cor="#F0B429", palma="#1B1B1B", **_):
+    p.caixa(cor, (0.10, 0.16, 0.15), em=(0, 0.02, 0), acab="tecido")
+    p.caixa(palma, (0.102, 0.15, 0.03), em=(0, 0.02, -0.062), acab="couro")
+    p.caixa(cor, (0.075, 0.05, 0.155), em=(0.075, -0.02, 0), acab="tecido")
+    p.cilindro(palma, 0.08, 0.05, em=(0, -0.09, 0), eixo="Y", acab="tecido")
+
+
+def _peca_xadrez(p, cor="#D8D8D8", **_):
+    p.cilindro(cor, 0.065, 0.035, em=(0, 0.02, 0), eixo="Y", acab="plastico")
+    p.cilindro(cor, 0.042, 0.14, raio2=0.05, em=(0, 0.105, 0), eixo="Y", acab="plastico")
+    p.cilindro(cor, 0.062, 0.05, em=(0, 0.20, 0), eixo="Y", acab="plastico")
+    for i in range(4):
+        a = math.pi / 2 * i + math.pi / 4
+        p.caixa(cor, (0.03, 0.05, 0.03), em=(0.042 * math.cos(a), 0.235, 0.042 * math.sin(a)), acab="plastico")
+
+
+def _katana(p, lamina="#C9CED6", cabo="#14171C", guarda="#4A0F14", **_):
+    p.cilindro(cabo, 0.019, 0.26, em=(0.05, 0, 0), eixo="X", segs=8, acab="couro")
+    p.cilindro(guarda, 0.055, 0.014, em=(0.19, 0, 0), eixo="X", acab="metal")
+    # Fita plana no plano XZ que afina para a ponta; a espessura sai em Y. O
+    # fio da lâmina fica no plano da mão, que é como uma katana é empunhada.
+    grade = [
+        [
+            (0.20 + 0.72 * (i / 8), 0.0, (0.030 - 0.024 * (i / 8) ** 2.4) * (1 - 2 * j))
+            for j in range(2)
+        ]
+        for i in range(9)
+    ]
+    p.superficie(lamina, grade, espessura=0.012, acab="metal")
+
+
+def _cajado(p, cabo="#4A2F1C", orbe="#D4AF37", enfeite="#5B2D8E", **_):
+    # 1,45 e não 1,10: cajado é do chão até acima da cabeça. Curto, ele fica
+    # todo abaixo da linha do ombro e lê como bengala.
+    p.cilindro(cabo, 0.018, 1.45, em=(0.50, 0, 0), eixo="X", segs=10, acab="couro")
+    p.esfera(orbe, 0.068, em=(1.29, 0, 0), acab="metal")
+    p.anel(enfeite, 0.058, 0.013, em=(1.20, 0, 0), giro=(0, 90, 0), segs=16, lados=6, acab="metal")
+
+
+def _trofeu(p, ouro="#D4AF37", base="#2B2118", **_):
+    p.caixa(base, (0.13, 0.05, 0.13), em=(0, 0.025, 0), acab="couro")
+    p.cilindro(ouro, 0.03, 0.09, em=(0, 0.095, 0), eixo="Y", acab="metal")
+    p.cilindro(ouro, 0.085, 0.14, raio2=0.05, em=(0, 0.21, 0), eixo="Y", acab="metal")
+    for x in (0.105, -0.105):
+        p.anel(ouro, 0.048, 0.011, em=(x, 0.22, 0), giro=(90, 0, 0), segs=16, lados=6, acab="metal")
+
+
+def _fita(p, cor="#D6266B", bastao="#F0B429", **_):
+    """Fita de ginástica: uma hélice que abre, presa a um bastão na mão."""
+    p.cilindro(bastao, 0.011, 0.34, em=(0.16, 0, 0), eixo="X", acab="plastico")
+    linhas = []
+    for i in range(22):
+        t = i / 21
+        a = t * 5.6 * math.pi
+        r = 0.10 + 0.30 * t
+        centro = Vector((0.33 + 0.55 * t, math.sin(a) * r, math.cos(a) * r * 0.75))
+        largura = Vector((0.0, math.cos(a), -math.sin(a) * 0.75)).normalized() * 0.028
+        linhas.append([tuple(centro - largura), tuple(centro), tuple(centro + largura)])
+    p.superficie(cor, linhas, espessura=0.006, acab="tecido")
+
+
+ADERECOS = {
+    "apito": _apito,
+    "avental": _avental,
+    "bandeira": _bandeira,
+    "bandeja-pipoca": _bandeja_pipoca,
+    "boina": _boina,
+    "bola-futebol": _bola_futebol,
+    "bola-volei": _bola_volei,
+    "bone": _bone,
+    "cachecol": _cachecol,
+    "cajado": _cajado,
+    "capacete-domo": _capacete_domo,
+    "capacete-integral": _capacete_integral,
+    "cartao": _cartao,
+    "cauda": _cauda,
+    "celular": _celular,
+    "faixa-cabeca": _faixa_cabeca,
+    "fita": _fita,
+    "fone-ouvido": _fone_ouvido,
+    "halter": _halter,
+    "katana": _katana,
+    "luva-boxe": _luva_boxe,
+    "luva-goleiro": _luva_goleiro,
+    "microfone": _microfone,
+    "mochila-entrega": _mochila_entrega,
+    "numero-peito": _numero_peito,
+    "oculos-natacao": _oculos_natacao,
+    "orelhas-tigre": _orelhas_tigre,
+    "peca-xadrez": _peca_xadrez,
+    "prancha-surfe": _prancha_surfe,
+    "prancheta": _prancheta,
+    "quepe": _quepe,
+    "radinho": _radinho,
+    "raquete": _raquete,
+    "skate": _skate,
+    "taco": _taco,
+    "touca": _touca,
+    "trofeu": _trofeu,
+    "vassoura": _vassoura,
+}
+
+
+def quadros_de_pose(arm):
+    """Referenciais ortonormais em MUNDO, um por ponto de encaixe.
+
+    Roda ANTES de `congelar` — é a última janela em que a armadura existe — e
+    DEPOIS do chibi, para o adereço ser colocado onde a mão de fato ficou.
+    """
+
+    def eixo(M, i):
+        return M.col[i].to_3d().normalized()
+
+    def quadro(origem, x, y):
+        z = x.cross(y).normalized()
+        y = z.cross(x).normalized()
+        M = Matrix.Identity(4)
+        for i, v in enumerate((x.normalized(), y, z)):
+            M[0][i], M[1][i], M[2][i] = v.x, v.y, v.z
+        M.translation = origem
+        return M
+
+    pw = arm.matrix_world
+    ossos = arm.pose.bones
+    q = {}
+
+    for nome, chave in (("Head", "cabeca"), ("Chest", "peito"), ("Body", "quadril")):
+        b = ossos.get(nome)
+        if b:
+            M = pw @ b.matrix
+            q[chave] = quadro(pw @ b.head, eixo(M, 0), eixo(M, 1))
+
+    for lado in ("L", "R"):
+        pulso, dedo = ossos.get(f"Wrist.{lado}"), ossos.get(f"Middle1.{lado}")
+        if pulso and dedo:
+            M = pw @ pulso.matrix
+            x = eixo(M, 0)
+            q[f"mao.{lado}"] = quadro(
+                (pw @ pulso.head).lerp(pw @ dedo.tail, 0.55),
+                -x if lado == "R" else x,
+                eixo(M, 1),
+            )
+        pe = ossos.get(f"Foot.{lado}")
+        if pe:
+            ponta = (pw @ pe.tail) - (pw @ pe.head)
+            frente = Vector((ponta.x, ponta.y, 0.0))
+            if frente.length < 1e-4:
+                frente = Vector((0, -1, 0))
+            frente.normalize()
+            cima = Vector((0, 0, 1))
+            q[f"pe.{lado}"] = quadro(pw @ pe.head, cima.cross(frente), cima)
+
+    if "peito" in q:
+        # `costas` é o referencial do peito girado meia-volta em torno do eixo
+        # do tronco: uma peça desenhada "para a frente" (+Z) sai nas costas, sem
+        # a receita ter de inverter o sinal de nada.
+        q["costas"] = q["peito"] @ Matrix.Rotation(math.pi, 4, "Y")
+
+    if "pe.L" in q and "pe.R" in q:
+        meio = q["pe.L"].copy()
+        meio.translation = (q["pe.L"].translation + q["pe.R"].translation) / 2
+        q["pes"] = meio
+    return q
+
+
+def aprumar(quadro, frente):
+    """Mantém a origem do encaixe, mas põe a peça DE PÉ no mundo.
+
+    Metade dos adereços de mão (troféu, peça de xadrez, halter, bandeja) tem um
+    "em cima" absoluto, e o referencial da mão não tem: com o braço caído os
+    dedos apontam para o chão, e um troféu preso a esse referencial fica de
+    cabeça para baixo. Aqui o eixo vertical passa a ser o do mundo e o +Z passa
+    a ser a frente do CORPO — o objeto acompanha para onde o personagem olha,
+    não para onde o punho girou.
+    """
+    horizontal = Vector((frente.x, frente.y, 0.0))
+    if horizontal.length < 1e-4:
+        horizontal = Vector((0, -1, 0))
+    horizontal.normalize()
+    cima = Vector((0, 0, 1))
+    x = cima.cross(horizontal)
+    M = Matrix.Identity(4)
+    for i, v in enumerate((x, cima, horizontal)):
+        M[0][i], M[1][i], M[2][i] = v.x, v.y, v.z
+    M.translation = quadro.translation
+    return M
+
+
+def coroar(quadro):
+    """Sobe o referencial da cabeça do osso até o ALTO DO CRÂNIO.
+
+    O osso `Head` começa na base do pescoço, e um chapéu colocado ali fica na
+    altura do queixo. Onde o crânio termina depende do personagem (moicano,
+    capacete do Swat, coque) e do chibi, então é medido na malha, não estimado:
+    o ponto mais alto ao longo do eixo da cabeça, dentro de um cilindro estreito
+    em volta dele — largo demais e o ombro levantado do `Wave` vira o "alto da
+    cabeça".
+
+    Tem de rodar DEPOIS de `congelar` (a malha só está na pose final quando o
+    modificador de armadura foi aplicado) e ANTES de `refinar`, enquanto ela
+    ainda tem 6 mil vértices e não 35 mil.
+    """
+    origem = quadro.translation
+    cima = quadro.col[1].to_3d().normalized()
+    alto = 0.0
+    for obj in malhas():
+        mw = obj.matrix_world
+        for v in obj.data.vertices:
+            d = (mw @ v.co) - origem
+            proj = d.dot(cima)
+            # O cilindro é estreito de propósito: largo demais e o ombro
+            # levantado do `Wave` vira o "alto da cabeça".
+            if proj > 0 and (d - cima * proj).length < 0.22:
+                alto = max(alto, proj)
+    novo = quadro.copy()
+    novo.translation = origem + cima * alto
+    return novo
+
+
+def aplicar_aderecos(avatar_id, receita, quadros):
+    pedidos = receita.get("aderecos", [])
+    if not pedidos:
+        return 0
+    if "cabeca" in quadros:
+        quadros["cabeca"] = coroar(quadros["cabeca"])
+    corpo = quadros.get("peito") or quadros.get("quadril")
+    frente = corpo.col[2].to_3d() if corpo else Vector((0, -1, 0))
+
+    for n, item in enumerate(pedidos):
+        nome = item["peca"]
+        desenhar = ADERECOS.get(nome)
+        if not desenhar:
+            raise SystemExit(
+                f"{avatar_id}: adereço '{nome}' não existe. "
+                f"Há: {', '.join(sorted(ADERECOS))}"
+            )
+        onde = item.get("onde", "mao.R")
+        quadro = quadros.get(onde)
+        if quadro is None:
+            raise SystemExit(f"{avatar_id}: não há encaixe '{onde}' nesta armadura")
+
+        peca = Peca(f"Ad_{nome.replace('-', '_')}_{n}")
+        cores = {
+            k: v
+            for k, v in item.items()
+            if k not in ("peca", "onde", "pos", "giro", "escala", "aprumar")
+        }
+        desenhar(peca, **cores)
+
+        if item.get("aprumar"):
+            quadro = aprumar(quadro, frente)
+        base = (
+            quadro
+            @ Matrix.Translation(Vector(item.get("pos", (0, 0, 0))))
+            @ _giro(item.get("giro", (0, 0, 0)))
+            @ Matrix.Scale(item.get("escala", 1.0), 4)
+        )
+        for obj in peca.objetos():
+            obj.matrix_world = base
+    return len(pedidos)
 
 
 # ----------------------------------------------------------------- CHIBI
@@ -1234,6 +2291,23 @@ def mostrar_ao(obj, atributo="Color"):
         nt.links.new(saida, base)
 
 
+def caixa_mundo(objs):
+    """Caixa envolvente em MUNDO, medida vértice a vértice.
+
+    Não por `obj.bound_box`: ele é cache e só é reavaliado quando o objeto é
+    tocado de novo. Logo depois de `juntar()` ele ainda descreve a malha que o
+    objeto tinha ANTES da fusão — uma peça de roupa qualquer — e foi assim que o
+    boneco passou a sair 18 cm acima do chão quando os adereços entraram, sem
+    ninguém ter errado uma conta.
+    """
+    pontos = [o.matrix_world @ v.co for o in objs for v in o.data.vertices]
+    eixos = [[p[i] for p in pontos] for i in range(3)]
+    return (
+        Vector(tuple(min(e) for e in eixos)),
+        Vector(tuple(max(e) for e in eixos)),
+    )
+
+
 def assentar():
     """Pés em y=0 e centrado em x/z.
 
@@ -1243,25 +2317,22 @@ def assentar():
     ms = malhas()
     if not ms:
         return
-    obj = ms[0]
-    mundo = [obj.matrix_world @ Vector(c) for c in obj.bound_box]
-    minimo = Vector(
-        (
-            min(v.x for v in mundo),
-            min(v.y for v in mundo),
-            min(v.z for v in mundo),
-        )
-    )
-    maximo = Vector(
-        (
-            max(v.x for v in mundo),
-            max(v.y for v in mundo),
-            max(v.z for v in mundo),
-        )
-    )
+    minimo, maximo = caixa_mundo(ms)
     centro = (minimo + maximo) / 2
     # Z é a altura no Blender; X/Y são o plano do chão.
-    obj.location -= Vector((centro.x, centro.y, minimo.z))
+    for obj in ms:
+        obj.location -= Vector((centro.x, centro.y, minimo.z))
+
+    # E aí ASSA a transformação na malha. Sem isto o assentamento vive no nó do
+    # `.glb`, e quem reposiciona o objeto depois — a folha de miniaturas faz
+    # exatamente isso, `obj.location = (célula)` — apaga o assentamento junto e
+    # cada personagem volta a flutuar de um jeito diferente. Era a origem da
+    # grade em escada: as colunas certas, as alturas cada uma para um lado.
+    bpy.ops.object.select_all(action="DESELECT")
+    for obj in ms:
+        obj.select_set(True)
+    bpy.context.view_layer.objects.active = ms[0]
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
 
 # ---------------------------------------------------------------- MONTAGEM
@@ -1296,13 +2367,13 @@ def conferir_altura(avatar_id):
     ms = malhas()
     if not ms:
         raise SystemExit(f"{avatar_id}: nada para medir")
-    zs = [(o.matrix_world @ Vector(c)).z for o in ms for c in o.bound_box]
-    alto = max(zs) - min(zs)
+    minimo, maximo = caixa_mundo(ms)
+    alto = maximo.z - minimo.z
     if not ALTURA_MIN <= alto <= ALTURA_MAX:
         raise SystemExit(
-            f"{avatar_id}: {alto:.3f}m fora da faixa "
-            f"[{ALTURA_MIN}, {ALTURA_MAX}] (régua {ALTURA_BASE}m). "
-            "Pose extrema demais, peça em escala errada ou malha não assentada."
+            f"{avatar_id}: {alto:.3f}m (de {minimo.z:.3f} a {maximo.z:.3f}) fora da "
+            f"faixa [{ALTURA_MIN}, {ALTURA_MAX}] (régua {ALTURA_BASE}m). "
+            "Pose extrema demais, adereço grande demais ou malha não assentada."
         )
     return alto
 
@@ -1344,7 +2415,23 @@ def montar(avatar_id, receita, destino=None):
             flush=True,
         )
 
+    # Medido com a armadura ainda viva; usado depois que ela já foi embora.
+    quadros = quadros_de_pose(arm)
     congelar(arm)
+    # ZAFE_ENCAIXES=1 imprime onde cada ponto de encaixe caiu nesta pose. É por
+    # aqui que se descobre um `pos` errado sem abrir o Blender.
+    if os.environ.get("ZAFE_ENCAIXES"):
+        print(
+            f"  [encaixe] {avatar_id} coroa {coroar(quadros['cabeca']).translation.z:.3f} "
+            + " ".join(
+                f"{k}({quadros[k].translation.x:.2f},{quadros[k].translation.y:.2f},"
+                f"{quadros[k].translation.z:.2f})"
+                for k in sorted(quadros)
+            ),
+            flush=True,
+        )
+    aplicar_aderecos(avatar_id, receita, quadros)
+
     refinar()
     juntar()
     assar_ao(malhas()[0])
@@ -1694,7 +2781,11 @@ def main():
     argv = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else []
 
     if "--folha" in argv:
-        folha_contato(list(RECEITAS))
+        # Com ids depois da flag, rende só eles — e maiores, porque a folha do
+        # elenco inteiro é boa para comparar silhuetas e péssima para conferir
+        # se um adereço ficou no lugar.
+        escolhidos = [a for a in argv if a in RECEITAS]
+        folha_contato(escolhidos or list(RECEITAS), largura=min(4, len(escolhidos) or 5))
         return
 
     # --poses <avatar_id> <Animacao> <q1,q2,...>
