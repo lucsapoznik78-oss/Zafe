@@ -28,6 +28,7 @@
 # diferença entre 2,3 MB e 780 KB por personagem — vezes trinta, entre 70 MB e
 # 23 MB de assets no repositório.
 
+import collections
 import json
 import math
 import os
@@ -85,10 +86,16 @@ def hex_rgba(h):
 
 # --------------------------------------------------------------- RECEITAS
 #
-# base    — (sexo, personagem) de onde vem o corpo inteiro
-# pecas   — troca por peça: "Head" | "Body" | "Legs" | "Feet" -> (sexo, personagem)
-# cores   — nome do material dentro do pack -> hex
-# pose    — nome da animação do próprio pack; o frame é onde ela congela
+# base       — (sexo, personagem) de onde vem o corpo inteiro
+# pecas      — troca por peça: "Head" | "Body" | "Legs" | "Feet" -> (sexo, personagem)
+# cores      — nome do material dentro do pack -> hex
+# acabamento — material -> preset de `MATERIAL_PRESETS`, só onde o padrão erra
+# pose       — nome da animação do próprio pack; o frame é onde ela congela
+#
+# Regra de cor, e ela é dura: UMA dominante dessaturada mais UMA de acento
+# saturada. Duas saturadas competindo lêem como fantasia de festa, e três cores
+# iguais em peças vizinhas apagam a silhueta — foi o que aconteceu com o tenista
+# todo branco.
 
 # Bases disponíveis (nome do `.gltf` em Individual Characters):
 #   h: Adventurer Beach Casual_2 Casual_Hoodie Farmer King Punk Spacesuit
@@ -261,11 +268,16 @@ RECEITAS = {
         # 14 o golpe já desceu e os dois braços voltaram para junto do tronco,
         # que é o mesmo contorno de alguém parado.
         "pose": ("Sword_Slash", 8),
+        # Camisa, tênis e sola eram os três #FFFFFF, e o resultado era um borrão
+        # branco do ombro ao chão com o calção de acento sozinho lá no meio. Duas
+        # correções: branco quebrado em vez de puro (o #FFFFFF estoura no ACES e
+        # perde a forma da dobra) e a MESMA lima do calção na sola, que devolve o
+        # pé ao contorno sem inventar uma segunda cor saturada.
         "cores": {
             "Skin": PELE[0],
-            "Red_Dark": "#FFFFFF",
-            "LightBrown": "#FFFFFF",
-            "White": "#FFFFFF",
+            "Red_Dark": "#F5F5F2",
+            "LightBrown": "#F2F2EF",
+            "White": "#D7F205",
             "LightBlue": "#D7F205",
             "Hair": CABELO[2],
         },
@@ -394,6 +406,9 @@ RECEITAS = {
             "SciFi_Light": "#F2F2F2",
             "SciFi_Light_Accent": "#F0B429",
         },
+        # Macacão de piloto é tecido técnico, não camiseta: com a rugosidade de
+        # pano ele lê como pijama vermelho.
+        "acabamento": {"SciFi_Main": "couro", "SciFi_MainDark": "couro"},
     },
     "av-xadrezista-sombrio": {
         "base": ("h", "Suit"),
@@ -449,6 +464,10 @@ RECEITAS = {
             "Grey": "#4A0F14",
             "Black": "#0A0C10",
         },
+        # Preto sobre preto sobre preto: sem um acabamento que reflita, a
+        # silhueta inteira vira um recorte chapado e as peças somem umas nas
+        # outras. O couro é o que separa colete de manga aqui.
+        "acabamento": {"Swat": "couro", "Swat_Black": "couro"},
     },
     "av-bruxa-sorte": {
         "base": ("m", "Witch"),
@@ -461,7 +480,8 @@ RECEITAS = {
         "cores": {
             "SciFi_Main": "#E8EAF0",
             "SciFi_MainDark": "#B9BFCC",
-            "SciFi_Light": "#FFFFFF",
+            # Não #FFFFFF: no ACES o branco puro satura e o traje perde a dobra.
+            "SciFi_Light": "#F7F8FB",
             "SciFi_Light_Accent": "#D4AF37",
         },
     },
@@ -606,6 +626,114 @@ def pintar(cores):
                 for no in mat.node_tree.nodes:
                     if no.type == "BSDF_PRINCIPLED":
                         no.inputs["Base Color"].default_value = rgba
+
+
+# ----------------------------------------------------- ACABAMENTO DE MATERIAL
+#
+# O pack exporta os onze materiais do personagem com a MESMA rugosidade. Cor
+# chapada já é pouca informação; quando pele, jeans e tênis também refletem
+# igual, o olho conclui que tudo ali é feito da mesma peça de plástico — que é
+# metade da sensação de brinquedo barato. Rugosidade por peça é a diferença
+# entre "boneco pintado" e "figura de jogo", e não custa um byte de textura.
+#
+# SOBREVIVE À FUSÃO DOS MATERIAIS
+#
+# `comprimir-avatares.mjs` funde os onze materiais num só para o personagem
+# custar UMA chamada de desenho. Isso não conflita com variar rugosidade: o
+# `palette` do gltf-transform assa metálico e rugosidade num atlas próprio,
+# amostrado em NEAREST, exatamente como faz com a cor base — desde que existam
+# pelo menos cinco pares (metálico, rugosidade) distintos no arquivo. Abaixo
+# disso ele desiste do atlas, e aí a rugosidade volta a ser propriedade de
+# material: os materiais deixam de ser iguais, não fundem, e o personagem passa
+# a custar uma chamada por acabamento. É o único preço a vigiar aqui.
+#
+# `envMapIntensity` DO DOCUMENTO NÃO ENTRA
+#
+# Não é propriedade de glTF, é de material do three, e depois da fusão existe um
+# material só — não há onde variar por peça. O valor equivalente já existe e é
+# de cena: `environmentIntensity` em `components/figura3d/luzes.tsx`.
+
+# (rugosidade, metálico)
+MATERIAL_PRESETS = {
+    "pele": (0.72, 0.0),
+    "cabelo": (0.62, 0.0),
+    "tecido": (0.88, 0.0),
+    "jeans": (0.92, 0.0),
+    "couro": (0.52, 0.0),
+    "calcado": (0.48, 0.0),
+    "plastico": (0.35, 0.0),
+    "metal": (0.28, 0.9),
+}
+
+# Os materiais do pack têm nome de COR (`Black`, `White`, `Red_Dark`), não de
+# peça, então o nome só decide onde ele é inequívoco.
+ACABAMENTO_POR_NOME = {
+    "Skin": "pele",
+    "Skin_Darker": "pele",
+    "Hair": "cabelo",
+    "Hair_Black": "cabelo",
+    "Hair_Blond": "cabelo",
+    "Hair_Brown": "cabelo",
+    "Hair_White": "cabelo",
+    "Eyebrows": "cabelo",
+    "Moustache": "cabelo",
+    "Eye": "plastico",
+    "Visor": "plastico",
+    "SciFi_Light": "plastico",
+    "SciFi_Light_Accent": "plastico",
+    "Metal": "metal",
+    "Metal_Dark": "metal",
+    "Gold": "metal",
+    "Earrings": "metal",
+}
+
+# O resto decide pela peça em que o material vive, que é o que o nome não conta:
+# um `Black` no `_Feet` é sola, o mesmo `Black` no `_Body` é jaqueta.
+ACABAMENTO_POR_PARTE = {
+    "Head": "tecido",
+    "Body": "tecido",
+    "Legs": "jeans",
+    "Feet": "calcado",
+}
+
+
+def peca_dominante():
+    """material -> peça em que ele cobre mais faces.
+
+    Um material pode aparecer em duas peças (`Skin` está no rosto e nas mãos), e
+    depois da fusão ele terá um acabamento só. Escolher pela maior área é o
+    default que erra menos: o acabamento certo cobre a superfície que se vê.
+    """
+    contagem = collections.defaultdict(collections.Counter)
+    for obj in malhas():
+        peca = obj.name.split(".")[0].rpartition("_")[2]
+        for poly in obj.data.polygons:
+            slot = obj.material_slots[poly.material_index]
+            if slot.material:
+                contagem[slot.material.name][peca] += 1
+    return {nome: c.most_common(1)[0][0] for nome, c in contagem.items()}
+
+
+def acabar(overrides):
+    pecas = peca_dominante()
+    for mat in bpy.data.materials:
+        base = nome_base_material(mat.name)
+        preset = (
+            overrides.get(base)
+            or ACABAMENTO_POR_NOME.get(base)
+            or ACABAMENTO_POR_PARTE.get(pecas.get(mat.name), "tecido")
+        )
+        rugosidade, metalico = MATERIAL_PRESETS[preset]
+        # A dupla de baixo é o que o viewport sólido mostra; o exportador lê o
+        # Principled. Escrever nos dois evita que a folha da loja e o app
+        # discordem sobre o brilho da mesma peça.
+        mat.roughness = rugosidade
+        mat.metallic = metalico
+        if mat.use_nodes:
+            for no in mat.node_tree.nodes:
+                if no.type == "BSDF_PRINCIPLED":
+                    no.inputs["Roughness"].default_value = rugosidade
+                    no.inputs["Metallic"].default_value = metalico
 
 
 # ----------------------------------------------------------------- CHIBI
@@ -1196,6 +1324,9 @@ def montar(avatar_id, receita, destino=None):
         trocar_peca(arm, origem[0], origem[1], peca)
 
     pintar(receita.get("cores", {}))
+    # Antes de `juntar()`: o acabamento é decidido pela peça, e depois da fusão
+    # não existe mais peça, existe uma malha só.
+    acabar(receita.get("acabamento", {}))
 
     pose = receita.get("pose")
     if pose:

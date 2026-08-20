@@ -71,6 +71,14 @@ for (const nome of arquivos) {
       // `palette`, e mandar o KTX2 nele custa minutos e devolve bytes a mais.
       "--texture-compress",
       "false",
+      // O `palette` só assa um canal em atlas se achar 5 valores distintos
+      // dele. As cores passam fácil; os acabamentos de `MATERIAL_PRESETS` não —
+      // o ninja usa três rugosidades, o astronauta três. Abaixo do mínimo o
+      // canal volta a ser propriedade de material, os materiais deixam de ser
+      // iguais e o `join` não funde: o ninja saía com 4 chamadas de desenho e
+      // 148 KB em vez de 1 e 136 KB. Com 2, todo personagem volta a UMA.
+      "--palette-min",
+      "2",
     ],
     { cwd: RAIZ, stdio: ["ignore", "ignore", "pipe"] },
   );
