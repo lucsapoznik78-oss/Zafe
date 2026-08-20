@@ -15,7 +15,16 @@ const csp = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  "connect-src 'self' https://mhckuhqyyfoapzgrqeco.supabase.co wss://mhckuhqyyfoapzgrqeco.supabase.co https://va.vercel-scripts.com",
+  // `blob:` aqui NÃO é para rede: é a textura do cast.
+  //
+  // O `.glb` traz a paleta de cores como PNG embutido. O GLTFLoader tira esse
+  // PNG do buffer, embrulha em `URL.createObjectURL` e o entrega ao
+  // `ImageBitmapLoader` — que carrega por `fetch`, e portanto cai em
+  // `connect-src`, não em `img-src`. Sem `blob:` aqui, o fetch morre bloqueado,
+  // a textura fica vazia e o personagem renderiza BRANCO em produção,
+  // silenciosamente (o modelo aparece, com forma e sombra; só a cor some).
+  // `img-src` e `worker-src` já traziam `blob:`, o que mascarava a falta.
+  "connect-src 'self' blob: https://mhckuhqyyfoapzgrqeco.supabase.co wss://mhckuhqyyfoapzgrqeco.supabase.co https://va.vercel-scripts.com",
   "worker-src 'self' blob:",
   "frame-ancestors 'none'",
   "base-uri 'self'",
