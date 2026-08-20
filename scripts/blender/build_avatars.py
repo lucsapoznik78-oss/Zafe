@@ -35,6 +35,7 @@ import re
 import sys
 import tempfile
 
+import addon_utils
 import bmesh
 import bpy
 from mathutils import Matrix, Vector
@@ -987,6 +988,124 @@ def juntar():
     bpy.ops.object.join()
 
 
+# ------------------------------------------------------- OCLUSÃO DE AMBIENTE
+#
+# O contorno do personagem já está resolvido pela luz do palco; o que falta é o
+# INTERIOR. Numa figura de cor chapada, axila, virilha, queixo sobre o pescoço e
+# a dobra do cotovelo recebem exatamente a mesma luz que a barriga, e a peça
+# inteira lê como um adesivo. Oclusão de ambiente é a única informação que
+# nenhuma luz de cena consegue dar: quanto do céu cada ponto enxerga.
+#
+# POR QUE EM COR DE VÉRTICE, E NÃO NUMA TEXTURA
+#
+# O cast não tem UV utilizável — as peças vêm de packs diferentes, com ilhas que
+# se sobrepõem, e desdobrar trinta personagens não é opção. Cor de vértice não
+# precisa de UV nenhum: mora na malha, sobrevive ao `join` e ao `simplify` do
+# gltf-transform, e o glTF a carrega em COLOR_0, que o three multiplica pela cor
+# base sozinho — nenhuma linha de runtime.
+#
+# A densidade da subdivisão é o que torna isso viável: 35 mil triângulos dão
+# resolução de sombreado suficiente. No modelo cru, de 5.872, o mesmo bake sairia
+# em manchas. É a razão de este passo vir DEPOIS de `refinar`.
+#
+# O RAIO É PEQUENO DE PROPÓSITO
+#
+# O padrão do Blender é 10 metros, o que num boneco de 1,4 m significa que o
+# tronco inteiro se auto-ocluí e o personagem sai cinza. Com 12 cm o efeito fica
+# onde deve ficar: onde duas superfícies quase se tocam.
+AO_DISTANCIA = 0.35
+AO_AMOSTRAS = 64
+# Quanto do escuro entra. 1,0 é o AO cru, que em cor chapada lê como sujeira.
+AO_FORCA = 0.55
+
+
+def assar_ao(obj):
+    """Assa AO na cor de vértice do objeto já unido."""
+    me = obj.data
+    for antiga in list(me.color_attributes):
+        me.color_attributes.remove(antiga)
+    # CORNER + BYTE_COLOR é o que o exportador glTF sabe levar para COLOR_0.
+    me.color_attributes.new(name="AO", type="BYTE_COLOR", domain="CORNER")
+    me.color_attributes.active_color_index = 0
+
+    cena = bpy.context.scene
+    # O Cycles vem desligado no `--factory-startup` que `cena_vazia` usa, e sem
+    # ele `object.bake` não existe: o operador é do Cycles, não do EEVEE.
+    addon_utils.enable("cycles", default_set=False, persistent=False)
+    motor_antes = cena.render.engine
+    cena.render.engine = "CYCLES"
+    cena.cycles.samples = AO_AMOSTRAS
+    cena.cycles.use_denoising = False
+    # `cena_vazia` não cria mundo, e AO é literalmente "quanto do céu este ponto
+    # enxerga": sem mundo não há céu, e o operador estoura em `light_settings`.
+    if cena.world is None:
+        cena.world = bpy.data.worlds.new("ao")
+    cena.world.light_settings.distance = AO_DISTANCIA
+    cena.render.bake.target = "VERTEX_COLORS"
+
+    bpy.ops.object.select_all(action="DESELECT")
+    obj.select_set(True)
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.object.bake(type="AO")
+
+    cena.render.engine = motor_antes
+
+    # O bake escreve o AO cru. Puxar para 1,0 pela força evita o personagem
+    # encardido — o AO aqui é realce de dobra, não iluminação.
+    dados = me.color_attributes[0].data
+    for c in dados:
+        v = c.color
+        k = 1.0 - AO_FORCA + AO_FORCA * v[0]
+        c.color = (k, k, k, 1.0)
+    me.update()
+
+
+def mostrar_ao(obj, atributo="Color"):
+    """Faz o material do Blender multiplicar a cor base pela AO de vértice.
+
+    No app isto é de graça: o glTF entrega a AO em COLOR_0 e o three multiplica
+    sozinho, sem uma linha de runtime. Dentro do Blender, não — cor de vértice
+    só aparece se algum nó a ler, e o material importado não lê.
+
+    Sem esta função a folha de miniaturas sairia SEM a AO que o editor mostra, e
+    o card passaria a vender um personagem mais chapado do que o que o usuário
+    recebe. É o mesmo argumento de `luzes.tsx`: a miniatura é a propaganda do
+    editor, e as duas divergirem por descuido é o defeito a evitar.
+
+    O nome do atributo é `Color`, e não `AO`: o exportador glTF renomeia ao
+    gravar em COLOR_0, e é do arquivo exportado que a folha lê.
+    """
+    for slot in obj.material_slots:
+        mat = slot.material
+        if not mat or not mat.use_nodes:
+            continue
+        nt = mat.node_tree
+        bsdf = next((n for n in nt.nodes if n.type == "BSDF_PRINCIPLED"), None)
+        if not bsdf:
+            continue
+        base = bsdf.inputs["Base Color"]
+
+        vc = nt.nodes.new("ShaderNodeVertexColor")
+        vc.layer_name = atributo
+        mix = nt.nodes.new("ShaderNodeMix")
+        mix.data_type = "RGBA"
+        mix.blend_type = "MULTIPLY"
+        mix.inputs[0].default_value = 1.0
+
+        # O nó Mix tem entradas homônimas para float, vetor e cor; procurar por
+        # nome devolve a errada. Casar nome E tipo é o que acerta a de cor.
+        a = next(s for s in mix.inputs if s.name == "A" and s.type == "RGBA")
+        b = next(s for s in mix.inputs if s.name == "B" and s.type == "RGBA")
+        saida = next(s for s in mix.outputs if s.type == "RGBA")
+
+        if base.is_linked:
+            nt.links.new(base.links[0].from_socket, a)
+        else:
+            a.default_value = base.default_value
+        nt.links.new(vc.outputs["Color"], b)
+        nt.links.new(saida, base)
+
+
 def assentar():
     """Pés em y=0 e centrado em x/z.
 
@@ -1097,6 +1216,7 @@ def montar(avatar_id, receita, destino=None):
     congelar(arm)
     refinar()
     juntar()
+    assar_ao(malhas()[0])
     assentar()
     alto = conferir_altura(avatar_id)
 
@@ -1113,6 +1233,10 @@ def montar(avatar_id, receita, destino=None):
         export_animations=False,
         export_skins=False,
         export_yup=True,
+        # O padrão (`MATERIAL`) só exporta cor de vértice que algum nó do
+        # material leia. O AO de `assar_ao` não passa por nó nenhum — ele existe
+        # para o three multiplicar na cor base — então tem de ser `ACTIVE`.
+        export_vertex_color="ACTIVE",
     )
     kb = round(os.path.getsize(destino) / 1024)
     verts = sum(len(o.data.vertices) for o in malhas())
@@ -1321,6 +1445,7 @@ def folha_miniaturas(ids):
         # Rei (que existe justamente para ele ser o mais alto) e inflaria quem
         # está numa pose fechada, porque medir a caixa é medir a pose.
         obj.scale = (OCUPACAO_MINI / ALTURA_BASE,) * 3
+        mostrar_ao(obj)
 
         col, lin = n % COLUNAS_MINI, n // COLUNAS_MINI
         # Alinhados pelos PÉS, não centralizados: os trinta pisam na mesma linha
