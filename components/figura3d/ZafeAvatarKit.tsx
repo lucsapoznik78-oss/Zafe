@@ -7,9 +7,11 @@
 //
 // - `poster` é o PNG 1024px do 2d/: aparece instantâneo enquanto o .glb baixa.
 // - `loading=lazy` garante que a listagem não puxa 5 × ~9MB de uma vez.
-// - Script do model-viewer é injetado UMA vez por página (guard em módulo).
+// - Import LOCAL do @google/model-viewer (via next/dynamic com ssr:false) em
+//   vez de <script src=unpkg…>. Assim o CSP de produção — script-src 'self'
+//   + va.vercel-scripts.com — não precisa liberar terceiro nenhum.
 
-import { useEffect } from "react";
+import dynamic from "next/dynamic";
 import { avatarKitPorId, type AvatarKit } from "@/lib/figura/avatares-kit";
 
 // O <model-viewer> é web component; declaramos pra TSX não reclamar do JSX.
@@ -24,17 +26,18 @@ declare global {
   }
 }
 
-let scriptCarregado = false;
-function carregarModelViewer() {
-  if (scriptCarregado || typeof document === "undefined") return;
-  scriptCarregado = true;
-  if (document.querySelector("script[data-model-viewer]")) return;
-  const s = document.createElement("script");
-  s.type = "module";
-  s.src = "https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js";
-  s.dataset.modelViewer = "1";
-  document.head.appendChild(s);
-}
+// O pacote só registra o custom element no `customElements` do browser — não
+// exporta componente React. Basta importar uma vez no cliente e usar a tag.
+// ssr:false porque `window` é obrigatório na registração.
+const ModelViewerRegistrar = dynamic(
+  () =>
+    import("@google/model-viewer").then(() => {
+      const Noop = () => null;
+      Noop.displayName = "ModelViewerRegistrar";
+      return Noop;
+    }),
+  { ssr: false },
+);
 
 type Props = {
   personagem: AvatarKit["id"];
@@ -50,23 +53,25 @@ export default function ZafeAvatarKit({
   girar = true,
   className,
 }: Props) {
-  useEffect(carregarModelViewer, []);
   const a = avatarKitPorId(personagem);
   if (!a) return null;
 
   return (
-    <model-viewer
-      src={a.glb}
-      poster={a.poster}
-      alt={a.nome}
-      camera-controls
-      {...(girar ? { "auto-rotate": true, "rotation-per-second": "20deg" } : {})}
-      loading="lazy"
-      reveal="auto"
-      shadow-intensity="1"
-      exposure="1.1"
-      className={className}
-      style={{ width: tamanho, height: Math.round(tamanho * 1.3) }}
-    />
+    <>
+      <ModelViewerRegistrar />
+      <model-viewer
+        src={a.glb}
+        poster={a.poster}
+        alt={a.nome}
+        camera-controls
+        {...(girar ? { "auto-rotate": true, "rotation-per-second": "20deg" } : {})}
+        loading="lazy"
+        reveal="auto"
+        shadow-intensity="1"
+        exposure="1.1"
+        className={className}
+        style={{ width: tamanho, height: Math.round(tamanho * 1.3) }}
+      />
+    </>
   );
 }

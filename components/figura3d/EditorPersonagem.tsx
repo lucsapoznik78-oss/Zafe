@@ -73,6 +73,10 @@ import {
   precoAvatar,
   type AvatarCatalogo,
 } from "@/lib/figura/avatares";
+// Kit oficial (Enrico, 21/08/2026) — 5 personagens pré-cozidos em .glb, em
+// paralelo ao cast procedural. Preview aparece no topo do AbaCast; renderização
+// 3D vivid mora em /perfil/personagem/kit até o canvas principal suportar .glb.
+import { AVATARES_KIT } from "@/lib/figura/avatares-kit";
 import {
   ITENS_POR_SLOT,
   POR_ID,
@@ -856,6 +860,44 @@ function AbaCast({
         Personagens prontos. Clicar em um veste no canvas de graça — o boneco que
         você montou continua guardado e volta quando você tirar o avatar.
       </p>
+
+      {/* Nova safra (kit oficial) — cards com poster PNG (não 5 <model-viewer>
+          simultâneos: matam contexto WebGL do canvas do editor). Ver em 3D vivo
+          leva pra /perfil/personagem/kit, isolado. */}
+      <Secao titulo="Nova safra · 3D">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {AVATARES_KIT.map((a) => (
+            <Link
+              key={a.id}
+              href="/perfil/personagem/kit"
+              className="flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary"
+            >
+              <span className="relative flex aspect-[3/4] w-full items-center justify-center bg-[#0F1012]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={a.poster}
+                  alt={a.nome}
+                  loading="lazy"
+                  className="h-full w-full object-contain"
+                />
+                <span className="absolute right-1 top-1 rounded-full bg-primary/90 px-1.5 py-0.5 text-[9px] font-bold uppercase text-primary-foreground">
+                  3D
+                </span>
+              </span>
+              <span className="block px-2 pt-1.5">
+                <span className="line-clamp-2 text-xs font-semibold leading-snug">{a.nome}</span>
+                <span className="mt-0.5 line-clamp-2 block text-[10px] leading-snug text-muted-foreground">
+                  {a.vibe}
+                </span>
+              </span>
+              <span className="mt-auto p-2 pt-1.5 text-center text-[10px] text-muted-foreground">
+                Ver em 3D →
+              </span>
+            </Link>
+          ))}
+        </div>
+      </Secao>
+
       {AVATARES_POR_RARIDADE.map(([raridade, lista]) => (
         <Secao key={raridade} titulo={NOME_RARIDADE[raridade]}>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
