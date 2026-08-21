@@ -95,7 +95,7 @@ export default function PerfilTabs({ profile, wallet, bets, referrals, appUrl, t
           escada de ranks à direita). No mobile empilha. */}
       <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-3">
         <FiguraSection
-          url={profile?.figura_retrato_url ?? null}
+          url={profile?.figura_url ?? null}
           nome={profile?.full_name ?? profile?.username ?? null}
           desbloqueada={profile?.figura_desbloqueada ?? false}
         />

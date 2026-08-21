@@ -8,8 +8,6 @@
 import Link from "next/link";
 import { Pencil, Sparkles } from "lucide-react";
 
-import FiguraAvatar from "./FiguraAvatar";
-
 export default function FiguraSection({
   url,
   nome,
@@ -23,8 +21,19 @@ export default function FiguraSection({
     <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card p-4">
       {url ? (
         <>
+          {/* Container 2:3 (mesma proporção do PNG de corpo inteiro, 512x768):
+              o personagem ocupa todo o quadro sem sobra lateral. Bem maior que o
+              retrato antigo de 140px — o boneco 3D é uma peça de identidade e no
+              perfil é o principal ativo visual. */}
           <div className="rounded-2xl bg-background/40 p-2">
-            <FiguraAvatar url={url} nome={nome} size={140} />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={url}
+              alt={nome ? `Personagem de ${nome}` : "Personagem"}
+              loading="lazy"
+              decoding="async"
+              className="h-[360px] w-[240px] object-contain"
+            />
           </div>
           <Link
             href="/perfil/personagem"
@@ -35,8 +44,8 @@ export default function FiguraSection({
         </>
       ) : (
         <>
-          <div className="flex size-[140px] items-center justify-center rounded-2xl border border-dashed border-border bg-background/30">
-            <Sparkles size={28} className="text-muted-foreground/50" />
+          <div className="flex h-[360px] w-[240px] items-center justify-center rounded-2xl border border-dashed border-border bg-background/30">
+            <Sparkles size={48} className="text-muted-foreground/50" />
           </div>
           <Link
             href="/perfil/personagem"
