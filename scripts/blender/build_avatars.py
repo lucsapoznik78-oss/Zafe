@@ -120,6 +120,7 @@ RECEITAS = {
         # Camisa de time por cima do calção do Beach: nenhum pack traz uniforme
         # de futebol, mas camiseta + calção + chuteira é o uniforme.
         "base": ("h", "Casual_2"),
+        "rosto": "concentrado",
         "aderecos": [
             # A bola À FRENTE do pé, não em cima dele: o encaixe é o tornozelo,
             # e uma esfera de 11,5 cm de raio a 24 cm da frente do tornozelo
@@ -143,6 +144,7 @@ RECEITAS = {
     },
     "av-torcedor-arquibancada": {
         "base": ("h", "Casual_2"),
+        "rosto": "bravo",
         # `Wave` levanta a mão ESQUERDA — medido, não suposto. A bandeira vai
         # nela; o cachecol fica no pescoço e é o que separa este corpo casual do
         # corpo casual do boleiro em 64px.
@@ -176,6 +178,7 @@ RECEITAS = {
     },
     "av-estagiario-bolao": {
         "base": ("h", "Suit"),
+        "rosto": "concentrado",
         # `Interact` estende a mão DIREITA à frente do peito: é exatamente o
         # gesto de quem segura uma prancheta e confere a tabela.
         "aderecos": [
@@ -201,6 +204,7 @@ RECEITAS = {
     "av-vovo-radio": {
         # Cabelo branco é o que faz a idade aqui; o corpo é o mesmo casual.
         "base": ("h", "Casual_2"),
+        "rosto": "alegre",
         "aderecos": [
             {"peca": "boina", "onde": "cabeca", "cor": "#4A4038"},
             {"peca": "radinho", "onde": "mao.R", "aprumar": True,
@@ -217,6 +221,7 @@ RECEITAS = {
     },
     "av-corredor-rua": {
         "base": ("h", "Beach"),
+        "rosto": "cansado",
         "aderecos": [
             {"peca": "faixa-cabeca", "onde": "cabeca", "cor": "#D7F205"},
             # O `peito` nasce na COLUNA, não na superfície do peito: sem empurrar
@@ -234,6 +239,7 @@ RECEITAS = {
     },
     "av-goleiro-reserva": {
         "base": ("h", "Casual_2"),
+        "rosto": "concentrado",
         "pecas": {"Legs": ("h", "Beach")},
         # As duas luvas: uma luva só lê como mão enfaixada.
         #
@@ -256,6 +262,7 @@ RECEITAS = {
     },
     "av-vendedor-pipoca": {
         "base": ("h", "Worker"),
+        "rosto": "alegre",
         # A bandeja pendurada no pescoço é o personagem inteiro: sem ela o
         # Worker é um operário, com ela é o cara que sobe a arquibancada.
         "aderecos": [
@@ -274,6 +281,7 @@ RECEITAS = {
     },
     "av-menina-volei": {
         "base": ("m", "Casual"),
+        "rosto": "concentrado",
         "aderecos": [
             {"peca": "bola-volei", "onde": "mao.L", "pos": (0, 0.10, 0),
              "cor": "#F7F7F2", "cor2": "#1F6FEB"},
@@ -293,6 +301,7 @@ RECEITAS = {
     },
     "av-skatista-praca": {
         "base": ("h", "Punk"),
+        "rosto": "confiante",
         # O shape em pé, apoiado no rabo ao lado do pé, e não deitado embaixo
         # dele: `assentar` desce o conjunto até o ponto mais baixo, então um
         # deck no chão faria o boneco afundar meio centímetro nele.
@@ -349,6 +358,7 @@ RECEITAS = {
     },
     "av-tiete-fantasy": {
         "base": ("m", "Casual"),
+        "rosto": "surpreso",
         "aderecos": [
             {"peca": "celular", "onde": "mao.R", "aprumar": True,
              "pos": (0, 0.02, 0.03), "giro": (60, 0, 0), "tela": "#F2B8D0"},
@@ -365,6 +375,7 @@ RECEITAS = {
     # ---------------------------------------------------------------- incomuns
     "av-tenista-clube": {
         "base": ("h", "Casual_2"),
+        "rosto": "concentrado",
         "pecas": {"Legs": ("h", "Beach")},
         # A raquete é desenhada em linha com o eixo do punho, então o arco do
         # `Sword_Slash` a carrega junto sem giro nenhum.
@@ -392,6 +403,7 @@ RECEITAS = {
     },
     "av-surfista-fim-tarde": {
         "base": ("h", "Beach"),
+        "rosto": "alegre",
         "aderecos": [
             # Mesmo sinal invertido do skatista, do outro lado: +X é a esquerda
             # do personagem, então a prancha do `pe.L` sai em +X. Com −0.22 ela
@@ -429,6 +441,7 @@ RECEITAS = {
     },
     "av-boxeador-aposentado": {
         "base": ("h", "Beach"),
+        "rosto": "bravo",
         "aderecos": [
             {"peca": "luva-boxe", "onde": "mao.L", "cor": "#8E1B1B"},
             {"peca": "luva-boxe", "onde": "mao.R", "cor": "#8E1B1B"},
@@ -443,11 +456,18 @@ RECEITAS = {
     },
     "av-jogador-sinuca": {
         "base": ("h", "Suit"),
+        "rosto": "confiante",
         # `Idle_Sword` já deixa a mão fechada na altura da cintura, empunhando
         # nada. O taco é o que aquela mão estava esperando.
         "aderecos": [
+            # 48° e não 74°: a 74 o taco fica quase de pé e some — de frente ele
+            # é um traço de 1,7 cm subindo pela vertical, colado na silhueta e
+            # passando por cima da cabeça. Deitado para 48 ele cruza o corpo na
+            # diagonal, que é a única inclinação em que uma vara fina ainda tem
+            # comprimento visível em 64 px. O `pos` tira a ponta grossa do
+            # quadril.
             {"peca": "taco", "onde": "mao.R", "aprumar": True,
-             "giro": (0, 0, 74)},
+             "giro": (0, 0, 48), "pos": (-0.02, -0.06, 0.14)},
         ],
         "pose": ("Idle_Sword", 1),
         "cores": {
@@ -460,6 +480,7 @@ RECEITAS = {
     },
     "av-halterofilista": {
         "base": ("h", "Beach"),
+        "rosto": "bravo",
         "aderecos": [
             # Anilha vermelha: o preto original ficava contra o rosto moreno e
             # o fundo escuro da cena e o halter virava um borrão sem forma.
@@ -491,6 +512,7 @@ RECEITAS = {
     },
     "av-dj-torcida": {
         "base": ("h", "Punk"),
+        "rosto": "alegre",
         "aderecos": [
             # `coroar` mira o alto do CRÂNIO, e o crânio deste aqui termina na
             # ponta do moicano: sem descer, o fone paira 20 cm acima do cabelo.
@@ -508,6 +530,7 @@ RECEITAS = {
     },
     "av-reporter-campo": {
         "base": ("m", "Suit"),
+        "rosto": "surpreso",
         "aderecos": [
             {"peca": "microfone", "onde": "mao.R", "aprumar": True,
              "giro": (0, 0, 68), "marca": "#C8102E"},
@@ -523,6 +546,7 @@ RECEITAS = {
     # ------------------------------------------------------------------ raros
     "av-arbitro-vilao": {
         "base": ("h", "Casual_2"),
+        "rosto": "bravo",
         "pecas": {"Legs": ("h", "Beach")},
         # Wave levanta o braço esquerdo acima da cabeça: agora com o cartão.
         "aderecos": [
@@ -600,6 +624,7 @@ RECEITAS = {
     },
     "av-xadrezista-sombrio": {
         "base": ("h", "Suit"),
+        "rosto": "confiante",
         "aderecos": [
             # A peça é desenhada da base para CIMA (0 a 0,26) e o encaixe da mão
             # é o punho, que no `Idle_Neutral` fica na altura do quadril: presa
@@ -621,6 +646,7 @@ RECEITAS = {
     },
     "av-capita-nautica": {
         "base": ("m", "Suit"),
+        "rosto": "confiante",
         # A pistola sai em `limpar_aderecos`, e `Idle_Gun_Pointing` sem pistola
         # é uma mulher apontando o dedo para o nada, com os dois braços à frente
         # do peito. `Idle_Neutral` é parada e ereta — menos interessante, mas
@@ -640,6 +666,7 @@ RECEITAS = {
     },
     "av-ginasta-fita": {
         "base": ("m", "SciFi"),
+        "rosto": "alegre",
         "aderecos": [
             {"peca": "fita", "onde": "mao.R", "cor": "#D6266B",
              "bastao": "#F0B429"},
@@ -694,6 +721,7 @@ RECEITAS = {
     },
     "av-bruxa-sorte": {
         "base": ("m", "Witch"),
+        "rosto": "confiante",
         # Aprumado e girado 90° em Z: o cabo é desenhado ao longo do +X, e o
         # giro o põe na vertical, plantado ao lado dela como um cajado.
         "aderecos": [
@@ -722,6 +750,7 @@ RECEITAS = {
     # --------------------------------------------------------------- lendário
     "av-rei-bolao": {
         "base": ("h", "King"),
+        "rosto": "confiante",
         "aderecos": [
             # Maior que o desenho base: o rei já tem ombreira e coroa douradas,
             # e um troféu no tamanho natural some dentro do próprio dourado dele.
@@ -961,6 +990,107 @@ def peca_dominante():
             if slot.material:
                 contagem[slot.material.name][peca] += 1
     return {nome: c.most_common(1)[0][0] for nome, c in contagem.items()}
+
+
+# ------------------------------------------------------------------ ROSTO
+#
+# "Os ok's são feios de cara" — e são os TRINTA com a mesma cara, porque o pack
+# desenha um rosto só e o resto do personagem é roupa.
+#
+# O caminho óbvio seria um atlas de UV com expressões, que é o que se faz num
+# jogo. Aqui não dá: os `.glb` saem com zero textura e zero imagem (o export usa
+# `export_image_format="NONE"`), o material é cor chapada, e não há boca — o
+# rosto inteiro são duas ilhas de geometria, `Eye` e `Eyebrows`, 24 faces cada.
+#
+# Só que geometria separada é melhor que textura para o que se quer aqui: num
+# rosto chibi sem boca, a SOBRANCELHA é a expressão inteira. Inclinar 14° para
+# dentro é raiva; para fora é preocupação; levantar uma só é deboche. E como as
+# ilhas são disjuntas do resto da malha, mexer nelas não deforma a pele.
+#
+# Roda em espaço LOCAL da malha, logo depois do import: ali o rosto está em
+# repouso e os eixos são inequívocos (X lateral, Y profundidade, Z altura). Feito
+# depois da pose, um personagem de cabeça inclinada teria a sobrancelha girando
+# fora do plano do rosto.
+
+# (giro da sobrancelha em graus — positivo baixa a ponta de DENTRO, que é o
+#  franzido —, quanto ela sobe em metros, e o achatamento do olho)
+EXPRESSOES = {
+    "bravo": (15.0, -0.004, 0.72),
+    "concentrado": (9.0, -0.002, 0.80),
+    "confiante": (-7.0, 0.004, 0.88),
+    "surpreso": (-4.0, 0.010, 1.18),
+    "alegre": (-9.0, 0.006, 0.66),
+    "cansado": (-13.0, -0.003, 0.62),
+}
+
+
+def _ilha_por_material(nome_material):
+    """Vértices que só aparecem em faces DESTE material, por objeto.
+
+    O 'só' importa: se um vértice for compartilhado com a pele, mexer nele abre
+    um buraco no rosto. As ilhas do olho e da sobrancelha são fechadas e
+    disjuntas — a checagem é o que garante que continuem sendo.
+    """
+    saida = []
+    for obj in malhas():
+        idx = [
+            i
+            for i, m in enumerate(obj.data.materials)
+            if m and nome_base_material(m.name) == nome_material
+        ]
+        if not idx:
+            continue
+        dentro, fora = set(), set()
+        for f in obj.data.polygons:
+            (dentro if f.material_index in idx else fora).update(f.vertices)
+        exclusivos = dentro - fora
+        if exclusivos:
+            saida.append((obj, exclusivos))
+    return saida
+
+
+def _girar_no_plano(obj, indices, angulo, sobe):
+    """Gira um punhado de vértices no plano XZ, em torno do centro deles."""
+    co = [obj.data.vertices[i].co for i in indices]
+    centro = sum(co, Vector()) / len(co)
+    c, s = math.cos(angulo), math.sin(angulo)
+    for i in indices:
+        v = obj.data.vertices[i]
+        d = v.co - centro
+        v.co = centro + Vector((d.x * c - d.z * s, d.y, d.x * s + d.z * c + sobe))
+
+
+def expressao(nome):
+    if not nome:
+        return
+    if nome not in EXPRESSOES:
+        raise SystemExit(
+            f"expressão '{nome}' não existe. Há: {', '.join(sorted(EXPRESSOES))}"
+        )
+    giro, sobe, olho = EXPRESSOES[nome]
+
+    for obj, verts in _ilha_por_material("Eyebrows"):
+        # Uma sobrancelha de cada vez, separadas pelo lado da cara. Girar as duas
+        # juntas em torno do centro comum inclinaria o par inteiro como se a
+        # cabeça estivesse torta.
+        for lado in (1, -1):
+            metade = [
+                i for i in verts if math.copysign(1, obj.data.vertices[i].co.x) == lado
+            ]
+            if metade:
+                # O sinal é espelhado: o que baixa a ponta interna de um lado
+                # levanta a do outro se o ângulo for o mesmo.
+                _girar_no_plano(obj, metade, math.radians(giro) * lado, sobe)
+        obj.data.update()
+
+    if olho != 1.0:
+        for obj, verts in _ilha_por_material("Eye"):
+            co = [obj.data.vertices[i].co for i in verts]
+            meio = sum(c.z for c in co) / len(co)
+            for i in verts:
+                v = obj.data.vertices[i]
+                v.co.z = meio + (v.co.z - meio) * olho
+            obj.data.update()
 
 
 def acabar(overrides):
@@ -2656,6 +2786,9 @@ def montar(avatar_id, receita, destino=None):
 
     for peca, origem in receita.get("pecas", {}).items():
         trocar_peca(arm, origem[0], origem[1], peca)
+
+    # Antes da pose: o rosto tem de ser mexido em repouso (ver a seção ROSTO).
+    expressao(receita.get("rosto"))
 
     pintar(receita.get("cores", {}))
     # Antes de `juntar()`: o acabamento é decidido pela peça, e depois da fusão
