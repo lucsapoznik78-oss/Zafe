@@ -184,7 +184,10 @@ export default function EditorPersonagem({
   const [inventario, setInventario] = useState(() => new Set(inventarioInicial));
   const [saldo, setSaldo] = useState(saldoInicial);
   const [desbloqueada, setDesbloqueada] = useState(desbloqueadaInicial);
-  const [aba, setAba] = useState<Aba>("personagem");
+  // Avatares primeiro: escolher um personagem pronto é a jornada mais rápida
+  // e é o que a maioria vai fazer. Montar peça-a-peça continua uma aba de
+  // distância, mas não é mais o que abre.
+  const [aba, setAba] = useState<Aba>("avatares");
   const [ocupado, setOcupado] = useState<string | null>(null);
   const [aviso, setAviso] = useState<{ tipo: "ok" | "erro"; texto: string } | null>(null);
 
@@ -341,6 +344,26 @@ export default function EditorPersonagem({
           <div className="relative h-[48vh] min-h-[320px] overflow-hidden rounded-3xl border border-border bg-[radial-gradient(ellipse_65%_55%_at_50%_34%,#262C3C_0%,#171B25_52%,#0D1016_100%)] lg:h-[calc(100vh-8.5rem)]">
             {/* `alca`, não `ref`: o wrapper do `next/dynamic` engole `ref`. */}
             <PersonagemCanvas alca={canvas} figura={figura} posicao={posicao} />
+
+            {/* Kit oficial escolhido: o canvas three.js não sabe renderizar
+                os .glb do kit ainda, então cobrimos o palco com o poster PNG
+                do personagem — o feedback "está vestido" fica evidente.
+                Quando o canvas suportar .glb, este overlay desaparece. */}
+            {(() => {
+              const k = figura.avatar
+                ? AVATARES_KIT.find((x) => x.id === figura.avatar)
+                : null;
+              return k ? (
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={k.poster}
+                    alt={k.nome}
+                    className="max-h-full max-w-full object-contain"
+                  />
+                </div>
+              ) : null;
+            })()}
 
             {/* Sobre o canvas, não acima dele: cabeçalho não rouba altura do boneco. */}
             <div className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-between gap-3 p-3">
@@ -838,6 +861,71 @@ function CardAvatar({
   );
 }
 
+/**
+ * Card do avatar do kit oficial. Mesma silhueta do CardAvatar, mas o mini é
+ * o poster PNG 1024px (não recorte de spritesheet). Sem preço nem "Comprar":
+ * são grátis nesta primeira leva, e o feedback de "está vestido" já vem da
+ * borda + check.
+ */
+function CardAvatarKit({
+  kit,
+  atual,
+  onEscolher,
+}: {
+  kit: (typeof AVATARES_KIT)[number];
+  atual: boolean;
+  onEscolher: () => void;
+}) {
+  return (
+    <div
+      className={cn(
+        "flex flex-col overflow-hidden rounded-xl border transition-colors",
+        atual ? "border-primary bg-primary/5" : "border-border bg-card",
+      )}
+    >
+      <button onClick={onEscolher} className="text-left">
+        <span
+          className="relative flex aspect-[3/4] w-full items-center justify-center bg-[#0F1012]"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={kit.poster}
+            alt={kit.nome}
+            loading="lazy"
+            className="h-full w-full object-contain"
+          />
+          {atual && (
+            <span className="absolute right-1 top-1 rounded-full bg-primary p-0.5 text-primary-foreground">
+              <Check size={11} />
+            </span>
+          )}
+          <span className="absolute left-1 top-1 rounded-full bg-primary/90 px-1.5 py-0.5 text-[9px] font-bold uppercase text-primary-foreground">
+            3D
+          </span>
+        </span>
+        <span className="block px-2 pt-1.5">
+          <span className="line-clamp-2 text-xs font-semibold leading-snug">{kit.nome}</span>
+          <span className="mt-0.5 line-clamp-2 block text-[10px] leading-snug text-muted-foreground">
+            {kit.vibe}
+          </span>
+        </span>
+      </button>
+
+      <div className="mt-auto p-2 pt-1.5">
+        <span className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground">
+          {atual ? (
+            <>
+              <Trash2 size={10} /> Tirar
+            </>
+          ) : (
+            "Grátis"
+          )}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 function AbaCast({
   atual,
   inventario,
@@ -861,43 +949,6 @@ function AbaCast({
         você montou continua guardado e volta quando você tirar o avatar.
       </p>
 
-      {/* Nova safra (kit oficial) — cards com poster PNG (não 5 <model-viewer>
-          simultâneos: matam contexto WebGL do canvas do editor). Ver em 3D vivo
-          leva pra /perfil/personagem/kit, isolado. */}
-      <Secao titulo="Nova safra · 3D">
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {AVATARES_KIT.map((a) => (
-            <Link
-              key={a.id}
-              href="/perfil/personagem/kit"
-              className="flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary"
-            >
-              <span className="relative flex aspect-[3/4] w-full items-center justify-center bg-[#0F1012]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={a.poster}
-                  alt={a.nome}
-                  loading="lazy"
-                  className="h-full w-full object-contain"
-                />
-                <span className="absolute right-1 top-1 rounded-full bg-primary/90 px-1.5 py-0.5 text-[9px] font-bold uppercase text-primary-foreground">
-                  3D
-                </span>
-              </span>
-              <span className="block px-2 pt-1.5">
-                <span className="line-clamp-2 text-xs font-semibold leading-snug">{a.nome}</span>
-                <span className="mt-0.5 line-clamp-2 block text-[10px] leading-snug text-muted-foreground">
-                  {a.vibe}
-                </span>
-              </span>
-              <span className="mt-auto p-2 pt-1.5 text-center text-[10px] text-muted-foreground">
-                Ver em 3D →
-              </span>
-            </Link>
-          ))}
-        </div>
-      </Secao>
-
       {AVATARES_POR_RARIDADE.map(([raridade, lista]) => (
         <Secao key={raridade} titulo={NOME_RARIDADE[raridade]}>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -913,6 +964,19 @@ function AbaCast({
                 onComprar={() => comprar(av.id)}
               />
             ))}
+            {/* Kit oficial (Enrico) — entram junto com o resto na Comum, sem
+                sessão dedicada. Renderizam com POSTER PNG em vez do recorte
+                da folha (não têm sprite), mas o card tem a mesma forma e o
+                clique passa por escolher() como qualquer outro. */}
+            {raridade === "comum" &&
+              AVATARES_KIT.map((k) => (
+                <CardAvatarKit
+                  key={k.id}
+                  kit={k}
+                  atual={atual === k.id}
+                  onEscolher={() => escolher(k.id)}
+                />
+              ))}
           </div>
         </Secao>
       ))}
