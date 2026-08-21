@@ -1,0 +1,141 @@
+{
+  "versao": "1.0",
+  "gerado_em": "2026-08-21",
+  "marca": {
+    "logo": "Z com linha de tendência (off-white #F0F1F3)",
+    "fundo_escuro": "#0D1B2A",
+    "fundo_quase_preto": "#0F1012",
+    "cor_marca": "#F0F1F3"
+  },
+  "personagens": [
+    {
+      "id": "capitao",
+      "nome": "O Capitão",
+      "arquivo_3d": "capitao.glb",
+      "thumb_2d": "01_capitao_Z.png",
+      "assinatura": "Z bordado no boné + pinstripes na manga do corta-vento",
+      "vibe": "o líder do bolão",
+      "raridade": "comum"
+    },
+    {
+      "id": "analista",
+      "nome": "O Analista",
+      "arquivo_3d": "analista.glb",
+      "thumb_2d": "02_analista_Z.png",
+      "assinatura": "Z estampado no peito do moletom + trend-line no bolso",
+      "vibe": "o nerd dos dados que sempre acerta",
+      "raridade": "comum"
+    },
+    {
+      "id": "craque",
+      "nome": "A Craque",
+      "arquivo_3d": "craque.glb",
+      "thumb_2d": "03_craque_Z.png",
+      "assinatura": "Z como escudo do uniforme + listra no shorts",
+      "vibe": "joga mais que você",
+      "raridade": "comum"
+    },
+    {
+      "id": "raiz",
+      "nome": "O Raiz",
+      "arquivo_3d": "raiz.glb",
+      "thumb_2d": "04_raiz_Z.png",
+      "assinatura": "Z tecido no cachecol de torcida",
+      "vibe": "a arquibancada em pessoa",
+      "raridade": "comum"
+    },
+    {
+      "id": "cyber",
+      "nome": "O Cyber",
+      "arquivo_3d": "cyber.glb",
+      "thumb_2d": "05_cyber_Z.png",
+      "assinatura": "patch Z na bomber + vivo ciano no zíper",
+      "vibe": "o prodígio dos e-sports",
+      "raridade": "comum"
+    }
+  ],
+  "raridade": {
+    "sistema": "comum | raro | lendario",
+    "nota": "definido na reuniao com Luc 21/08: nossa lane = COMUNS; Luc foca raros/lendarios; swap semanal"
+  },
+  "colecionaveis": [
+    {
+      "id": "capitao_bracadeira",
+      "nome": "Braçadeira de Capitão",
+      "personagem": "capitao",
+      "arquivo": "capitao_bracadeira.png",
+      "raridade": "comum"
+    },
+    {
+      "id": "capitao_trofeu",
+      "nome": "Troféu do Bolão",
+      "personagem": "capitao",
+      "arquivo": "capitao_trofeu.png",
+      "raridade": "comum"
+    },
+    {
+      "id": "analista_oculos",
+      "nome": "Óculos do Analista",
+      "personagem": "analista",
+      "arquivo": "analista_oculos.png",
+      "raridade": "comum"
+    },
+    {
+      "id": "analista_tablet",
+      "nome": "Tablet de Estatísticas",
+      "personagem": "analista",
+      "arquivo": "analista_tablet.png",
+      "raridade": "comum"
+    },
+    {
+      "id": "craque_bola",
+      "nome": "Bola Clássica",
+      "personagem": "craque",
+      "arquivo": "craque_bola.png",
+      "raridade": "comum"
+    },
+    {
+      "id": "craque_chuteira",
+      "nome": "Chuteira Dourada",
+      "personagem": "craque",
+      "arquivo": "craque_chuteira.png",
+      "raridade": "raro"
+    },
+    {
+      "id": "raiz_cachecol",
+      "nome": "Cachecol da Torcida",
+      "personagem": "raiz",
+      "arquivo": "raiz_cachecol.png",
+      "raridade": "comum"
+    },
+    {
+      "id": "raiz_corneta",
+      "nome": "Corneta do Estádio",
+      "personagem": "raiz",
+      "arquivo": "raiz_corneta.png",
+      "raridade": "comum"
+    },
+    {
+      "id": "cyber_headset",
+      "nome": "Headset Ciano",
+      "personagem": "cyber",
+      "arquivo": "cyber_headset.png",
+      "raridade": "comum"
+    },
+    {
+      "id": "cyber_gamepad",
+      "nome": "Gamepad Neon",
+      "personagem": "cyber",
+      "arquivo": "cyber_gamepad.png",
+      "raridade": "comum"
+    },
+    {
+      "id": "capitao_surf_pose",
+      "nome": "Prancha de Surf (variante de postura)",
+      "personagem": "capitao",
+      "arquivo": "01_capitao_SURF_prova.png",
+      "raridade": "raro",
+      "tipo": "variante_postura"
+    }
+  ]
+}
