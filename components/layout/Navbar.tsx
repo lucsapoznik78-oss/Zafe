@@ -147,21 +147,22 @@ export default function Navbar() {
             <DropdownMenuTrigger>
               <div className="relative">
                 <Avatar
-                  className={`h-8 w-8 cursor-pointer overflow-hidden ${
+                  className={`size-12 cursor-pointer overflow-hidden ${
                     premium ? "ring-2 ring-prize ring-offset-1 ring-offset-black" : "border border-border"
                   }`}
                 >
-                  {profile?.figura_retrato_url ? (
-                    // O retrato é o PNG que o próprio navegador fotografou do
-                    // canvas 3D na hora de salvar. Iniciais só para quem ainda
-                    // não montou o personagem.
+                  {profile?.figura_url ? (
+                    // Corpo inteiro (512x768 alpha) e não o retrato — o personagem
+                    // é a peça principal da identidade e merece aparecer inteiro na
+                    // navbar. O PNG tem fundo transparente, então o `object-contain`
+                    // deixa os lados livres dentro do círculo sem faixa preta.
                     <FiguraAvatar
-                      url={profile.figura_retrato_url}
+                      url={profile.figura_url}
                       nome={profile.full_name ?? profile.username}
-                      size={32}
+                      size={48}
                     />
                   ) : (
-                    <AvatarFallback className="bg-primary/20 text-primary text-xs font-semibold">
+                    <AvatarFallback className="bg-primary/20 text-primary text-sm font-semibold">
                       {initials}
                     </AvatarFallback>
                   )}
