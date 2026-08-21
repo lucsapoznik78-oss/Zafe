@@ -30,7 +30,7 @@
 
 import { Canvas, useThree } from "@react-three/fiber";
 import { ContactShadows, OrbitControls } from "@react-three/drei";
-import { Suspense, forwardRef, useImperativeHandle, useRef } from "react";
+import { Suspense, useImperativeHandle, useRef, type Ref } from "react";
 import { ACESFilmicToneMapping } from "three";
 import type { PerspectiveCamera, Scene, WebGLRenderer } from "three";
 
@@ -89,13 +89,30 @@ function Chao() {
   );
 }
 
-export const PersonagemCanvas = forwardRef<
-  Alca,
-  { figura: FiguraV2; posicao?: number | null; className?: string }
->(function PersonagemCanvas({ figura, posicao, className }, ref) {
+/**
+ * A alça chega por PROP, não por `ref`.
+ *
+ * Este componente só entra na página via `next/dynamic`, e no App Router o
+ * `dynamic` devolve uma função comum (`LoadableComponent(props)`) que renderiza
+ * o lazy sem repassar `ref`. Como `forwardRef`, a alça ficava presa lá: o
+ * `ref.current` do editor nunca saía de `null`, `capturar()` nunca era chamado e
+ * o botão Salvar respondia "o personagem ainda está carregando" com o boneco
+ * pronto na tela. Prop atravessa o wrapper; `ref` não.
+ */
+export function PersonagemCanvas({
+  alca,
+  figura,
+  posicao,
+  className,
+}: {
+  alca?: Ref<Alca>;
+  figura: FiguraV2;
+  posicao?: number | null;
+  className?: string;
+}) {
   const tres = useRef<Tres | null>(null);
 
-  useImperativeHandle(ref, () => ({
+  useImperativeHandle(alca, () => ({
     capturar: async () => {
       const t = tres.current;
       if (!t) throw new Error("canvas ainda não montou");
@@ -153,4 +170,4 @@ export const PersonagemCanvas = forwardRef<
       />
     </Canvas>
   );
-});
+}

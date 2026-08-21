@@ -335,7 +335,8 @@ export default function EditorPersonagem({
               preto absoluto pelo motivo oposto: #000 engole a silhueta e mata
               a própria sombra de contato. */}
           <div className="relative h-[48vh] min-h-[320px] overflow-hidden rounded-3xl border border-border bg-[radial-gradient(ellipse_65%_55%_at_50%_34%,#262C3C_0%,#171B25_52%,#0D1016_100%)] lg:h-[calc(100vh-8.5rem)]">
-            <PersonagemCanvas ref={canvas} figura={figura} posicao={posicao} />
+            {/* `alca`, não `ref`: o wrapper do `next/dynamic` engole `ref`. */}
+            <PersonagemCanvas alca={canvas} figura={figura} posicao={posicao} />
 
             {/* Sobre o canvas, não acima dele: cabeçalho não rouba altura do boneco. */}
             <div className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-between gap-3 p-3">
