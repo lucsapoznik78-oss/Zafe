@@ -40,6 +40,7 @@ import addon_utils
 import bmesh
 import bpy
 from mathutils import Matrix, Vector
+from mathutils.bvhtree import BVHTree
 
 # ---------------------------------------------------------------- CAMINHOS
 
@@ -120,7 +121,11 @@ RECEITAS = {
         # de futebol, mas camiseta + calção + chuteira é o uniforme.
         "base": ("h", "Casual_2"),
         "aderecos": [
-            {"peca": "bola-futebol", "onde": "pe.R", "pos": (0, 0.12, 0.24)},
+            # A bola À FRENTE do pé, não em cima dele: o encaixe é o tornozelo,
+            # e uma esfera de 11,5 cm de raio a 24 cm da frente do tornozelo
+            # ainda pega a chuteira inteira. É chute, então ela sai na direção
+            # do pé.
+            {"peca": "bola-futebol", "onde": "pe.R", "pos": (0, 0.02, 0.38)},
         ],
         "pecas": {"Legs": ("h", "Beach")},
         # Quadro 4 e não 12: no 12 o pé de chute aponta para a câmera e a perna
@@ -157,7 +162,8 @@ RECEITAS = {
             # passar do ângulo agudo para o obtuso, que joga o pano para FORA
             # da silhueta.
             {"peca": "bandeira", "onde": "mao.R", "aprumar": True,
-             "giro": (0, 0, 122), "cor": "#C8102E", "cor2": "#F5F5F5"},
+             "giro": (0, 0, 122), "pos": (-0.03, 0, 0.06),
+             "cor": "#C8102E", "cor2": "#F5F5F5"},
         ],
         "pose": ("Wave", 14),
         "cores": {
@@ -253,7 +259,11 @@ RECEITAS = {
         # A bandeja pendurada no pescoço é o personagem inteiro: sem ela o
         # Worker é um operário, com ela é o cara que sobe a arquibancada.
         "aderecos": [
-            {"peca": "bandeja-pipoca", "onde": "peito", "pos": (0, 0.12, 0.02)},
+            # +0.12 em Z: a bandeja é desenhada a 10 cm do osso do peito, e a
+            # camisa está a ~12 — o caixote ficava enfiado na barriga com a
+            # pipoca dentro do tronco. Empurrada para fora ela passa a ser uma
+            # bandeja pendurada, que é o personagem.
+            {"peca": "bandeja-pipoca", "onde": "peito", "pos": (0, 0.12, 0.12)},
         ],
         "pose": ("Walk", 10),
         "cores": {
@@ -286,9 +296,14 @@ RECEITAS = {
         # O shape em pé, apoiado no rabo ao lado do pé, e não deitado embaixo
         # dele: `assentar` desce o conjunto até o ponto mais baixo, então um
         # deck no chão faria o boneco afundar meio centímetro nele.
+        # −0.26 e não +0.17: o X do referencial do pé é `cima × frente`, e com o
+        # personagem olhando para −Y isso dá o +X do MUNDO — que é a ESQUERDA
+        # dele. O `pe.R` fica em x≈−0.11, então mandar o shape 17 cm para +X era
+        # mandá-lo para dentro da outra perna, e era isso que aparecia no render:
+        # o deck cortando a canela. Fora do pé direito é −X.
         "aderecos": [
-            {"peca": "skate", "onde": "pe.R", "pos": (0.17, 0, 0.02),
-             "giro": (0, 0, -14), "deck": "#2E9E8F", "roda": "#F0B429"},
+            {"peca": "skate", "onde": "pe.R", "pos": (-0.26, 0, 0.02),
+             "giro": (0, 0, 14), "deck": "#2E9E8F", "roda": "#F0B429"},
         ],
         "pose": ("Idle", 1),
         "cores": {
@@ -378,8 +393,12 @@ RECEITAS = {
     "av-surfista-fim-tarde": {
         "base": ("h", "Beach"),
         "aderecos": [
-            {"peca": "prancha-surfe", "onde": "pe.L", "pos": (-0.22, 0, 0.02),
-             "giro": (0, 0, 9), "cor": "#F5E6C8", "faixa": "#0E9AA7"},
+            # Mesmo sinal invertido do skatista, do outro lado: +X é a esquerda
+            # do personagem, então a prancha do `pe.L` sai em +X. Com −0.22 ela
+            # entrava pela perna direita, e é o que se via — a prancha rasgando
+            # o corpo em vez de estar de pé ao lado dele.
+            {"peca": "prancha-surfe", "onde": "pe.L", "pos": (0.40, 0, 0.02),
+             "giro": (0, 0, -9), "cor": "#F5E6C8", "faixa": "#0E9AA7"},
         ],
         "pose": ("Idle", 1),
         "cores": {
@@ -444,7 +463,18 @@ RECEITAS = {
         "aderecos": [
             # Anilha vermelha: o preto original ficava contra o rosto moreno e
             # o fundo escuro da cena e o halter virava um borrão sem forma.
-            {"peca": "halter", "onde": "mao.R", "escala": 1.15, "disco": "#C8102E"},
+            # Aprumado: a barra é desenhada ao longo do X local, e no referencial
+            # cru do punho esse X é a direção do ANTEBRAÇO. Com o `Punch_Right`
+            # estendido para a frente, a barra saía pelo eixo do braço e o disco
+            # de trás atravessava o rosto — de frente via-se uma anilha vermelha
+            # colada na cara. Aprumada, ela fica na horizontal do MUNDO, que é a
+            # única orientação em que um halter lê como halter em 64 px: as duas
+            # anilhas visíveis, uma de cada lado do punho.
+            # O `pos` para a frente é o que a mantém fora do tronco, e a escala
+            # 1,15 saiu: com a barra atravessada, 48 cm de halter na mão de um
+            # boneco chibi viravam uma barra olímpica.
+            {"peca": "halter", "onde": "mao.R", "aprumar": True,
+             "pos": (0, -0.02, 0.02), "disco": "#C8102E"},
         ],
         # `HitRecieve` é a animação de LEVAR um golpe: o corpo recua encolhido e
         # o personagem lê como quem apanhou, não como quem treina — e encolhido
@@ -501,7 +531,13 @@ RECEITAS = {
             # Sem subir nada: a peça já é desenhada com a alça indo até o
             # pescoço (+0.16) e o apito caído no peito. Empurrada mais 0.18 para
             # cima ela laçava o queixo. O +Z é só para o cordão sair da camisa.
-            {"peca": "apito", "onde": "peito", "pos": (0, -0.01, 0.03)},
+            # `afastar` liga aqui e em quase nenhum outro lugar: o que sobra
+            # depois de encolher a alça é o laço tocando o ombro esquerdo, três
+            # vértices a 1,6 cm, porque o `Wave` levanta esse braço e inclina o
+            # tronco. Um empurrão de milímetros para a frente resolve sem que
+            # nada mude de lugar aos olhos.
+            {"peca": "apito", "onde": "peito", "pos": (0, -0.01, 0.03),
+             "afastar": True},
         ],
         "pose": ("Wave", 16),
         "cores": {
@@ -565,8 +601,14 @@ RECEITAS = {
     "av-xadrezista-sombrio": {
         "base": ("h", "Suit"),
         "aderecos": [
+            # A peça é desenhada da base para CIMA (0 a 0,26) e o encaixe da mão
+            # é o punho, que no `Idle_Neutral` fica na altura do quadril: presa
+            # ali e aprumada, ela crescia 26 cm para dentro do tronco e o topo
+            # aparecia saindo do peito — o defeito que o dono descreveu primeiro.
+            # −0,14 em Y centra a peça na mão em vez de empilhá-la sobre ela, e o
+            # Z manda para a FRENTE da coxa, não para dentro dela.
             {"peca": "peca-xadrez", "onde": "mao.R", "aprumar": True,
-             "pos": (0, -0.02, 0.02), "cor": "#D8D8D8"},
+             "pos": (-0.03, -0.14, 0.10), "cor": "#D8D8D8"},
         ],
         "pose": ("Idle_Neutral", 1),
         "cores": {
@@ -628,8 +670,12 @@ RECEITAS = {
             # O giro em X é o que faz a katana existir: a lâmina é uma fita
             # plana, e sem ele o plano da fita fica deitado — de frente vê-se só
             # a espessura, um fio de 3 mm. Deitada em pé ela mostra a largura.
+            # O `pos` só empurra a lâmina para a FRENTE do corpo. A câmera da
+            # loja olha de frente, então a diagonal que o dono aprovou é
+            # exatamente a mesma; o que muda é que ela passa na frente do quadril
+            # em vez de atravessá-lo.
             {"peca": "katana", "onde": "mao.R", "aprumar": True,
-             "giro": (90, 0, 50), "escala": 1.15,
+             "giro": (90, 0, 50), "escala": 1.15, "pos": (0, 0, 0.12),
              "lamina": "#DCE3EA", "guarda": "#4A0F14"},
         ],
         "pose": ("Idle_Sword", 1),
@@ -679,10 +725,19 @@ RECEITAS = {
         "aderecos": [
             # Maior que o desenho base: o rei já tem ombreira e coroa douradas,
             # e um troféu no tamanho natural some dentro do próprio dourado dele.
-            {"peca": "trofeu", "onde": "mao.R", "aprumar": True,
-             "pos": (0, -0.04, 0.05), "escala": 1.3, "ouro": "#D4AF37"},
+            # Mesmo problema da peça de xadrez, pior porque a escala 1,3 faz o
+            # troféu ter 36 cm: crescendo do punho para cima ele terminava dentro
+            # da barriga. Centrado na mão e à frente da coxa, o rei passa a
+            # SEGURAR o troféu em vez de tê-lo cravado no corpo.
+            {"peca": "trofeu", "onde": "mao.L", "aprumar": True,
+             "pos": (0.02, -0.05, 0.05), "escala": 1.3, "ouro": "#D4AF37"},
         ],
-        "pose": ("Idle_Neutral", 1),
+        # `Wave` (mão esquerda erguida) e não `Idle_Neutral`. Tirar o troféu de
+        # dentro da barriga resolvia o furo e criava outro problema: no braço
+        # caído do `Idle_Neutral` ele ficava pendurado na altura do quadril e lia
+        # como balde, não como taça. Este é o personagem mais caro do cast — a
+        # pose tem de ser a de quem levantou o troféu.
+        "pose": ("Wave", 14),
         "cores": {"Skin": PELE[1], "Blue": "#4C2A85", "Gold": "#D4AF37"},
     },
 }
@@ -1380,10 +1435,21 @@ def _numero_peito(p, cor="#F5F5F2", tinta_cor="#1B1B1B", **_):
 
 
 def _apito(p, cordao="#1B1B1B", cor="#D4AF37", **_):
-    p.anel(cordao, 0.115, 0.008, em=(0, 0.16, 0), giro=(94, 0, 0), escala=(1.0, 0.85, 1.0), segs=18, lados=6, acab="tecido")
-    p.caixa(cordao, (0.008, 0.14, 0.008), em=(0.03, 0.08, 0.07), acab="tecido")
-    p.caixa(cordao, (0.008, 0.14, 0.008), em=(-0.03, 0.08, 0.07), acab="tecido")
-    p.caixa(cor, (0.028, 0.055, 0.03), em=(0, 0.015, 0.115), acab="metal")
+    # A alça a 0,10 e não 0,16 do peito: em 0,16 ela chega à altura da MANDÍBULA
+    # (medido: z≈1,39 contra 1,35 do encaixe da cabeça) e o laço atravessava o
+    # queixo — 31 vértices dentro do rosto. Chibi tem cabeça de 1,5× e quase
+    # nenhum pescoço; a folga que existe num boneco de proporção normal aqui não
+    # existe.
+    p.anel(cordao, 0.082, 0.008, em=(0, 0.115, 0.01), giro=(94, 0, 0), escala=(1.0, 0.85, 1.0), segs=18, lados=6, acab="tecido")
+    # z = 0,13 e 0,17, não 0,07 e 0,115: o osso `Chest` fica no CENTRO do tórax e
+    # a camisa está uns 12 cm à frente dele. Desenhado a 7 cm, o cordão corria
+    # por dentro do peito e do apito só sobrava uma lasca dourada aflorando na
+    # camisa — o árbitro parecia ter um distintivo cravado, não um apito
+    # pendurado. Cordão e apito têm de POUSAR na superfície, não morar atrás
+    # dela.
+    p.caixa(cordao, (0.008, 0.14, 0.008), em=(0.03, 0.08, 0.13), acab="tecido")
+    p.caixa(cordao, (0.008, 0.14, 0.008), em=(-0.03, 0.08, 0.13), acab="tecido")
+    p.caixa(cor, (0.028, 0.055, 0.03), em=(0, 0.015, 0.17), acab="metal")
 
 
 def _avental(p, cor="#F5F0E6", faixa="#C8102E", **_):
@@ -1573,7 +1639,11 @@ def _cajado(p, cabo="#4A2F1C", orbe="#D4AF37", enfeite="#5B2D8E", **_):
 def _trofeu(p, ouro="#D4AF37", base="#2B2118", **_):
     p.caixa(base, (0.13, 0.05, 0.13), em=(0, 0.025, 0), acab="couro")
     p.cilindro(ouro, 0.03, 0.09, em=(0, 0.095, 0), eixo="Y", acab="metal")
-    p.cilindro(ouro, 0.085, 0.14, raio2=0.05, em=(0, 0.21, 0), eixo="Y", acab="metal")
+    # Raio de baixo 0,05 e de cima 0,085, não o contrário. Estava invertido
+    # desde o começo — taça mais larga embaixo que em cima é um SINO — e ninguém
+    # viu porque o troféu nascia dentro da barriga do rei. Tirar o adereço de
+    # dentro do corpo é o que revela a forma dele.
+    p.cilindro(ouro, 0.05, 0.14, raio2=0.085, em=(0, 0.21, 0), eixo="Y", acab="metal")
     for x in (0.105, -0.105):
         p.anel(ouro, 0.048, 0.011, em=(x, 0.22, 0), giro=(90, 0, 0), segs=16, lados=6, acab="metal")
 
@@ -1750,14 +1820,179 @@ def coroar(quadro):
     return novo
 
 
+# ------------------------------------------------- ADEREÇO DENTRO DO CORPO
+#
+# O defeito que o dono descreveu como "tem coisa saindo do meio do corpo dele"
+# não é um bug de código: é um `pos` de receita que ninguém conferiu. O encaixe
+# é a ORIGEM DO OSSO — o punho, o tornozelo, a base do pescoço — e osso mora no
+# centro do membro, não na superfície dele. Colocar a peça de xadrez no `mao.R`
+# e mandar ficar de pé desenha a peça a partir de um ponto que já está DENTRO da
+# mão, subindo até o peito: exatamente o que se vê no render.
+#
+# `coroar` já resolvia isso para a cabeça, medindo o alto do crânio na malha em
+# vez de estimar. O que faltava era o mesmo rigor para mão, pé, peito e quadril,
+# e um portão que não deixe passar. É o que está aqui:
+#
+#   `_dentro`   — o ponto está dentro desta casca? Paridade de cruzamentos por
+#                 três raios, maioria vence. Distância-com-sinal pela normal da
+#                 face mais próxima seria mais barato, mas o corpo são QUATRO
+#                 cascas separadas (`Suit_Body`, `Head`, `Legs`, `Feet`) e nas
+#                 costuras entre elas o sinal mente. Paridade por casca fechada,
+#                 uma de cada vez, não mente.
+#   `afastar`   — empurra a peça para fora até parar de furar, e é OPT-IN
+#                 (`"afastar": True` na receita). Ligado por padrão ele "conserta"
+#                 tudo e estraga junto: na primeira rodada tirou a katana 6,4 cm
+#                 da mão do Ninja — um dos sete que o dono aprovou — e a peça de
+#                 xadrez 5,6 cm, o que troca um adereço enterrado por um adereço
+#                 flutuando ao lado do punho. Empurrar só resolve encosto raso;
+#                 furo de 7 cm é `pos` errado, e `pos` errado se conserta na
+#                 receita, com o olho na folha de contato.
+#   `_furos`    — o portão. Roda nos 30 e o build imprime a contagem.
+
+# Vértice do adereço mais fundo que isto no corpo conta como furo. É folga de
+# encosto, não de tolerância: o skate atravessa a perna por 15 cm, a peça de
+# xadrez entra 9 cm no tronco. 1,2 cm não esconde nenhum defeito real e absorve
+# o dedo que aperta a alça.
+FOLGA = 0.012
+
+# Peças VESTIDAS: entrar no corpo é o desenho delas, não um defeito. Um capacete
+# que não invade o crânio é um capacete flutuando; uma luva que não invade a mão
+# é uma luva no chão. Estas ficam fora do portão.
+VESTIDOS = {
+    "avental",
+    "boina",
+    "bone",
+    "cachecol",
+    "capacete-domo",
+    "capacete-integral",
+    "cauda",
+    "faixa-cabeca",
+    "fita",
+    "fone-ouvido",
+    "luva-boxe",
+    "luva-goleiro",
+    "mochila-entrega",
+    "numero-peito",
+    "oculos-natacao",
+    "orelhas-tigre",
+    "quepe",
+    "touca",
+}
+
+# Raio da esfera de isenção em volta do encaixe. Dentro dela o furo é a mão que
+# segura, e mão que segura tem de furar mesmo — cabo de vassoura que não entra
+# no punho está sendo carregado pelo ar.
+ISENCAO = {"mao": 0.15, "pe": 0.17, "cabeca": 0.20}
+
+_RAIOS = (Vector((1, 0, 0)), Vector((0, 1, 0)), Vector((0, 0, 1)))
+
+
+def _cascas_do_corpo():
+    """Uma BVH por malha de corpo (tudo que não é adereço), em mundo."""
+    saida = []
+    for o in malhas():
+        if o.name.startswith("Ad_"):
+            continue
+        mw, me = o.matrix_world, o.data
+        me.calc_loop_triangles()
+        verts = [tuple(mw @ v.co) for v in me.vertices]
+        faces = [tuple(t.vertices) for t in me.loop_triangles]
+        if faces:
+            saida.append(BVHTree.FromPolygons(verts, faces, all_triangles=True))
+    return saida
+
+
+def _dentro(casca, p):
+    """Paridade de cruzamentos: ímpar em pelo menos dois dos três eixos."""
+    votos = 0
+    for d in _RAIOS:
+        n, origem = 0, p.copy()
+        while n < 24:
+            loc, _nor, _idx, _dist = casca.ray_cast(origem, d)
+            if loc is None:
+                break
+            n += 1
+            origem = loc + d * 1e-4
+        votos += n % 2
+    return votos >= 2
+
+
+def _furos(objs, cascas, isentos):
+    """(quantos vértices enterrados, o mais fundo em metros)."""
+    n, fundo = 0, 0.0
+    for o in objs:
+        mw = o.matrix_world
+        for v in o.data.vertices:
+            p = mw @ v.co
+            if any((p - c).length < r for c, r in isentos):
+                continue
+            for casca in cascas:
+                if not _dentro(casca, p):
+                    continue
+                loc = casca.find_nearest(p)[0]
+                d = (p - loc).length if loc else 0.0
+                if d > FOLGA:
+                    n += 1
+                    fundo = max(fundo, d)
+                    # ZAFE_FUROS=1 diz ONDE está enterrado, em coordenada de
+                    # mundo. Sem isso a calibragem é adivinhar qual das oito
+                    # primitivas da peça é a que entrou no corpo.
+                    if os.environ.get("ZAFE_FUROS"):
+                        print(
+                            f"    [furo] {o.name} "
+                            f"({p.x:.3f},{p.y:.3f},{p.z:.3f}) {d * 100:.1f} cm",
+                            flush=True,
+                        )
+                break
+    return n, fundo
+
+
+def _para_fora(onde, quadro, quadros):
+    """A direção em que empurrar um adereço enterrado.
+
+    Peito e costas saem pela frente/trás do tronco; cabeça sobe. O resto sai
+    RADIALMENTE do eixo do corpo — é o que "para fora" quer dizer para uma mão
+    ou um pé, e é o único vetor que funciona igual nos dois lados sem a receita
+    ter de saber que a direita do personagem é −X.
+    """
+    if onde in ("peito", "costas"):
+        return quadro.col[2].to_3d().normalized()
+    if onde == "cabeca":
+        return Vector((0, 0, 1))
+    eixo = quadros.get("quadril") or quadros.get("peito")
+    if eixo is None:
+        return None
+    d = quadro.translation - eixo.translation
+    d.z = 0.0
+    return d.normalized() if d.length > 1e-3 else None
+
+
+def afastar(objs, direcao, cascas, isentos, passo=0.008, limite=0.08):
+    """Empurra até limpar a malha. Devolve (quanto andou, furos que sobraram)."""
+    n, _fundo = _furos(objs, cascas, isentos)
+    if n == 0 or direcao is None:
+        return 0.0, n
+    andado = 0.0
+    while andado < limite:
+        for o in objs:
+            o.matrix_world = Matrix.Translation(direcao * passo) @ o.matrix_world
+        andado += passo
+        n, _fundo = _furos(objs, cascas, isentos)
+        if n == 0:
+            break
+    return andado, n
+
+
 def aplicar_aderecos(avatar_id, receita, quadros):
     pedidos = receita.get("aderecos", [])
     if not pedidos:
-        return 0
+        return []
     if "cabeca" in quadros:
         quadros["cabeca"] = coroar(quadros["cabeca"])
     corpo = quadros.get("peito") or quadros.get("quadril")
     frente = corpo.col[2].to_3d() if corpo else Vector((0, -1, 0))
+    cascas = _cascas_do_corpo()
+    postos, laudo = [], []
 
     for n, item in enumerate(pedidos):
         nome = item["peca"]
@@ -1776,7 +2011,7 @@ def aplicar_aderecos(avatar_id, receita, quadros):
         cores = {
             k: v
             for k, v in item.items()
-            if k not in ("peca", "onde", "pos", "giro", "escala", "aprumar")
+            if k not in ("peca", "onde", "pos", "giro", "escala", "aprumar", "afastar")
         }
         desenhar(peca, **cores)
 
@@ -1788,9 +2023,37 @@ def aplicar_aderecos(avatar_id, receita, quadros):
             @ _giro(item.get("giro", (0, 0, 0)))
             @ Matrix.Scale(item.get("escala", 1.0), 4)
         )
-        for obj in peca.objetos():
+        objs = peca.objetos()
+        for obj in objs:
             obj.matrix_world = base
-    return len(pedidos)
+        postos.append((item, nome, onde, quadro, objs))
+
+    # O portão roda DEPOIS de todos os adereços estarem postos, e mede contra o
+    # corpo apenas — dois adereços podem se cruzar de propósito (o taco encosta
+    # na mesa, a bola encosta na luva) e isso não é o defeito em questão.
+    for item, nome, onde, quadro, objs in postos:
+        if nome in VESTIDOS:
+            continue
+        raio = ISENCAO.get(onde.split(".")[0], 0.13)
+        isentos = [(quadro.translation.copy(), raio)]
+        if item.get("afastar"):
+            andado, sobrou = afastar(
+                objs, _para_fora(onde, quadro, quadros), cascas, isentos
+            )
+        else:
+            andado, (sobrou, _f) = 0.0, _furos(objs, cascas, isentos)
+        if sobrou or andado:
+            _n, fundo = _furos(objs, cascas, isentos)
+            laudo.append(
+                {
+                    "peca": nome,
+                    "onde": onde,
+                    "empurrado": round(andado, 3),
+                    "furos": sobrou,
+                    "fundo": round(fundo, 3),
+                }
+            )
+    return laudo
 
 
 # ----------------------------------------------------------------- CHIBI
@@ -2430,7 +2693,14 @@ def montar(avatar_id, receita, destino=None):
             ),
             flush=True,
         )
-    aplicar_aderecos(avatar_id, receita, quadros)
+    laudo = aplicar_aderecos(avatar_id, receita, quadros)
+    for p in laudo:
+        estado = (
+            f"ATRAVESSA ({p['furos']} vértices, {p['fundo'] * 100:.1f} cm dentro)"
+            if p["furos"]
+            else f"corrigido (+{p['empurrado'] * 100:.1f} cm)"
+        )
+        print(f"  [adereço] {avatar_id} {p['peca']}@{p['onde']}: {estado}", flush=True)
 
     refinar()
     juntar()
@@ -2475,6 +2745,7 @@ def montar(avatar_id, receita, destino=None):
         "tris": tris,
         "cabecas": round(razao, 2) if razao else None,
         "altura": round(alto, 3),
+        "aderecos": [p for p in laudo if p["furos"]],
     }
 
 
@@ -2809,6 +3080,21 @@ def main():
         raise SystemExit(f"sem receita para: {', '.join(desconhecidos)}")
 
     relatorio = [montar(i, RECEITAS[i]) for i in pedidos]
+
+    # O placar do portão de adereços, no fim e em uma linha. É o número que o
+    # dono cobra: nenhum personagem com coisa saindo do corpo.
+    furados = [r for r in relatorio if r["aderecos"]]
+    print(
+        f"ADEREÇOS {len(relatorio) - len(furados)}/{len(relatorio)} limpos",
+        flush=True,
+    )
+    for r in furados:
+        for p in r["aderecos"]:
+            print(
+                f"  FURA {r['id']}: {p['peca']}@{p['onde']} "
+                f"{p['furos']} vértices a {p['fundo'] * 100:.1f} cm",
+                flush=True,
+            )
     print("RELATORIO " + json.dumps(relatorio), flush=True)
 
 

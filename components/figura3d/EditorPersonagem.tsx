@@ -140,7 +140,7 @@ const AtlasMiniaturas = dynamic(() => import("./Miniaturas").then((m) => m.Atlas
 // O `?v` sobe junto com a folha. O nome do arquivo é fixo, então sem ele quem
 // já abriu a loja continua vendo o elenco antigo — e a folha atual é a que tem
 // os adereços; a anterior mostrava os mesmos trinta bonecos de mãos vazias.
-const FOLHA_CAST = "/avatares/folha.png?v=2";
+const FOLHA_CAST = "/avatares/folha.png?v=3";
 
 /**
  * Só os ícones usados (`import * as Icons` traria as ~1500 do lucide junto).
