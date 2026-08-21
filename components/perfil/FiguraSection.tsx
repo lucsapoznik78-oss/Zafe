@@ -32,7 +32,7 @@ export default function FiguraSection({
               alt={nome ? `Personagem de ${nome}` : "Personagem"}
               loading="lazy"
               decoding="async"
-              className="h-[360px] w-[240px] object-contain"
+              className="h-[480px] w-[320px] object-contain"
             />
           </div>
           <Link
@@ -44,8 +44,8 @@ export default function FiguraSection({
         </>
       ) : (
         <>
-          <div className="flex h-[360px] w-[240px] items-center justify-center rounded-2xl border border-dashed border-border bg-background/30">
-            <Sparkles size={48} className="text-muted-foreground/50" />
+          <div className="flex h-[480px] w-[320px] items-center justify-center rounded-2xl border border-dashed border-border bg-background/30">
+            <Sparkles size={64} className="text-muted-foreground/50" />
           </div>
           <Link
             href="/perfil/personagem"
