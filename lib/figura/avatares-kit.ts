@@ -15,7 +15,8 @@ export type AvatarKit = {
     // separados por análise de ilhas + K-means espacial (sem poster 2D).
     | "hyper1" | "hyper2" | "hyper3" | "hyper4" | "hyper5" | "hyper6"
     // Leva 2 Hyper3D (22/08/26 raros): mesmo pipeline, 3D_raros.glb.
-    | "raro1" | "raro2" | "raro3" | "raro4" | "raro5" | "raro6";
+    // 7 personagens (3 top + 4 bottom no palco original).
+    | "raro1" | "raro2" | "raro3" | "raro4" | "raro5" | "raro6" | "raro7";
   nome: string;
   vibe: string;
   assinatura: string;
@@ -93,6 +94,7 @@ export const AVATARES_KIT: AvatarKit[] = [
     vibe: "verão o ano inteiro",
     assinatura: "prancha embaixo do braço",
     glb: `${BASE}/3d/hyper1.glb`,
+    poster: `${BASE}/2d/hyper1.png`,
     raridade: "comum",
   },
   {
@@ -101,6 +103,7 @@ export const AVATARES_KIT: AvatarKit[] = [
     vibe: "postura de ringue",
     assinatura: "luvas vermelhas + short com Z",
     glb: `${BASE}/3d/hyper2.glb`,
+    poster: `${BASE}/2d/hyper2.png`,
     raridade: "comum",
   },
   {
@@ -109,6 +112,7 @@ export const AVATARES_KIT: AvatarKit[] = [
     vibe: "atacante que decide",
     assinatura: "uniforme vermelho com Z no peito",
     glb: `${BASE}/3d/hyper3.glb`,
+    poster: `${BASE}/2d/hyper3.png`,
     raridade: "comum",
   },
   {
@@ -117,6 +121,7 @@ export const AVATARES_KIT: AvatarKit[] = [
     vibe: "cesta na cara do adversário",
     assinatura: "regata + bola de basquete",
     glb: `${BASE}/3d/hyper4.glb`,
+    poster: `${BASE}/2d/hyper4.png`,
     raridade: "comum",
   },
   {
@@ -125,6 +130,7 @@ export const AVATARES_KIT: AvatarKit[] = [
     vibe: "saque e bloqueio",
     assinatura: "headphones azul + bola de vôlei",
     glb: `${BASE}/3d/hyper5.glb`,
+    poster: `${BASE}/2d/hyper5.png`,
     raridade: "comum",
   },
   {
@@ -133,58 +139,74 @@ export const AVATARES_KIT: AvatarKit[] = [
     vibe: "manobra na pista",
     assinatura: "capacete azul + shape",
     glb: `${BASE}/3d/hyper6.glb`,
+    poster: `${BASE}/2d/hyper6.png`,
     raridade: "comum",
   },
   // ─── Leva 2 Hyper3D — RAROS (22/08/26) ───
-  // Mesmo pipeline de separação (union-find + K-means K=6 num grid 3×2 XY).
-  // Nomes são palpite genérico (leva "raro" da Zafe); troque se souber o
-  // tema exato de cada um após validar no palco.
+  // Mesmo pipeline de separação (union-find + K-means K=7). O palco original
+  // tinha 3 no topo + 4 embaixo — no primeiro corte com K=6 skatista e F1
+  // colaram no mesmo cluster. Nomes vêm do visual do palco.
   {
     id: "raro1",
-    nome: "Raro 01",
-    vibe: "leva rara Hyper3D",
-    assinatura: "topo esquerda do palco original",
+    nome: "O Bicicleta",
+    vibe: "chute de bicicleta",
+    assinatura: "meia com bola no ar",
     glb: `${BASE}/3d/raro1.glb`,
+    poster: `${BASE}/2d/raro1.png`,
     raridade: "raro",
   },
   {
     id: "raro2",
-    nome: "Raro 02",
-    vibe: "leva rara Hyper3D",
-    assinatura: "topo centro do palco original",
+    nome: "O Tenista",
+    vibe: "backhand cruzado",
+    assinatura: "raquete + bolinha amarela",
     glb: `${BASE}/3d/raro2.glb`,
+    poster: `${BASE}/2d/raro2.png`,
     raridade: "raro",
   },
   {
     id: "raro3",
-    nome: "Raro 03",
-    vibe: "leva rara Hyper3D",
-    assinatura: "topo direita do palco original",
+    nome: "O Freestyler",
+    vibe: "manobra invertida",
+    assinatura: "boné Z de ponta-cabeça",
     glb: `${BASE}/3d/raro3.glb`,
+    poster: `${BASE}/2d/raro3.png`,
     raridade: "raro",
   },
   {
     id: "raro4",
-    nome: "Raro 04",
-    vibe: "leva rara Hyper3D",
-    assinatura: "base esquerda do palco original",
+    nome: "O Streamer",
+    vibe: "campanha marathon",
+    assinatura: "headset roxo + controle",
     glb: `${BASE}/3d/raro4.glb`,
+    poster: `${BASE}/2d/raro4.png`,
     raridade: "raro",
   },
   {
     id: "raro5",
-    nome: "Raro 05",
-    vibe: "leva rara Hyper3D",
-    assinatura: "base centro do palco original",
+    nome: "O Skatista Pro",
+    vibe: "grinda no corrimão",
+    assinatura: "boné preto + shape na mão",
     glb: `${BASE}/3d/raro5.glb`,
+    poster: `${BASE}/2d/raro5.png`,
     raridade: "raro",
   },
   {
     id: "raro6",
-    nome: "Raro 06",
-    vibe: "leva rara Hyper3D",
-    assinatura: "base direita do palco original",
+    nome: "O Piloto",
+    vibe: "pole position",
+    assinatura: "macacão + capacete + kart",
     glb: `${BASE}/3d/raro6.glb`,
+    poster: `${BASE}/2d/raro6.png`,
+    raridade: "raro",
+  },
+  {
+    id: "raro7",
+    nome: "O Xadrezista",
+    vibe: "xeque-mate em três",
+    assinatura: "coroa + tabuleiro",
+    glb: `${BASE}/3d/raro7.glb`,
+    poster: `${BASE}/2d/raro7.png`,
     raridade: "raro",
   },
 ];

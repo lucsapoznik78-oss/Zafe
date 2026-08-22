@@ -343,23 +343,32 @@ export default function EditorPersonagem({
               preto absoluto pelo motivo oposto: #000 engole a silhueta e mata
               a própria sombra de contato. */}
           <div className="relative h-[48vh] min-h-[320px] overflow-hidden rounded-3xl border border-border bg-[radial-gradient(ellipse_65%_55%_at_50%_34%,#262C3C_0%,#171B25_52%,#0D1016_100%)] lg:h-[calc(100vh-8.5rem)]">
-            {/* `alca`, não `ref`: o wrapper do `next/dynamic` engole `ref`. */}
-            <PersonagemCanvas alca={canvas} figura={figura} posicao={posicao} />
-
-            {/* Kit oficial escolhido: o canvas three.js não sabe renderizar
-                os .glb do kit ainda, então cobrimos o palco com um
-                <model-viewer> do próprio .glb — dá rotar, arrastar, zoom.
-                Um viewer só na tela; sem risco de multi-contexto WebGL.
-                O poster PNG aparece instantâneo enquanto o .glb baixa. */}
+            {/* Palco: só renderiza algo se o usuário escolheu explicitamente.
+                Sem seleção → palco vazio (antes ficava mostrando o boneco
+                procedural default, o que confundia — parecia estado escolhido).
+                Kit escolhido → <model-viewer> com o .glb.
+                av-* escolhido → PersonagemCanvas com o procedural correspondente.
+                Um único renderer 3D ativo por vez — sem multi-contexto WebGL. */}
             {(() => {
-              const k = figura.avatar
+              const kit = figura.avatar
                 ? AVATARES_KIT.find((x) => x.id === figura.avatar)
                 : null;
-              return k ? (
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_65%_55%_at_50%_34%,#262C3C_0%,#171B25_52%,#0D1016_100%)]">
-                  <ZafeAvatarKit personagem={k.id} preencher girar />
-                </div>
-              ) : null;
+              if (kit) {
+                return (
+                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_65%_55%_at_50%_34%,#262C3C_0%,#171B25_52%,#0D1016_100%)]">
+                    <ZafeAvatarKit personagem={kit.id} preencher girar />
+                  </div>
+                );
+              }
+              // Só monta o Canvas three.js se figura.avatar for um av-*
+              // procedural (id começa com "av-"). Senão palco vazio.
+              if (figura.avatar && figura.avatar.startsWith("av-")) {
+                return (
+                  // `alca`, não `ref`: o wrapper do `next/dynamic` engole `ref`.
+                  <PersonagemCanvas alca={canvas} figura={figura} posicao={posicao} />
+                );
+              }
+              return null;
             })()}
 
             {/* Sobre o canvas, não acima dele: cabeçalho não rouba altura do boneco. */}
@@ -912,9 +921,8 @@ function CardAvatarKit({
         </span>
         <span className="block px-2 pt-1.5">
           <span className="line-clamp-2 text-xs font-semibold leading-snug">{kit.nome}</span>
-          <span className="mt-0.5 line-clamp-2 block text-[10px] leading-snug text-muted-foreground">
-            {kit.vibe}
-          </span>
+          {/* Subtitle removida — os textos de "vibe" (ex "leva rara Hyper3D")
+              poluíam sem agregar. O nome sozinho basta. */}
         </span>
       </button>
 
