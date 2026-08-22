@@ -9,7 +9,11 @@
 export type RaridadeKit = "comum" | "raro" | "lendario";
 
 export type AvatarKit = {
-  id: "capitao" | "analista" | "craque" | "raiz" | "cyber";
+  id:
+    | "capitao" | "analista" | "craque" | "raiz" | "cyber"
+    // Leva 1 Hyper3D (22/08/26): 6 personagens gerados no Hyper3D e separados
+    // por análise de ilhas + K-means espacial (sem poster 2D).
+    | "hyper1" | "hyper2" | "hyper3" | "hyper4" | "hyper5" | "hyper6";
   nome: string;
   vibe: string;
   assinatura: string;
@@ -73,6 +77,60 @@ export const AVATARES_KIT: AvatarKit[] = [
     assinatura: "patch Z na bomber + vivo ciano no zíper",
     glb: `${BASE}/3d/cyber.glb`,
     poster: `${BASE}/2d/05_cyber_Z.png`,
+    raridade: "comum",
+  },
+  // ─── Leva 1 Hyper3D (22/08/26) ───
+  // O Hyper3D exportou os 6 fundidos num único mesh atlas. A separação foi
+  // feita por análise de ilhas conexas + K-means espacial (3 colunas × 2
+  // fileiras) — ver scripts em /tmp/split_glb_kmeans.mjs. Nomes são um
+  // palpite pelo visual do palco original; se algum estiver trocado, é só
+  // renomear aqui.
+  {
+    id: "hyper1",
+    nome: "O Surfista",
+    vibe: "verão o ano inteiro",
+    assinatura: "prancha embaixo do braço",
+    glb: `${BASE}/3d/hyper1.glb`,
+    raridade: "comum",
+  },
+  {
+    id: "hyper2",
+    nome: "O Boxeador",
+    vibe: "postura de ringue",
+    assinatura: "luvas vermelhas + short com Z",
+    glb: `${BASE}/3d/hyper2.glb`,
+    raridade: "comum",
+  },
+  {
+    id: "hyper3",
+    nome: "O Camisa 10",
+    vibe: "atacante que decide",
+    assinatura: "uniforme vermelho com Z no peito",
+    glb: `${BASE}/3d/hyper3.glb`,
+    raridade: "comum",
+  },
+  {
+    id: "hyper4",
+    nome: "A Basqueteira",
+    vibe: "cesta na cara do adversário",
+    assinatura: "regata + bola de basquete",
+    glb: `${BASE}/3d/hyper4.glb`,
+    raridade: "comum",
+  },
+  {
+    id: "hyper5",
+    nome: "A Voleibolista",
+    vibe: "saque e bloqueio",
+    assinatura: "headphones azul + bola de vôlei",
+    glb: `${BASE}/3d/hyper5.glb`,
+    raridade: "comum",
+  },
+  {
+    id: "hyper6",
+    nome: "O Skatista",
+    vibe: "manobra na pista",
+    assinatura: "capacete azul + shape",
+    glb: `${BASE}/3d/hyper6.glb`,
     raridade: "comum",
   },
 ];
