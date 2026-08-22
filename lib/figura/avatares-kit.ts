@@ -9,7 +9,7 @@
 export type RaridadeKit = "comum" | "raro" | "lendario";
 
 export type AvatarKit = {
-  id: "capitao" | "analista" | "craque" | "raiz" | "cyber" | "hyper1";
+  id: "capitao" | "analista" | "craque" | "raiz" | "cyber";
   nome: string;
   vibe: string;
   assinatura: string;
@@ -73,16 +73,6 @@ export const AVATARES_KIT: AvatarKit[] = [
     assinatura: "patch Z na bomber + vivo ciano no zíper",
     glb: `${BASE}/3d/cyber.glb`,
     poster: `${BASE}/2d/05_cyber_Z.png`,
-    raridade: "comum",
-  },
-  // Primeira leva Hyper3D (imagem → .glb via Rodin). Sem poster: o
-  // model-viewer só mostra o fundo até o .glb carregar.
-  {
-    id: "hyper1",
-    nome: "Hyper 01",
-    vibe: "primeira leva Hyper3D",
-    assinatura: "gerado por IA a partir de referência 2D",
-    glb: `${BASE}/3d/hyper1.glb`,
     raridade: "comum",
   },
 ];
