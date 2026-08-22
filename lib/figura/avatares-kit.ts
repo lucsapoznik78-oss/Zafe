@@ -11,9 +11,11 @@ export type RaridadeKit = "comum" | "raro" | "lendario";
 export type AvatarKit = {
   id:
     | "capitao" | "analista" | "craque" | "raiz" | "cyber"
-    // Leva 1 Hyper3D (22/08/26): 6 personagens gerados no Hyper3D e separados
-    // por análise de ilhas + K-means espacial (sem poster 2D).
-    | "hyper1" | "hyper2" | "hyper3" | "hyper4" | "hyper5" | "hyper6";
+    // Leva 1 Hyper3D (22/08/26 comuns): 6 personagens gerados no Hyper3D e
+    // separados por análise de ilhas + K-means espacial (sem poster 2D).
+    | "hyper1" | "hyper2" | "hyper3" | "hyper4" | "hyper5" | "hyper6"
+    // Leva 2 Hyper3D (22/08/26 raros): mesmo pipeline, 3D_raros.glb.
+    | "raro1" | "raro2" | "raro3" | "raro4" | "raro5" | "raro6";
   nome: string;
   vibe: string;
   assinatura: string;
@@ -132,6 +134,58 @@ export const AVATARES_KIT: AvatarKit[] = [
     assinatura: "capacete azul + shape",
     glb: `${BASE}/3d/hyper6.glb`,
     raridade: "comum",
+  },
+  // ─── Leva 2 Hyper3D — RAROS (22/08/26) ───
+  // Mesmo pipeline de separação (union-find + K-means K=6 num grid 3×2 XY).
+  // Nomes são palpite genérico (leva "raro" da Zafe); troque se souber o
+  // tema exato de cada um após validar no palco.
+  {
+    id: "raro1",
+    nome: "Raro 01",
+    vibe: "leva rara Hyper3D",
+    assinatura: "topo esquerda do palco original",
+    glb: `${BASE}/3d/raro1.glb`,
+    raridade: "raro",
+  },
+  {
+    id: "raro2",
+    nome: "Raro 02",
+    vibe: "leva rara Hyper3D",
+    assinatura: "topo centro do palco original",
+    glb: `${BASE}/3d/raro2.glb`,
+    raridade: "raro",
+  },
+  {
+    id: "raro3",
+    nome: "Raro 03",
+    vibe: "leva rara Hyper3D",
+    assinatura: "topo direita do palco original",
+    glb: `${BASE}/3d/raro3.glb`,
+    raridade: "raro",
+  },
+  {
+    id: "raro4",
+    nome: "Raro 04",
+    vibe: "leva rara Hyper3D",
+    assinatura: "base esquerda do palco original",
+    glb: `${BASE}/3d/raro4.glb`,
+    raridade: "raro",
+  },
+  {
+    id: "raro5",
+    nome: "Raro 05",
+    vibe: "leva rara Hyper3D",
+    assinatura: "base centro do palco original",
+    glb: `${BASE}/3d/raro5.glb`,
+    raridade: "raro",
+  },
+  {
+    id: "raro6",
+    nome: "Raro 06",
+    vibe: "leva rara Hyper3D",
+    assinatura: "base direita do palco original",
+    glb: `${BASE}/3d/raro6.glb`,
+    raridade: "raro",
   },
 ];
 

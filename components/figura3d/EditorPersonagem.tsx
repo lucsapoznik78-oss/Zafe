@@ -959,19 +959,18 @@ function AbaCast({
       {AVATARES_POR_RARIDADE.map(([raridade, lista]) => (
         <Secao key={raridade} titulo={NOME_RARIDADE[raridade]}>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {/* Kit oficial (Enrico) abre a seção Comum — são a safra nova,
-                ficam na frente. Renderizam com POSTER PNG em vez do recorte
-                da folha (não têm sprite), mesma forma de card, clique passa
-                pelo mesmo escolher() dos procedurais. */}
-            {raridade === "comum" &&
-              AVATARES_KIT.map((k) => (
-                <CardAvatarKit
-                  key={k.id}
-                  kit={k}
-                  atual={atual === k.id}
-                  onEscolher={() => escolher(k.id)}
-                />
-              ))}
+            {/* Kit oficial + levas Hyper3D abrem cada seção da própria
+                raridade — ficam na frente dos procedurais. Renderizam com
+                POSTER PNG (kit original) ou .glb inline (levas Hyper3D sem
+                poster). Mesma forma de card, clique passa pelo escolher(). */}
+            {AVATARES_KIT.filter((k) => k.raridade === raridade).map((k) => (
+              <CardAvatarKit
+                key={k.id}
+                kit={k}
+                atual={atual === k.id}
+                onEscolher={() => escolher(k.id)}
+              />
+            ))}
             {lista.map((av) => (
               <CardAvatar
                 key={av.id}
