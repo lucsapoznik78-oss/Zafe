@@ -25,11 +25,47 @@ export const INDICE: ReadonlyMap<string, number> = new Map(ITENS.map((it, i) => 
  * montagem de quem só veio trocar de boné.
  */
 export const COLUNAS_AVATAR = 5;
-export const LINHAS_AVATAR = Math.ceil(AVATARES.length / COLUNAS_AVATAR);
+/**
+ * O atlas `/avatares/folha.png` foi cozido no Blender com os 30 avatares
+ * originais numa grade 5×6. Em 22/08/26 removemos 11 comuns procedurais em
+ * favor do kit Hyper3D — mas re-cozer o atlas exige rodar o pipeline Blender,
+ * o que não vale a pena pra 19 células. Solução: mantemos as dimensões e a
+ * ordem originais, e cada id do que sobrou aponta pra sua célula ANTIGA.
+ * Células vazias (dos 11 removidos) continuam na imagem mas ninguém as
+ * referencia.
+ */
+export const LINHAS_AVATAR = 6;
 
-export const INDICE_AVATAR: ReadonlyMap<string, number> = new Map(
-  AVATARES.map((a, i) => [a.id, i]),
-);
+/**
+ * Índice original de cada avatar na folha 5×6 baked no Blender.
+ * NÃO usar `AVATARES.indexOf` — após a poda de 22/08/26, essa contagem
+ * desalinharia com o pixel dentro da PNG.
+ */
+export const INDICE_AVATAR: ReadonlyMap<string, number> = new Map([
+  // linha 0 (comuns 0-4) — só o Entregador (idx 9) sobrou nas comuns
+  ["av-ciclista-urbano", 9],
+  // linha 2 (incomuns 12-19) começam no idx 12
+  ["av-tenista-clube", 12],
+  ["av-surfista-fim-tarde", 13],
+  ["av-nadadora-olimpica", 14],
+  ["av-boxeador-aposentado", 15],
+  ["av-jogador-sinuca", 16],
+  ["av-halterofilista", 17],
+  ["av-dj-torcida", 18],
+  ["av-reporter-campo", 19],
+  // linha 4 (raros 20-25)
+  ["av-arbitro-vilao", 20],
+  ["av-mascote-tigre", 21],
+  ["av-piloto-kart", 22],
+  ["av-xadrezista-sombrio", 23],
+  ["av-capita-nautica", 24],
+  ["av-ginasta-fita", 25],
+  // linha 5 (épicos 26-28 + lendário 29)
+  ["av-ninja-dojo", 26],
+  ["av-bruxa-sorte", 27],
+  ["av-astronauta-perdido", 28],
+  ["av-rei-bolao", 29],
+]);
 
 /**
  * O recorte de uma célula, em CSS.
