@@ -41,8 +41,12 @@ const ModelViewerRegistrar = dynamic(
 
 type Props = {
   personagem: AvatarKit["id"];
-  /** largura em px; altura = width * 1.3 (proporção do render 2d) */
+  /** largura em px; altura = width * 1.3 (proporção do render 2d).
+   *  Ignorado quando `preencher` é true. */
   tamanho?: number;
+  /** Ocupa 100% do container (o pai controla altura/largura). Usa isso
+   *  quando o palco tem tamanho dinâmico. */
+  preencher?: boolean;
   girar?: boolean;
   className?: string;
 };
@@ -50,11 +54,16 @@ type Props = {
 export default function ZafeAvatarKit({
   personagem,
   tamanho = 320,
+  preencher = false,
   girar = true,
   className,
 }: Props) {
   const a = avatarKitPorId(personagem);
   if (!a) return null;
+
+  const style = preencher
+    ? { width: "100%", height: "100%" }
+    : { width: tamanho, height: Math.round(tamanho * 1.3) };
 
   return (
     <>
@@ -70,7 +79,7 @@ export default function ZafeAvatarKit({
         shadow-intensity="1"
         exposure="1.1"
         className={className}
-        style={{ width: tamanho, height: Math.round(tamanho * 1.3) }}
+        style={style}
       />
     </>
   );

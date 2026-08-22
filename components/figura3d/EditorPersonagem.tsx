@@ -77,6 +77,7 @@ import {
 // paralelo ao cast procedural. Preview aparece no topo do AbaCast; renderização
 // 3D vivid mora em /perfil/personagem/kit até o canvas principal suportar .glb.
 import { AVATARES_KIT } from "@/lib/figura/avatares-kit";
+import ZafeAvatarKit from "./ZafeAvatarKit";
 import {
   ITENS_POR_SLOT,
   POR_ID,
@@ -346,21 +347,17 @@ export default function EditorPersonagem({
             <PersonagemCanvas alca={canvas} figura={figura} posicao={posicao} />
 
             {/* Kit oficial escolhido: o canvas three.js não sabe renderizar
-                os .glb do kit ainda, então cobrimos o palco com o poster PNG
-                do personagem — o feedback "está vestido" fica evidente.
-                Quando o canvas suportar .glb, este overlay desaparece. */}
+                os .glb do kit ainda, então cobrimos o palco com um
+                <model-viewer> do próprio .glb — dá rotar, arrastar, zoom.
+                Um viewer só na tela; sem risco de multi-contexto WebGL.
+                O poster PNG aparece instantâneo enquanto o .glb baixa. */}
             {(() => {
               const k = figura.avatar
                 ? AVATARES_KIT.find((x) => x.id === figura.avatar)
                 : null;
               return k ? (
-                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={k.poster}
-                    alt={k.nome}
-                    className="max-h-full max-w-full object-contain"
-                  />
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_65%_55%_at_50%_34%,#262C3C_0%,#171B25_52%,#0D1016_100%)]">
+                  <ZafeAvatarKit personagem={k.id} preencher girar />
                 </div>
               ) : null;
             })()}
@@ -483,12 +480,14 @@ export default function EditorPersonagem({
  * clicar duas vezes.
  */
 function Abas({ atual, onPick }: { atual: Aba; onPick: (a: Aba) => void }) {
+  // "personagem" (montar peça-a-peça) e "acessorios" (loja de itens) estão
+  // ocultos temporariamente — o foco agora é escolher um pronto no cast.
+  // A lógica das duas continua no arquivo intacta pra reabrir quando a
+  // integração dos .glb estiver madura.
   return (
     <div className="flex gap-5 border-b border-border">
       {(
         [
-          ["personagem", "Personagem"],
-          ["acessorios", "Acessórios"],
           ["avatares", "Avatares"],
         ] as const
       ).map(([id, rotulo]) => (
@@ -952,6 +951,19 @@ function AbaCast({
       {AVATARES_POR_RARIDADE.map(([raridade, lista]) => (
         <Secao key={raridade} titulo={NOME_RARIDADE[raridade]}>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {/* Kit oficial (Enrico) abre a seção Comum — são a safra nova,
+                ficam na frente. Renderizam com POSTER PNG em vez do recorte
+                da folha (não têm sprite), mesma forma de card, clique passa
+                pelo mesmo escolher() dos procedurais. */}
+            {raridade === "comum" &&
+              AVATARES_KIT.map((k) => (
+                <CardAvatarKit
+                  key={k.id}
+                  kit={k}
+                  atual={atual === k.id}
+                  onEscolher={() => escolher(k.id)}
+                />
+              ))}
             {lista.map((av) => (
               <CardAvatar
                 key={av.id}
@@ -964,19 +976,6 @@ function AbaCast({
                 onComprar={() => comprar(av.id)}
               />
             ))}
-            {/* Kit oficial (Enrico) — entram junto com o resto na Comum, sem
-                sessão dedicada. Renderizam com POSTER PNG em vez do recorte
-                da folha (não têm sprite), mas o card tem a mesma forma e o
-                clique passa por escolher() como qualquer outro. */}
-            {raridade === "comum" &&
-              AVATARES_KIT.map((k) => (
-                <CardAvatarKit
-                  key={k.id}
-                  kit={k}
-                  atual={atual === k.id}
-                  onEscolher={() => escolher(k.id)}
-                />
-              ))}
           </div>
         </Secao>
       ))}
