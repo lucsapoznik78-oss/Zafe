@@ -886,13 +886,21 @@ function CardAvatarKit({
         <span
           className="relative flex aspect-[3/4] w-full items-center justify-center bg-[#0F1012]"
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={kit.poster}
-            alt={kit.nome}
-            loading="lazy"
-            className="h-full w-full object-contain"
-          />
+          {/* Se tem poster PNG (kit original), usa img — rápido e leve.
+              Se não tem (leva Hyper3D), renderiza o próprio .glb inline via
+              <model-viewer> pra não deixar o card preto. Sem auto-rotate no
+              card pra economizar GPU quando há vários. */}
+          {kit.poster ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={kit.poster}
+              alt={kit.nome}
+              loading="lazy"
+              className="h-full w-full object-contain"
+            />
+          ) : (
+            <ZafeAvatarKit personagem={kit.id} preencher girar={false} />
+          )}
           {atual && (
             <span className="absolute right-1 top-1 rounded-full bg-primary p-0.5 text-primary-foreground">
               <Check size={11} />
