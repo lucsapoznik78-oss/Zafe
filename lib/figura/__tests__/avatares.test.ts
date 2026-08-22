@@ -5,8 +5,11 @@ import { ITENS, POR_ID } from "../catalogo";
 import { PELES } from "../paletas";
 
 describe("catálogo do cast", () => {
-  it("tem os 30 personagens, todos com id único", () => {
-    expect(AVATARES).toHaveLength(30);
+  it("tem os personagens do cast, todos com id único", () => {
+    // 22/08/26: os 11 comuns procedurais que sobrepunham a leva Hyper3D do kit
+    // foram removidos — sobrou o Entregador Relâmpago e o resto do cast
+    // (incomum, raro, épico, lendário). Total: 19.
+    expect(AVATARES).toHaveLength(19);
     expect(AVATAR_POR_ID.size).toBe(AVATARES.length);
   });
 

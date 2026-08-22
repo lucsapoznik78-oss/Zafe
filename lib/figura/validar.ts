@@ -22,6 +22,7 @@ import {
   SOBRANCELHAS,
 } from "./paletas";
 import { AVATAR_POR_ID } from "./avatares";
+import { AVATAR_KIT_POR_ID, precoAvatarKit } from "./avatares-kit";
 import { POR_ID } from "./catalogo";
 import { SLOTS, type FiguraV2, type Slot } from "./tipos";
 
@@ -113,11 +114,24 @@ export function sanearFigura(bruto: unknown, inventario: Set<string>): Resultado
   if (dir && POR_ID.get(dir)?.duasMaos) delete figura.equipado.maoEsq;
 
   // O avatar pronto passa pelo MESMO crivo dos acessórios: existe no catálogo e
-  // está no inventário. Ele não limpa `equipado` — o boneco montado continua
-  // salvo debaixo dele, e é o que volta quando o usuário escolhe "sem avatar".
+  // (se pago) está no inventário. Ele não limpa `equipado` — o boneco montado
+  // continua salvo debaixo dele, e é o que volta quando o usuário escolhe "sem
+  // avatar".
+  //
+  // DOIS CATÁLOGOS aqui: o cast procedural (`av-*` em AVATAR_POR_ID, todo pago)
+  // e o kit .glb (AVATAR_KIT_POR_ID, comuns grátis + raros a Z$ 350). Kit comum
+  // não precisa estar no inventário — é grátis, e cobrar inventário forçaria uma
+  // compra fake por item que ninguém paga.
   const idAvatar = f.avatar;
   if (typeof idAvatar === "string" && idAvatar.length > 0) {
-    if (!AVATAR_POR_ID.has(idAvatar)) {
+    const kit = AVATAR_KIT_POR_ID.get(idAvatar);
+    if (kit) {
+      if (precoAvatarKit(kit) === 0 || inventario.has(idAvatar)) {
+        figura.avatar = idAvatar;
+      } else {
+        descartados.push({ slot: "avatar", itemId: idAvatar, motivo: "nao_possui" });
+      }
+    } else if (!AVATAR_POR_ID.has(idAvatar)) {
       descartados.push({ slot: "avatar", itemId: idAvatar.slice(0, 64), motivo: "desconhecido" });
     } else if (!inventario.has(idAvatar)) {
       descartados.push({ slot: "avatar", itemId: idAvatar, motivo: "nao_possui" });

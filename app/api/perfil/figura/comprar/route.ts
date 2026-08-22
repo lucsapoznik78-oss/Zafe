@@ -25,6 +25,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { AVATAR_POR_ID, precoAvatar } from "@/lib/figura/avatares";
+import { AVATAR_KIT_POR_ID, precoAvatarKit } from "@/lib/figura/avatares-kit";
 import { POR_ID, precoDe } from "@/lib/figura/catalogo";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 
@@ -53,13 +54,26 @@ export async function POST(request: Request) {
 
   const acessorio = POR_ID.get(parsed.data.itemId);
   const avatarCat = acessorio ? undefined : AVATAR_POR_ID.get(parsed.data.itemId);
-  if (!acessorio && !avatarCat) {
+  const kitCat = acessorio || avatarCat ? undefined : AVATAR_KIT_POR_ID.get(parsed.data.itemId);
+  if (!acessorio && !avatarCat && !kitCat) {
     return NextResponse.json({ error: "Item não existe" }, { status: 404 });
+  }
+
+  // Kit comum é grátis e não passa pela loja — bloqueia aqui pra ninguém tentar
+  // "comprar" por Z$ 0 e conseguir uma entrada gratuita no inventário via força
+  // bruta na rota.
+  if (kitCat && precoAvatarKit(kitCat) === 0) {
+    return NextResponse.json(
+      { error: "Este avatar é grátis — basta clicar em Vestir" },
+      { status: 400 },
+    );
   }
 
   const item = acessorio
     ? { id: acessorio.id, nome: acessorio.nome, preco: precoDe(acessorio) }
-    : { id: avatarCat!.id, nome: avatarCat!.nome, preco: precoAvatar(avatarCat!) };
+    : avatarCat
+      ? { id: avatarCat.id, nome: avatarCat.nome, preco: precoAvatar(avatarCat) }
+      : { id: kitCat!.id, nome: kitCat!.nome, preco: precoAvatarKit(kitCat!) };
 
   const admin = createAdminClient();
 

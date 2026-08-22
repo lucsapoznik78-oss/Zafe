@@ -76,7 +76,7 @@ import {
 // Kit oficial (Enrico, 21/08/2026) — 5 personagens pré-cozidos em .glb, em
 // paralelo ao cast procedural. Preview aparece no topo do AbaCast; renderização
 // 3D vivid mora em /perfil/personagem/kit até o canvas principal suportar .glb.
-import { AVATARES_KIT } from "@/lib/figura/avatares-kit";
+import { AVATARES_KIT, precoAvatarKit } from "@/lib/figura/avatares-kit";
 import ZafeAvatarKit from "./ZafeAvatarKit";
 import {
   ITENS_POR_SLOT,
@@ -237,7 +237,11 @@ export default function EditorPersonagem({
     // avisar sobre um boné não pago que ninguém está vendo seria ruído.
     if (figura.avatar) {
       const av = AVATAR_POR_ID.get(figura.avatar);
-      return av && !inventario.has(av.id) ? [av.nome] : [];
+      if (av) return !inventario.has(av.id) ? [av.nome] : [];
+      // Kit avatar: comum é grátis (nunca pendente); raro precisa estar no inv.
+      const kit = AVATARES_KIT.find((x) => x.id === figura.avatar);
+      if (kit && precoAvatarKit(kit) > 0 && !inventario.has(kit.id)) return [kit.nome];
+      return [];
     }
     return Object.values(figura.equipado)
       .filter((id): id is string => !!id && !inventario.has(id))
@@ -280,7 +284,7 @@ export default function EditorPersonagem({
         tipo: "ok",
         texto: j.ja_possui
           ? "Você já tinha esse item."
-          : `${POR_ID.get(itemId)?.nome ?? AVATAR_POR_ID.get(itemId)?.nome} é seu.`,
+          : `${POR_ID.get(itemId)?.nome ?? AVATAR_POR_ID.get(itemId)?.nome ?? AVATARES_KIT.find((k) => k.id === itemId)?.nome} é seu.`,
       });
     } catch (e) {
       setAviso({ tipo: "erro", texto: (e as Error).message });
@@ -870,20 +874,27 @@ function CardAvatar({
 }
 
 /**
- * Card do avatar do kit oficial. Mesma silhueta do CardAvatar, mas o mini é
- * o poster PNG 1024px (não recorte de spritesheet). Sem preço nem "Comprar":
- * são grátis nesta primeira leva, e o feedback de "está vestido" já vem da
- * borda + check.
+ * Card do avatar do kit oficial. Comum é grátis (só "Vestir"); raro cobra Z$ 350
+ * como o cast procedural — mesmo botão, mesmo fluxo de compra, mesmo estado de
+ * "Seu" quando o inventário já tem.
  */
 function CardAvatarKit({
   kit,
   atual,
+  meu,
+  ocupado,
   onEscolher,
+  onComprar,
 }: {
   kit: (typeof AVATARES_KIT)[number];
   atual: boolean;
+  meu: boolean;
+  ocupado: string | null;
   onEscolher: () => void;
+  onComprar: () => void;
 }) {
+  const preco = precoAvatarKit(kit);
+  const gratis = preco === 0;
   return (
     <div
       className={cn(
@@ -891,7 +902,7 @@ function CardAvatarKit({
         atual ? "border-primary bg-primary/5" : "border-border bg-card",
       )}
     >
-      <button onClick={onEscolher} className="text-left">
+      <button onClick={onEscolher} className="text-left" disabled={!gratis && !meu}>
         <span
           className="relative flex aspect-[3/4] w-full items-center justify-center bg-[#0F1012]"
         >
@@ -915,27 +926,43 @@ function CardAvatarKit({
               <Check size={11} />
             </span>
           )}
-          <span className="absolute left-1 top-1 rounded-full bg-primary/90 px-1.5 py-0.5 text-[9px] font-bold uppercase text-primary-foreground">
+          {!gratis && !meu && (
+            <span className="absolute left-1 top-1 rounded-full bg-background/80 p-1 text-muted-foreground">
+              <Lock size={10} />
+            </span>
+          )}
+          <span className="absolute right-1 bottom-1 rounded-full bg-primary/90 px-1.5 py-0.5 text-[9px] font-bold uppercase text-primary-foreground">
             3D
           </span>
         </span>
         <span className="block px-2 pt-1.5">
           <span className="line-clamp-2 text-xs font-semibold leading-snug">{kit.nome}</span>
-          {/* Subtitle removida — os textos de "vibe" (ex "leva rara Hyper3D")
-              poluíam sem agregar. O nome sozinho basta. */}
         </span>
       </button>
 
       <div className="mt-auto p-2 pt-1.5">
-        <span className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground">
-          {atual ? (
-            <>
-              <Trash2 size={10} /> Tirar
-            </>
-          ) : (
-            "Grátis"
-          )}
-        </span>
+        {gratis || meu ? (
+          <span className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground">
+            {atual ? (
+              <>
+                <Trash2 size={10} /> Tirar
+              </>
+            ) : gratis ? (
+              "Grátis"
+            ) : (
+              "Seu"
+            )}
+          </span>
+        ) : (
+          <button
+            onClick={onComprar}
+            disabled={ocupado !== null}
+            className="flex w-full items-center justify-center gap-1 rounded-md bg-foreground/90 px-2 py-1 text-[11px] font-bold text-background hover:bg-foreground disabled:opacity-50"
+          >
+            {ocupado === kit.id && <Loader2 size={11} className="animate-spin" />}
+            {z$(preco)}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -976,7 +1003,10 @@ function AbaCast({
                 key={k.id}
                 kit={k}
                 atual={atual === k.id}
+                meu={inventario.has(k.id)}
+                ocupado={ocupado}
                 onEscolher={() => escolher(k.id)}
+                onComprar={() => comprar(k.id)}
               />
             ))}
             {lista.map((av) => (

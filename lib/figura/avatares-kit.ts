@@ -235,3 +235,25 @@ export const COLECIONAVEIS_KIT: ColecionavelKit[] = [
 export function avatarKitPorId(id: string): AvatarKit | undefined {
   return AVATARES_KIT.find((a) => a.id === id);
 }
+
+/**
+ * Preço do avatar do kit por raridade. Comum e lendário ficam em 0 (comum é a
+ * primeira leva de graça pra puxar o usuário pro cast; lendário do kit ainda
+ * não existe). Só o RARO cobra — 350 Z$, o mesmo degrau do cast procedural.
+ *
+ * Se em algum momento entrar leva paga de comum, é aqui que muda.
+ */
+export const PRECO_KIT: Record<RaridadeKit, number> = {
+  comum: 0,
+  raro: 350,
+  lendario: 0,
+};
+
+export function precoAvatarKit(a: AvatarKit): number {
+  return PRECO_KIT[a.raridade];
+}
+
+/** Índice pra lookup O(1) — evita AVATARES_KIT.find em cada request. */
+export const AVATAR_KIT_POR_ID: ReadonlyMap<string, AvatarKit> = new Map(
+  AVATARES_KIT.map((a) => [a.id, a]),
+);
