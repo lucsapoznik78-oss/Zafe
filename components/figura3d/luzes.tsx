@@ -97,11 +97,13 @@ export function Luzes({ ambiente = "hdri" }: { ambiente?: "hdri" | "plano" }) {
             scale={[10, 10, 1]}
           />
           {/* parede de trás, fria: dá o reflexo azulado na borda que a rim
-              desenha, para o contorno não ser uma linha branca isolada */}
+              desenha, para o contorno não ser uma linha branca isolada.
+              Baixada junto com a rim — as duas somavam o mesmo azul na mesma
+              face, e a soma é que virava mancha. */}
           <Lightformer
             form="rect"
-            intensity={1.4}
-            color="#8FB4FF"
+            intensity={1.0}
+            color="#9DBBF0"
             position={[0, 3, -8]}
             scale={[12, 8, 1]}
           />
@@ -140,11 +142,24 @@ export function Luzes({ ambiente = "hdri" }: { ambiente?: "hdri" | "plano" }) {
       />
 
       {/* FILL */}
-      <directionalLight position={[-4.5, 2.4, 2.2]} intensity={0.55} color="#7D9ED4" />
+      <directionalLight position={[-4.5, 2.4, 2.2]} intensity={0.42} color="#94A8C6" />
 
       {/* RIM — Z negativo, atrás do personagem. Se o fio de luz sumir, é aqui
-          que se mexe: intensidade primeiro, posição depois. */}
-      <directionalLight position={[-2.0, 5.0, -5.8]} intensity={2.6} color="#A9C9FF" />
+          que se mexe: intensidade primeiro, posição depois.
+
+          1,15 e não 2,6, e azul lavado no lugar do azul saturado. Uma rim
+          DIRECIONAL não ilumina só o contorno: ela banha todo o hemisfério
+          virado para trás e para cima. A 2,6 em #A9C9FF isso depositava azul no
+          antebraço, na coxa, na dobra da calça e no cabelo preto — as "manchas
+          cinza-azuladas" que apareciam em quase todo o cast, e que ficavam
+          gritantes justamente onde o albedo é saturado (terno vermelho) ou
+          escuro (cabelo), porque ali o azul não tem com o que competir.
+
+          O fio de luz não se perde: uma rim lê por CONTRASTE com o fundo, não
+          por intensidade absoluta, e o fundo desta cena é escuro. Metade da
+          intensidade continua descolando a silhueta e para de pintar o meio da
+          superfície. */}
+      <directionalLight position={[-2.0, 5.0, -5.8]} intensity={1.15} color="#CBD8EE" />
     </>
   );
 }
